@@ -1,0 +1,322 @@
+[
+ {
+  "t": "5:45 AM. The alarm. Call time is 7:30 for the trio.",
+  "o": [
+   [
+    "Water + a real breakfast (eggs, toast, fruit)",
+    {
+     "e": 3,
+     "f": 1,
+     "s": 0
+    },
+    "Fuel that lasts."
+   ],
+   [
+    "Just a granola bar in the car",
+    {
+     "e": 1,
+     "f": 0,
+     "s": 0
+    },
+    "You'll be hungry by 9."
+   ],
+   [
+    "Skip it, too nervous",
+    {
+     "e": -2,
+     "f": -1,
+     "s": 0
+    },
+    "Nerves eat energy. Your body needs food more, not less."
+   ]
+  ]
+ },
+ {
+  "t": "Packing check. Your dance bag is by the door.",
+  "o": [
+   [
+    "Open it and check every dance's shoes and costume",
+    {
+     "e": 0,
+     "f": 3,
+     "s": 1
+    },
+    "Found it: the trio tights were missing. Crisis averted."
+   ],
+   [
+    "Mom packed it, it's fine",
+    {
+     "e": 0,
+     "f": 0,
+     "s": 0
+    },
+    "Probably fine. Probably."
+   ],
+   [
+    "Grab it and go, we're late",
+    {
+     "e": 0,
+     "f": -2,
+     "s": -1
+    },
+    "Halfway there you remember the hairspray. In the bathroom."
+   ]
+  ]
+ },
+ {
+  "t": "You find the PITCH girls in the dressing room. Mia is crying — she can't find her earrings.",
+  "o": [
+   [
+    "Help her look, then lend her a spare pair",
+    {
+     "e": -1,
+     "f": 1,
+     "s": 3
+    },
+    "Teammate. She'll dance better, and so will you."
+   ],
+   [
+    "Say 'they'll turn up' and keep doing your bun",
+    {
+     "e": 0,
+     "f": 1,
+     "s": 0
+    },
+    "Your bun is great. Mia is still crying."
+   ],
+   [
+    "Panic with her",
+    {
+     "e": -2,
+     "f": -2,
+     "s": 0
+    },
+    "Now two people can't find earrings."
+   ]
+  ]
+ },
+ {
+  "t": "Two hours until you're on. A whole team of older dancers is warming up on the side stage.",
+  "o": [
+   [
+    "Proper warm-up, then mark the solo once with eyes UP",
+    {
+     "e": 1,
+     "f": 3,
+     "s": 1
+    },
+    "Warm, focused, ready."
+   ],
+   [
+    "Watch the older team the whole time",
+    {
+     "e": 0,
+     "f": -1,
+     "s": 1
+    },
+    "They're amazing. You forgot to warm up."
+   ],
+   [
+    "Run the solo full-out four times",
+    {
+     "e": -3,
+     "f": 1,
+     "s": 0
+    },
+    "You just danced a whole competition in the hallway."
+   ]
+  ]
+ },
+ {
+  "t": "Backstage, 3 numbers away. Your heart is going fast.",
+  "o": [
+   [
+    "Breathe in for 4, out for 4. Say your cue: point, straighten, eyes up",
+    {
+     "e": 0,
+     "f": 3,
+     "s": 2
+    },
+    "Calm. Ready."
+   ],
+   [
+    "Check your phone",
+    {
+     "e": 0,
+     "f": -2,
+     "s": 0
+    },
+    "Someone posted a puppy. You lost your counts."
+   ],
+   [
+    "Ask everyone if they're nervous too",
+    {
+     "e": 0,
+     "f": -1,
+     "s": 1
+    },
+    "Everyone is. Now everyone's talking about it."
+   ]
+  ]
+ },
+ {
+  "t": "The vending machine backstage has ONE thing left. Everyone is staring at it.",
+  "o": [
+   [
+    "Split the pretzels with the PITCH girls",
+    {
+     "e": 1,
+     "f": 0,
+     "s": 3
+    },
+    "Six dancers, one bag, zero drama. Legendary."
+   ],
+   [
+    "Buy the giant blue slushie",
+    {
+     "e": 2,
+     "f": -2,
+     "s": 1
+    },
+    "Blue tongue. In photos. Forever."
+   ],
+   [
+    "Nothing, you're fine",
+    {
+     "e": -1,
+     "f": 0,
+     "s": 0
+    },
+    "Your stomach disagrees loudly during the quiet part of the lyrical solo."
+   ]
+  ]
+ },
+ {
+  "t": "A famous choreographer from the convention walks past the dressing room.",
+  "o": [
+   [
+    "Say hi and ask one real question about her class",
+    {
+     "e": 0,
+     "f": 1,
+     "s": 3
+    },
+    "She remembers you on Sunday. That's how scholarships happen."
+   ],
+   [
+    "Scream quietly and hide",
+    {
+     "e": 0,
+     "f": 0,
+     "s": 1
+    },
+    "Relatable. She waves anyway."
+   ],
+   [
+    "Ask for a selfie",
+    {
+     "e": 0,
+     "f": -1,
+     "s": 2
+    },
+    "Selfie achieved. Counts, forgotten."
+   ]
+  ]
+ },
+ {
+  "t": "GLITTER EMERGENCY. Ava opened the loose glitter. It's on everything. Including Mia.",
+  "o": [
+   [
+    "Tape roll to the rescue, one costume at a time",
+    {
+     "e": -1,
+     "f": 2,
+     "s": 2
+    },
+    "Twenty minutes, zero glitter on stage. Hero."
+   ],
+   [
+    "Embrace it — we are a sparkly team now",
+    {
+     "e": 0,
+     "f": 0,
+     "s": 2
+    },
+    "The judges' comment sheet literally says 'so much glitter.' Not clear if good."
+   ],
+   [
+    "Blame Ava loudly",
+    {
+     "e": 0,
+     "f": -1,
+     "s": -3
+    },
+    "Ava cries. Now there's glitter AND tears."
+   ]
+  ]
+ },
+ {
+  "t": "Hallway dance battle! A team from another studio is doing 8-counts at each other. They point at you.",
+  "o": [
+   [
+    "Jump in with your best 8 from the jazz group",
+    {
+     "e": -1,
+     "f": 1,
+     "s": 3
+    },
+    "The hallway loses its mind. New friends from Studio Blaze."
+   ],
+   [
+    "Cheer for both sides and stay warm",
+    {
+     "e": 1,
+     "f": 1,
+     "s": 1
+    },
+    "Smart. Warm legs, happy hallway."
+   ],
+   [
+    "Do the aerial you haven't landed",
+    {
+     "e": -2,
+     "f": -1,
+     "s": -2
+    },
+    "Hand touched. In the HALLWAY. It's on someone's story."
+   ]
+  ]
+ },
+ {
+  "t": "Lights up. The music starts.",
+  "o": [
+   [
+    "Dance it exactly like Sunday's filmed run, and hold the ending until the music is gone",
+    {
+     "e": 0,
+     "f": 2,
+     "s": 3
+    },
+    "The judges write a lot."
+   ],
+   [
+    "Try the aerial you haven't landed yet",
+    {
+     "e": 0,
+     "f": -1,
+     "s": -3
+    },
+    "You touched a hand down. It's what they remember."
+   ],
+   [
+    "Rush the ending to get off stage",
+    {
+     "e": 0,
+     "f": -1,
+     "s": -2
+    },
+    "The music was still playing when you left."
+   ]
+  ]
+ }
+]

@@ -1,0 +1,21 @@
+rules_version = '2';
+// Media lives under families/{familyId}/{photos|files|music|videos}/{id}. Same key as Firestore: sign in (anonymously)
+// and name a valid familyId. Uploads are capped at 60 MB. Nothing outside a family folder is readable or writable.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function validFamily(id) { return id.matches('^[A-Z2-9]{24}$'); }
+    function mediaKind(kind) { return kind in ['photos', 'files', 'music', 'videos']; }
+
+    match /families/{familyId}/{kind}/{fileId} {
+      allow read: if signedIn() && validFamily(familyId) && mediaKind(kind);
+      allow delete: if signedIn() && validFamily(familyId) && mediaKind(kind);
+      allow create, update: if signedIn() && validFamily(familyId) && mediaKind(kind)
+                            && request.resource.size <= 60 * 1024 * 1024;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

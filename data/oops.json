@@ -1,0 +1,44 @@
+{
+ "flaws": [
+  [
+   "flex",
+   "Point the foot"
+  ],
+  [
+   "knee",
+   "Straighten the knee"
+  ],
+  [
+   "eyes",
+   "Eyes up!"
+  ],
+  [
+   "arms",
+   "Long arms, shoulders down"
+  ],
+  [
+   "sock",
+   "There's a SOCK on!"
+  ],
+  [
+   "shades",
+   "Sunglasses on stage?!"
+  ],
+  [
+   "",
+   "Perfect — no correction!"
+  ]
+ ],
+ "moves": [
+  "arab",
+  "passe",
+  "attitude",
+  "kick",
+  "tilt",
+  "develop",
+  "layout",
+  "releve",
+  "leap",
+  "hold"
+ ]
+}

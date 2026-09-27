@@ -1,0 +1,32 @@
+{
+ "lyrical": {
+  "n": "Lyrical",
+  "beat": 700,
+  "ic": "🌸"
+ },
+ "jazz": {
+  "n": "Jazz",
+  "beat": 440,
+  "ic": "⚡"
+ },
+ "contemporary": {
+  "n": "Contemporary",
+  "beat": 600,
+  "ic": "🌊"
+ },
+ "hiphop": {
+  "n": "Hip Hop",
+  "beat": 480,
+  "ic": "🎧"
+ },
+ "ballet": {
+  "n": "Ballet",
+  "beat": 650,
+  "ic": "🩰"
+ },
+ "acro": {
+  "n": "Acro",
+  "beat": 520,
+  "ic": "🤸"
+ }
+}

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sofia's Spotlight · 2026–27</title>
+<meta name="theme-color" content="#FF5C93">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Spotlight">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<script src="js/version.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <button class="gear noprint" id="openSettings" aria-label="Settings" title="Settings">⚙️</button>
+  <div class="sticker"><b id="stickerDays">–</b>days to<br><span id="stickerWhat">next event</span></div>
+  <div class="sub">season 2026–27 · Glass House Dance</div>
+  <h1>Sofia's Spotlight</h1>
+  <p class="sub" id="heroLine">lyrical solo ✿ trio ✿ team PITCH</p>
+</header>
+<!-- HOME -->
+<section class="page on" id="p-home">
+  <div class="card sun">
+    <div class="row"><div class="grow"><div class="muted small">Next up</div><h2 id="nextTitle">…</h2><div id="nextMeta" class="muted"></div></div><div class="big" id="nextDays">–</div></div>
+  </div>
+  <div class="card">
+    <h3>This week</h3>
+    <div class="week" id="homeWeek"></div>
+    <p class="small muted">Swipe sideways to see the whole week. Lilac = studio · gold = performances & comps · pink = home practice</p>
+  </div>
+  <div class="card aqua">
+    <h3>Today's practice</h3>
+    <div id="todayPlan"></div>
+  </div>
+  <div class="card coral">
+    <h3>Top 3 corrections right now</h3>
+    <p class="small muted">Ask Hannah after class and update these. Everything at home points at these three.</p>
+    <div id="top3"></div>
+  </div>
+  <div class="card violet">
+    <div class="row"><div class="grow"><h3>🎮 Play</h3><p class="small muted">Choreo Studio: build a dance and face the judges. Plus Step & Sparkle.</p></div><button class="btn sm coral" onclick="showPage('play')">Open</button></div>
+  </div>
+  <div class="card">
+    <h3>Open to-dos</h3>
+    <div id="homeTodos"></div>
+  </div>
+</section>
+
+<!-- DANCES -->
+<section class="page" id="p-dances">
+  <h2>My dances</h2>
+  <p class="muted small">Tap a dance to open it. Everything you type is saved.</p>
+  <div id="danceList"></div>
+  <div class="card"><div class="row"><input type="text" id="newDanceName" placeholder="Add a dance (e.g. Jazz class dance)"><button class="btn sm" id="addDance">Add</button></div></div>
+</section>
+
+<!-- EVENTS -->
+<section class="page" id="p-events">
+  <h2>Season events</h2>
+  <p class="small muted">Team PITCH: 3 conventions, 2 competitions required. Fees are per the studio's 2027 schedule; auto-charge dates are when the card gets charged.</p>
+  <div class="timeline" id="eventList"></div>
+  <div class="card"><div class="row"><input type="text" id="newEventName" placeholder="Add an event"><input type="date" id="newEventDate" style="max-width:160px"><button class="btn sm" id="addEvent">Add</button></div></div>
+</section>
+
+<!-- SCHEDULE -->
+<section class="page" id="p-schedule">
+  <h2>Schedule</h2>
+  <div class="card violet">
+    <h3>Weekly studio classes</h3>
+    <div class="overflow"><table id="classTable"></table></div>
+    <p class="small muted">All classes at Glass House Dance, 3310 E Lake Sammamish Pkwy SE, Sammamish.</p>
+  </div>
+  <div class="card mint" style="border-color:var(--mint)">
+    <h3>Home practice days</h3>
+    <ul class="clean">
+      <li><b>Thursday</b> · Strength + flexibility + one solo run (30–40 min)</li>
+      <li><b>Friday</b> · Technique drills + one run</li>
+      <li><b>Sunday</b> · One full-out run, filmed, plus a light stretch</li>
+      <li class="muted small">Monday and Tuesday are heavy studio days. No home practice. Rest counts.</li>
+    </ul>
+  </div>
+  <div class="card noprint">
+    <div class="row"><h3 class="grow">Print a calendar</h3>
+      <button class="btn sm ghost" id="calPrev">‹</button><b id="calLabel"></b><button class="btn sm ghost" id="calNext">›</button>
+      <button class="btn sm sun" id="printCal">Print</button></div>
+    <div class="row" style="margin-top:6px"><button class="btn sm coral" id="viewMonth">Month</button><button class="btn sm ghost" id="viewWeek">Week</button><span class="grow"></span><button class="btn sm ghost" id="exportIcs">📅 Export .ics</button></div>
+  </div>
+  <div class="card" id="calCard"><div class="cal" id="calGrid"></div><div class="weekgrid" id="weekGrid" hidden></div></div>
+</section>
+
+<!-- PRACTICE -->
+<section class="page" id="p-practice">
+  <h2>Practice at home</h2>
+  <div class="card sun">
+    <div class="row"><h3 class="grow">Today</h3><input type="date" id="practiceDate" style="max-width:170px"></div>
+    <div class="progress" style="margin:8px 0"><i id="practiceBar" style="width:0"></i></div>
+    <div id="practiceChecklist"></div>
+    <label class="f">How did it feel?</label>
+    <textarea id="practiceNote" placeholder="One line. What got better, what was hard."></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn coral" id="savePractice">Save today</button><span class="small muted">Streak: <b id="streak">0</b> sessions logged</span></div>
+  </div>
+  <div class="card">
+    <h3>The 15-week plan to Winter Formal</h3>
+    <div id="phases"></div>
+  </div>
+  <div class="card aqua">
+    <h3>Safety rules</h3>
+    <ul class="clean small">
+      <li>Warm up before every stretch. A stretch should feel like a stretch, never pain.</li>
+      <li>No oversplits, no forced stretching, no bridges unless Hannah says yes.</li>
+      <li>Acro tricks at home only on the mat, or with a spotter, until cleared in class.</li>
+      <li>Stop anything that hurts. Sleep and water are part of training.</li>
+    </ul>
+  </div>
+  <div class="card violet">
+    <div class="row"><h3 class="grow">Aerial progression</h3><span class="chip violet" id="aerialPct">0%</span></div>
+    <p class="small muted">The skill itself is learned in Monday Acro with a spotter. These are the pieces to earn first. Mat under you for every drill. Aerial stays out of the solo until 20 in a row in class.</p>
+    <div id="aerialList"></div>
+  </div>
+  <div class="card">
+    <h3>Practice history</h3>
+    <div id="practiceHistory" class="small"></div>
+  </div>
+</section>
+
+<!-- NOTES & PHOTOS -->
+<section class="page" id="p-notes">
+  <h2>Notes & photos</h2>
+  <div class="card coral">
+    <h3>New note</h3>
+    <input type="text" id="noteTitle" placeholder="Title (e.g. What Hannah said Saturday)">
+    <textarea id="noteBody" placeholder="Write it here…" style="margin-top:6px"></textarea>
+    <div class="row" style="margin-top:6px"><select id="noteTag" style="max-width:180px"><option>Corrections</option><option>Choreo</option><option>Friends</option><option>Comp day</option><option>Ideas</option><option>Other</option></select><button class="btn" id="addNote">Save note</button></div>
+  </div>
+  <div id="noteList"></div>
+  <div class="card sun">
+    <div class="row"><h3 class="grow">My files</h3><label class="btn sm aqua" for="fileIn">Add file</label><input type="file" id="fileIn" accept=".pdf,.md,.txt,.csv,.json,image/*" multiple hidden></div>
+    <p class="small muted">Playbook, aerial mission, packing lists, anything you want with you. PDFs, images and text files.</p>
+    <div id="fileList"></div>
+  </div>
+  <div class="card violet">
+    <div class="row"><h3 class="grow">Photos with friends & team</h3><label class="btn sm aqua" for="photoIn">Add photo</label><input type="file" id="photoIn" accept="image/*,video/*" multiple hidden></div>
+    <input type="text" id="photoCap" placeholder="Caption for the next photo (optional)" style="margin:6px 0">
+    <div class="photos" id="photoGrid"></div>
+    <p class="small muted" id="photoHint"></p>
+  </div>
+</section>
+
+<!-- PLAY -->
+<section class="page" id="p-play">
+  <h2>Play</h2>
+  <div class="card coral">
+    <div class="row"><h3 class="grow">🪞 My avatar</h3><button class="btn sm ghost" onclick="avToggle()">Customize</button></div>
+    <div class="row"><svg id="avSvg" viewBox="90 30 120 230" style="width:110px;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:14px"></svg><div class="grow small"><b id="avName">Sofia</b><div class="muted">This is you in every game. Tap Customize to change hair, eyes, outfit and accessories.</div></div></div>
+    <div id="avOpts" style="display:none;margin-top:8px"></div>
+  </div>
+  <div class="card coral">
+    <h3>💃 Choreo Studio</h3>
+    <p class="small muted">Build your own dance from moves, watch your dancer perform it, then face the judges.</p>
+    <div class="row" style="margin:6px 0" id="csStyles"></div><div class="row"><span class="grow"></span><span class="small muted" id="csCounts">0 counts</span></div>
+    <div id="csTimeline" style="min-height:52px;background:var(--blush);border-radius:12px;padding:6px;display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px"></div>
+    <div class="row" style="margin-bottom:8px"><button class="btn sm ghost" id="csUndo">↩ Undo</button><button class="btn sm ghost" id="csClear">Clear</button><span class="grow"></span><button class="btn sm sun" id="csPlay">▶ Perform</button><button class="btn sm violet" id="csJudge" style="background:#B98BEF;color:#fff">⭐ Judges</button></div>
+    <div class="field-lab">Moves (tap to add)</div>
+    <div id="csMoves" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px"></div>
+    <div id="csStage" style="display:none;margin-top:10px"><svg id="csSvg" viewBox="0 0 300 270" style="width:100%;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:14px"></svg><div class="row" style="margin-top:4px"><span class="chip sun" id="csNow">…</span><span class="grow"></span><span class="small muted" id="csCount"></span></div></div>
+    <div id="csResult" style="display:none;margin-top:10px"></div>
+    <div class="row" style="margin-top:8px"><input type="text" id="csName" placeholder="Name this dance"><button class="btn sm" id="csSave">Save</button></div>
+    <div id="csSaved" class="small" style="margin-top:6px"></div>
+  </div>
+  <div class="card violet">
+    <h3>👀 Spot the Oops</h3>
+    <p class="small muted">You hit a pose. Something might be wrong: a real correction, or something silly. Or it's perfect. Fast rounds, timer ticking.</p>
+    <div class="row"><span class="small">Best: <b id="jeBest">0</b>/10</span><span class="grow"></span><button class="btn sm coral" onclick="jeStart()">Play</button></div>
+    <div id="jeArea" style="display:none;margin-top:8px"><svg id="jeSvg" viewBox="0 0 300 270" style="width:100%;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:14px"></svg>
+      <div class="row" style="margin:6px 0"><span class="chip sun" id="jeRound"></span><span class="chip" id="jeMove"></span><span class="grow"></span><span class="chip mint" id="jeScore">0</span></div>
+      <div id="jeOpts" style="display:grid;grid-template-columns:1fr 1fr;gap:6px"></div><div id="jeMsg" class="small" style="margin-top:6px;min-height:20px"></div></div>
+  </div>
+  <div class="card sun">
+    <h3>👯 Trio Formations</h3>
+    <p class="small muted">You, plus your two trio mates. Pick a formation and a pattern for each 8-count, watch it, then get judged on spacing and pictures.</p>
+    <div id="tfBuild"></div>
+    <div class="row" style="margin-top:6px"><button class="btn sm ghost" onclick="tfAdd()">+ Add an 8</button><button class="btn sm ghost" onclick="tfUndo()">↩</button><span class="grow"></span><button class="btn sm sun" onclick="tfPlay()">▶ Watch</button><button class="btn sm coral" onclick="tfJudge()">⭐ Judge</button></div>
+    <div id="tfStage" style="display:none;margin-top:8px"><svg id="tfSvg" viewBox="0 0 300 200" style="width:100%;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:14px"></svg><div class="row" style="margin-top:4px"><span class="chip sun" id="tfNow"></span></div></div>
+    <div id="tfResult" style="display:none;margin-top:8px"></div>
+  </div>
+  <div class="card coral">
+    <h3>🎒 Comp Day</h3>
+    <p class="small muted">A whole competition day with the PITCH girls, one choice at a time. Glitter emergencies, hallway battles, a famous choreographer, one slushie. Different every time.</p>
+    <div class="row"><span class="small">Best: <b id="cdBest">0</b></span><span class="grow"></span><button class="btn sm coral" onclick="cdStart()">Start the day</button></div>
+    <div id="cdArea" style="display:none;margin-top:8px"></div>
+  </div>
+  <div class="card violet">
+    <div class="row"><div class="grow"><h3>🎀 Step & Sparkle</h3><p class="small muted">Tap the lane when a sparkle hits the line. Stay on the beat!</p><p class="small">Best: <b id="gameBest">0</b></p></div>
+    <div><button class="btn sm coral" onclick="startGame(76,'Stay a Little Longer · 76 BPM')">Lyrical</button><br><button class="btn sm sun" style="margin-top:6px" onclick="startGame(123,'Groove · 123 BPM')">Jazz</button><br><button class="btn sm" style="margin-top:6px;background:#B98BEF;color:#fff" onclick="startGame(140,'🦄 Party · 140 BPM',true)">Party</button></div></div>
+  </div>
+</section>
+
+<!-- LISTS -->
+<section class="page" id="p-lists">
+  <h2>Lists</h2>
+  <div class="card sun">
+    <h3>To-dos</h3>
+    <div class="row"><input type="text" id="todoText" placeholder="What needs doing?"><input type="date" id="todoDue" style="max-width:150px"><button class="btn sm" id="addTodo">Add</button></div>
+    <div id="todoList" style="margin-top:8px"></div>
+  </div>
+  <div class="card aqua">
+    <div class="row"><h3 class="grow">Packing lists</h3><select id="packSel" style="max-width:200px"></select></div>
+    <div id="packList"></div>
+    <div class="row" style="margin-top:8px"><input type="text" id="packNew" placeholder="Add an item"><button class="btn sm" id="addPack">Add</button><button class="btn sm ghost" id="packReset">Uncheck all</button></div>
+  </div>
+</section>
+
+<!-- SETTINGS (opened from the ⚙️ in the header; no tab) -->
+<section class="page" id="p-settings">
+  <div class="row"><button class="btn sm ghost" id="settingsBack">‹ Back</button><h2 class="grow" style="margin:0">Settings</h2></div>
+  <div class="card coral">
+    <h3>Family space</h3>
+    <p class="small muted">Both phones share one family space. To add a phone: open the app there, tap <b>Join with code</b>, then scan this QR or type the code.</p>
+    <div class="code" id="setCode">—</div>
+    <div class="qr" id="setQR"></div>
+    <div class="row"><button class="btn sm" id="setCopy">Copy code</button><button class="btn sm aqua" id="setShare">Share join link</button></div>
+    <p class="small muted" style="margin-top:8px">Keep the code somewhere safe. It is the only key to the data.</p>
+  </div>
+  <div class="card">
+    <h3>Sync</h3>
+    <div id="syncStatus" class="small"></div>
+  </div>
+  <div class="card sun">
+    <h3>Backup</h3>
+    <p class="small muted">Export makes one .zip with everything: data, photos, files, music, videos. Import merges a backup in; newer records win.</p>
+    <div class="row"><button class="btn sm coral" id="setExport">Export backup</button><label class="btn sm ghost" for="setImportFile">Import backup</label><input type="file" id="setImportFile" accept=".zip,application/zip" hidden></div>
+  </div>
+  <div class="card violet">
+    <h3>App</h3>
+    <div class="row"><span class="small muted grow" id="setVersion"></span><button class="btn sm ghost" id="setUpdate">Check for updates</button></div>
+  </div>
+  <div class="card">
+    <h3>Leave family space</h3>
+    <p class="small muted">Removes the code and the local copy from this phone only. Everything stays in the cloud; rejoin with the code any time.</p>
+    <button class="btn sm ghost" id="setLeave">Leave family space</button>
+  </div>
+</section>
+
+</div>
+
+<div class="game-wrap" id="gameWrap">
+  <div class="game-top"><button class="btn sm ghost" onclick="stopGame()">✕</button><span class="grow small muted" id="gameTitle"></span><span class="sc" id="gameScore">0</span></div>
+  <div style="position:relative;flex:1;display:flex"><canvas id="gameCv"></canvas><div class="game-msg" id="gameMsg"></div></div>
+  <div class="lanes" id="gameLanes"></div>
+</div>
+<nav class="tabs">
+  <button data-p="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7v9a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z" fill="#FFC2D6" stroke="#FF5C93" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 21v-5h6v5" fill="#fff" stroke="#FF5C93" stroke-width="1.2"/><circle cx="12" cy="3.6" r="1.4" fill="#FF5C93"/><circle cx="9.5" cy="12.5" r="1" fill="#4A2340"/><circle cx="14.5" cy="12.5" r="1" fill="#4A2340"/><path d="M10.5 14.4q1.5 1.2 3 0" stroke="#4A2340" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="7.6" cy="13.6" r="1" fill="#FF9DBE" opacity=".8"/><circle cx="16.4" cy="13.6" r="1" fill="#FF9DBE" opacity=".8"/></svg>Home</button>
+  <button data-p="dances"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13c0-4 3-8 8-8s8 4 8 8-2 7-8 7-8-3-8-7z" fill="#FFC2D6" stroke="#FF5C93" stroke-width="1.3"/><path d="M8 9.5c1.6-1.4 6.4-1.4 8 0" stroke="#FF5C93" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M6.5 19 5 22M17.5 19 19 22" stroke="#FF5C93" stroke-width="1.3" stroke-linecap="round"/><path d="M12 5.2 10.2 3l1.8-.4L13.8 3z" fill="#FF5C93"/><circle cx="9.5" cy="15" r="1" fill="#4A2340"/><circle cx="14.5" cy="15" r="1" fill="#4A2340"/><path d="M10.5 17.2q1.5 1.2 3 0" stroke="#4A2340" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="7.6" cy="16.3" r="1" fill="#FF9DBE" opacity=".8"/><circle cx="16.4" cy="16.3" r="1" fill="#FF9DBE" opacity=".8"/></svg>Dances</button>
+  <button data-p="events"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0z" fill="#F4C86A" stroke="#D9B26F" stroke-width="1.3"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 3M17 6h2.5a2.5 2.5 0 0 1-2.5 3" stroke="#D9B26F" stroke-width="1.2" fill="none"/><path d="M10 16h4v2h-4zM8 20h8" stroke="#D9B26F" stroke-width="1.3" fill="#FBEBC8" stroke-linecap="round"/><path d="M12 1.2l.6 1.3 1.4.2-1 1 .2 1.4-1.2-.7-1.2.7.2-1.4-1-1 1.4-.2z" fill="#FF5C93"/><circle cx="9.5" cy="8.5" r="1" fill="#4A2340"/><circle cx="14.5" cy="8.5" r="1" fill="#4A2340"/><path d="M10.5 10.4q1.5 1.2 3 0" stroke="#4A2340" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="7.6" cy="9.6" r="1" fill="#FF9DBE" opacity=".8"/><circle cx="16.4" cy="9.6" r="1" fill="#FF9DBE" opacity=".8"/></svg>Events</button>
+  <button data-p="schedule"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3" fill="#fff" stroke="#C9A7F5" stroke-width="1.3"/><rect x="3.5" y="5" width="17" height="5" rx="3" fill="#C9A7F5"/><path d="M8 3v4M16 3v4" stroke="#8A5FD0" stroke-width="1.6" stroke-linecap="round"/><path d="M12 18.6l-2.6-2.5a1.6 1.6 0 0 1 2.3-2.3l.3.3.3-.3a1.6 1.6 0 0 1 2.3 2.3z" fill="#FF5C93"/><circle cx="7" cy="14" r="1" fill="#FFC2D6"/><circle cx="17" cy="14" r="1" fill="#FFC2D6"/></svg>Schedule</button>
+  <button data-p="practice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.7 5.6 6.2.8-4.5 4.3 1.1 6.1L12 16.4l-5.5 2.9 1.1-6.1L3.1 8.9l6.2-.8z" fill="#F4C86A" stroke="#D9B26F" stroke-width="1.3" stroke-linejoin="round"/><circle cx="9.5" cy="11.5" r="1" fill="#4A2340"/><circle cx="14.5" cy="11.5" r="1" fill="#4A2340"/><path d="M10.5 13.4q1.5 1.2 3 0" stroke="#4A2340" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="7.6" cy="12.6" r="1" fill="#FF9DBE" opacity=".8"/><circle cx="16.4" cy="12.6" r="1" fill="#FF9DBE" opacity=".8"/></svg>Practice</button>
+  <button data-p="notes"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" fill="#FFC2D6" stroke="#FF5C93" stroke-width="1.3"/><rect x="6" y="7" width="12" height="9" rx="1.5" fill="#fff"/><circle cx="12" cy="11.5" r="3" fill="#C9A7F5" stroke="#FF5C93" stroke-width="1"/><circle cx="12" cy="11.5" r="1.2" fill="#4A2340"/><circle cx="9" cy="3.5" r="1.3" fill="#FF5C93"/><circle cx="15" cy="3.5" r="1.3" fill="#FF5C93"/><path d="M8 18.5h8" stroke="#FF5C93" stroke-width="1.2" stroke-linecap="round"/></svg>Notes</button>
+  <button data-p="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9a7 7 0 0 1 14 0v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z" fill="#C9A7F5" stroke="#8A5FD0" stroke-width="1.3"/><circle cx="9" cy="12" r="1.2" fill="#4A2340"/><circle cx="15" cy="12" r="1.2" fill="#4A2340"/><path d="M10 15q2 1.6 4 0" stroke="#4A2340" stroke-width="1.1" fill="none" stroke-linecap="round"/><circle cx="7.3" cy="13.6" r="1" fill="#FF9DBE"/><circle cx="16.7" cy="13.6" r="1" fill="#FF9DBE"/><path d="M8 4.5 7 2.2M16 4.5l1-2.3" stroke="#FF5C93" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.6" cy="1.9" r="1.2" fill="#FF5C93"/><circle cx="17.4" cy="1.9" r="1.2" fill="#FF5C93"/></svg>Play</button>
+  <button data-p="lists"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="18" rx="3" fill="#fff" stroke="#C9A7F5" stroke-width="1.3"/><path d="M9 2.5h6v3H9z" fill="#FF5C93"/><path d="M8 10l1.5 1.5L12.5 8.5M8 15.5l1.5 1.5 3-3" stroke="#FF5C93" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 10.5h3M14 16h3" stroke="#C9A7F5" stroke-width="1.5" stroke-linecap="round"/></svg>Lists</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<!-- FAMILY SPACE GATE (first launch) -->
+<div class="gate" id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-bow">🎀</div>
+    <h1>Sofia's Spotlight</h1>
+    <p class="small muted">One family space keeps both phones in sync. Create it on the first phone, then join it from the second.</p>
+    <div id="gateHome" class="gate-stack">
+      <button class="btn coral" id="gateCreate">Create family space</button>
+      <button class="btn ghost" id="gateJoinBtn">Join with code</button>
+    </div>
+    <div id="gateJoin" class="gate-stack" hidden>
+      <input type="text" id="gateCode" class="code-in" placeholder="XXXX XXXX XXXX XXXX XXXX XXXX" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false">
+      <div class="row"><button class="btn sm ghost" id="gateScan">📷 Scan QR</button><span class="grow"></span><button class="btn coral" id="gateJoinGo">Join</button></div>
+      <div id="gateScanner" hidden><video id="gateVideo" playsinline muted></video></div>
+      <button class="btn sm ghost" id="gateBack">‹ Back</button>
+    </div>
+    <div id="gateCreated" class="gate-stack" hidden>
+      <p class="small">This is your family code. Write it down somewhere safe: it is the only key to the data.</p>
+      <div class="code" id="gateNewCode"></div>
+      <div class="qr" id="gateQR"></div>
+      <div class="row"><button class="btn sm" id="gateCopy">Copy code</button><button class="btn sm aqua" id="gateShare">Share join link</button></div>
+      <button class="btn coral" id="gateGo">I've saved it — open the app</button>
+    </div>
+    <div id="gateBusy" hidden><div class="spinner"></div><p class="small" id="gateBusyText">Working…</p></div>
+    <p class="small" id="gateMsg"></p>
+  </div>
+</div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

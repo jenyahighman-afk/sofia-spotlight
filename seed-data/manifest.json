@@ -1,0 +1,46 @@
+{
+ "docs": [
+  {
+   "col": "choreo",
+   "id": "muj8u52wgkac",
+   "path": "seed-data/choreo/muj8u52wgkac.json"
+  },
+  {
+   "col": "choreo",
+   "id": "muj95hewz968",
+   "path": "seed-data/choreo/muj95hewz968.json"
+  },
+  {
+   "col": "notes",
+   "id": "muj8f13zfkms",
+   "path": "seed-data/notes/muj8f13zfkms.json"
+  },
+  {
+   "col": "settings",
+   "id": "main",
+   "path": "seed-data/settings/main.json"
+  }
+ ],
+ "files": [
+  {
+   "name": "Sofia-Aerial-Mission-Print.pdf",
+   "path": "files/Sofia-Aerial-Mission-Print.pdf",
+   "type": "application/pdf"
+  },
+  {
+   "name": "Sofia-Solo-Playbook-Print-BW.pdf",
+   "path": "files/Sofia-Solo-Playbook-Print-BW.pdf",
+   "type": "application/pdf"
+  },
+  {
+   "name": "Sofia-Solo-Playbook.pdf",
+   "path": "files/Sofia-Solo-Playbook.pdf",
+   "type": "application/pdf"
+  },
+  {
+   "name": "Sofia_2026-27_Competition_Guide.xlsx",
+   "path": "files/Sofia_2026-27_Competition_Guide.xlsx",
+   "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  }
+ ]
+}
