@@ -62,12 +62,13 @@ self.addEventListener("fetch", (e) => {
   }
 
   // Family media: cache first so photos, files and music open offline. Range requests (audio/video scrubbing) pass straight through.
+  // An <img> stores an opaque copy; a script that needs to read the bytes (backup export) must not be served that copy.
   if (isMedia(url) && !req.headers.has("range")) {
     e.respondWith((async () => {
       const cache = await caches.open(MEDIA_CACHE);
       const hit = await cache.match(req);
-      if (hit) return hit;
-      const res = await fetch(req); if (res.ok || res.type === "opaque") cache.put(req, res.clone()); return res;
+      if (hit && (req.mode === "no-cors" || hit.type !== "opaque")) return hit;
+      const res = await fetch(req); if (res.ok || (res.type === "opaque" && !hit)) cache.put(req, res.clone()); return res;
     })());
     return;
   }
