@@ -30,7 +30,7 @@ export function initSettings(){
   $("#setShare").onclick = async () => { const link = joinLink(sync.familyId); if (navigator.share) { try { await navigator.share({ title: "Sofia's Spotlight", text: "Join our family space: " + sync.familyId, url: link }); } catch (e) {} } else { try { await navigator.clipboard.writeText(link); toast("Link copied"); } catch (e) {} } };
   $("#setExport").onclick = async () => {
     const b = $("#setExport"); b.disabled = true; const label = b.textContent;
-    try { toast("Packing the backup…", 4000); const r = await exportBackup((i, n) => { b.textContent = `Packing media ${i}/${n}…`; }); toast(`Backup ready · ${r.docs} records, ${r.media} media file${r.media === 1 ? "" : "s"}${r.missing ? ", " + r.missing + " missing" : ""}`, 4000); }
+    try { toast("Packing the backup…", 4000); const r = await exportBackup((i, n) => { b.textContent = `Packing media ${i}/${n}…`; }); toast(`Backup ready · ${r.docs} records · ${r.media} media file${r.media === 1 ? "" : "s"}${r.missing ? ` · ${r.missing} skipped (Storage CORS not set, see README)` : ""}`, r.missing ? 6000 : 4000); }
     catch (e) { console.error(e); toast("Backup failed: " + (e.message || e), 3500); }
     b.disabled = false; b.textContent = label;
   };

@@ -117,7 +117,12 @@ const firebaseMedia = {
     return { path, url: await getDownloadURL(r) };
   },
   async remove(path){ await deleteObject(ref(sync.storage, path)); },
-  async download(path){ return getBlob(ref(sync.storage, path)); },
+  // Reading a file back (backup export) needs the bucket's CORS config (see README → "Storage CORS"). Without it the
+  // browser refuses instantly, so fetch the stored download URL first and fail fast instead of letting the SDK retry for minutes.
+  async download(path, url){
+    if (url) { const res = await withTimeout(fetch(url), 20000, "download timed out"); if (!res.ok) throw new Error("download failed: " + res.status); return res.blob(); }
+    return withTimeout(getBlob(ref(sync.storage, path)), 20000, "download timed out");
+  },
 };
 
 const supabaseMedia = {
@@ -130,7 +135,7 @@ const supabaseMedia = {
     return { path, url: `${url}/storage/v1/object/public/${bucket}/${path}` };
   },
   async remove(path){ const { url, anonKey, bucket } = this.cfg(); const res = await fetch(`${url}/storage/v1/object/${bucket}/${path}`, { method: "DELETE", headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } }); if (!res.ok && res.status !== 404) throw new Error("Supabase delete failed: " + res.status); },
-  async download(path){ const { url, bucket } = this.cfg(); const res = await fetch(`${url}/storage/v1/object/public/${bucket}/${path}`); if (!res.ok) throw new Error("Download failed: " + res.status); return res.blob(); },
+  async download(path, url){ const cfg = this.cfg(); const res = await withTimeout(fetch(url || `${cfg.url}/storage/v1/object/public/${cfg.bucket}/${path}`), 20000, "download timed out"); if (!res.ok) throw new Error("Download failed: " + res.status); return res.blob(); },
 };
 
 export const media = (mediaConfig && mediaConfig.provider === "supabase") ? supabaseMedia : firebaseMedia;

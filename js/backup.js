@@ -9,9 +9,9 @@ async function jszip(){ await loadScript(JSZIP_URL); return window.JSZip; }
 // Every media object referenced by the data, with a way to rewrite its location.
 function mediaRefs(){
   const out = [];
-  for (const [id, p] of Object.entries(S.photos)) if (p.path) out.push({ col: "photos", id, path: p.path });
-  for (const [id, f] of Object.entries(S.files)) if (f.path) out.push({ col: "files", id, path: f.path });
-  for (const [id, d] of Object.entries(S.dances)) if (d.musicFile && d.musicFile.path) out.push({ col: "dances", id, path: d.musicFile.path });
+  for (const [id, p] of Object.entries(S.photos)) if (p.path) out.push({ col: "photos", id, path: p.path, url: p.url });
+  for (const [id, f] of Object.entries(S.files)) if (f.path) out.push({ col: "files", id, path: f.path, url: f.url });
+  for (const [id, d] of Object.entries(S.dances)) if (d.musicFile && d.musicFile.path) out.push({ col: "dances", id, path: d.musicFile.path, url: d.musicFile.url });
   return out;
 }
 const pathOf = (col, doc) => col === "dances" ? (doc.musicFile && doc.musicFile.path) : doc.path;
@@ -25,8 +25,8 @@ export async function buildBackup(onProgress = () => {}){
   let docs = 0;
   for (const col of COLLECTIONS) { const data = col === "settings" ? { main: S.settings } : S[col]; docs += Object.keys(data).length; zip.file(`data/${col}.json`, JSON.stringify(data, null, 1)); }
   const refs = mediaRefs(); const missing = []; let i = 0;
-  for (const r of refs) { try { zip.file("media/" + r.path, await media.download(r.path)); } catch (e) { console.warn("backup: media missing", r.path, e); missing.push(r.path); } onProgress(++i, refs.length); }
-  if (missing.length) zip.file("missing-media.json", JSON.stringify(missing, null, 1));
+  for (const r of refs) { try { zip.file("media/" + r.path, await media.download(r.path, r.url)); } catch (e) { console.warn("backup: media missing", r.path, e); missing.push(r.path); } onProgress(++i, refs.length); }
+  if (missing.length) zip.file("missing-media.json", JSON.stringify({ note: "These files could not be read back from storage when the backup was made. If every file is listed, the storage bucket is missing its CORS config (see README → Storage CORS).", missing }, null, 1));
   const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
   return { blob, docs, media: refs.length - missing.length, missing: missing.length };
 }

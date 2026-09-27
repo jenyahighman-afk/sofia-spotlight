@@ -12,7 +12,9 @@ service cloud.firestore {
 
     match /families/{familyId} {
       // The family doc itself: fetch (join code check), create, update — never list, never delete.
-      allow get, create, update: if signedIn() && validFamily(familyId) && reasonableDoc();
+      // reasonableDoc() reads request.resource, which only exists on writes, so it must not gate the get.
+      allow get: if signedIn() && validFamily(familyId);
+      allow create, update: if signedIn() && validFamily(familyId) && reasonableDoc();
 
       match /{collection}/{docId} {
         allow read: if signedIn() && validFamily(familyId) && knownCollection(collection);
