@@ -105,6 +105,15 @@ npm run rules           # = firebase deploy --only firestore:rules,storage
 ```
 (`npm i -g firebase-tools` if the `firebase` command is missing.)
 
+### Storage CORS (one-time, needed for backups to include media)
+Uploading and viewing photos works out of the box, but reading a file *back* into the browser (which **Export backup** does to pack photos/files/music into the zip) needs a CORS entry on the bucket. Firebase has no console switch for this; run once in [Google Cloud Shell](https://console.cloud.google.com/?cloudshell=true) (project `sofia-spotlight`):
+
+```bash
+echo '[{"origin":["*"],"method":["GET"],"responseHeader":["Content-Type"],"maxAgeSeconds":3600}]' > cors.json
+gsutil cors set cors.json gs://sofia-spotlight.firebasestorage.app
+```
+Until this is done, backups still contain all the data; the zip just carries a `missing-media.json` list instead of the files, and the export toast says so.
+
 ### If Firebase Storage isn't available
 `js/sync.js` puts media behind one small interface with two implementations. To use Supabase Storage instead, create a public bucket and set in `js/firebase-config.js`:
 ```js
