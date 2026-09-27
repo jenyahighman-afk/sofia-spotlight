@@ -1,0 +1,166 @@
+{
+ "default": {
+  "hairStyle": "curly",
+  "hair": "#F2C86B",
+  "hairD": "#D9A94A",
+  "eyes": "#4FA3E0",
+  "skin": "#FBE0D0",
+  "leo": "#FF6FA3",
+  "acc": "scrunchie",
+  "name": "Sofia"
+ },
+ "options": {
+  "hairStyle": [
+   [
+    "curly",
+    "Curly ponytail"
+   ],
+   [
+    "ponytail",
+    "Ponytail"
+   ],
+   [
+    "bun",
+    "Bun"
+   ],
+   [
+    "braids",
+    "Braids"
+   ],
+   [
+    "loose",
+    "Down"
+   ]
+  ],
+  "hair": [
+   [
+    "#F2C86B",
+    "Blonde"
+   ],
+   [
+    "#E9D9A6",
+    "Light blonde"
+   ],
+   [
+    "#C98A4B",
+    "Strawberry"
+   ],
+   [
+    "#8B5A2B",
+    "Brown"
+   ],
+   [
+    "#4A2C18",
+    "Dark brown"
+   ],
+   [
+    "#1F1A1A",
+    "Black"
+   ],
+   [
+    "#D96A3B",
+    "Red"
+   ],
+   [
+    "#C9A7F5",
+    "Lilac"
+   ]
+  ],
+  "eyes": [
+   [
+    "#4FA3E0",
+    "Blue"
+   ],
+   [
+    "#3E8E5A",
+    "Green"
+   ],
+   [
+    "#7A5230",
+    "Brown"
+   ],
+   [
+    "#5A6E7A",
+    "Grey"
+   ],
+   [
+    "#7B5CFF",
+    "Violet"
+   ]
+  ],
+  "skin": [
+   [
+    "#FBE0D0",
+    "Fair"
+   ],
+   [
+    "#F3CDB0",
+    "Light"
+   ],
+   [
+    "#D9A57E",
+    "Tan"
+   ],
+   [
+    "#A9714B",
+    "Brown"
+   ],
+   [
+    "#6B4630",
+    "Deep"
+   ]
+  ],
+  "leo": [
+   [
+    "#FF6FA3",
+    "Pink"
+   ],
+   [
+    "#FF3D8A",
+    "Hot pink"
+   ],
+   [
+    "#C9A7F5",
+    "Lilac"
+   ],
+   [
+    "#2ED3C8",
+    "Aqua"
+   ],
+   [
+    "#FFD23F",
+    "Gold"
+   ],
+   [
+    "#1F1A1A",
+    "Black"
+   ],
+   [
+    "#fff",
+    "White"
+   ]
+  ],
+  "acc": [
+   [
+    "scrunchie",
+    "Scrunchie"
+   ],
+   [
+    "bow",
+    "Bow"
+   ],
+   [
+    "headband",
+    "Headband"
+   ],
+   [
+    "flower",
+    "Flower"
+   ],
+   [
+    "none",
+    "None"
+   ]
+  ]
+ }
+}

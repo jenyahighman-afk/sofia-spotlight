@@ -1,0 +1,45 @@
+{
+ "comp": {
+  "name": "Competition day",
+  "items": [
+   "Costume (in garment bag) + backup tights",
+   "Shoes for every dance",
+   "Hair kit: gel, pins, hairnets, brush, spray",
+   "Makeup + lashes + remover",
+   "Warm-up clothes & cover-up",
+   "Music on phone + backup",
+   "Water bottle + snacks (not messy)",
+   "Safety pins, tape, sewing kit",
+   "Blanket/pillow for waiting",
+   "Charger + battery pack",
+   "Team jacket",
+   "Good-luck note"
+  ]
+ },
+ "convention": {
+  "name": "Convention weekend",
+  "items": [
+   "Class clothes for each day",
+   "Sneakers + turners + bare feet ok",
+   "Knee pads",
+   "Water + snacks",
+   "Notebook for combos",
+   "Charger",
+   "Comfy shoes for hallways",
+   "Hoodie (rooms get cold)",
+   "Number/badge",
+   "Meds + band-aids"
+  ]
+ },
+ "rehearsal": {
+  "name": "Studio / rehearsal",
+  "items": [
+   "Right attire for each class",
+   "Shoes: ballet, turners, sneakers",
+   "Hair pulled back / bun kit",
+   "Water",
+   "Snack between classes",
+   "Phone for filming solo"
+  ]
+ }
+}

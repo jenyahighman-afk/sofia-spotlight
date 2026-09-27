@@ -1,0 +1,28 @@
+rules_version = '2';
+// Family-space model: the 24-character familyId is the key. Anyone signed in (anonymously) who names a valid
+// familyId can read and write inside it. Nothing else is reachable, and the list of families cannot be enumerated.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function validFamily(id) { return id.matches('^[A-Z2-9]{24}$'); }
+    function knownCollection(col) {
+      return col in ['dances', 'events', 'notes', 'todos', 'packs', 'practice', 'photos', 'files', 'choreo', 'settings'];
+    }
+    function reasonableDoc() { return request.resource.data.keys().size() <= 60; }
+
+    match /families/{familyId} {
+      // The family doc itself: fetch (join code check), create, update — never list, never delete.
+      allow get, create, update: if signedIn() && validFamily(familyId) && reasonableDoc();
+
+      match /{collection}/{docId} {
+        allow read: if signedIn() && validFamily(familyId) && knownCollection(collection);
+        allow create, update: if signedIn() && validFamily(familyId) && knownCollection(collection) && reasonableDoc();
+        allow delete: if signedIn() && validFamily(familyId) && knownCollection(collection);
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "spotlight",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/serve.cjs", "8080"],
+      "port": 8080
+    }
+  ]
+}

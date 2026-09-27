@@ -1,0 +1,56 @@
+[
+ {
+  "day": 1,
+  "t": "4:30–5:30",
+  "name": "Mini Ballet III",
+  "room": "Studio 3"
+ },
+ {
+  "day": 1,
+  "t": "5:30–6:30",
+  "name": "Mini/Jr Acro II/III",
+  "room": "Studio 5"
+ },
+ {
+  "day": 1,
+  "t": "6:30–7:30",
+  "name": "Mini Jazz Technique III",
+  "room": "Studio 5"
+ },
+ {
+  "day": 2,
+  "t": "5:30–6:30",
+  "name": "Jr Hip Hop II",
+  "room": "Studio 2"
+ },
+ {
+  "day": 2,
+  "t": "6:30–7:30",
+  "name": "Mini/Jr Ballroom",
+  "room": "Studio 5"
+ },
+ {
+  "day": 3,
+  "t": "6:30–7:30",
+  "name": "Mini Contemporary III",
+  "room": "Studio 5"
+ },
+ {
+  "day": 3,
+  "t": "3:30–4:00",
+  "name": "Solo rehearsal with Ms. Brittany",
+  "room": "GHD"
+ },
+ {
+  "day": 6,
+  "t": "10:00–11:00",
+  "name": "Foundational Co Tech",
+  "room": "Studio 6"
+ },
+ {
+  "day": 6,
+  "t": "11:00–12:15",
+  "name": "PITCH rehearsal",
+  "room": "Studio 5"
+ }
+]

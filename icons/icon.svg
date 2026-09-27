@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- A pink bow on a cream circle. Rasterized to icons/icon-*.png by tools/make-icons.cjs -->
+  <circle cx="256" cy="256" r="248" fill="#FFF7FA"/>
+  <circle cx="256" cy="256" r="248" fill="none" stroke="#FFD1E1" stroke-width="10"/>
+  <g transform="translate(256 262)">
+    <!-- ribbon tails -->
+    <path d="M-28 30 L-88 168 L-40 150 L-8 60 Z" fill="#FF3D8A"/>
+    <path d="M28 30 L88 168 L40 150 L8 60 Z" fill="#FF3D8A"/>
+    <path d="M-28 30 L-60 128 L-40 150 L-8 60 Z" fill="#E0246F" opacity=".55"/>
+    <path d="M28 30 L60 128 L40 150 L8 60 Z" fill="#E0246F" opacity=".55"/>
+    <!-- loops -->
+    <path d="M-10 0 C-70 -110 -190 -110 -178 -20 C-170 40 -80 60 -10 20 Z" fill="#FF5C93"/>
+    <path d="M10 0 C70 -110 190 -110 178 -20 C170 40 80 60 10 20 Z" fill="#FF5C93"/>
+    <path d="M-30 -6 C-70 -70 -140 -80 -150 -30 C-146 10 -80 30 -30 12 Z" fill="#FF8FB8" opacity=".7"/>
+    <path d="M30 -6 C70 -70 140 -80 150 -30 C146 10 80 30 30 12 Z" fill="#FF8FB8" opacity=".7"/>
+    <!-- knot -->
+    <ellipse cx="0" cy="8" rx="34" ry="30" fill="#E0246F"/>
+    <ellipse cx="-6" cy="0" rx="14" ry="10" fill="#FF8FB8" opacity=".8"/>
+    <!-- sparkles -->
+    <path d="M150 -140 l8 22 22 8 -22 8 -8 22 -8 -22 -22 -8 22 -8 z" fill="#F4C86A"/>
+    <path d="M-166 110 l6 16 16 6 -16 6 -6 16 -6 -16 -16 -6 16 -6 z" fill="#C9A7F5"/>
+  </g>
+</svg>

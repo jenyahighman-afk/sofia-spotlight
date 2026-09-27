@@ -1,0 +1,87 @@
+[
+ {
+  "id": "cartwheel-clean",
+  "section": "Prerequisites",
+  "text": "Cartwheel: straight arms and legs, fast, lands facing the start"
+ },
+ {
+  "id": "one-hand-far",
+  "section": "Prerequisites",
+  "text": "One-hand cartwheel on the FAR hand, 10 clean in a row"
+ },
+ {
+  "id": "one-hand-near",
+  "section": "Prerequisites",
+  "text": "One-hand cartwheel on the NEAR hand, 10 clean in a row"
+ },
+ {
+  "id": "dive-cartwheel",
+  "section": "Prerequisites",
+  "text": "Dive cartwheel (small hop before the hands) on the mat"
+ },
+ {
+  "id": "roundoff",
+  "section": "Prerequisites",
+  "text": "Round-off landing feet together, chest up"
+ },
+ {
+  "id": "single-leg-squats",
+  "section": "Strength",
+  "text": "10 single-leg squats per leg"
+ },
+ {
+  "id": "hollow-hold",
+  "section": "Strength",
+  "text": "30-second hollow hold"
+ },
+ {
+  "id": "jump-lunges",
+  "section": "Strength",
+  "text": "20 jump lunges without stopping"
+ },
+ {
+  "id": "long-jump",
+  "section": "Strength",
+  "text": "Standing long jump past my own height"
+ },
+ {
+  "id": "hurdle-drill",
+  "section": "Drills (mat only)",
+  "text": "Hurdle drill: step-hurdle-lunge, arms swing up, chest tall ×10"
+ },
+ {
+  "id": "front-leg-drive",
+  "section": "Drills (mat only)",
+  "text": "Front-leg drive: lunge → tall jump, back leg kicks up ×10"
+ },
+ {
+  "id": "fingertip-cartwheels",
+  "section": "Drills (mat only)",
+  "text": "Fingertip cartwheels: near hand barely brushes the floor ×5"
+ },
+ {
+  "id": "wedge-cartwheel",
+  "section": "Drills (mat only)",
+  "text": "Cartwheel down a wedge: two hands → one hand → a brush"
+ },
+ {
+  "id": "teacher-set-order",
+  "section": "In class only",
+  "text": "Acro teacher has seen the drills and set the order"
+ },
+ {
+  "id": "spotted-attempts",
+  "section": "In class only",
+  "text": "First spotted aerial attempts (coach spotting, never a parent)"
+ },
+ {
+  "id": "unspotted-mat",
+  "section": "In class only",
+  "text": "Unspotted aerial on the mat"
+ },
+ {
+  "id": "twenty-in-a-row",
+  "section": "In class only",
+  "text": "20 in a row on the floor → allowed in a dance"
+ }
+]

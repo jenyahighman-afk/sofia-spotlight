@@ -1,0 +1,161 @@
+{
+ "forms": {
+  "line": {
+   "n": "Line",
+   "ic": "➖",
+   "pos": [
+    [
+     70,
+     120
+    ],
+    [
+     150,
+     120
+    ],
+    [
+     230,
+     120
+    ]
+   ]
+  },
+  "triangle": {
+   "n": "Triangle",
+   "ic": "🔺",
+   "pos": [
+    [
+     150,
+     80
+    ],
+    [
+     90,
+     150
+    ],
+    [
+     210,
+     150
+    ]
+   ]
+  },
+  "diagonal": {
+   "n": "Diagonal",
+   "ic": "↗️",
+   "pos": [
+    [
+     70,
+     160
+    ],
+    [
+     150,
+     120
+    ],
+    [
+     230,
+     80
+    ]
+   ]
+  },
+  "vee": {
+   "n": "V",
+   "ic": "✌️",
+   "pos": [
+    [
+     150,
+     150
+    ],
+    [
+     90,
+     80
+    ],
+    [
+     210,
+     80
+    ]
+   ]
+  },
+  "cluster": {
+   "n": "Cluster",
+   "ic": "🫧",
+   "pos": [
+    [
+     150,
+     110
+    ],
+    [
+     120,
+     140
+    ],
+    [
+     180,
+     140
+    ]
+   ]
+  },
+  "spread": {
+   "n": "Wide spread",
+   "ic": "↔️",
+   "pos": [
+    [
+     40,
+     110
+    ],
+    [
+     150,
+     150
+    ],
+    [
+     260,
+     110
+    ]
+   ]
+  }
+ },
+ "patterns": {
+  "unison": {
+   "n": "Unison",
+   "ic": "🟰"
+  },
+  "canon": {
+   "n": "Canon",
+   "ic": "🌊"
+  },
+  "mirror": {
+   "n": "Mirror",
+   "ic": "🪞"
+  },
+  "solo": {
+   "n": "Sofia solo",
+   "ic": "⭐"
+  }
+ },
+ "moves": [
+  "reach",
+  "arab",
+  "chasse",
+  "kick",
+  "passe",
+  "releve",
+  "attitude",
+  "pivot"
+ ],
+ "dancers": [
+  {},
+  {
+   "hair": "#6B4226",
+   "hairD": "#4A2C18",
+   "eyes": "#5A3A2A",
+   "hairStyle": "bun",
+   "acc": "headband",
+   "leo": "#8B6CFF",
+   "name": "Mia"
+  },
+  {
+   "hair": "#D96A3B",
+   "hairD": "#B34E24",
+   "eyes": "#3E8E5A",
+   "hairStyle": "braids",
+   "acc": "flower",
+   "leo": "#2ED3C8",
+   "name": "Ava"
+  }
+ ]
+}
