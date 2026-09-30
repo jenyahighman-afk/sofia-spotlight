@@ -19,6 +19,7 @@ import { initSettings, renderSettings } from "./views/settings.js";
 import { initGrownups, renderGrownups, isUnlocked, GROWNUP_PAGES } from "./grownups.js";
 import { initShowMe } from "./showme.js";
 import { initPlayer } from "./player.js";
+import { initStage } from "./stage.js";
 import { installErrorCapture, installReportLinks, guard, renderReports } from "./reports.js";
 import { migrateDanceCorrections } from "./corrections.js";
 import { checkBadges } from "./badges.js";
@@ -32,7 +33,7 @@ const renders = [
   guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("grownups", renderGrownups), guard("settings", renderSettings),
 ];
 function renderAll(){ renders.forEach(r => r()); }
-function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); installReportLinks(); }
+function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
 async function registerSW(){
