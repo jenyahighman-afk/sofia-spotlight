@@ -26,142 +26,52 @@
   <h1>Sofia's Spotlight</h1>
   <p class="sub" id="heroLine">lyrical solo ✿ trio ✿ team PITCH</p>
 </header>
-<!-- HOME -->
+<!-- TODAY -->
 <section class="page on" id="p-home">
-  <div class="card sun">
-    <div class="row"><div class="grow"><div class="muted small">Next up</div><h2 id="nextTitle">…</h2><div id="nextMeta" class="muted"></div></div><div class="big" id="nextDays">–</div></div>
-  </div>
+  <div class="card sun today" id="todayCard"></div>
+  <div class="card violet" id="weekFix"></div>
   <div class="card">
     <h3>This week</h3>
     <div class="week" id="homeWeek"></div>
-    <p class="small muted">Swipe sideways to see the whole week. Lilac = studio · gold = performances & comps · pink = home practice</p>
-  </div>
-  <div class="card aqua">
-    <h3>Today's practice</h3>
-    <div id="todayPlan"></div>
-  </div>
-  <div class="card coral">
-    <h3>Top 3 corrections right now</h3>
-    <p class="small muted">Ask Hannah after class and update these. Everything at home points at these three.</p>
-    <div id="top3"></div>
-  </div>
-  <div class="card violet">
-    <div class="row"><div class="grow"><h3>🎮 Play</h3><p class="small muted">Choreo Studio: build a dance and face the judges. Plus Step & Sparkle.</p></div><button class="btn sm coral" onclick="showPage('play')">Open</button></div>
-  </div>
-  <div class="card">
-    <h3>Open to-dos</h3>
-    <div id="homeTodos"></div>
   </div>
 </section>
 
 <!-- DANCES -->
 <section class="page" id="p-dances">
   <h2>My dances</h2>
-  <p class="muted small">Tap a dance to open it. Everything you type is saved.</p>
   <div id="danceList"></div>
-  <div class="card"><div class="row"><input type="text" id="newDanceName" placeholder="Add a dance (e.g. Jazz class dance)"><button class="btn sm" id="addDance">Add</button></div></div>
-</section>
-
-<!-- EVENTS -->
-<section class="page" id="p-events">
-  <h2>Season events</h2>
-  <p class="small muted">Team PITCH: 3 conventions, 2 competitions required. Fees are per the studio's 2027 schedule; auto-charge dates are when the card gets charged.</p>
-  <div class="timeline" id="eventList"></div>
-  <div class="card"><div class="row"><input type="text" id="newEventName" placeholder="Add an event"><input type="date" id="newEventDate" style="max-width:160px"><button class="btn sm" id="addEvent">Add</button></div></div>
-</section>
-
-<!-- SCHEDULE -->
-<section class="page" id="p-schedule">
-  <h2>Schedule</h2>
-  <div class="card violet">
-    <h3>Weekly studio classes</h3>
-    <div class="overflow"><table id="classTable"></table></div>
-    <p class="small muted">All classes at Glass House Dance, 3310 E Lake Sammamish Pkwy SE, Sammamish.</p>
-  </div>
-  <div class="card mint" style="border-color:var(--mint)">
-    <h3>Home practice days</h3>
-    <ul class="clean">
-      <li><b>Thursday</b> · Strength + flexibility + one solo run (30–40 min)</li>
-      <li><b>Friday</b> · Technique drills + one run</li>
-      <li><b>Sunday</b> · One full-out run, filmed, plus a light stretch</li>
-      <li class="muted small">Monday and Tuesday are heavy studio days. No home practice. Rest counts.</li>
-    </ul>
-  </div>
-  <div class="card noprint">
-    <div class="row"><h3 class="grow">Print a calendar</h3>
-      <button class="btn sm ghost" id="calPrev">‹</button><b id="calLabel"></b><button class="btn sm ghost" id="calNext">›</button>
-      <button class="btn sm sun" id="printCal">Print</button></div>
-    <div class="row" style="margin-top:6px"><button class="btn sm coral" id="viewMonth">Month</button><button class="btn sm ghost" id="viewWeek">Week</button><span class="grow"></span><button class="btn sm ghost" id="exportIcs">📅 Export .ics</button></div>
-  </div>
-  <div class="card" id="calCard"><div class="cal" id="calGrid"></div><div class="weekgrid" id="weekGrid" hidden></div></div>
+  <div class="card"><div class="row"><input type="text" id="newDanceName" placeholder="Add a dance"><button class="btn sm" id="addDance">Add</button></div></div>
 </section>
 
 <!-- PRACTICE -->
 <section class="page" id="p-practice">
-  <h2>Practice at home</h2>
   <div class="card sun">
-    <div class="row"><h3 class="grow">Today</h3><input type="date" id="practiceDate" style="max-width:170px"></div>
-    <div class="progress" style="margin:8px 0"><i id="practiceBar" style="width:0"></i></div>
-    <div id="practiceChecklist"></div>
-    <label class="f">How did it feel?</label>
-    <textarea id="practiceNote" placeholder="One line. What got better, what was hard."></textarea>
-    <div class="row" style="margin-top:8px"><button class="btn coral" id="savePractice">Save today</button><span class="small muted">Streak: <b id="streak">0</b> sessions logged</span></div>
+    <div class="row practice-head" id="practiceHead"></div>
+    <div id="practiceChecklist" class="plist"></div>
   </div>
-  <div class="card">
-    <h3>The 15-week plan to Winter Formal</h3>
-    <div id="phases"></div>
-  </div>
-  <div class="card aqua">
-    <h3>Safety rules</h3>
+  <details class="card acc"><summary>💬 How did it feel?</summary>
+    <textarea id="practiceNote" placeholder="One line."></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn sm coral" id="saveNote">Save</button><span class="grow"></span><label class="small muted">Day <input type="date" id="practiceDate" style="max-width:150px;display:inline-block"></label></div>
+  </details>
+  <details class="card acc violet"><summary>🤸 Aerial mission <span class="chip violet" id="aerialPct">0%</span></summary>
+    <p class="small muted">Learned in Monday Acro with a spotter. Mat under you for every drill.</p>
+    <div id="aerialList"></div>
+  </details>
+  <details class="card acc"><summary>🗺️ The 15-week plan</summary><div id="phases"></div></details>
+  <details class="card acc aqua"><summary>🛟 Safety rules</summary>
     <ul class="clean small">
       <li>Warm up before every stretch. A stretch should feel like a stretch, never pain.</li>
       <li>No oversplits, no forced stretching, no bridges unless Hannah says yes.</li>
       <li>Acro tricks at home only on the mat, or with a spotter, until cleared in class.</li>
       <li>Stop anything that hurts. Sleep and water are part of training.</li>
     </ul>
-  </div>
-  <div class="card violet">
-    <div class="row"><h3 class="grow">Aerial progression</h3><span class="chip violet" id="aerialPct">0%</span></div>
-    <p class="small muted">The skill itself is learned in Monday Acro with a spotter. These are the pieces to earn first. Mat under you for every drill. Aerial stays out of the solo until 20 in a row in class.</p>
-    <div id="aerialList"></div>
-  </div>
-  <div class="card">
-    <h3>Practice history</h3>
-    <div id="practiceHistory" class="small"></div>
-  </div>
-</section>
-
-<!-- NOTES & PHOTOS -->
-<section class="page" id="p-notes">
-  <h2>Notes & photos</h2>
-  <div class="card coral">
-    <h3>New note</h3>
-    <input type="text" id="noteTitle" placeholder="Title (e.g. What Hannah said Saturday)">
-    <textarea id="noteBody" placeholder="Write it here…" style="margin-top:6px"></textarea>
-    <div class="row" style="margin-top:6px"><select id="noteTag" style="max-width:180px"><option>Corrections</option><option>Choreo</option><option>Friends</option><option>Comp day</option><option>Ideas</option><option>Other</option></select><button class="btn" id="addNote">Save note</button></div>
-  </div>
-  <div id="noteList"></div>
-  <div class="card sun">
-    <div class="row"><h3 class="grow">My files</h3><label class="btn sm aqua" for="fileIn">Add file</label><input type="file" id="fileIn" accept=".pdf,.md,.txt,.csv,.json,image/*" multiple hidden></div>
-    <p class="small muted">Playbook, aerial mission, packing lists, anything you want with you. PDFs, images and text files.</p>
-    <div id="fileList"></div>
-  </div>
-  <div class="card violet">
-    <div class="row"><h3 class="grow">Photos with friends & team</h3><label class="btn sm aqua" for="photoIn">Add photo</label><input type="file" id="photoIn" accept="image/*,video/*" multiple hidden></div>
-    <input type="text" id="photoCap" placeholder="Caption for the next photo (optional)" style="margin:6px 0">
-    <div class="photos" id="photoGrid"></div>
-    <p class="small muted" id="photoHint"></p>
-  </div>
+  </details>
+  <details class="card acc"><summary>📅 History</summary><div id="practiceHistory" class="small"></div></details>
 </section>
 
 <!-- PLAY -->
 <section class="page" id="p-play">
   <h2>Play</h2>
-  <div class="card coral">
-    <div class="row"><h3 class="grow">🪞 My avatar</h3><button class="btn sm ghost" onclick="avToggle()">Customize</button></div>
-    <div class="row"><svg id="avSvg" viewBox="90 30 120 230" style="width:110px;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:14px"></svg><div class="grow small"><b id="avName">Sofia</b><div class="muted">This is you in every game. Tap Customize to change hair, eyes, outfit and accessories.</div></div></div>
-    <div id="avOpts" style="display:none;margin-top:8px"></div>
-  </div>
   <div class="card coral">
     <h3>💃 Choreo Studio</h3>
     <p class="small muted">Build your own dance from moves, watch your dancer perform it, then face the judges.</p>
@@ -203,8 +113,129 @@
   </div>
 </section>
 
+<!-- ME -->
+<section class="page" id="p-me">
+  <div class="card coral">
+    <div class="row"><div id="avWrap" class="avwrap"><svg id="avSvg" viewBox="90 30 120 230"></svg></div><div class="grow"><h2 id="avName">Sofia</h2><div class="small muted">Tap me to change my look.</div></div></div>
+    <div id="avOpts" style="display:none;margin-top:8px"></div>
+    <div class="stats" id="meStreak"></div>
+  </div>
+  <div class="card sun">
+    <div class="row"><h3 class="grow">🏅 Badges</h3><span class="chip sun" id="badgeCount">0 earned</span></div>
+    <div class="badges" id="badgeCase"></div>
+  </div>
+  <div class="card violet">
+    <h3>📈 Skills</h3>
+    <div class="skill-rings" id="skillRings"></div>
+    <div id="skillList"></div>
+  </div>
+  <div class="card aqua">
+    <h3>🔁 Notes that keep coming back</h3>
+    <div id="mePatterns"></div>
+  </div>
+  <div class="card">
+    <h3>⭐ Personal bests</h3>
+    <div class="stats" id="meBests"></div>
+  </div>
+  <p class="small muted" style="text-align:center;margin:18px 0 6px"><a href="#" id="meGrownups" class="grownup-link">Grown-ups 🔒</a></p>
+</section>
+
+<!-- PIN PAD -->
+<section class="page" id="p-pin">
+  <div class="card coral lock">
+    <h2>Grown-ups</h2>
+    <p class="small muted">Ask a grown-up for the PIN.</p>
+    <input type="text" id="pinIn" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" placeholder="PIN">
+    <input type="hidden" id="pinTarget" value="grownups">
+    <p class="small" id="pinMsg" style="color:#FF5C93;min-height:20px"></p>
+    <div class="row" style="justify-content:center"><button class="btn ghost" id="pinBack">‹ Back</button><button class="btn coral" id="pinGo">Open</button></div>
+  </div>
+</section>
+
+<!-- GROWN-UPS HUB -->
+<section class="page" id="p-grownups">
+  <div class="row"><h2 class="grow" style="margin:0">Grown-ups</h2><button class="btn sm ghost" id="grownupsLock">🔒 Lock</button></div>
+  <p class="small muted">Everything text-heavy lives here. Sofia sees Today, Dances, Practice, Play and Me.</p>
+  <div class="hub">
+    <button class="hub-btn sun" onclick="showPage('events')">🎀<span>Events</span><small>costs, notes, hotels</small></button>
+    <button class="hub-btn violet" onclick="showPage('schedule')">📅<span>Schedule</span><small>classes, calendar, .ics</small></button>
+    <button class="hub-btn aqua" onclick="showPage('lists')">🧳<span>Lists</span><small>to-dos, packing</small></button>
+    <button class="hub-btn coral" onclick="showPage('notes')">📝<span>Notes</span><small>notes, files, photos</small></button>
+    <button class="hub-btn violet" onclick="showPage('skillcheck')">★<span>Skills &amp; awards</span><small>teacher-checked, badges</small></button>
+    <button class="hub-btn sun" onclick="showPage('reviews')">🎬<span>Coach reviews</span><small>coming in the next update</small></button>
+    <button class="hub-btn aqua" onclick="showPage('reports')">🚩<span>Reports</span><small>"something went wrong"</small></button>
+    <button class="hub-btn coral" onclick="showPage('settings')">⚙️<span>Settings</span><small>family code, backup</small></button>
+  </div>
+  <div class="card">
+    <h3>PIN</h3>
+    <div class="row"><span class="small muted grow" id="pinState"></span><button class="btn sm ghost" id="pinChange">Change PIN</button><button class="btn sm ghost" id="pinToggle">Turn PIN off</button></div>
+    <p class="small muted">Default PIN is 2027. The lock stays open for 20 minutes after you type it.</p>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section class="page" id="p-events">
+  <div class="row noprint"><button class="btn sm ghost" onclick="showPage('grownups')">‹ Grown-ups</button></div>
+  <h2>Season events</h2>
+  <p class="small muted">Team PITCH: 3 conventions, 2 competitions required. Fees are per the studio's 2027 schedule; auto-charge dates are when the card gets charged.</p>
+  <div class="timeline" id="eventList"></div>
+  <div class="card"><div class="row"><input type="text" id="newEventName" placeholder="Add an event"><input type="date" id="newEventDate" style="max-width:160px"><button class="btn sm" id="addEvent">Add</button></div></div>
+</section>
+
+<!-- SCHEDULE -->
+<section class="page" id="p-schedule">
+  <div class="row noprint"><button class="btn sm ghost" onclick="showPage('grownups')">‹ Grown-ups</button></div>
+  <h2>Schedule</h2>
+  <div class="card violet">
+    <h3>Weekly studio classes</h3>
+    <div class="overflow"><table id="classTable"></table></div>
+    <p class="small muted">All classes at Glass House Dance, 3310 E Lake Sammamish Pkwy SE, Sammamish.</p>
+  </div>
+  <div class="card mint" style="border-color:var(--mint)">
+    <h3>Home practice days</h3>
+    <ul class="clean">
+      <li><b>Thursday</b> · Strength + flexibility + one solo run (30–40 min)</li>
+      <li><b>Friday</b> · Technique drills + one run</li>
+      <li><b>Sunday</b> · One full-out run, filmed, plus a light stretch</li>
+      <li class="muted small">Monday and Tuesday are heavy studio days. No home practice. Rest counts.</li>
+    </ul>
+  </div>
+  <div class="card noprint">
+    <div class="row"><h3 class="grow">Print a calendar</h3>
+      <button class="btn sm ghost" id="calPrev">‹</button><b id="calLabel"></b><button class="btn sm ghost" id="calNext">›</button>
+      <button class="btn sm sun" id="printCal">Print</button></div>
+    <div class="row" style="margin-top:6px"><button class="btn sm coral" id="viewMonth">Month</button><button class="btn sm ghost" id="viewWeek">Week</button><span class="grow"></span><button class="btn sm ghost" id="exportIcs">📅 Export .ics</button></div>
+  </div>
+  <div class="card" id="calCard"><div class="cal" id="calGrid"></div><div class="weekgrid" id="weekGrid" hidden></div></div>
+</section>
+
+<!-- NOTES & PHOTOS -->
+<section class="page" id="p-notes">
+  <div class="row noprint"><button class="btn sm ghost" onclick="showPage('grownups')">‹ Grown-ups</button></div>
+  <h2>Notes & photos</h2>
+  <div class="card coral">
+    <h3>New note</h3>
+    <input type="text" id="noteTitle" placeholder="Title (e.g. What Hannah said Saturday)">
+    <textarea id="noteBody" placeholder="Write it here…" style="margin-top:6px"></textarea>
+    <div class="row" style="margin-top:6px"><select id="noteTag" style="max-width:180px"><option>Corrections</option><option>Choreo</option><option>Friends</option><option>Comp day</option><option>Ideas</option><option>Other</option></select><button class="btn" id="addNote">Save note</button></div>
+  </div>
+  <div id="noteList"></div>
+  <div class="card sun">
+    <div class="row"><h3 class="grow">My files</h3><label class="btn sm aqua" for="fileIn">Add file</label><input type="file" id="fileIn" accept=".pdf,.md,.txt,.csv,.json,image/*" multiple hidden></div>
+    <p class="small muted">Playbook, aerial mission, packing lists, anything you want with you. PDFs, images and text files.</p>
+    <div id="fileList"></div>
+  </div>
+  <div class="card violet">
+    <div class="row"><h3 class="grow">Photos with friends & team</h3><label class="btn sm aqua" for="photoIn">Add photo</label><input type="file" id="photoIn" accept="image/*,video/*" multiple hidden></div>
+    <input type="text" id="photoCap" placeholder="Caption for the next photo (optional)" style="margin:6px 0">
+    <div class="photos" id="photoGrid"></div>
+    <p class="small muted" id="photoHint"></p>
+  </div>
+</section>
+
 <!-- LISTS -->
 <section class="page" id="p-lists">
+  <div class="row noprint"><button class="btn sm ghost" onclick="showPage('grownups')">‹ Grown-ups</button></div>
   <h2>Lists</h2>
   <div class="card sun">
     <h3>To-dos</h3>
@@ -216,6 +247,38 @@
     <div id="packList"></div>
     <div class="row" style="margin-top:8px"><input type="text" id="packNew" placeholder="Add an item"><button class="btn sm" id="addPack">Add</button><button class="btn sm ghost" id="packReset">Uncheck all</button></div>
   </div>
+</section>
+
+<!-- SKILLS & AWARDS (Grown-ups) -->
+<section class="page" id="p-skillcheck">
+  <div class="row noprint"><button class="btn sm ghost" onclick="showPage('grownups')">‹ Grown-ups</button></div>
+  <h2>Skills &amp; awards</h2>
+  <div class="card sun">
+    <h3>Parent awards</h3>
+    <div class="row"><select id="awardDance" style="max-width:220px"></select><button class="btn sm coral" id="awardNoCues">🎯 No cues</button></div>
+    <div class="row" style="margin-top:6px"><select id="awardTrick" style="max-width:220px"></select><button class="btn sm coral" id="awardClean5">5️⃣ Clean 5 in a row</button></div>
+    <div id="awardList" style="margin-top:6px"></div>
+  </div>
+  <div class="card violet">
+    <h3>Teacher-checked skills</h3>
+    <p class="small muted">Sofia moves a skill to learning or clean herself. Only here can it become teacher-checked, with the teacher's name and the date.</p>
+    <div id="skillCheckList"></div>
+  </div>
+</section>
+
+<!-- COACH REVIEWS (placeholder until the AI coach session) -->
+<section class="page" id="p-reviews">
+  <div class="row noprint"><button class="btn sm ghost" onclick="showPage('grownups')">‹ Grown-ups</button></div>
+  <h2>Coach reviews</h2>
+  <div class="card"><p class="small muted">Video and photo reviews arrive in the next update (session 2B). Nothing to see here yet.</p></div>
+</section>
+
+<!-- REPORTS -->
+<section class="page" id="p-reports">
+  <div class="row noprint"><button class="btn sm ghost" onclick="showPage('grownups')">‹ Grown-ups</button></div>
+  <h2>Reports</h2>
+  <p class="small muted">Every "Something went wrong? Tap to send a report" lands here, with the last error that phone saw.</p>
+  <div id="reportList"></div>
 </section>
 
 <!-- SETTINGS (opened from the ⚙️ in the header; no tab) -->
@@ -251,20 +314,47 @@
 
 </div>
 
+<!-- SHOW ME: wrong vs fixed, side by side -->
+<div class="modal" id="showme" hidden>
+  <div class="modal-card">
+    <div class="row"><span class="chip violet" id="showmeTag">Fix</span><span class="grow"></span><button class="btn sm ghost" id="showmeClose">✕</button></div>
+    <div class="showme-stage" id="showmeStage"></div>
+    <p class="fix-text" id="showmeText"></p>
+    <button class="btn coral big-btn" id="showmeGot" style="width:100%">Got it! ✅</button>
+  </div>
+</div>
+
+<!-- PRACTICE PLAYER -->
+<div class="modal player" id="player" hidden>
+  <div class="modal-card">
+    <div class="row"><div class="grow"><h3 id="plTitle">…</h3><div class="small muted" id="plSong"></div></div><button class="btn sm ghost" id="plClose">✕</button></div>
+    <div class="small" id="plStatus"></div>
+    <div class="pl-bar" id="plBarWrap"><i id="plBar"></i></div>
+    <div class="row"><span class="small muted grow" id="plTime">0:00</span><button class="btn coral pl-play" id="plPlay">▶</button><span class="grow"></span><button class="btn sun" id="plRunBtn">🎬 Run it</button></div>
+    <div class="field-lab">Speed <span id="plSpeedLab">100%</span></div>
+    <div class="row pl-speed"><button class="btn" id="plS50">50</button><button class="btn" id="plS75">75</button><button class="btn coral" id="plS100">100</button></div>
+    <input type="range" id="plRange" min="50" max="100" step="5" value="100">
+    <div class="field-lab">Loop</div>
+    <div class="row"><button class="btn" id="plA">A</button><button class="btn" id="plB">B</button><span class="small muted grow" id="plLoopLab"></span><button class="btn sm ghost" id="plClear" hidden>Clear</button></div>
+    <div class="presets" id="plPresets"></div>
+    <div class="field-lab">Counts</div>
+    <div class="row"><button class="btn" id="plCounts">8-count</button><span class="small muted" id="plBpm"></span><span class="grow"></span><button class="btn sm ghost" id="plTap">Tap on count 1</button></div>
+    <div id="plCountBox" hidden><div class="pl-count" id="plCount">…</div><div class="row" style="justify-content:center"><button class="btn sm" id="plV_off">quiet</button><button class="btn sm" id="plV_click">click</button><button class="btn sm" id="plV_voice">say it</button></div></div>
+    <div class="run-overlay" id="plRun" hidden></div>
+  </div>
+</div>
+
 <div class="game-wrap" id="gameWrap">
   <div class="game-top"><button class="btn sm ghost" onclick="stopGame()">✕</button><span class="grow small muted" id="gameTitle"></span><span class="sc" id="gameScore">0</span></div>
   <div style="position:relative;flex:1;display:flex"><canvas id="gameCv"></canvas><div class="game-msg" id="gameMsg"></div></div>
   <div class="lanes" id="gameLanes"></div>
 </div>
 <nav class="tabs">
-  <button data-p="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7v9a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z" fill="#FFC2D6" stroke="#FF5C93" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 21v-5h6v5" fill="#fff" stroke="#FF5C93" stroke-width="1.2"/><circle cx="12" cy="3.6" r="1.4" fill="#FF5C93"/><circle cx="9.5" cy="12.5" r="1" fill="#4A2340"/><circle cx="14.5" cy="12.5" r="1" fill="#4A2340"/><path d="M10.5 14.4q1.5 1.2 3 0" stroke="#4A2340" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="7.6" cy="13.6" r="1" fill="#FF9DBE" opacity=".8"/><circle cx="16.4" cy="13.6" r="1" fill="#FF9DBE" opacity=".8"/></svg>Home</button>
+  <button data-p="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7v9a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z" fill="#FFC2D6" stroke="#FF5C93" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 21v-5h6v5" fill="#fff" stroke="#FF5C93" stroke-width="1.2"/><circle cx="12" cy="3.6" r="1.4" fill="#FF5C93"/><circle cx="9.5" cy="12.5" r="1" fill="#4A2340"/><circle cx="14.5" cy="12.5" r="1" fill="#4A2340"/><path d="M10.5 14.4q1.5 1.2 3 0" stroke="#4A2340" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="7.6" cy="13.6" r="1" fill="#FF9DBE" opacity=".8"/><circle cx="16.4" cy="13.6" r="1" fill="#FF9DBE" opacity=".8"/></svg>Today</button>
   <button data-p="dances"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13c0-4 3-8 8-8s8 4 8 8-2 7-8 7-8-3-8-7z" fill="#FFC2D6" stroke="#FF5C93" stroke-width="1.3"/><path d="M8 9.5c1.6-1.4 6.4-1.4 8 0" stroke="#FF5C93" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M6.5 19 5 22M17.5 19 19 22" stroke="#FF5C93" stroke-width="1.3" stroke-linecap="round"/><path d="M12 5.2 10.2 3l1.8-.4L13.8 3z" fill="#FF5C93"/><circle cx="9.5" cy="15" r="1" fill="#4A2340"/><circle cx="14.5" cy="15" r="1" fill="#4A2340"/><path d="M10.5 17.2q1.5 1.2 3 0" stroke="#4A2340" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="7.6" cy="16.3" r="1" fill="#FF9DBE" opacity=".8"/><circle cx="16.4" cy="16.3" r="1" fill="#FF9DBE" opacity=".8"/></svg>Dances</button>
-  <button data-p="events"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0z" fill="#F4C86A" stroke="#D9B26F" stroke-width="1.3"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 3M17 6h2.5a2.5 2.5 0 0 1-2.5 3" stroke="#D9B26F" stroke-width="1.2" fill="none"/><path d="M10 16h4v2h-4zM8 20h8" stroke="#D9B26F" stroke-width="1.3" fill="#FBEBC8" stroke-linecap="round"/><path d="M12 1.2l.6 1.3 1.4.2-1 1 .2 1.4-1.2-.7-1.2.7.2-1.4-1-1 1.4-.2z" fill="#FF5C93"/><circle cx="9.5" cy="8.5" r="1" fill="#4A2340"/><circle cx="14.5" cy="8.5" r="1" fill="#4A2340"/><path d="M10.5 10.4q1.5 1.2 3 0" stroke="#4A2340" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="7.6" cy="9.6" r="1" fill="#FF9DBE" opacity=".8"/><circle cx="16.4" cy="9.6" r="1" fill="#FF9DBE" opacity=".8"/></svg>Events</button>
-  <button data-p="schedule"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3" fill="#fff" stroke="#C9A7F5" stroke-width="1.3"/><rect x="3.5" y="5" width="17" height="5" rx="3" fill="#C9A7F5"/><path d="M8 3v4M16 3v4" stroke="#8A5FD0" stroke-width="1.6" stroke-linecap="round"/><path d="M12 18.6l-2.6-2.5a1.6 1.6 0 0 1 2.3-2.3l.3.3.3-.3a1.6 1.6 0 0 1 2.3 2.3z" fill="#FF5C93"/><circle cx="7" cy="14" r="1" fill="#FFC2D6"/><circle cx="17" cy="14" r="1" fill="#FFC2D6"/></svg>Schedule</button>
   <button data-p="practice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.7 5.6 6.2.8-4.5 4.3 1.1 6.1L12 16.4l-5.5 2.9 1.1-6.1L3.1 8.9l6.2-.8z" fill="#F4C86A" stroke="#D9B26F" stroke-width="1.3" stroke-linejoin="round"/><circle cx="9.5" cy="11.5" r="1" fill="#4A2340"/><circle cx="14.5" cy="11.5" r="1" fill="#4A2340"/><path d="M10.5 13.4q1.5 1.2 3 0" stroke="#4A2340" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="7.6" cy="12.6" r="1" fill="#FF9DBE" opacity=".8"/><circle cx="16.4" cy="12.6" r="1" fill="#FF9DBE" opacity=".8"/></svg>Practice</button>
-  <button data-p="notes"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" fill="#FFC2D6" stroke="#FF5C93" stroke-width="1.3"/><rect x="6" y="7" width="12" height="9" rx="1.5" fill="#fff"/><circle cx="12" cy="11.5" r="3" fill="#C9A7F5" stroke="#FF5C93" stroke-width="1"/><circle cx="12" cy="11.5" r="1.2" fill="#4A2340"/><circle cx="9" cy="3.5" r="1.3" fill="#FF5C93"/><circle cx="15" cy="3.5" r="1.3" fill="#FF5C93"/><path d="M8 18.5h8" stroke="#FF5C93" stroke-width="1.2" stroke-linecap="round"/></svg>Notes</button>
   <button data-p="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9a7 7 0 0 1 14 0v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z" fill="#C9A7F5" stroke="#8A5FD0" stroke-width="1.3"/><circle cx="9" cy="12" r="1.2" fill="#4A2340"/><circle cx="15" cy="12" r="1.2" fill="#4A2340"/><path d="M10 15q2 1.6 4 0" stroke="#4A2340" stroke-width="1.1" fill="none" stroke-linecap="round"/><circle cx="7.3" cy="13.6" r="1" fill="#FF9DBE"/><circle cx="16.7" cy="13.6" r="1" fill="#FF9DBE"/><path d="M8 4.5 7 2.2M16 4.5l1-2.3" stroke="#FF5C93" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.6" cy="1.9" r="1.2" fill="#FF5C93"/><circle cx="17.4" cy="1.9" r="1.2" fill="#FF5C93"/></svg>Play</button>
-  <button data-p="lists"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="18" rx="3" fill="#fff" stroke="#C9A7F5" stroke-width="1.3"/><path d="M9 2.5h6v3H9z" fill="#FF5C93"/><path d="M8 10l1.5 1.5L12.5 8.5M8 15.5l1.5 1.5 3-3" stroke="#FF5C93" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 10.5h3M14 16h3" stroke="#C9A7F5" stroke-width="1.5" stroke-linecap="round"/></svg>Lists</button>
+  <button data-p="me"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#FFC2D6" stroke="#FF5C93" stroke-width="1.3"/><path d="M5.5 20q6.5-7 13 0" fill="#FF6FA3"/><circle cx="12" cy="10.5" r="4.2" fill="#FBE0D0"/><path d="M7.8 9.8q4.2-5.5 8.4 0-.4-3.6-4.2-3.8-3.8.2-4.2 3.8z" fill="#F2C86B"/><circle cx="10.5" cy="10.6" r=".75" fill="#4A2340"/><circle cx="13.5" cy="10.6" r=".75" fill="#4A2340"/><path d="M11 12.6q1 .8 2 0" stroke="#4A2340" stroke-width=".8" fill="none" stroke-linecap="round"/><circle cx="8.9" cy="12" r=".8" fill="#FF9DBE" opacity=".8"/><circle cx="15.1" cy="12" r=".8" fill="#FF9DBE" opacity=".8"/><path d="M15.4 7.2l1.2-1.4" stroke="#FF3D8A" stroke-width="1.4" stroke-linecap="round"/></svg>Me</button>
 </nav>
 <div class="toast" id="toast"></div>
 

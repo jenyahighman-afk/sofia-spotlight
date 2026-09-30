@@ -51,7 +51,25 @@
    "Floor kick / turns → ",
    "Ending → "
   ],
-  "notes": ""
+  "notes": "",
+  "bpm": 76,
+  "loops": [
+   {
+    "n": "Soft half",
+    "a": 0,
+    "b": 48
+   },
+   {
+    "n": "Tricks half",
+    "a": 48,
+    "b": 112
+   },
+   {
+    "n": "Ending",
+    "a": 110,
+    "b": 124
+   }
+  ]
  },
  {
   "id": "trio",
@@ -80,7 +98,30 @@
    "Eyelines agree with the other two in the standing section"
   ],
   "notes": "",
-  "links": []
+  "links": [],
+  "bpm": 86,
+  "loops": [
+   {
+    "n": "Floor phrase",
+    "a": 8,
+    "b": 26
+   },
+   {
+    "n": "Crawl + rise",
+    "a": 34,
+    "b": 48
+   },
+   {
+    "n": "Traveling triangle",
+    "a": 48,
+    "b": 66
+   },
+   {
+    "n": "Run + acro",
+    "a": 64,
+    "b": 78
+   }
+  ]
  },
  {
   "id": "pitch-jazz",
@@ -103,7 +144,30 @@
    "Freeze completely in the 1:52 silence — any wobble shows"
   ],
   "notes": "",
-  "links": []
+  "links": [],
+  "bpm": 123,
+  "loops": [
+   {
+    "n": "Intro + build",
+    "a": 0,
+    "b": 24
+   },
+   {
+    "n": "Breakdown",
+    "a": 70,
+    "b": 82
+   },
+   {
+    "n": "The silence",
+    "a": 106,
+    "b": 120
+   },
+   {
+    "n": "Final push",
+    "a": 116,
+    "b": 151
+   }
+  ]
  },
  {
   "id": "pitch-contemp",

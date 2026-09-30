@@ -4,6 +4,7 @@ import { sync, onStatus, leaveFamily } from "../sync.js";
 import { joinLink, prettyCode, renderQR } from "../family.js";
 import { exportBackup, importBackup } from "../backup.js";
 import { showPage } from "../nav.js";
+import { openGrownups } from "../grownups.js";
 
 let qrFor = null;
 function renderStatus(){
@@ -23,8 +24,8 @@ function renderSettings(){
   renderStatus();
 }
 export function initSettings(){
-  $("#openSettings").onclick = () => { renderSettings(); showPage("settings"); };
-  $("#settingsBack").onclick = () => showPage("home");
+  $("#openSettings").onclick = () => { renderSettings(); openGrownups("settings"); };
+  $("#settingsBack").onclick = () => showPage("grownups");
   onStatus(renderStatus);
   $("#setCopy").onclick = async () => { try { await navigator.clipboard.writeText(sync.familyId); toast("Code copied"); } catch (e) { toast("Copy didn't work — write it down"); } };
   $("#setShare").onclick = async () => { const link = joinLink(sync.familyId); if (navigator.share) { try { await navigator.share({ title: "Sofia's Spotlight", text: "Join our family space: " + sync.familyId, url: link }); } catch (e) {} } else { try { await navigator.clipboard.writeText(link); toast("Link copied"); } catch (e) {} } };

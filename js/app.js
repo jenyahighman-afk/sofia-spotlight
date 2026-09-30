@@ -2,7 +2,7 @@
 import { $, toast } from "./util.js";
 import { loadData } from "./data.js";
 import { onChange } from "./store.js";
-import { initNav } from "./nav.js";
+import { initNav, setGuard } from "./nav.js";
 import { initFirebase, getFamilyId, joinFamily, isValidFamilyId, normalizeFamilyId, startWatching, friendlyError, sync } from "./sync.js";
 import { showGate } from "./family.js";
 import { initDances, renderDances } from "./views/dances.js";
@@ -13,13 +13,26 @@ import { initPractice, renderPractice } from "./views/practice.js";
 import { initNotes, renderNotes, renderPhotos, renderFiles } from "./views/notes.js";
 import { initLists, renderTodos, renderPack } from "./views/lists.js";
 import { initPlay, renderPlay } from "./views/play.js";
+import { initMe, renderMe } from "./views/me.js";
+import { initSkillCheck, renderSkillCheck } from "./views/skillcheck.js";
 import { initSettings, renderSettings } from "./views/settings.js";
+import { initGrownups, renderGrownups, isUnlocked, GROWNUP_PAGES } from "./grownups.js";
+import { initShowMe } from "./showme.js";
+import { initPlayer } from "./player.js";
+import { installErrorCapture, installReportLinks, guard, renderReports } from "./reports.js";
+import { migrateDanceCorrections } from "./corrections.js";
+import { checkBadges } from "./badges.js";
 
 const VERSION_KEY = "spotlight:version";
 
-function renderAll(){ renderHome(); renderDances(); renderEvents(); renderClasses(); renderCalendar(); renderPractice(); renderNotes(); renderPhotos(); renderFiles(); renderTodos(); renderPlay(); renderPack(); renderSettings(); }
-
-function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initSettings(); }
+// Each screen renders inside guard(): one broken screen shows its own error state instead of blanking the app.
+const renders = [
+  guard("home", renderHome), guard("dances", renderDances), guard("practice", renderPractice), guard("play", renderPlay), guard("me", renderMe),
+  guard("events", renderEvents), guard("schedule", () => { renderClasses(); renderCalendar(); }), guard("notes", () => { renderNotes(); renderPhotos(); renderFiles(); }),
+  guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("grownups", renderGrownups), guard("settings", renderSettings),
+];
+function renderAll(){ renders.forEach(r => r()); }
+function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
 async function registerSW(){
@@ -37,11 +50,14 @@ async function registerSW(){
 function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.classList.add("gated"); ["gateHome","gateJoin","gateCreated","gateBusy"].forEach(x => { $("#" + x).hidden = true; }); $("#gateMsg").textContent = msg; $("#gateMsg").style.color = "#FF5C93"; }
 
 (async () => {
+  installErrorCapture();
   try {
     registerSW();
     await loadData();
     initViews();
-    onChange(renderAll);
+    // Locked Grown-ups pages bounce to the PIN pad (which remembers where to go next).
+    setGuard(p => { if (GROWNUP_PAGES.includes(p) && !isUnlocked()) { $("#pinTarget").value = p; $("#pinIn").value = ""; $("#pinMsg").textContent = ""; return "pin"; } return p; });
+    onChange(() => { renderAll(); migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); checkBadges().catch(console.warn); });
     renderAll();
   } catch (e) { console.error(e); return fatal("The app couldn't load its content: " + (e.message || e)); }
 
