@@ -52,7 +52,7 @@ async function delPhoto(id){ if(!confirm("Delete this photo?")) return; const p=
 // A music file for one dance (audio, up to 60 MB). Replaces the previous one.
 async function uploadMusic(file,danceId){
   if(file.size>FILE_MAX_BYTES) return toast("Too big — music files up to 60 MB (this one is "+Math.round(file.size/1048576)+" MB)",3500);
-  if(!/^(audio|video)//.test(file.type)&&!/.(mp3|m4a|aac|wav|ogg|oga|flac|mp4|m4v|mov|webm)$/i.test(file.name)) return toast("That doesn't look like a music file — use an mp3, m4a or wav",3500);
+  if(!/^(audio|video)\//.test(file.type)&&!/\.(mp3|m4a|aac|wav|ogg|oga|flac|mp4|m4v|mov|webm)$/i.test(file.name)) return toast("That doesn't look like a music file — use an mp3, m4a or wav",3500);
   try{ toast("Uploading music…",8000); const id=uid(); const {path,url}=await media.upload("music",id,file,{contentType:file.type||"audio/mpeg",name:file.name});
     const prev=(S.dances[danceId]||{}).musicFile;
     await storeSet("dances",danceId,{...(S.dances[danceId]||{}),id:danceId,musicFile:{path,url,name:file.name,type:file.type||"",size:file.size}});
