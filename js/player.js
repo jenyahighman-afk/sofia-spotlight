@@ -56,13 +56,17 @@ function toggle(){ if (!PL.audio) return; PL.audio.paused ? play() : pause(); }
 function seek(ev){ if (!PL.audio || !Number.isFinite(PL.audio.duration)) return; const r = ev.currentTarget.getBoundingClientRect(); PL.audio.currentTime = PL.audio.duration * Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)); }
 
 // ---- Run it ----
+const STOP = `<button class="btn ghost run-stop" onclick="plRunStop()">✕ Stop</button>`;
 async function runIt(){
   if (!PL.audio) return; pause(); clearLoop(); setSpeed(100); PL.audio.currentTime = 0;
-  const box = $("#plRun"); box.hidden = false; box.innerHTML = `<div class="run-count">3</div>`;
-  for (const n of [3, 2, 1]) { box.innerHTML = `<div class="run-count">${n}</div>`; if (PL.voice === "click") click(n === 1); await new Promise(r => setTimeout(r, 1000)); if (!PL.audio) return; }
-  box.innerHTML = `<div class="run-count small-run">GO ✨</div>`; setTimeout(() => { if (PL.run) box.innerHTML = `<div class="run-live">Full run · eyes up</div>`; }, 900);
-  PL.run = { started: Date.now(), danceId: PL.dance.id }; play();
+  const run = { started: Date.now(), danceId: PL.dance.id, live: false }; PL.run = run;
+  const box = $("#plRun"); box.hidden = false;
+  for (const n of [3, 2, 1]) { box.innerHTML = `<div class="run-count">${n}</div>${STOP}`; if (PL.voice === "click") click(n === 1); await new Promise(r => setTimeout(r, 1000)); if (PL.run !== run || !PL.audio) return; }
+  box.innerHTML = `<div class="run-count small-run">GO ✨</div>${STOP}`; setTimeout(() => { if (PL.run === run) box.innerHTML = `<div class="run-live">Full run · eyes up</div>${STOP}`; }, 900);
+  run.live = true; play();
 }
+// Stop cancels the run: nothing is logged, the player stays open.
+function runStop(){ PL.run = null; pause(); runClose(); }
 async function runEnded(){
   const run = PL.run; PL.run = null; if (!run) return; pause();
   const box = $("#plRun"); box.hidden = false;
@@ -107,5 +111,6 @@ export function initPlayer(){
   $("#plA").onclick = markA; $("#plB").onclick = markB; $("#plClear").onclick = clearLoop;
   $("#plCounts").onclick = toggleCounts; ["off", "click", "voice"].forEach(v => { $("#plV_" + v).onclick = () => setVoice(v); }); $("#plTap").onclick = tapOne;
   $("#plRunBtn").onclick = runIt;
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#player").hidden) { if (PL.run) runStop(); else closePlayer(); } });
 }
-expose({ openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose });
+expose({ openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose, plRunStop: runStop });
