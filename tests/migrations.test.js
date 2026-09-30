@@ -85,6 +85,14 @@ test("2 → 3: corrections and skills written by an older build get their defaul
   for (const col of ["corrections", "skills", "badges", "reports"]) assert.ok(COLLECTIONS.includes(col), col + " must be synced and backed up");
 });
 
+test("3 → 4: dance cue sheets are normalized when present and never invented when absent", () => {
+  const d = migrateDoc("dances", "solo", { _v: 3, name: "Solo", cues: [{ t: "0:50", move: "Cartwheel" }, { t: 12, lyric: "words", move: "Floor" }, { t: "x", move: "bad" }] });
+  assert.equal(d._v, SCHEMA_VERSION); assert.deepEqual(d.cues, [{ t: 12, lyric: "words", move: "Floor" }, { t: 50, lyric: "", move: "Cartwheel" }]);
+  const partial = migrateDoc("dances", "solo", { _v: 3, musicUrl: "x" });
+  assert.equal("cues" in partial, false, "a partial override must not hide the built-in cue sheet");
+  assert.deepEqual(migrateDoc("dances", "d", { cues: "junk" }).cues, []);
+});
+
 test("a whole collection migrates and other collections pass through unchanged", () => {
   const out = migrateCollection("notes", { a: { title: "t", body: "b", tag: "Ideas", at: "2026-09-27T03:01:15.743Z" } });
   assert.equal(out.a._v, SCHEMA_VERSION); assert.equal(out.a.title, "t");

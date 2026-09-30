@@ -30,7 +30,7 @@ const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);

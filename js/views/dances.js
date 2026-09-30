@@ -5,6 +5,7 @@ import { S, storeSet, dances } from "../store.js";
 import { photoTile, uploadMusic } from "./notes.js";
 import { TAGS, TAG_LABEL, TAG_EMOJI, topFixes, forDance, patterns, addCorrection, closeCorrection, reopenCorrection, removeCorrection, inferTag } from "../corrections.js";
 import { checkBadges } from "../badges.js";
+import { normalizeCues, parseCueText, formatCueText, fmtTime } from "../cues.js";
 
 const STYLE_EMOJI = { lyrical:"🌸", jazz:"⚡", contemporary:"🌊", "hip hop":"🎧", hiphop:"🎧", ballet:"🩰", acro:"🤸", ballroom:"💃", tap:"👟" };
 export const danceEmoji = (d) => STYLE_EMOJI[String(d.style || "").toLowerCase().trim()] || "🎵";
@@ -54,7 +55,7 @@ function renderDances(){
       more=`${mapbar}<div class="row" style="margin-top:6px">${d.musicUrl?`<a class="btn sm aqua" href="${esc(d.musicUrl)}" target="_blank" rel="noopener">▶ Music link</a>`:""}${links.map((u,i)=>`<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">🔗 Link ${i+1}</a>`).join("")}${musicButton(d)}<span class="grow"></span><button class="btn sm coral" onclick="danceEdit('${d.id}')">✏️ Edit</button></div>${musicPlayer(d)}
         ${roText("Song",d.song)}${roText("Style",d.style)}${roText("BPM",d.bpm)}${roText("Choreographer",d.choreo)}${roText("Teacher / class",d.teacher)}${roText("Rehearsal & class schedule",d.rehearsal)}
         ${roText("Costume",d.costume)}${roText("Shoes",d.shoes)}${roText("Hair",d.hair)}
-        ${roText("Music map",d.music)}${roText("Where the big moments land",d.map)}
+        ${roText("Music map",d.music)}${roText("Where the big moments land",d.map)}<div class="field-lab">Cue sheet (shown in the player)</div><div class="ro">${normalizeCues(d.cues).length?`<ul>${normalizeCues(d.cues).map(c=>`<li><b>${fmtTime(c.t)}</b> ${esc(c.move)}${c.lyric?` <span class="muted">“${esc(c.lyric)}”</span>`:""}</li>`).join("")}</ul>`:""}</div>
         ${roList("What's already strong",d.strengths)}<div class="field-lab">All corrections</div>${fullList(d)}${roList("Trick drills",d.tricks)}${roList("Where do I look?",d.eyes)}
         ${roText("Notes",d.notes)}${photos}`;
     } else {
@@ -62,7 +63,7 @@ function renderDances(){
       ${edText("song","Song",d.song,"Title — artist")}${edText("style","Style",d.style)}${edText("bpm","BPM (beats per minute, for the count overlay)",d.bpm,"e.g. 76")}${edText("choreo","Choreographer",d.choreo)}${edText("teacher","Teacher / class",d.teacher)}${edText("rehearsal","Rehearsal & class schedule",d.rehearsal)}
       ${edText("musicUrl","Music link",d.musicUrl,"Paste a link to the track")}${edList("links","Video / other links",d.links)}
       ${edText("costume","Costume",d.costume)}${edText("shoes","Shoes",d.shoes)}${edText("hair","Hair",d.hair)}
-      ${edText("music","Music map",d.music)}${edText("map","Where the big moments land (m:ss timestamps become loop presets)",d.map)}
+      ${edText("music","Music map",d.music)}${edText("map","Where the big moments land (m:ss timestamps become loop presets)",d.map)}<label class="f">Cue sheet <span class="muted">(one per line: m:ss | words sung | move)</span></label><textarea data-k="cues" data-cues="1" class="dfield" placeholder="0:50 | words here | Cartwheel on the swell">${esc(formatCueText(d.cues))}</textarea>
       ${edList("strengths","What's already strong",d.strengths)}${edList("corrections","Corrections (older list — new lines become notes)",d.corrections)}${edList("tricks","Trick drills",d.tricks)}${edList("eyes","Where do I look?",d.eyes)}
       ${edText("notes","Notes",d.notes)}
       <div class="row" style="margin-top:10px"><button class="btn coral" onclick="saveDance('${d.id}')">Save</button><button class="btn ghost" onclick="danceEdit(null)">Cancel</button><span class="grow"></span><button class="btn sm ghost" onclick="delDance('${d.id}')">Remove dance</button></div>`;
@@ -72,7 +73,7 @@ function renderDances(){
   $("#danceList").querySelectorAll("details.more").forEach(el=>el.addEventListener("toggle",()=>{ el.open?moreOpen.add(el.dataset.more):moreOpen.delete(el.dataset.more); }));
   growAll($("#danceList"));
 }
-function collectDance(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const d={...dances().find(x=>x.id===id)}; card.querySelectorAll(".dfield").forEach(el=>{ d[el.dataset.k]=el.dataset.list?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value; }); if(d.bpm!==""&&d.bpm!==undefined){ const n=parseFloat(d.bpm); d.bpm=Number.isFinite(n)&&n>0?n:""; } return d; }
+function collectDance(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const d={...dances().find(x=>x.id===id)}; card.querySelectorAll(".dfield").forEach(el=>{ d[el.dataset.k]=el.dataset.cues?parseCueText(el.value):el.dataset.list?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value; }); if(d.bpm!==""&&d.bpm!==undefined){ const n=parseFloat(d.bpm); d.bpm=Number.isFinite(n)&&n>0?n:""; } return d; }
 async function saveDance(id){ await storeSet("dances",id,collectDance(id)); editDance=null; renderDances(); toast("Saved"); }
 async function delDance(id){ if(!confirm("Remove this dance from the list?")) return; await storeSet("dances",id,{...(S.dances[id]||{}),deleted:true}); editDance=null; }
 

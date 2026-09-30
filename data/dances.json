@@ -69,6 +69,63 @@
     "a": 110,
     "b": 124
    }
+  ],
+  "cues": [
+   {
+    "t": 0,
+    "lyric": "",
+    "move": "Opening walk"
+   },
+   {
+    "t": 12,
+    "lyric": "",
+    "move": "Floor work & tailbone balance"
+   },
+   {
+    "t": 18,
+    "lyric": "",
+    "move": "Lunge reach"
+   },
+   {
+    "t": 19,
+    "lyric": "",
+    "move": "Donut roll — chin tucked"
+   },
+   {
+    "t": 34,
+    "lyric": "",
+    "move": "Attitude, arms up"
+   },
+   {
+    "t": 48,
+    "lyric": "",
+    "move": "The swell — dance the 4 counts in"
+   },
+   {
+    "t": 50,
+    "lyric": "",
+    "move": "Cartwheel on the swell"
+   },
+   {
+    "t": 68,
+    "lyric": "",
+    "move": "Walkover / handstand"
+   },
+   {
+    "t": 102,
+    "lyric": "",
+    "move": "Floor kick"
+   },
+   {
+    "t": 110,
+    "lyric": "",
+    "move": "Passé turns"
+   },
+   {
+    "t": 113,
+    "lyric": "",
+    "move": "Floor ending — hold until silent"
+   }
   ]
  },
  {
@@ -121,6 +178,53 @@
     "a": 64,
     "b": 78
    }
+  ],
+  "cues": [
+   {
+    "t": 0,
+    "lyric": "",
+    "move": "Kneeling line"
+   },
+   {
+    "t": 12,
+    "lyric": "",
+    "move": "Floor phrase — all three legs up"
+   },
+   {
+    "t": 19,
+    "lyric": "",
+    "move": "Rolls — count out loud"
+   },
+   {
+    "t": 26,
+    "lyric": "",
+    "move": "Kneeling reach"
+   },
+   {
+    "t": 36,
+    "lyric": "",
+    "move": "Low crawl into lying arch"
+   },
+   {
+    "t": 45,
+    "lyric": "",
+    "move": "Rise"
+   },
+   {
+    "t": 48,
+    "lyric": "",
+    "move": "Wide traveling triangle"
+   },
+   {
+    "t": 57,
+    "lyric": "",
+    "move": "Deep lunge + arm reach"
+   },
+   {
+    "t": 66,
+    "lyric": "",
+    "move": "Run with acro"
+   }
   ]
  },
  {
@@ -166,6 +270,48 @@
     "n": "Final push",
     "a": 116,
     "b": 151
+   }
+  ],
+  "cues": [
+   {
+    "t": 0,
+    "lyric": "",
+    "move": "Quiet intro"
+   },
+   {
+    "t": 8,
+    "lyric": "",
+    "move": "First energy jump"
+   },
+   {
+    "t": 24,
+    "lyric": "",
+    "move": "Groove locks in — hit and stop"
+   },
+   {
+    "t": 72,
+    "lyric": "",
+    "move": "Breakdown / dip"
+   },
+   {
+    "t": 80,
+    "lyric": "",
+    "move": "Full groove"
+   },
+   {
+    "t": 112,
+    "lyric": "",
+    "move": "THE SILENCE — freeze"
+   },
+   {
+    "t": 116,
+    "lyric": "",
+    "move": "Final push"
+   },
+   {
+    "t": 146,
+    "lyric": "",
+    "move": "Ending"
    }
   ]
  },
