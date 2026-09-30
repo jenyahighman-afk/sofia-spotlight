@@ -81,7 +81,7 @@ Everything the app shows out of the box lives in `data/`. Edit the JSON, run `np
 
 | File | What it holds |
 |---|---|
-| `dances.json` | The built-in dances (song, choreographer, costume, music map, corrections, trick drills, `bpm`, `loops`…). In-app edits are saved *on top of* these by `id`, so changing a built-in dance here changes it for everyone unless that field was edited in the app. `loops` = `[{"n":"Soft half","a":0,"b":48}]` in seconds. |
+| `dances.json` | The built-in dances (song, choreographer, costume, music map, corrections, trick drills, `bpm`, `loops`, `cues`, `story` — one or two kid-facing lines on the cover — and `performance` — face/musicality/presence notes under More ▸). In-app edits are saved *on top of* these by `id`, so changing a built-in dance here changes it for everyone unless that field was edited in the app. `loops` = `[{"n":"Soft half","a":0,"b":48}]` in seconds. |
 | `events.json` | Season events (`start`/`end` as `YYYY-MM-DD`, `pack` = which packing list). A type or name containing "break" pauses the streak. |
 | `classes.json` | Weekly studio classes: `day` 0=Sun…6=Sat, `t` like `"4:30–5:30"`, `name`, `room`. Any day with a class is a studio day (streak pauses). |
 | `home-days.json` | Home-practice days keyed by weekday number. |

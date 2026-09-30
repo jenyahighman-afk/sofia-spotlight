@@ -74,7 +74,7 @@
    {
     "t": 0,
     "lyric": "",
-    "move": "Opening walk"
+    "move": "Opening walk — eyes to the back row"
    },
    {
     "t": 12,
@@ -84,7 +84,7 @@
    {
     "t": 18,
     "lyric": "",
-    "move": "Lunge reach"
+    "move": "Lunge reach — pull the thread"
    },
    {
     "t": 19,
@@ -99,7 +99,7 @@
    {
     "t": 48,
     "lyric": "",
-    "move": "The swell — dance the 4 counts in"
+    "move": "The swell — dance the 4 counts in, go BIG"
    },
    {
     "t": 50,
@@ -114,24 +114,34 @@
    {
     "t": 102,
     "lyric": "",
-    "move": "Floor kick"
+    "move": "Floor kick — from the hip"
    },
    {
     "t": 110,
     "lyric": "",
-    "move": "Passé turns"
+    "move": "Passé turns — spot"
    },
    {
     "t": 113,
     "lyric": "",
-    "move": "Floor ending — hold until silent"
+    "move": "Floor ending — hold, breathe, stay"
    }
+  ],
+  "story": "Someone you love is packing to leave. Ask them to stay one more minute.",
+  "performance": [
+   "Character: she is alone, fighting to keep someone from walking away. Every reach is a plea.",
+   "Face — pleading & yearning: look past the judges with soft, open eyes and slightly parted lips, reaching for someone just out of touch.",
+   "Face — fragility: on the quiet lines let the breath drop, soften the brow, let the focus fall to the hands.",
+   "Musicality — rushing vs suspended: sharp, urgent movement for panic, then slow suspended floats to stop time.",
+   "Musicality — chorus swells (0:48 on): biggest extensions across the whole stage when the vocal opens up.",
+   "Stage presence: eye line all the way to the top back rows. Breathe audibly with the music on every jump and floor descent.",
+   "Secret: every time an arm reaches out, the fingertips hold an invisible thread tied to the person you love — pull so they won't slip away."
   ]
  },
  {
   "id": "trio",
   "name": "Trio · Enjoy the Silence",
-  "song": "Enjoy the Silence",
+  "song": "Enjoy the Silence (Re:Imagined) — Denmark + Winter",
   "style": "Contemporary",
   "choreo": "Larisa",
   "teacher": "Larisa",
@@ -183,12 +193,12 @@
    {
     "t": 0,
     "lyric": "",
-    "move": "Kneeling line"
+    "move": "Kneeling line — breathe together"
    },
    {
     "t": 12,
     "lyric": "",
-    "move": "Floor phrase — all three legs up"
+    "move": "Floor phrase — all three legs up, one height"
    },
    {
     "t": 19,
@@ -203,17 +213,17 @@
    {
     "t": 36,
     "lyric": "",
-    "move": "Low crawl into lying arch"
+    "move": "Low crawl into lying arch — don't rush the float"
    },
    {
     "t": 45,
     "lyric": "",
-    "move": "Rise"
+    "move": "Rise — eyes meet"
    },
    {
     "t": 48,
     "lyric": "",
-    "move": "Wide traveling triangle"
+    "move": "Wide traveling triangle — full size"
    },
    {
     "t": 57,
@@ -223,8 +233,17 @@
    {
     "t": 66,
     "lyric": "",
-    "move": "Run with acro"
+    "move": "Run with acro — crisp on the hits"
    }
+  ],
+  "story": "The world is loud. The three of you are safe together without a word.",
+  "performance": [
+   "Story: words cause hurt and noise; the trio has built a quiet, safe bubble. Connection without words is the point.",
+   "Face — sharp, heavy lines: intense, guarded or reaching, as if the noise is intruding.",
+   "Face — chorus: soften jaw and forehead, let out a gentle breath — relief, warmth, trust.",
+   "Connection: lock eyes with the other two to say 'I've got your back'. Inhale together on lifts, exhale on melts — one heartbeat.",
+   "Musicality: hits and catches sudden and crisp on the sharp beats. When the piano floats, don't rush — stillness is as strong as a leap.",
+   "Golden tip: every time the chorus comes back, show how much comfort and strength the three of you give each other without speaking."
   ]
  },
  {
