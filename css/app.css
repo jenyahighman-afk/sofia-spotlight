@@ -228,3 +228,10 @@ body.modal{overflow:hidden}
 .stage-body svg{max-height:52vh;display:block;margin:0 auto}
 .stage-actions{padding:10px 14px;justify-content:center;gap:10px;border-top:2px solid var(--line);background:var(--card)} .stage-actions .btn{font-size:1.05rem;padding:12px 18px}
 .je-opt{font-size:1rem;padding:12px 8px}
+.pm-body{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:6px}
+.pm-top{display:flex;align-items:center;justify-content:center;gap:14px;width:100%}
+.pm-dancer{width:120px;height:170px;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:14px;max-height:none!important;margin:0!important}
+.pm-ring{width:110px;height:110px}
+.pm-item{text-align:center;padding:6px 10px} .pm-kind{font-size:2.2rem;line-height:1} .pm-text{font-family:Fredoka;font-size:1.5rem;line-height:1.2;margin-top:4px}
+.pm-timer{text-align:center} .pm-clock{font-family:Fredoka;font-size:3.4rem;line-height:1;color:#FF5C93} .pm-clock.paused{color:var(--ink-2)}
+.pm-mode{justify-content:center}

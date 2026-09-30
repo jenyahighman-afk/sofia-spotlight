@@ -20,6 +20,9 @@ import { initGrownups, renderGrownups, isUnlocked, GROWNUP_PAGES } from "./grown
 import { initShowMe } from "./showme.js";
 import { initPlayer } from "./player.js";
 import { initStage } from "./stage.js";
+import { initPracticeMode } from "./pmode.js";
+import { restoreTodayChecks } from "./views/practice.js";
+import { settled } from "./store.js";
 import { installErrorCapture, installReportLinks, guard, renderReports } from "./reports.js";
 import { migrateDanceCorrections } from "./corrections.js";
 import { checkBadges } from "./badges.js";
@@ -33,7 +36,7 @@ const renders = [
   guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("grownups", renderGrownups), guard("settings", renderSettings),
 ];
 function renderAll(){ renders.forEach(r => r()); }
-function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); installReportLinks(); }
+function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
 async function registerSW(){
@@ -58,7 +61,8 @@ function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.class
     initViews();
     // Locked Grown-ups pages bounce to the PIN pad (which remembers where to go next).
     setGuard(p => { if (GROWNUP_PAGES.includes(p) && !isUnlocked()) { $("#pinTarget").value = p; $("#pinIn").value = ""; $("#pinMsg").textContent = ""; return "pin"; } return p; });
-    onChange(() => { renderAll(); migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); checkBadges().catch(console.warn); });
+    let restored = false;
+    onChange(() => { renderAll(); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); checkBadges().catch(console.warn); });
     renderAll();
   } catch (e) { console.error(e); return fatal("The app couldn't load its content: " + (e.message || e)); }
 

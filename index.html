@@ -47,6 +47,7 @@
 <section class="page" id="p-practice">
   <div class="card sun">
     <div class="row practice-head" id="practiceHead"></div>
+    <button class="btn coral big-btn" id="startPractice" style="width:100%;margin-top:8px">▶ Start practice</button>
     <div id="practiceChecklist" class="plist"></div>
   </div>
   <details class="card acc"><summary>💬 How did it feel?</summary>
@@ -312,6 +313,18 @@
   </div>
 </section>
 
+</div>
+
+<!-- PRACTICE MODE: one item at a time, saved as you go -->
+<div class="stage pmode" id="pmode" hidden>
+  <div class="stage-top"><span class="grow">Practice</span><span class="chip sun" id="pmCount"></span><button class="btn sm ghost" id="pmClose">✕</button></div>
+  <div class="stage-body pm-body">
+    <div class="pm-top"><svg id="pmDancer" viewBox="70 30 160 230" class="pm-dancer"></svg><div id="pmRing"></div></div>
+    <div class="pm-item" id="pmItem"></div>
+    <div class="pm-timer" id="pmTimer" hidden></div>
+    <div class="row pm-mode" id="pmMode"></div>
+  </div>
+  <div class="stage-actions row" id="pmActions"></div>
 </div>
 
 <!-- GAME STAGE: full-screen animation with the buttons right under it -->

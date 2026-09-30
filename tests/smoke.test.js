@@ -17,7 +17,7 @@ before(async () => {
   M.store = await import("../js/store.js");
   M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
-  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js");
+  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js");
 });
 
 const SCREENS = () => ({
@@ -25,7 +25,7 @@ const SCREENS = () => ({
   events: M.events.renderEvents, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, notes: () => { M.notes.renderNotes(); M.notes.renderPhotos(); M.notes.renderFiles(); },
   lists: () => { M.lists.renderTodos(); M.lists.renderPack(); }, skillcheck: M.skillcheck.renderSkillCheck, reports: M.reports.renderReports, grownups: M.grownups.renderGrownups, settings: M.settings.renderSettings,
 });
-const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage];
+const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode];
 
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
