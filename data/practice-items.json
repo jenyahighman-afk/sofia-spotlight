@@ -2,61 +2,73 @@
  {
   "id": "warmup",
   "text": "Warm-up 5 min: jumping jacks, arm circles, leg swings",
-  "kind": "warm"
+  "kind": "warm",
+  "secs": 300
  },
  {
   "id": "hollow-superman",
   "text": "Hollow hold + superman, 3×20s",
-  "kind": "str"
+  "kind": "str",
+  "secs": 120
  },
  {
   "id": "planks",
   "text": "Plank + side plank, 2×20–30s",
-  "kind": "str"
+  "kind": "str",
+  "secs": 120
  },
  {
   "id": "releves-balance",
   "text": "Slow relevés 2×15 + single-leg balance 20s each",
-  "kind": "str"
+  "kind": "str",
+  "secs": 120
  },
  {
   "id": "leg-lifts",
   "text": "Lying leg lifts, straight knee, 2×10 per side",
-  "kind": "str"
+  "kind": "str",
+  "secs": 90
  },
  {
   "id": "splits",
   "text": "Right, left, middle split + straddle, 20–30s each (after warm-up only)",
-  "kind": "flex"
+  "kind": "flex",
+  "secs": 180
  },
  {
   "id": "passe-balance",
   "text": "Passé balance on relevé 5–10s, both sides",
-  "kind": "tech"
+  "kind": "tech",
+  "secs": 60
  },
  {
   "id": "pirouettes",
   "text": "10 single pirouettes each side",
-  "kind": "tech"
+  "kind": "tech",
+  "secs": 120
  },
  {
   "id": "kicks",
   "text": "Kicks/développés to hip height, straight knee, pointed foot",
-  "kind": "tech"
+  "kind": "tech",
+  "secs": 90
  },
  {
   "id": "arms-mirror",
   "text": "Arms overhead in the mirror: long elbows, shoulders down",
-  "kind": "tech"
+  "kind": "tech",
+  "secs": 60
  },
  {
   "id": "solo-run",
   "text": "Solo: mark once, then FULL OUT once with eyes up",
-  "kind": "run"
+  "kind": "run",
+  "secs": 300
  },
  {
   "id": "trio-mark",
   "text": "Trio: mark it once",
-  "kind": "run"
+  "kind": "run",
+  "secs": 150
  }
 ]

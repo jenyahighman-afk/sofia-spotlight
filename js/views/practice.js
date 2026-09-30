@@ -28,11 +28,20 @@ function renderPractice(){
   $("#practiceHistory").innerHTML=hist.length?hist.map(([d,r])=>`<div class="check"><span class="chip mint">${fmt(d)}</span><span>${(r.done||[]).length}/${PRACTICE_ITEMS.length}${(r.runs||[]).length?` · ▶ ${r.runs.length}`:""}${r.note?" · "+esc(r.note):""}</span></div>`).join(""):`<p class="muted small">Nothing yet. Today is a good day.</p>`;
   lastPct=pct;
 }
+// Safety net: today's checks are mirrored in localStorage the moment they're tapped; if the record ever comes back
+// without them (a reload before the write flushed), they're put back and re-saved.
+export function restoreTodayChecks(){
+  const date=todayStr(); let mirror=[]; try{ mirror=JSON.parse(localStorage.getItem("spotlight:practice:"+date)||"[]"); }catch(e){}
+  if(!Array.isArray(mirror)||!mirror.length) return;
+  const r=S.practice[date]||{done:[],note:"",runs:[]}; const have=new Set(r.done||[]); const missing=mirror.filter(id=>!have.has(id)&&PRACTICE_ITEMS.some(i=>i.id===id));
+  if(missing.length) storeSet("practice",date,{...r,done:[...(r.done||[]),...missing]});
+}
 async function onCheck(e){
   const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=$$(".pchk").filter(x=>x.checked).map(x=>x.dataset.id);
   e.target.closest(".pitem").classList.toggle("done",e.target.checked);
   const pct=Math.round(100*done.length/PRACTICE_ITEMS.length);
   await storeSet("practice",date,{...rec,done});
+  if(date===todayStr()){ try{ localStorage.setItem("spotlight:practice:"+date,JSON.stringify(done)); }catch(e){} }
   if(pct>=100&&lastPct<100) confetti(); lastPct=pct; checkBadges();
 }
 async function saveNote(){ const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; await storeSet("practice",date,{...rec,note:$("#practiceNote").value}); toast("Saved"); }
