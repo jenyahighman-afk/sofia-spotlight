@@ -17,20 +17,20 @@ before(async () => {
   M.store = await import("../js/store.js");
   M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
-  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js");
+  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js");
 });
 
 const SCREENS = () => ({
   home: M.home.renderHome, dances: M.dances.renderDances, practice: M.practice.renderPractice, play: M.play.renderPlay, me: M.me.renderMe,
   events: M.events.renderEvents, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, notes: () => { M.notes.renderNotes(); M.notes.renderPhotos(); M.notes.renderFiles(); },
-  lists: () => { M.lists.renderTodos(); M.lists.renderPack(); }, skillcheck: M.skillcheck.renderSkillCheck, reports: M.reports.renderReports, grownups: M.grownups.renderGrownups, settings: M.settings.renderSettings,
+  lists: () => { M.lists.renderTodos(); M.lists.renderPack(); }, skillcheck: M.skillcheck.renderSkillCheck, reviews: M.coach.renderReviews, reports: M.reports.renderReports, grownups: M.grownups.renderGrownups, settings: M.settings.renderSettings,
 });
-const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode];
+const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode, M.coach.initCoach, M.goals.initGoals, M.mirror.initMirror];
 
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPhotos", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -38,6 +38,8 @@ test("every element id looked up in the code exists in index.html", () => {
 
 test("the five kid tabs and every Grown-ups page exist; nothing text-heavy was deleted, only moved", () => {
   for (const p of ["home","dances","practice","play","me","pin","grownups","events","schedule","notes","lists","skillcheck","reviews","reports","settings"]) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
+  for (const id of ["coach","goal","mirror","goalRings","goalReminder","reviewList"]) assert.ok(html.includes(`id="${id}"`), id);
+  for (const p of []) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
   const tabs = [...html.matchAll(/<button data-p="([a-z]+)"/g)].map(m => m[1]);
   assert.deepEqual(tabs, ["home","dances","practice","play","me"]);
   for (const id of ["eventList","calGrid","packList","todoList","noteList","fileList","photoGrid","setExport","setImportFile","setLeave","aerialList","phases"]) assert.ok(html.includes(`id="${id}"`), id + " still present");
@@ -69,6 +71,8 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   S.badges = { fix1: { key: "fix1", label: "First fix closed", emoji: "✅", at: t } };
   S.skills = { "a-cartwheel": { state: "checked", teacher: "Hannah" }, "a-onehand": { state: "learning" } };
   S.corrections.e = { id: "e", danceId: "pitch-jazz", text: "Feet again", tag: "feet", status: "working", date: t, source: "Isadora" }; S.corrections.f = { id: "f", danceId: "pitch-jazz", text: "And again", tag: "feet", status: "working", date: t, source: "Isadora" };
+  S.reviews = { v1: { id: "v1", danceId: "solo", kind: "video", date: t, at: t + "T09:00:00Z", thumbs: [], pose: { knee: 176 }, review: { loved: "Great reach", fix: "Point your foot", tag: "feet", feet: "flexed", knees: "✓", eyes: "✓", arms: "✓", try: "" } } };
+  S.goals = { g1: { id: "g1", name: "Right split", preset: "split-r", unit: "deg", target: 180, emoji: "🦵", createdAt: "2026-09-01", checkins: [{ id: "c1", date: "2026-09-01", value: 150 }, { id: "c2", date: "2026-09-15", value: 160 }] } };
   S.reports = { r1: { page: "home", note: "it froze", error: "TypeError: x", at: t + "T10:00:00Z", version: "1.1.0" } };
   for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
   const dl = el("#danceList").innerHTML;
@@ -80,6 +84,11 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#practiceHead").innerHTML.includes("1 run"), "run shown on Practice");
   assert.ok(el("#todayCard").innerHTML.includes("1-day streak"), "a run makes today count");
   assert.ok(el("#reportList").innerHTML.includes("it froze"), "report listed for Mom");
+  assert.ok(el("#reviewList").innerHTML.includes("Great reach") && el("#reviewList").innerHTML.includes("Mom can see this"), "review card renders for Grown-ups");
+  assert.ok(el("#goalRings").innerHTML.includes("Right split") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Me");
+  assert.ok(el("#goalReminder").innerHTML.includes("Check-in time"), "goal due after 14 days shows on Today");
+  assert.ok(el("#danceList").innerHTML.includes("openCoach('solo')"), "Coach me on the dance cover");
+  assert.ok(el("#practiceChecklist").innerHTML.includes("openCoach('',"), "Coach me on tricks in Practice");
   assert.ok(el("#skillCheckList").innerHTML.includes("Hannah"), "teacher name shown");
   M.showme.showMe("a"); assert.ok(el("#showmeStage").innerHTML.includes("Flexed foot") && el("#showmeStage").innerHTML.includes("Point your foot"), "Show me renders both sides");
   for (const tag of ["feet","knees","eyes","arms","spacing","energy","timing","other"]) { M.showme.showMe(null, tag); assert.equal((el("#showmeStage").innerHTML.match(/<svg/g) || []).length, 2, tag + " has two stages"); }

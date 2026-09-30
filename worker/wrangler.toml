@@ -1,0 +1,18 @@
+name = "sofia-spotlight-coach"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Comma-separated. Add ",http://localhost:8080" while testing locally, then take it out again.
+ALLOWED_ORIGINS = "https://jenyahighman-afk.github.io"
+# claude-opus-5-5 is the default; switch to claude-sonnet-5-5 to halve the cost per review.
+MODEL = "claude-opus-5-5"
+
+# Rate limiting (20 reviews per family per day). Create once with:  npx wrangler kv namespace create RATE
+# then paste the id it prints here. Without this binding the limit is still enforced, but per worker instance only.
+# [[kv_namespaces]]
+# binding = "RATE"
+# id = "PASTE-THE-ID-HERE"
+
+# The API key is a secret, never a var:  npx wrangler secret put ANTHROPIC_API_KEY

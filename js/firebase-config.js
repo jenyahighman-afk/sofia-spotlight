@@ -11,3 +11,6 @@ export const firebaseConfig = {
 // Default: Firebase Storage. If Storage isn't available for the project, switch to Supabase Storage (a public bucket):
 //   export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.supabase.co", anonKey: "YOUR-ANON-KEY", bucket: "spotlight" };
 export const mediaConfig = { provider: "firebase" };
+
+// The AI coach worker (worker/README.md). Leave url empty until it's deployed: "Coach me" then shows the skeleton view only.
+export const coachConfig = { url: "" };

@@ -5,6 +5,7 @@ import { S, events, nextEvent } from "../store.js";
 import { computeStreak, dayCounts } from "../streak.js";
 import { currentWeekFix, pickWeekFix, TAG_EMOJI } from "../corrections.js";
 import { checkBadges } from "../badges.js";
+import { renderGoalReminder } from "../goals.js";
 
 const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
 function renderHome(){
@@ -26,6 +27,7 @@ function renderHome(){
   if(fix) $("#weekFix").innerHTML=`<div class="row"><span class="chip violet">${TAG_EMOJI[fix.tag]||"✨"} This week's fix</span><span class="grow"></span><button class="btn sm ghost" onclick="showMe('${fix.id}')">Show me</button></div><div class="fix-text">${esc(fix.text)}</div>`;
   else if(open) $("#weekFix").innerHTML=`<div class="row"><span class="grow">${dow===0?"🎬 Film review day. Pick this week's fix.":"No fix picked this week yet."}</span><button class="btn sm coral" onclick="pickFix()">Pick one</button></div>`;
   else $("#weekFix").innerHTML=`<span class="small muted">No open notes. Add one from a dance.</span>`;
+  renderGoalReminder();
   // week strip
   const now=new Date(); const monday=new Date(now); monday.setDate(now.getDate()-((dow+6)%7));
   const names=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]; let h="";

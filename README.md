@@ -21,6 +21,18 @@ Sofia sees five tabs, each built to *do* something with as few words as possible
 
 Every screen has an error state ("This screen hit a snag … Send a report") and a small **Something went wrong? Tap to send a report** link at the bottom. Reports land in the `reports` collection and show under Grown-ups → Reports with the last error that phone captured.
 
+### AI coach (🎬 Coach me)
+On every dance cover and next to the technique items and aerial drills in Practice. Film a clip (up to 60 s) or pick photos on the phone. The app samples 16 frames evenly plus 4 around the loudest moment of the audio, shrinks them to 768 px, draws the skeleton on four of them (on-device, see below) and sends only those stills — never the video — to the coach worker in `worker/` with the dance name and style, its music map, the open corrections and the trick name. The worker adds the fixed coaching prompt (verbatim in `worker/src/core.js`; the app cannot send a prompt, so there is no chat) and returns one review: **One thing you did really well**, **One fix for this week** (one tap turns it into a correction, tag pre-filled, source "AI coach"), a feet/knees/eyes/arms check, and an optional **Try this** drill. Reviews are saved to `reviews` with thumbnails and numbers only, carry "Mom can see this", and are listed under Grown-ups → Coach reviews. Limits: 20 reviews per family per day; needs a connection. Until the worker is deployed (`worker/README.md`) and its URL is set in `js/firebase-config.js` → `coachConfig.url`, Coach me still works as a skeleton view and says the coach isn't connected.
+
+### Skeleton view (free, on-device)
+MediaPipe Pose Landmarker (Tasks Vision, pinned on jsDelivr; the model file from Google's model store) runs in the browser. On any clip or photo it draws the skeleton and reads out the working-leg knee angle ("Knee: 176° — straight!" at 170° or more), arm height against the shoulder line, shoulder and hip tilt, and the split angle. Only the numbers and thumbnails are stored with a review. The first use needs a connection to fetch the model (~5 MB); after that it is cached. **🪞 Mirror** in Play uses the same tool live on the front camera: hold a relevé for 10 s, match three arm positions to the dancer, then lift your arms on count 1 at the solo's BPM. Nothing is recorded.
+
+### Goals (Me → 🎯 Goals)
+`goals` collection. Presets: right / left / middle split, bridge, arabesque height, side extension height, handstand hold, hollow hold, passé balance on relevé, aerial progression; custom goals too. Each goal has a target (seconds or degrees, or photo-only), a check-in timeline (photo or short clip, date, optional number — for splits and arabesque the pose tool measures the angle from the photo and fills it in), a line chart, and a first-vs-latest slider compare. Check-ins are every two weeks: Today shows a gentle "Check-in time" line when one is due (Later snoozes it three days); never daily. Goal photos live in the family space under `photos` with a `goal` field, are hidden from the photo grid, shown only inside the goal, and have no share button. Only flexibility, strength and balance are measured. Rings and the latest photo show on Me.
+
+### Practice mode (▶ Start practice)
+The checklist one item at a time, full screen: Manual (tap Done) or Timed (each item's own length from `practice-items.json` `secs`, auto-advance with a chime, pause). Every Done is saved to the day's practice record the moment it's tapped, mirrored in localStorage as a safety net, and the dancer + ring show progress. Skip moves on without checking. Confetti at the end.
+
 ### Practice player
 On any dance, **▶ Practice** opens the player for that dance's music: the uploaded music file (More ▸ Add music file — any audio file, or a video file if that's what the studio sent; only the sound is used) or, failing that, a music link that points straight at an audio file (.mp3/.m4a/.wav…). Streaming links like YouTube/Spotify can't be played; add the file instead.
 - **Speed** 50 · 75 · 100 (and a slider), pitch preserved.
@@ -57,6 +69,14 @@ js/badges.js          badge definitions, evaluation, awarding               (tes
 js/skills.js          skill ladder + states                                  (tested)
 js/player.js          practice player                                       (presets tested)
 js/cues.js            cue sheets: text form, what shows when                (tested)
+js/coach.js           AI coach: frames → worker → review card; Grown-ups → Coach reviews
+js/frames.js          frame sampling times + loudest-moment math             (tested)
+js/pose.js, js/posemath.js   MediaPipe Pose loader/drawing; angles & readouts (posemath tested)
+js/goals.js           goals: presets, check-ins, chart, compare, reminder     (math tested)
+js/pmode.js           practice mode                                          (tested)
+js/stage.js           full-screen stage for the games
+js/games/mirror.js    Mirror game (live pose)
+worker/               Cloudflare Worker for the coach (see worker/README.md); worker/src/core.js is tested from tests/
 js/showme.js          wrong-vs-fixed avatar pairs per tag
 js/reports.js         error capture, per-screen error state, "send a report", Reports page
 js/family.js          create / join gate (typed code, QR scan, ?join= link)
@@ -114,7 +134,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 43 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 58 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -155,7 +175,7 @@ Settings → **Export backup** produces `spotlight-backup-YYYY-MM-DD.zip` (all c
 ## Firebase rules
 Rules live in `firestore.rules` and `storage.rules`. Anonymous-authenticated users can read/write only under a valid 24-character `familyId` and only in the known collections; uploads are capped at 60 MB; everything else is denied.
 
-**Version 1.1.0 added four collections — `corrections`, `skills`, `badges`, `reports` — and `firestore.rules` must be republished before they sync.** Until then the app still works (notes, skills and badges show on the phone that made them and a "Couldn't save to the cloud" toast appears), but nothing in those four collections reaches the other phone, and the one-time copy of the dance-card corrections waits until the cloud confirms the collection.
+**Version 1.3.0 added `reviews` and `goals` (1.1.0 added `corrections`, `skills`, `badges`, `reports`) — republish `firestore.rules` after each such release or those collections won't sync.** Until then the app still works (notes, skills and badges show on the phone that made them and a "Couldn't save to the cloud" toast appears), but nothing in those four collections reaches the other phone, and the one-time copy of the dance-card corrections waits until the cloud confirms the collection.
 
 Two ways to publish the rules:
 - **Console (no CLI):** Firebase console → project `sofia-spotlight` → Firestore Database → Rules → paste the contents of `firestore.rules` → Publish. (Storage rules are unchanged since 1.0.x.)
@@ -182,11 +202,20 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 4) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 5) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 5 (1.3.0): `reviews` and `goals` collections, `photos.goal`.
 - Schema 4 (1.2.0): `dances.cues[]` (cue sheets), normalized on read when present.
 - Schema 3 (1.1.0): `practice.runs[]` ("Run it" logs), `settings.pin` / `settings.pinOn` / `settings.weekFix`, `dances.bpm` / `dances.loops` / `dances.countOffset`, and the four new collections. Older records get the defaults on read.
-- Collections: `dances, events, notes, todos, packs, practice, photos, files, choreo, settings, corrections, skills, badges, reports` under `/families/{familyId}/…`. Media under `families/{familyId}/{photos|files|music|videos}/{id}` in Storage.
+- Collections: `dances, events, notes, todos, packs, practice, photos, files, choreo, settings, corrections, skills, badges, reports, reviews, goals` under `/families/{familyId}/…`. Media under `families/{familyId}/{photos|files|music|videos}/{id}` in Storage.
 
 ## Privacy / constraints
-No analytics, no accounts, no chat, no third-party requests beyond the pinned CDN libraries (Firebase SDK on gstatic, JSZip and qrcode-generator on cdnjs, jsQR on jsDelivr — loaded only when scanning) and Google Fonts. Photos stay inside the family space and are only shown inside the app. Voice-to-text for class notes uses the browser's own speech recognition (Web Speech API) where available and is never sent anywhere by the app.
+No analytics, no accounts, no chat, no third-party requests beyond the pinned CDN libraries (Firebase SDK on gstatic, JSZip and qrcode-generator on cdnjs, jsQR and MediaPipe Tasks Vision on jsDelivr plus its model file from Google's model store — loaded only when used), Google Fonts, and the family's own coach worker (still frames only, never video). Photos stay inside the family space and are only shown inside the app. Voice-to-text for class notes uses the browser's own speech recognition (Web Speech API) where available and is never sent anywhere by the app.
+
+## Monthly cost expectations
+- Firebase: free tier (Firestore + Storage stay tiny; no videos are uploaded except goal clips you choose).
+- Cloudflare Worker: free plan.
+- Anthropic API: about 10 cents per coach review on `claude-opus-5-5` (half on `claude-sonnet-5-5`); two or three reviews a week is under $2 a month. Hard cap: 20 reviews per family per day. Check console.anthropic.com → Usage monthly.
+
+## Rotating the coach API key
+Create a new key in the Anthropic console → `cd worker && npx wrangler secret put ANTHROPIC_API_KEY` (or replace the secret in the Cloudflare dashboard) → delete the old key. The app doesn't change.
