@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { SCHEMA_VERSION, MIGRATIONS, migrateDoc, migrateCollection, docVersion, docTime } from "../js/store.js";
+import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime } from "../js/store.js";
 import { applyData } from "../js/data.js";
 import { PRACTICE_ITEMS, AERIAL } from "../js/data.js";
 
@@ -59,6 +59,30 @@ test("out-of-range or already-migrated values survive", () => {
   assert.deepEqual(out.done, ["warmup"]);
   const already = migrateDoc("practice", "d", { _v: SCHEMA_VERSION, done: ["kicks"] });
   assert.deepEqual(already.done, ["kicks"]);
+});
+
+// ---- schema 3 (kid mode / practice player / corrections / skills & badges) ----
+test("2 → 3: practice records gain runs:[], settings gain the default PIN, both without touching what was there", () => {
+  const v2p = migrateDoc("practice", "2026-09-28", { _v: 2, done: ["warmup", "kicks"], note: "ok" });
+  assert.equal(v2p._v, SCHEMA_VERSION); assert.deepEqual(v2p.runs, []); assert.deepEqual(v2p.done, ["warmup", "kicks"]); assert.equal(v2p.note, "ok");
+  const v1p = migrateDoc("practice", "2026-09-24", { done: [0, 8] });               // straight from schema 1
+  assert.deepEqual(v1p.done, ["warmup", "kicks"]); assert.deepEqual(v1p.runs, []);
+  const kept = migrateDoc("practice", "d", { _v: 2, done: [], runs: [{ at: "x", danceId: "solo", speed: 100, full: true, ending: true, eyes: false }] });
+  assert.equal(kept.runs.length, 1);
+  const s = migrateDoc("settings", "main", { _v: 2, avatar: { name: "Sofia" }, gameBest: 1350, aerial: ["hollow-hold"], top3: ["a"] });
+  assert.equal(s.pin, "2027"); assert.equal(s.pinOn, true); assert.equal(s.gameBest, 1350); assert.deepEqual(s.aerial, ["hollow-hold"]); assert.deepEqual(s.top3, ["a"]);
+  const custom = migrateDoc("settings", "main", { _v: 3, pin: "1234", pinOn: false });
+  assert.equal(custom.pin, "1234"); assert.equal(custom.pinOn, false);
+});
+
+test("2 → 3: corrections and skills written by an older build get their defaults; the new collections are known", () => {
+  const c = migrateDoc("corrections", "c1", { danceId: "solo", text: "Point the foot" });
+  assert.equal(c.status, "working"); assert.equal(c.tag, "other"); assert.equal(c.source, "notes"); assert.equal(c._v, SCHEMA_VERSION);
+  const done = migrateDoc("corrections", "c2", { _v: 3, status: "done", tag: "feet", source: "Hannah" });
+  assert.equal(done.status, "done"); assert.equal(done.tag, "feet"); assert.equal(done.source, "Hannah");
+  assert.equal(migrateDoc("skills", "a-aerial", { style: "acro" }).state, "learning");
+  assert.equal(migrateDoc("skills", "a-aerial", { state: "checked", teacher: "Hannah" }).state, "checked");
+  for (const col of ["corrections", "skills", "badges", "reports"]) assert.ok(COLLECTIONS.includes(col), col + " must be synced and backed up");
 });
 
 test("a whole collection migrates and other collections pass through unchanged", () => {

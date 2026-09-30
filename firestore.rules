@@ -6,7 +6,8 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function validFamily(id) { return id.matches('^[A-Z2-9]{24}$'); }
     function knownCollection(col) {
-      return col in ['dances', 'events', 'notes', 'todos', 'packs', 'practice', 'photos', 'files', 'choreo', 'settings'];
+      return col in ['dances', 'events', 'notes', 'todos', 'packs', 'practice', 'photos', 'files', 'choreo', 'settings',
+                     'corrections', 'skills', 'badges', 'reports'];
     }
     function reasonableDoc() { return request.resource.data.keys().size() <= 60; }
 

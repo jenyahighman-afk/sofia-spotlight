@@ -10,10 +10,11 @@ const APP_FILES = [
   "./", "./index.html", "./manifest.json", "./css/app.css",
   "./js/version.js", "./js/app.js", "./js/util.js", "./js/data.js", "./js/store.js", "./js/nav.js", "./js/sync.js", "./js/firebase-config.js",
   "./js/media.js", "./js/ics.js", "./js/seed.js", "./js/backup.js", "./js/family.js", "./js/avatar.js",
+  "./js/corrections.js", "./js/streak.js", "./js/badges.js", "./js/skills.js", "./js/reports.js", "./js/grownups.js", "./js/showme.js", "./js/player.js",
   "./js/games/choreo.js", "./js/games/oops.js", "./js/games/trio.js", "./js/games/compday.js", "./js/games/sparkle.js",
-  "./js/views/home.js", "./js/views/dances.js", "./js/views/events.js", "./js/views/schedule.js", "./js/views/practice.js", "./js/views/notes.js", "./js/views/play.js", "./js/views/lists.js", "./js/views/settings.js",
+  "./js/views/home.js", "./js/views/dances.js", "./js/views/events.js", "./js/views/schedule.js", "./js/views/practice.js", "./js/views/notes.js", "./js/views/play.js", "./js/views/lists.js", "./js/views/settings.js", "./js/views/me.js", "./js/views/skillcheck.js",
   "./data/dances.json", "./data/events.json", "./data/classes.json", "./data/home-days.json", "./data/practice-items.json", "./data/phases.json", "./data/packs.json", "./data/aerial.json", "./data/season.json",
-  "./data/styles.json", "./data/moves.json", "./data/avatar-options.json", "./data/oops.json", "./data/trio.json", "./data/compday.json", "./data/sparkle.json",
+  "./data/styles.json", "./data/moves.json", "./data/avatar-options.json", "./data/oops.json", "./data/trio.json", "./data/compday.json", "./data/sparkle.json", "./data/skills.json",
   "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-180.png", "./icons/icon-512-maskable.png"
 ];
 const LIB_HOSTS = ["www.gstatic.com", "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com"];

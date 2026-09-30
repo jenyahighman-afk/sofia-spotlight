@@ -1,29 +1,50 @@
-// Practice tab: today's checklist (stored by item id since schema 2), the 15-week plan, aerial progression, history.
+// Practice tab: the checklist IS the screen — progress ring, tap to check (auto-saved), confetti at 100%.
+// Plan, safety rules, aerial mission, notes and history sit under accordions.
 import { $, $$, esc, fmt, todayStr, toast, expose } from "../util.js";
-import { PRACTICE_ITEMS, PHASES, AERIAL } from "../data.js";
-import { S, storeSet } from "../store.js";
+import { PRACTICE_ITEMS, PHASES, AERIAL, CLASSES } from "../data.js";
+import { S, storeSet, events } from "../store.js";
+import { computeStreak } from "../streak.js";
+import { checkBadges } from "../badges.js";
 
+const KIND = { warm:"🔥", str:"💪", flex:"🧘", tech:"🩰", run:"▶️" };
+let lastPct = -1, dateSel = null;
+const curDate = () => dateSel || todayStr();
+
+function ring(pct){ const r=44, c=2*Math.PI*r; return `<svg viewBox="0 0 100 100" class="ring"><circle cx="50" cy="50" r="${r}" class="ring-bg"/><circle cx="50" cy="50" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-pct/100)}"/><text x="50" y="50" class="ring-txt">${pct}%</text></svg>`; }
 function renderPractice(){
-  const date=$("#practiceDate").value||todayStr(); $("#practiceDate").value=date;
-  const rec=S.practice[date]||{done:[],note:""}; const done=new Set(rec.done||[]);
-  $("#practiceChecklist").innerHTML=PRACTICE_ITEMS.map(it=>`<div class="check ${done.has(it.id)?"done":""}"><input type="checkbox" ${done.has(it.id)?"checked":""} data-id="${it.id}" class="pchk"><span>${esc(it.text)}</span></div>`).join("");
-  $("#practiceNote").value=rec.note||"";
-  const pct=Math.round(100*done.size/PRACTICE_ITEMS.length); $("#practiceBar").style.width=pct+"%";
-  $("#streak").textContent=Object.keys(S.practice).length;
-  $$(".pchk").forEach(c=>c.addEventListener("change",()=>{ const n=$$(".pchk").filter(x=>x.checked).length; $("#practiceBar").style.width=Math.round(100*n/PRACTICE_ITEMS.length)+"%"; c.closest(".check").classList.toggle("done",c.checked); }));
+  const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=new Set(rec.done||[]);
+  const pct=PRACTICE_ITEMS.length?Math.round(100*[...done].filter(id=>PRACTICE_ITEMS.some(i=>i.id===id)).length/PRACTICE_ITEMS.length):0;
+  const streak=computeStreak({practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today:todayStr()});
+  $("#practiceHead").innerHTML=`${ring(pct)}<div class="grow"><div class="today-what">${date===todayStr()?"Today":fmt(date)}</div><div class="row"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${(rec.runs||[]).length?`<span class="chip sun">▶ ${rec.runs.length} run${rec.runs.length>1?"s":""}</span>`:""}</div><div class="small muted" style="margin-top:4px">${pct>=100?"All done. Go you! 🎉":pct>=60?"That counts as a practice day ✓":"Get to 60% and today counts."}</div></div>`;
+  $("#practiceChecklist").innerHTML=PRACTICE_ITEMS.map(it=>`<label class="pitem ${done.has(it.id)?"done":""}"><input type="checkbox" ${done.has(it.id)?"checked":""} data-id="${it.id}" class="pchk"><span class="pk">${KIND[it.kind]||"✨"}</span><span class="grow">${esc(it.text)}</span></label>`).join("");
+  $$(".pchk").forEach(c=>c.addEventListener("change",onCheck));
+  if($("#practiceNote")!==document.activeElement) $("#practiceNote").value=rec.note||"";
+  $("#practiceDate").value=date;
   const ad=new Set(S.settings.aerial||[]); let lastSec="";
-  $("#aerialList").innerHTML=AERIAL.map(it=>{ const h=(it.section!==lastSec)?`<div class="chip sun" style="margin-top:8px">${esc(it.section)}</div>`:""; lastSec=it.section; return h+`<div class="check ${ad.has(it.id)?"done":""}"><input type="checkbox" ${ad.has(it.id)?"checked":""} onchange="toggleAerial('${it.id}')"><span>${esc(it.text)}</span></div>`; }).join("");
-  $("#aerialPct").textContent=Math.round(100*[...ad].filter(id=>AERIAL.some(a=>a.id===id)).length/AERIAL.length)+"%";
-  $("#phases").innerHTML=PHASES.map(p=>`<details><summary>${esc(p.n)} <span class="chip violet">${esc(p.d)}</span></summary><p class="small">${esc(p.g)}</p></details>`).join("");
-  const hist=Object.entries(S.practice).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,20);
-  $("#practiceHistory").innerHTML=hist.length?hist.map(([d,r])=>`<div class="check"><span class="chip mint">${fmt(d)}</span><span>${(r.done||[]).length}/${PRACTICE_ITEMS.length} done${r.note?" · "+esc(r.note):""}</span></div>`).join(""):`<p class="muted">Nothing logged yet. Today is a good day to start.</p>`;
+  $("#aerialList").innerHTML=AERIAL.map(it=>{ const h=(it.section!==lastSec)?`<div class="chip sun" style="margin-top:8px">${esc(it.section)}</div>`:""; lastSec=it.section; return h+`<label class="pitem ${ad.has(it.id)?"done":""}"><input type="checkbox" ${ad.has(it.id)?"checked":""} onchange="toggleAerial('${it.id}')"><span class="grow">${esc(it.text)}</span></label>`; }).join("");
+  const apct=Math.round(100*[...ad].filter(id=>AERIAL.some(a=>a.id===id)).length/AERIAL.length); $("#aerialPct").textContent=apct+"%";
+  $("#phases").innerHTML=PHASES.map(p=>`<div class="check"><span class="chip violet">${esc(p.d)}</span><span><b>${esc(p.n)}</b><br><span class="small">${esc(p.g)}</span></span></div>`).join("");
+  const hist=Object.entries(S.practice).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30);
+  $("#practiceHistory").innerHTML=hist.length?hist.map(([d,r])=>`<div class="check"><span class="chip mint">${fmt(d)}</span><span>${(r.done||[]).length}/${PRACTICE_ITEMS.length}${(r.runs||[]).length?` · ▶ ${r.runs.length}`:""}${r.note?" · "+esc(r.note):""}</span></div>`).join(""):`<p class="muted small">Nothing yet. Today is a good day.</p>`;
+  lastPct=pct;
 }
-async function toggleAerial(id){ const ad=new Set(S.settings.aerial||[]); ad.has(id)?ad.delete(id):ad.add(id); await storeSet("settings","main",{...S.settings,aerial:[...ad]}); if(AERIAL.every(a=>ad.has(a.id))) toast("AERIAL UNLOCKED 🎉"); }
-async function savePractice(){ const date=$("#practiceDate").value||todayStr(); const done=$$(".pchk").filter(x=>x.checked).map(x=>x.dataset.id); await storeSet("practice",date,{done,note:$("#practiceNote").value}); toast("Logged. Go you."); }
-
+async function onCheck(e){
+  const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=$$(".pchk").filter(x=>x.checked).map(x=>x.dataset.id);
+  e.target.closest(".pitem").classList.toggle("done",e.target.checked);
+  const pct=Math.round(100*done.length/PRACTICE_ITEMS.length);
+  await storeSet("practice",date,{...rec,done});
+  if(pct>=100&&lastPct<100) confetti(); lastPct=pct; checkBadges();
+}
+async function saveNote(){ const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; await storeSet("practice",date,{...rec,note:$("#practiceNote").value}); toast("Saved"); }
+async function toggleAerial(id){ const ad=new Set(S.settings.aerial||[]); ad.has(id)?ad.delete(id):ad.add(id); await storeSet("settings","main",{...S.settings,aerial:[...ad]}); if(AERIAL.every(a=>ad.has(a.id))){ toast("AERIAL UNLOCKED 🎉"); confetti(); } checkBadges(); }
+export function confetti(){
+  const box=document.createElement("div"); box.className="confetti"; const colors=["#FF5C93","#F4C86A","#C9A7F5","#F7A8C6","#2ED3C8","#fff"];
+  for(let i=0;i<70;i++){ const s=document.createElement("i"); s.style.left=Math.random()*100+"%"; s.style.background=colors[i%colors.length]; s.style.animationDelay=(Math.random()*0.6)+"s"; s.style.animationDuration=(1.6+Math.random()*1.2)+"s"; s.style.transform=`rotate(${Math.random()*360}deg)`; box.appendChild(s); }
+  document.body.appendChild(box); setTimeout(()=>box.remove(),3200);
+}
 export function initPractice(){
-  $("#practiceDate").addEventListener("change",renderPractice);
-  $("#savePractice").onclick=savePractice;
+  $("#practiceDate").addEventListener("change",(e)=>{ dateSel=e.target.value||null; lastPct=-1; renderPractice(); });
+  $("#saveNote").onclick=saveNote;
 }
-export { renderPractice, toggleAerial, savePractice };
+export { renderPractice, toggleAerial };
 expose({ toggleAerial });

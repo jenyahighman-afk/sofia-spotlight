@@ -1,0 +1,107 @@
+// Smoke tests: every screen's init + render runs in Node against a fake DOM (tests/_env.mjs), with empty state and with
+// sample records — and every element id the code looks up by name exists in index.html.
+// Run through `npm test` (the loader in tests/_register.mjs stands in for the Firebase CDN imports).
+import { test, before } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync, readdirSync } from "node:fs";
+import { installEnv, resetDom, el } from "./_env.mjs";
+
+installEnv();
+const read = (rel) => readFileSync(new URL("../" + rel, import.meta.url), "utf8");
+const html = read("index.html");
+const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills"];
+
+let M = {};
+before(async () => {
+  const data = await import("../js/data.js"); const got = {}; for (const f of dataFiles) got[f] = JSON.parse(read("data/" + f + ".json")); data.applyData(got);
+  M.store = await import("../js/store.js");
+  M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
+  M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
+  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js");
+});
+
+const SCREENS = () => ({
+  home: M.home.renderHome, dances: M.dances.renderDances, practice: M.practice.renderPractice, play: M.play.renderPlay, me: M.me.renderMe,
+  events: M.events.renderEvents, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, notes: () => { M.notes.renderNotes(); M.notes.renderPhotos(); M.notes.renderFiles(); },
+  lists: () => { M.lists.renderTodos(); M.lists.renderPack(); }, skillcheck: M.skillcheck.renderSkillCheck, reports: M.reports.renderReports, grownups: M.grownups.renderGrownups, settings: M.settings.renderSettings,
+});
+const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks];
+
+test("every element id looked up in the code exists in index.html", () => {
+  const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
+  walk("js"); walk("js/views"); walk("js/games");
+  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote"]); // created inside a render, not in the markup
+  const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
+  assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
+  assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
+});
+
+test("the five kid tabs and every Grown-ups page exist; nothing text-heavy was deleted, only moved", () => {
+  for (const p of ["home","dances","practice","play","me","pin","grownups","events","schedule","notes","lists","skillcheck","reviews","reports","settings"]) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
+  const tabs = [...html.matchAll(/<button data-p="([a-z]+)"/g)].map(m => m[1]);
+  assert.deepEqual(tabs, ["home","dances","practice","play","me"]);
+  for (const id of ["eventList","calGrid","packList","todoList","noteList","fileList","photoGrid","setExport","setImportFile","setLeave","aerialList","phases"]) assert.ok(html.includes(`id="${id}"`), id + " still present");
+  assert.ok(html.includes('id="showme"') && html.includes('id="player"'));
+});
+
+test("every screen initialises and renders with an empty family space (no throw, content produced)", () => {
+  resetDom(); for (const k of Object.keys(M.store.S)) M.store.S[k] = {};
+  for (const init of inits()) init();
+  for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
+  assert.ok(el("#todayCard").innerHTML.includes("Play"), "Today card has the Play button");
+  assert.ok(el("#danceList").innerHTML.includes("openPlayer('solo')"), "solo cover has ▶ Practice");
+  assert.ok(el("#danceList").innerHTML.includes("More ▸"), "More ▸ is collapsed by default");
+  assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
+  assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
+  assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
+  assert.ok(el("#skillRings").innerHTML.includes("Acro"), "skill rings per style");
+  assert.ok(el("#skillCheckList").innerHTML.includes("Teacher checked"), "grown-ups can teacher-check");
+  assert.ok(el("#reportList").innerHTML.includes("No reports"), "reports empty state");
+  assert.ok(el("#weekFix").innerHTML.includes("No open notes"), "week fix empty state");
+});
+
+test("with records: fixes become chips, patterns show up, this week's fix appears on Today, badges light up, runs count", () => {
+  resetDom(); for (const k of Object.keys(M.store.S)) M.store.S[k] = {};
+  const S = M.store.S; const today = new Date(); const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); const t = iso(today);
+  S.corrections = { a: { id: "a", danceId: "solo", text: "Point your foot", tag: "feet", status: "working", date: t, source: "Hannah" }, b: { id: "b", danceId: "solo", text: "Eyes up", tag: "eyes", status: "working", date: t, source: "Mom" }, c: { id: "c", danceId: "trio", text: "Point the foot", tag: "feet", status: "working", date: t, source: "Larisa" }, d: { id: "d", danceId: "pitch-jazz", text: "Feet!", tag: "feet", status: "done", date: t, source: "me" } };
+  S.settings = { pin: "2027", pinOn: true, weekFix: { id: "a", week: M.corrections.weekKey(t) }, gameBest: 1350 };
+  S.practice = { [t]: { done: ["warmup"], runs: [{ at: t, danceId: "solo", speed: 100, full: true, ending: true, eyes: true }] } };
+  S.badges = { fix1: { key: "fix1", label: "First fix closed", emoji: "✅", at: t } };
+  S.skills = { "a-cartwheel": { state: "checked", teacher: "Hannah" }, "a-onehand": { state: "learning" } };
+  S.corrections.e = { id: "e", danceId: "pitch-jazz", text: "Feet again", tag: "feet", status: "working", date: t, source: "Isadora" }; S.corrections.f = { id: "f", danceId: "pitch-jazz", text: "And again", tag: "feet", status: "working", date: t, source: "Isadora" };
+  S.reports = { r1: { page: "home", note: "it froze", error: "TypeError: x", at: t + "T10:00:00Z", version: "1.1.0" } };
+  for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
+  const dl = el("#danceList").innerHTML;
+  assert.ok(dl.includes("fixchip") && dl.includes("showMe('a')"), "chip opens Show me");
+  assert.ok(el("#mePatterns").innerHTML.includes("You've had this note 5 times"), "Me shows the repeated tag across dances");
+  assert.ok(dl.includes("You've had this note 3 times") && dl.includes("gotIt('d')") === false && dl.includes("Got it!"), "jazz card shows its own 3-times line with a Got it! on an open note");
+  assert.ok(el("#weekFix").innerHTML.includes("Point your foot") && el("#weekFix").innerHTML.includes("This week's fix"), "Today shows this week's fix");
+  assert.ok(el("#badgeCase").innerHTML.includes("badge on"), "earned badge lit");
+  assert.ok(el("#practiceHead").innerHTML.includes("1 run"), "run shown on Practice");
+  assert.ok(el("#todayCard").innerHTML.includes("1-day streak"), "a run makes today count");
+  assert.ok(el("#reportList").innerHTML.includes("it froze"), "report listed for Mom");
+  assert.ok(el("#skillCheckList").innerHTML.includes("Hannah"), "teacher name shown");
+  M.showme.showMe("a"); assert.ok(el("#showmeStage").innerHTML.includes("Flexed foot") && el("#showmeStage").innerHTML.includes("Point your foot"), "Show me renders both sides");
+  for (const tag of ["feet","knees","eyes","arms","spacing","energy","timing","other"]) { M.showme.showMe(null, tag); assert.equal((el("#showmeStage").innerHTML.match(/<svg/g) || []).length, 2, tag + " has two stages"); }
+});
+
+test("practice player presets come from the dance's loops and its music-map timestamps", () => {
+  const solo = JSON.parse(read("data/dances.json")).find(d => d.id === "solo");
+  const ps = M.player.presetsFor(solo, 124);
+  assert.ok(ps.some(p => p.n === "Soft half" && p.a === 0 && p.b === 48));
+  assert.ok(ps.some(p => p.fromMap && p.a === 50 && p.b === 68 && p.n === "cartwheel"), "0:50 cartwheel → next stamp 1:08, label trimmed");
+  assert.ok(ps.every(p => p.b > p.a));
+  assert.equal(M.player.parseTime("1:52"), 112); assert.equal(M.player.parseTime("x"), null);
+  assert.equal(M.player.shortLabel("floor ending — hold until the music is gone"), "floor ending — hold");
+  assert.deepEqual(M.player.presetsFor({ id: "x" }, 0), []);
+});
+
+test("Grown-ups gate: locked by default, wrong PIN stays, right PIN opens, PIN off skips the pad", () => {
+  resetDom(); M.store.S.settings = { pin: "2027", pinOn: true }; globalThis.sessionStorage.clear();
+  assert.equal(M.grownups.isUnlocked(), false);
+  assert.equal(M.store.pin(), "2027");
+  globalThis.sessionStorage.setItem("spotlight:grownups", String(Date.now())); assert.equal(M.grownups.isUnlocked(), true);
+  M.grownups.lockGrownups(); assert.equal(M.grownups.isUnlocked(), false);
+  M.store.S.settings = { pinOn: false }; assert.equal(M.grownups.isUnlocked(), true); assert.equal(M.store.pin(), "2027");
+  assert.ok(M.grownups.GROWNUP_PAGES.includes("settings") && M.grownups.GROWNUP_PAGES.includes("events"));
+});

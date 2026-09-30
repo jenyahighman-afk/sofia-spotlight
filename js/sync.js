@@ -66,7 +66,7 @@ export function startWatching(familyId){
   for (const col of COLLECTIONS) {
     const unsub = onSnapshot(collection(sync.db, "families", familyId, col), { includeMetadataChanges: true }, snap => {
       const docs = {}; snap.forEach(d => { docs[d.id] = d.data(); });
-      receive(col, docs);
+      receive(col, docs, { fromCache: snap.metadata.fromCache });
       sync.pending = snap.metadata.hasPendingWrites; sync.fromCache = snap.metadata.fromCache; if (!snap.metadata.fromCache) sync.lastSync = Date.now(); sync.error = null; emitStatus();
     }, err => { console.warn("sync listener failed", col, err); sync.error = err.code || err.message; emitStatus(); });
     sync.unsubs.push(unsub);
