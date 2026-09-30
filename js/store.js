@@ -5,9 +5,9 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
-export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports"];
+export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
 // Schema 1 stored practice.done and settings.aerial as positions in the built-in lists.
 // These are those lists' orders at schema 1, frozen here so the migration keeps working after data/*.json is edited.
@@ -45,6 +45,13 @@ export const MIGRATIONS = {
       doc.cues = (Array.isArray(doc.cues) ? doc.cues : []).map(c => ({ t: toT(c && c.t), lyric: String((c && c.lyric) || ""), move: String((c && c.move) || "") })).filter(c => c.t !== null).sort((a, b) => a.t - b.t);
     }
     return doc;
+  },
+  // 4 → 5 (AI coach, goals): reviews {danceId, trick, kind, date, thumbs[], pose, review{}}; goals {name, unit, target, checkins[]}.
+  // photos may carry `goal` (a check-in photo, hidden from the photo grid). Only defaults are filled; nothing is renamed.
+  5: (col, id, doc) => {
+    if (col === "reviews") { if (!Array.isArray(doc.thumbs)) doc.thumbs = []; if (!doc.review || typeof doc.review !== "object") doc.review = {}; if (!doc.kind) doc.kind = "video"; }
+    if (col === "goals") { if (!Array.isArray(doc.checkins)) doc.checkins = []; if (typeof doc.target !== "number") doc.target = +doc.target || 0; if (typeof doc.unit !== "string") doc.unit = ""; }
+    return doc;
   }
 };
 
@@ -59,7 +66,7 @@ export function migrateDoc(col, id, doc){
 export function migrateCollection(col, docs){ const out = {}; for (const [id, doc] of Object.entries(docs || {})) out[id] = migrateDoc(col, id, doc); return out; }
 
 // ---------- STATE ----------
-export const S = { dances:{}, events:{}, notes:{}, todos:{}, packs:{}, practice:{}, photos:{}, files:{}, choreo:{}, settings:{}, corrections:{}, skills:{}, badges:{}, reports:{} };
+export const S = { dances:{}, events:{}, notes:{}, todos:{}, packs:{}, practice:{}, photos:{}, files:{}, choreo:{}, settings:{}, corrections:{}, skills:{}, badges:{}, reports:{}, reviews:{}, goals:{} };
 // Which collections the backend has delivered at least once, and whether that delivery was confirmed by the server (not just the local cache).
 export const received = { any: new Set(), server: new Set() };
 

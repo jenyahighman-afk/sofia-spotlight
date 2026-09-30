@@ -5,3 +5,5 @@ firebase-debug.log
 .DS_Store
 Thumbs.db
 .claude/settings.local.json
+worker/node_modules/
+worker/.wrangler/

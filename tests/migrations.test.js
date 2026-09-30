@@ -93,6 +93,14 @@ test("3 → 4: dance cue sheets are normalized when present and never invented w
   assert.deepEqual(migrateDoc("dances", "d", { cues: "junk" }).cues, []);
 });
 
+test("4 → 5: reviews and goals get their defaults; the two collections are known", () => {
+  const rv = migrateDoc("reviews", "v", { danceId: "solo", review: { loved: "x", fix: "y", tag: "feet" } });
+  assert.equal(rv._v, SCHEMA_VERSION); assert.deepEqual(rv.thumbs, []); assert.equal(rv.kind, "video"); assert.equal(rv.review.tag, "feet");
+  const g = migrateDoc("goals", "g", { name: "Bridge", target: "20" });
+  assert.deepEqual(g.checkins, []); assert.equal(g.target, 20); assert.equal(g.unit, "");
+  for (const col of ["reviews", "goals"]) assert.ok(COLLECTIONS.includes(col), col);
+});
+
 test("a whole collection migrates and other collections pass through unchanged", () => {
   const out = migrateCollection("notes", { a: { title: "t", body: "b", tag: "Ideas", at: "2026-09-27T03:01:15.743Z" } });
   assert.equal(out.a._v, SCHEMA_VERSION); assert.equal(out.a.title, "t");
