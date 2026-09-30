@@ -22,7 +22,7 @@ Sofia sees five tabs, each built to *do* something with as few words as possible
 Every screen has an error state ("This screen hit a snag … Send a report") and a small **Something went wrong? Tap to send a report** link at the bottom. Reports land in the `reports` collection and show under Grown-ups → Reports with the last error that phone captured.
 
 ### Practice player
-On any dance, **▶ Practice** opens the player for that dance's music: the uploaded music file (More ▸ Add music file) or, failing that, a music link that points straight at an audio file (.mp3/.m4a/.wav…). Streaming links like YouTube/Spotify can't be played; add the file instead.
+On any dance, **▶ Practice** opens the player for that dance's music: the uploaded music file (More ▸ Add music file — any audio file, or a video file if that's what the studio sent; only the sound is used) or, failing that, a music link that points straight at an audio file (.mp3/.m4a/.wav…). Streaming links like YouTube/Spotify can't be played; add the file instead.
 - **Speed** 50 · 75 · 100 (and a slider), pitch preserved.
 - **A–B loop**: tap A then B while it plays. Presets come from the dance's `loops` (data/dances.json) plus every `m:ss` timestamp in "Where the big moments land" (each one loops until the next timestamp).
 - **8-count overlay**: needs the dance's BPM (More ▸ Edit; solo 76, jazz 123, trio 86 are filled in) and a one-time **Tap on count 1** while the track plays (stored as `countOffset` on the dance). Quiet, click, or spoken counts.
