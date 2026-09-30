@@ -7,6 +7,6 @@ http.createServer((req, res) => {
   let p = decodeURIComponent(new URL(req.url, "http://x").pathname); if (p.endsWith("/")) p += "index.html";
   const file = path.normalize(path.join(ROOT, p));
   if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); return res.end("not found"); }
-  res.writeHead(200, { "Content-Type": MIME[path.extname(file).toLowerCase()] || "application/octet-stream", "Cache-Control": "no-store", "Service-Worker-Allowed": "/" });
+  res.writeHead(200, { "Content-Type": MIME[path.extname(file).toLowerCase()] || "application/octet-stream", "Cache-Control": "no-store", "Service-Worker-Allowed": "/", "Access-Control-Allow-Origin": "*" });
   fs.createReadStream(file).pipe(res);
 }).listen(PORT, () => console.log(`Sofia's Spotlight → http://localhost:${PORT}/`));
