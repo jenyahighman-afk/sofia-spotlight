@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports"];
 
@@ -35,6 +35,15 @@ export const MIGRATIONS = {
     if (col === "settings") { if (typeof doc.pin !== "string") doc.pin = DEFAULT_PIN; if (typeof doc.pinOn !== "boolean") doc.pinOn = true; }
     if (col === "corrections") { if (!doc.status) doc.status = "working"; if (!doc.tag) doc.tag = "other"; if (!doc.source) doc.source = "notes"; }
     if (col === "skills") { if (!doc.state) doc.state = "learning"; }
+    return doc;
+  },
+  // 3 → 4 (cue sheets): dances.cues = [{t (seconds), lyric, move}]. Only normalized when present — a stored dance doc is a
+  // partial override of data/dances.json, so defaulting cues to [] would hide the built-in sheet.
+  4: (col, id, doc) => {
+    if (col === "dances" && doc.cues !== undefined) {
+      const toT = (v) => { if (typeof v === "number") return v; const m = /^(\d+):(\d{2})$/.exec(String(v || "").trim()); return m ? +m[1] * 60 + +m[2] : (Number.isFinite(parseFloat(v)) ? parseFloat(v) : null); };
+      doc.cues = (Array.isArray(doc.cues) ? doc.cues : []).map(c => ({ t: toT(c && c.t), lyric: String((c && c.lyric) || ""), move: String((c && c.move) || "") })).filter(c => c.t !== null).sort((a, b) => a.t - b.t);
+    }
     return doc;
   }
 };

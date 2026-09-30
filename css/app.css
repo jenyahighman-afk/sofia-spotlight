@@ -214,3 +214,10 @@ body.modal{overflow:hidden}
 .run-live{font-family:Fredoka;font-size:1.6rem;color:#B98BEF} .run-q{font-family:Fredoka;font-size:1.6rem;line-height:1.2} .run-yn .btn{font-size:1.2rem;padding:14px 22px}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .badge.on{background:#5A4A2E} :root:not([data-theme="light"]) .pattern{background:#5A4A2E;color:var(--ink)} :root:not([data-theme="light"]) .day .ev.done{background:#2E5A45;color:var(--ink)} :root:not([data-theme="light"]) .run-overlay{background:rgba(43,26,38,.96)} }
 .run-stop{margin-top:18px;font-size:1.05rem;padding:12px 26px}
+.cue{background:var(--blush);border-radius:14px;padding:10px 12px;margin:6px 0;text-align:center;min-height:64px}
+.cue .cue-move{font-family:Fredoka;font-size:1.5rem;line-height:1.15}
+.cue .cue-lyric{font-style:italic;font-size:.95rem;margin-top:2px;color:var(--ink-2)}
+.cue .cue-next{font-size:.8rem;font-weight:800;margin-top:6px;color:var(--ink-2)} .cue.soon .cue-next{color:#FF5C93}
+.cue .cue-hidden{display:inline-block;background:var(--violet);color:#4A2340;border-radius:10px;padding:4px 14px;font-family:Fredoka;font-size:1.2rem;cursor:pointer}
+.run-overlay .cue{width:100%;background:transparent;min-height:0} .run-overlay .cue .cue-move{font-size:2.4rem} .run-overlay .cue .cue-lyric{font-size:1.2rem}
+.cuelist .check{align-items:center} .cuelist .cue-t{font-family:Fredoka;min-width:44px;color:#FF5C93;cursor:pointer}

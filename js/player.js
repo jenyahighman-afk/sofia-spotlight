@@ -3,6 +3,7 @@
 import { $, esc, toast, expose, todayStr } from "./util.js";
 import { S, storeSet, dances } from "./store.js";
 import { checkBadges } from "./badges.js";
+import { normalizeCues, cueAt, fmtTime } from "./cues.js";
 
 const AUDIO_RE = /\.(mp3|m4a|aac|wav|ogg|oga|flac|webm)(\?.*)?$/i;
 const fmtT = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
@@ -18,7 +19,7 @@ export function presetsFor(d, duration = 0){
   return out;
 }
 
-const PL = { dance: null, audio: null, objUrl: "", a: null, b: null, speed: 100, counts: false, voice: "off", raf: 0, lastCount: 0, run: null, ctx: null, offline: false };
+const PL = { dance: null, audio: null, objUrl: "", a: null, b: null, speed: 100, counts: false, voice: "off", raf: 0, lastCount: 0, run: null, ctx: null, offline: false, testMe: false, revealed: -1, lastCueIdx: -2, showList: false };
 let objectUrlCache = {}; // danceId → object URL for a track already downloaded this session
 
 function srcFor(d){ if (d.musicFile && d.musicFile.url) return { url: d.musicFile.url, kind: "file" }; if (d.musicUrl && AUDIO_RE.test(d.musicUrl)) return { url: d.musicUrl, kind: "link" }; return null; }
@@ -48,12 +49,44 @@ function tick(){
   $("#plTime").textContent = fmtT(t) + " / " + (Number.isFinite(a.duration) ? fmtT(a.duration) : "–:––"); if (Number.isFinite(a.duration) && a.duration) $("#plBar").style.width = (100 * t / a.duration) + "%";
   if (PL.b !== null && t >= PL.b) a.currentTime = PL.a;
   if (PL.counts && +PL.dance.bpm) { const beat = Math.floor((t - (+PL.dance.countOffset || 0)) * (+PL.dance.bpm) / 60); if (beat >= 0) { const c = (beat % 8) + 1; if (beat !== PL.lastCount) { PL.lastCount = beat; $("#plCount").textContent = c; $("#plCount").classList.toggle("one", c === 1); if (!a.paused) { if (PL.voice === "click") click(c === 1); else if (PL.voice === "voice") say(c); } } } else $("#plCount").textContent = "…"; }
+  renderCue(t);
   PL.raf = requestAnimationFrame(tick);
 }
 function play(){ if (!PL.audio) return; ensureCtx(); PL.audio.play().then(() => { $("#plPlay").textContent = "❚❚"; }).catch(e => { console.warn(e); setStatus(`<span class="bad">Couldn't play. Tap ▶ again, or check the file under More ▸.</span>`); }); }
 function pause(){ if (!PL.audio) return; PL.audio.pause(); $("#plPlay").textContent = "▶"; }
 function toggle(){ if (!PL.audio) return; PL.audio.paused ? play() : pause(); }
 function seek(ev){ if (!PL.audio || !Number.isFinite(PL.audio.duration)) return; const r = ev.currentTarget.getBoundingClientRect(); PL.audio.currentTime = PL.audio.duration * Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)); }
+
+// ---- cue sheet ----
+const cues = () => normalizeCues(PL.dance && PL.dance.cues);
+function cueHtml(t){
+  const { cur, next, soon, untilNext, index } = cueAt(cues(), t);
+  if (!cur && !next) return "";
+  const hidden = PL.testMe && cur && PL.revealed !== index;
+  const move = cur ? (hidden ? `<span class="cue-hidden" onclick="plReveal(${index})">Tap to show</span>` : esc(cur.move || "…")) : "…";
+  const lyric = cur && cur.lyric ? `<div class="cue-lyric">“${esc(cur.lyric)}”</div>` : "";
+  const nx = next ? `<div class="cue-next">${soon ? "NEXT" : "next"} · ${PL.testMe ? "…" : esc(next.move || next.lyric)} · ${Math.ceil(untilNext)}s</div>` : (cur ? `<div class="cue-next">last cue</div>` : "");
+  return `<div class="cue-move">${move}</div>${lyric}${nx}`;
+}
+function renderCue(t){
+  const { index, soon } = cueAt(cues(), t); const html = cueHtml(t);
+  const box = $("#plCue"); box.hidden = !html; if (html) { box.innerHTML = html; box.classList.toggle("soon", soon); }
+  const run = $("#plRunCue"); if (run) { run.innerHTML = html || `<div class="cue-move">Full run · eyes up</div>`; run.classList.toggle("soon", soon); }
+  if (index !== PL.lastCueIdx) { PL.lastCueIdx = index; }
+}
+function cueSheetUI(){ const list = cues(); $("#plCueCount").textContent = list.length ? `· ${list.length} cue${list.length === 1 ? "" : "s"}` : "· none yet"; $("#plTestMe").classList.toggle("coral", PL.testMe); $("#plCueList").classList.toggle("coral", PL.showList); const el = $("#plCues"); el.hidden = !PL.showList;
+  el.innerHTML = list.length ? list.map((c, i) => `<div class="check"><span class="cue-t" onclick="plSeek(${c.t})">${fmtTime(c.t)}</span><span class="grow"><b>${esc(c.move)}</b>${c.lyric ? ` <span class="muted">“${esc(c.lyric)}”</span>` : ""}</span><button class="del" onclick="plCueEdit(${i})" title="Edit">✏️</button><button class="del" onclick="plCueDel(${i})">✕</button></div>`).join("") : `<p class="small muted">Play the track and tap ＋ Cue here at each moment. Type the words being sung and what she does.</p>`; }
+async function saveCues(list){ const d = PL.dance; await storeSet("dances", d.id, { ...(S.dances[d.id] || {}), id: d.id, cues: normalizeCues(list) }); PL.dance = dances().find(x => x.id === d.id) || d; PL.lastCueIdx = -2; cueSheetUI(); }
+async function addCue(){ if (!PL.audio) return; const wasPlaying = !PL.audio.paused; pause(); const t = PL.audio.currentTime;
+  const lyric = prompt(`Cue at ${fmtTime(t)} — what words are sung here? (optional)`, ""); if (lyric === null) { if (wasPlaying) play(); return; }
+  const move = prompt("What does she do here?", ""); if (move === null) { if (wasPlaying) play(); return; }
+  if (!lyric.trim() && !move.trim()) return toast("Type the words or the move");
+  await saveCues([...cues(), { t: Math.round(t * 10) / 10, lyric, move }]); toast("Cue added at " + fmtTime(t)); }
+async function cueEdit(i){ const list = cues(); const c = list[i]; if (!c) return; const lyric = prompt("Words sung here", c.lyric); if (lyric === null) return; const move = prompt("What she does", c.move); if (move === null) return; list[i] = { ...c, lyric, move }; await saveCues(list); }
+async function cueDel(i){ const list = cues(); if (!list[i]) return; if (!confirm("Remove this cue?")) return; list.splice(i, 1); await saveCues(list); }
+function toggleTestMe(){ PL.testMe = !PL.testMe; PL.revealed = -1; cueSheetUI(); if (PL.audio) renderCue(PL.audio.currentTime); toast(PL.testMe ? "Moves hidden — tap to show" : "Moves shown"); }
+function reveal(i){ PL.revealed = i; if (PL.audio) renderCue(PL.audio.currentTime); }
+function plSeek(t){ if (PL.audio) { PL.audio.currentTime = t; PL.revealed = -1; } }
 
 // ---- Run it ----
 const STOP = `<button class="btn ghost run-stop" onclick="plRunStop()">✕ Stop</button>`;
@@ -62,7 +95,7 @@ async function runIt(){
   const run = { started: Date.now(), danceId: PL.dance.id, live: false }; PL.run = run;
   const box = $("#plRun"); box.hidden = false;
   for (const n of [3, 2, 1]) { box.innerHTML = `<div class="run-count">${n}</div>${STOP}`; if (PL.voice === "click") click(n === 1); await new Promise(r => setTimeout(r, 1000)); if (PL.run !== run || !PL.audio) return; }
-  box.innerHTML = `<div class="run-count small-run">GO ✨</div>${STOP}`; setTimeout(() => { if (PL.run === run) box.innerHTML = `<div class="run-live">Full run · eyes up</div>${STOP}`; }, 900);
+  box.innerHTML = `<div class="run-count small-run">GO ✨</div>${STOP}`; setTimeout(() => { if (PL.run === run) box.innerHTML = `<div class="cue" id="plRunCue"><div class="cue-move">Full run · eyes up</div></div>${STOP}`; }, 900);
   run.live = true; play();
 }
 // Stop cancels the run: nothing is logged, the player stays open.
@@ -82,10 +115,10 @@ function runClose(){ $("#plRun").hidden = true; $("#plRun").innerHTML = ""; }
 // ---- open / close ----
 export async function openPlayer(danceId){
   const d = dances().find(x => x.id === danceId); if (!d) return toast("That dance isn't here");
-  closePlayer(true); PL.dance = d; PL.a = null; PL.b = null; PL.speed = 100; PL.lastCount = -1; PL.run = null;
+  closePlayer(true); PL.dance = d; PL.a = null; PL.b = null; PL.speed = 100; PL.lastCount = -1; PL.run = null; PL.revealed = -1; PL.lastCueIdx = -2; PL.showList = false;
   $("#player").hidden = false; document.body.classList.add("modal");
   $("#plTitle").textContent = d.name; $("#plSong").textContent = d.song || ""; $("#plTime").textContent = "0:00"; $("#plBar").style.width = "0"; $("#plPlay").textContent = "▶"; $("#plCount").textContent = "…"; runClose();
-  speedUI(); loopUI(); countsUI(); renderPresets();
+  speedUI(); loopUI(); countsUI(); renderPresets(); cueSheetUI(); $("#plCue").hidden = true; renderCue(0);
   const src = srcFor(d);
   if (!src) { setStatus(`<span class="bad">No music file yet.<br>Ask a grown-up: More ▸ Add music file.</span>`); return; }
   setStatus(`Loading music…`);
@@ -111,6 +144,7 @@ export function initPlayer(){
   $("#plA").onclick = markA; $("#plB").onclick = markB; $("#plClear").onclick = clearLoop;
   $("#plCounts").onclick = toggleCounts; ["off", "click", "voice"].forEach(v => { $("#plV_" + v).onclick = () => setVoice(v); }); $("#plTap").onclick = tapOne;
   $("#plRunBtn").onclick = runIt;
+  $("#plAddCue").onclick = addCue; $("#plTestMe").onclick = toggleTestMe; $("#plCueList").onclick = () => { PL.showList = !PL.showList; cueSheetUI(); };
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#player").hidden) { if (PL.run) runStop(); else closePlayer(); } });
 }
-expose({ openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose, plRunStop: runStop });
+expose({ openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose, plRunStop: runStop, plReveal: reveal, plSeek, plCueEdit: cueEdit, plCueDel: cueDel });

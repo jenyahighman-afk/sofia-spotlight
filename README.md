@@ -26,6 +26,7 @@ On any dance, **▶ Practice** opens the player for that dance's music: the uplo
 - **Speed** 50 · 75 · 100 (and a slider), pitch preserved.
 - **A–B loop**: tap A then B while it plays. Presets come from the dance's `loops` (data/dances.json) plus every `m:ss` timestamp in "Where the big moments land" (each one loops until the next timestamp).
 - **8-count overlay**: needs the dance's BPM (More ▸ Edit; solo 76, jazz 123, trio 86 are filled in) and a one-time **Tap on count 1** while the track plays (stored as `countOffset` on the dance). Quiet, click, or spoken counts.
+- **Cue sheet** (memorizing the routine): a list of moments per dance, each with a time, the words sung there and the move or spot. While the track plays the player shows the current move big with the words under it, and the next cue counts down from 4 seconds out; the same block sits on the Run it screen. **＋ Cue here** while the track plays (it pauses, asks for the words and the move, and saves to the dance); **List** shows, edits and deletes cues, tapping a time seeks there; **🙈 Test me** hides each move until she taps it. Grown-ups can also edit the whole sheet as text under More ▸ Edit (`m:ss | words | move`, one per line) or in `data/dances.json` as `cues: [{"t":50,"lyric":"…","move":"Cartwheel"}]`. The solo, trio and jazz cards ship with moves from their music maps and blank words — type the lyrics in yourself; the app never ships song lyrics.
 - **Run it**: 3-2-1, the whole track at 100%, then "Did you hold the ending?" / "Eyes up?" — logged to that day's `practice` record as a run. A run counts as a practice day.
 - The track is downloaded once through the service worker's media cache, so it plays offline after that.
 
@@ -55,6 +56,7 @@ js/streak.js          streak rules                                          (tes
 js/badges.js          badge definitions, evaluation, awarding               (tested)
 js/skills.js          skill ladder + states                                  (tested)
 js/player.js          practice player                                       (presets tested)
+js/cues.js            cue sheets: text form, what shows when                (tested)
 js/showme.js          wrong-vs-fixed avatar pairs per tag
 js/reports.js         error capture, per-screen error state, "send a report", Reports page
 js/family.js          create / join gate (typed code, QR scan, ?join= link)
@@ -112,7 +114,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 38 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 43 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -180,8 +182,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 3) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 4) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 4 (1.2.0): `dances.cues[]` (cue sheets), normalized on read when present.
 - Schema 3 (1.1.0): `practice.runs[]` ("Run it" logs), `settings.pin` / `settings.pinOn` / `settings.weekFix`, `dances.bpm` / `dances.loops` / `dances.countOffset`, and the four new collections. Older records get the defaults on read.
 - Collections: `dances, events, notes, todos, packs, practice, photos, files, choreo, settings, corrections, skills, badges, reports` under `/families/{familyId}/…`. Media under `families/{familyId}/{photos|files|music|videos}/{id}` in Storage.
 
