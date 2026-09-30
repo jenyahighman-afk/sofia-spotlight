@@ -43,7 +43,7 @@ function renderDances(){
   const list=dances();
   $("#danceList").innerHTML=list.map(d=>{
     const editing=editDance===d.id; const open=moreOpen.has(d.id);
-    const cover=`<div class="cover-top"><div class="cover-art ${d.color||""}">${coverArt(d)}</div><div class="grow"><h3>${esc(d.name)}</h3><div class="small muted">${esc(d.song||"song TBD")}</div></div></div>
+    const cover=`<div class="cover-top"><div class="cover-art ${d.color||""}">${coverArt(d)}</div><div class="grow"><h3>${esc(d.name)}</h3><div class="small muted">${esc(d.song||"song TBD")}</div>${d.story?`<div class="story">🎭 ${esc(d.story)}</div>`:""}</div></div>
       <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}')">▶ Practice</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button></div>
       ${noteFor===d.id?noteForm(d):""}${chips(d)}${patternLine(d)}`;
     const mapbar=d.id==="solo"?`<div class="mapbar" style="margin:8px 0"><div class="soft">soft 0:00–0:48</div><div class="loud">full 0:48–1:52</div><div class="fade">fade</div></div>`:"";
@@ -56,7 +56,7 @@ function renderDances(){
         ${roText("Song",d.song)}${roText("Style",d.style)}${roText("BPM",d.bpm)}${roText("Choreographer",d.choreo)}${roText("Teacher / class",d.teacher)}${roText("Rehearsal & class schedule",d.rehearsal)}
         ${roText("Costume",d.costume)}${roText("Shoes",d.shoes)}${roText("Hair",d.hair)}
         ${roText("Music map",d.music)}${roText("Where the big moments land",d.map)}<div class="field-lab">Cue sheet (shown in the player)</div><div class="ro">${normalizeCues(d.cues).length?`<ul>${normalizeCues(d.cues).map(c=>`<li><b>${fmtTime(c.t)}</b> ${esc(c.move)}${c.lyric?` <span class="muted">“${esc(c.lyric)}”</span>`:""}</li>`).join("")}</ul>`:""}</div>
-        ${roList("What's already strong",d.strengths)}<div class="field-lab">All corrections</div>${fullList(d)}${roList("Trick drills",d.tricks)}${roList("Where do I look?",d.eyes)}
+        ${roText("The story (for Sofia)",d.story)}${roList("Performance notes",d.performance)}${roList("What's already strong",d.strengths)}<div class="field-lab">All corrections</div>${fullList(d)}${roList("Trick drills",d.tricks)}${roList("Where do I look?",d.eyes)}
         ${roText("Notes",d.notes)}${photos}`;
     } else {
       more=`<p class="small muted">Editing. Nothing is saved until you tap Save.</p>
@@ -64,7 +64,7 @@ function renderDances(){
       ${edText("musicUrl","Music link",d.musicUrl,"Paste a link to the track")}${edList("links","Video / other links",d.links)}
       ${edText("costume","Costume",d.costume)}${edText("shoes","Shoes",d.shoes)}${edText("hair","Hair",d.hair)}
       ${edText("music","Music map",d.music)}${edText("map","Where the big moments land (m:ss timestamps become loop presets)",d.map)}<label class="f">Cue sheet <span class="muted">(one per line: m:ss | words sung | move)</span></label><textarea data-k="cues" data-cues="1" class="dfield" placeholder="0:50 | words here | Cartwheel on the swell">${esc(formatCueText(d.cues))}</textarea>
-      ${edList("strengths","What's already strong",d.strengths)}${edList("corrections","Corrections (older list — new lines become notes)",d.corrections)}${edList("tricks","Trick drills",d.tricks)}${edList("eyes","Where do I look?",d.eyes)}
+      ${edText("story","The story (one or two lines, shown to Sofia on the card)",d.story)}${edList("performance","Performance notes (face, musicality, presence)",d.performance)}${edList("strengths","What's already strong",d.strengths)}${edList("corrections","Corrections (older list — new lines become notes)",d.corrections)}${edList("tricks","Trick drills",d.tricks)}${edList("eyes","Where do I look?",d.eyes)}
       ${edText("notes","Notes",d.notes)}
       <div class="row" style="margin-top:10px"><button class="btn coral" onclick="saveDance('${d.id}')">Save</button><button class="btn ghost" onclick="danceEdit(null)">Cancel</button><span class="grow"></span><button class="btn sm ghost" onclick="delDance('${d.id}')">Remove dance</button></div>`;
     }
