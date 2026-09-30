@@ -3,6 +3,7 @@ import { $, esc, toast, uid, lerp, lp, expose } from "../util.js";
 import { STYLES, MOVES } from "../data.js";
 import { S, storeSet, storeDel } from "../store.js";
 import { avatarSVG, MOTION } from "../avatar.js";
+import { openStage, stageActions, stageOpen } from "../stage.js";
 
 const CS={style:"lyrical",seq:[],playing:false,cur:null,vel:MOTION.vel,tail:[],prevH:null,prevHip:null,t:0};
 function csRender(){
@@ -38,10 +39,10 @@ function csSmooth(target,m){ const K=["h","sl","sr","el","er","hl","hr","kl","kr
   const hipv=CS.prevHip!==null?(out.lift-CS.prevHip):0; CS.prevHip=out.lift;
   CS.vel.hx+= (-hv[0]*2.2-CS.vel.hx)*0.3; CS.vel.hy+= (-hv[1]*1.6-CS.vel.hy)*0.3; CS.vel.hipx+= (hipv*1.5-CS.vel.hipx)*0.25;
   out.trail=isTrick||out.lift>25; return out; }
-async function csPlay(){ if(!CS.seq.length) return toast("Add some moves first"); if(CS.playing) return; CS.playing=true; CS.cur=null; CS.prevH=null; CS.prevHip=null; CS.tail=[]; $("#csStage").style.display="block"; $("#csResult").style.display="none"; const beat=STYLES[CS.style].beat; let count=0;
+async function csPlay(){ if(!CS.seq.length) return toast("Add some moves first"); if(CS.playing) return; CS.playing=true; CS.cur=null; CS.prevH=null; CS.prevHip=null; CS.tail=[]; openStage("💃 Choreo Studio", [$("#csStage"), $("#csResult")], `<span class="chip sun">Watch…</span>`); $("#csResult").style.display="none"; const beat=STYLES[CS.style].beat; let count=0;
   for(const id of CS.seq){ const m=MOVES.find(x=>x.id===id); $("#csNow").textContent=m.ic+" "+m.n; const dur=m.c*beat; const t0=performance.now();
     await new Promise(res=>{ (function f(){ const t=Math.min(1,(performance.now()-t0)/dur); csDraw(csSmooth(poseAt(m,t),m)); $("#csCount").textContent="count "+(count+Math.min(m.c,Math.floor(t*m.c)+1)); if(t<1&&CS.playing) requestAnimationFrame(f); else res(); })(); }); count+=m.c; }
-  $("#csNow").textContent="✨ Done!"; CS.playing=false; }
+  $("#csNow").textContent="✨ Done!"; CS.playing=false; if(stageOpen()) stageActions(`<button class="btn sun" onclick="csPlay()">▶ Again</button><button class="btn coral" onclick="csJudge()">⭐ Judges</button><button class="btn ghost" onclick="closeStage()">Done</button>`); }
 function csJudge(){ const seq=CS.seq.map(id=>MOVES.find(x=>x.id===id)); if(!seq.length) return toast("Build a dance first"); const cts=seq.reduce((a,m)=>a+m.c,0); const n=seq.length; const uniq=new Set(seq.map(m=>m.id)).size; const st=STYLES[CS.style].n;
   const diff=seq.reduce((a,m)=>a+m.d,0)/n; let tech=Math.min(25,9+diff*3.6); const tricks=["cartwheel","walkover","aerial","pirouette","leap","tilt","donut","handstand","bridge","backroll","fankick","layout"]; let backToBack=0; for(let i=1;i<n;i++) if(tricks.includes(seq[i].id)&&tricks.includes(seq[i-1].id)) backToBack++; tech-=Math.min(8,backToBack*3);
   const hasAerial=seq.some(m=>m.id==="aerial"); const aerialUnlocked=(S.settings.aerial||[]).length>=17; if(hasAerial&&!aerialUnlocked) tech-=6;
@@ -62,11 +63,11 @@ function csJudge(){ const seq=CS.seq.map(id=>MOVES.find(x=>x.id===id)); if(!seq.
   if(!hasAir&&["jazz","ballet","acro"].includes(CS.style)) c.push(["Miss Relevé","No air time! A Sauté, Grand jeté or Cartwheel would lift this."]);
   if(uniq>=9) c.push(["DJ Groove","So much variety! Every 8 looked different."]);
   if(n<4) c.push(["Miss Relevé","That was over before I sat down. Make it longer!"]);
-  CS.last={total,award}; $("#csResult").style.display="block"; const crowd=total>=92?"🎉 The crowd is on its feet. Someone's mom is crying.":total>=84?"👏 Big applause. The PITCH girls are screaming your name.":total>=74?"👏 Warm applause, one whoop from the back.":"🙂 Polite clapping. Someone yawned. Rude.";
+  CS.last={total,award}; if(!stageOpen()) openStage("⭐ The judges", [$("#csStage"), $("#csResult")], `<button class="btn sun" onclick="csPlay()">▶ Again</button><button class="btn ghost" onclick="closeStage()">Done</button>`); $("#csStage").style.display="block"; $("#csResult").style.display="block"; const crowd=total>=92?"🎉 The crowd is on its feet. Someone's mom is crying.":total>=84?"👏 Big applause. The PITCH girls are screaming your name.":total>=74?"👏 Warm applause, one whoop from the back.":"🙂 Polite clapping. Someone yawned. Rude.";
   $("#csResult").innerHTML=`<div class="card sun" style="margin:0"><div class="row"><h3 class="grow">${award}</h3><span class="big">${total}</span></div>
     <p class="small">${crowd}</p><div class="grid2 small" style="margin:6px 0"><div>Technique <b>${tech}</b>/25</div><div>Musicality <b>${mus}</b>/25</div><div>Performance <b>${perf}</b>/25</div><div>Creativity <b>${cre}</b>/25</div></div>
     ${c.map(([who,txt])=>`<div class="check"><span class="chip ${who==="DJ Groove"?"violet":who==="Miss Relevé"?"":"mint"}">${who}</span><span>${esc(txt)}</span></div>`).join("")}</div>`; $("#csResult").scrollIntoView({behavior:"smooth",block:"nearest"}); }
 async function csSave(){ const name=$("#csName").value.trim()||"My dance"; if(!CS.seq.length) return toast("Build a dance first"); await storeSet("choreo",uid(),{name,style:CS.style,seq:[...CS.seq],score:CS.last?CS.last.total:null,award:CS.last?CS.last.award:"",at:new Date().toISOString()}); $("#csName").value=""; toast("Saved!"); }
 function csLoad(id){ const c=S.choreo[id]; if(!c) return; CS.seq=[...c.seq].filter(x=>MOVES.find(m=>m.id===x)); CS.style=STYLES[c.style]?c.style:"lyrical"; MOTION.style=CS.style; $("#csResult").style.display="none"; csRender(); toast("Loaded "+c.name); }
 export { CS, csRender, csAdd, csRemove, csSetStyle, csDraw, ease, poseAt, csSmooth, csPlay, csJudge, csSave, csLoad };
-expose({ csAdd, csRemove, csSetStyle, csLoad, csJudge });
+expose({ csAdd, csRemove, csSetStyle, csLoad, csJudge, csPlay });
