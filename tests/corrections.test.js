@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { inferTag, migratedId, hashText, recordsFromDance, patterns, chooseWeekFix, weekKey, shiftDate, topFixes, openFor } from "../js/corrections.js";
+import { inferTag, parseLine, migratedId, hashText, recordsFromDance, patterns, chooseWeekFix, weekKey, shiftDate, topFixes, openFor } from "../js/corrections.js";
 
 const dances = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8"));
 
@@ -67,4 +67,13 @@ test("weeks run Sunday to Saturday", () => {
   assert.equal(weekKey("2026-10-03"), "2026-09-27"); // Saturday
   assert.equal(weekKey("2026-10-04"), "2026-10-04");
   assert.equal(shiftDate("2026-03-01", -1), "2026-02-28");
+});
+
+test("an explicit #tag prefix on a card line wins and is stripped from the text; the id stays tied to the bare text", () => {
+  assert.deepEqual(parseLine("#feet Donut roll: chin tucked, roll over the shoulder"), { text: "Donut roll: chin tucked, roll over the shoulder", tag: "feet", explicit: true });
+  assert.equal(parseLine("Donut roll: chin tucked").tag, "eyes");
+  assert.equal(parseLine("#bogus Point").text, "#bogus Point");
+  assert.equal(migratedId("solo", "Donut roll"), recordsFromDance({ id: "solo", corrections: ["#feet Donut roll"] }, "2026-09-30")[0].id);
+  const donut = recordsFromDance(dances.find(d => d.id === "solo"), "2026-09-30").find(r => r.text.startsWith("Donut roll"));
+  assert.equal(donut.tag, "feet"); assert.ok(!donut.text.startsWith("#"));
 });

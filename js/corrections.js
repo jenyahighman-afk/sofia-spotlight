@@ -1,6 +1,7 @@
 // Corrections tracker: one record per note {danceId, text, source, date, tag, status}.
 // Pure helpers up top (tested in Node); the store-touching functions at the bottom.
 import { S, storeSet, setSettings, settled, dances } from "./store.js";
+import { DEFAULT_DANCES } from "./data.js";
 import { todayStr } from "./util.js";
 
 export const TAGS = ["feet","knees","eyes","arms","timing","spacing","energy","other"];
@@ -24,9 +25,12 @@ export function inferTag(text){ const t = String(text || ""); for (const [tag, r
 export function hashText(s){ let h = 5381; for (const ch of String(s)) h = ((h * 33) ^ ch.codePointAt(0)) >>> 0; return h.toString(36); }
 export const migratedId = (danceId, text) => `c-${danceId}-${hashText(String(text).trim())}`;
 
+// A card line may start with an explicit tag: "#feet Donut roll: chin tucked…". Otherwise the tag is inferred from the words.
+const TAG_PREFIX = /^#(feet|knees|eyes|arms|timing|spacing|energy|other)\s+/i;
+export function parseLine(line){ const m = TAG_PREFIX.exec(String(line).trim()); const text = String(line).trim().replace(TAG_PREFIX, "").trim(); return { text, tag: m ? m[1].toLowerCase() : inferTag(text), explicit: !!m }; }
 // The records the dance-card arrays would produce (pure; used by the runtime copy and the tests).
 export function recordsFromDance(dance, date){
-  return (dance.corrections || []).map(x => String(x).trim()).filter(Boolean).map(text => ({ id: migratedId(dance.id, text), danceId: dance.id, text, source: "notes", date, tag: inferTag(text), status: "working" }));
+  return (dance.corrections || []).map(parseLine).filter(l => l.text).map(({ text, tag, explicit }) => ({ id: migratedId(dance.id, text), danceId: dance.id, text, source: "notes", date, tag, status: "working", explicit }));
 }
 
 export const isOpen = (c) => c && !c.deleted && c.status !== "done";
@@ -68,7 +72,15 @@ export async function migrateDanceCorrections(){
   migrating = true; let n = 0;
   try {
     const date = todayStr();
-    for (const d of dances()) for (const rec of recordsFromDance(d, date)) { if (S.corrections[rec.id]) continue; await storeSet("corrections", rec.id, rec); n++; }
+    // Explicit #tags in data/dances.json apply even when the card was edited in-app (the edited copy of the line has no prefix).
+    const explicitTags = {}; for (const d of DEFAULT_DANCES) for (const r of recordsFromDance(d, date)) if (r.explicit) explicitTags[r.id] = r.tag;
+    for (const d of dances()) for (let { explicit, ...rec } of recordsFromDance(d, date)) {
+      if (!explicit && explicitTags[rec.id]) { explicit = true; rec = { ...rec, tag: explicitTags[rec.id] }; }
+      const have = S.corrections[rec.id];
+      if (!have) { await storeSet("corrections", rec.id, rec); n++; continue; }
+      // An explicit #tag on the card wins over the tag that was inferred when the line was first copied.
+      if (explicit && have.source === "notes" && have.tag !== rec.tag) { await storeSet("corrections", rec.id, { ...have, tag: rec.tag }); }
+    }
   } finally { migrating = false; }
   return n;
 }
