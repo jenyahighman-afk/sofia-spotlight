@@ -8,7 +8,7 @@ import { checkBadges } from "../badges.js";
 
 const STYLE_EMOJI = { lyrical:"🌸", jazz:"⚡", contemporary:"🌊", "hip hop":"🎧", hiphop:"🎧", ballet:"🩰", acro:"🤸", ballroom:"💃", tap:"👟" };
 export const danceEmoji = (d) => STYLE_EMOJI[String(d.style || "").toLowerCase().trim()] || "🎵";
-const musicButton=(d)=>`<label class="btn sm ghost" for="dmusic-${d.id}">🎵 ${d.musicFile&&d.musicFile.url?"Replace music file":"Add music file"}</label><input type="file" id="dmusic-${d.id}" accept="audio/*" hidden onchange="addMusic(this.files[0],'${d.id}');this.value=''">`;
+const musicButton=(d)=>`<label class="btn sm ghost" for="dmusic-${d.id}">🎵 ${d.musicFile&&d.musicFile.url?"Replace music file":"Add music file"}</label><input type="file" id="dmusic-${d.id}" accept="audio/*,video/*,.mp3,.m4a,.aac,.wav,.ogg,.oga,.flac,.mp4,.m4v,.mov,.webm" hidden onchange="addMusic(this.files[0],'${d.id}');this.value=''">`;
 const musicPlayer=(d)=>d.musicFile&&d.musicFile.url?`<div class="field-lab">Music file · ${esc(d.musicFile.name||"")}</div><audio controls preload="none" src="${esc(d.musicFile.url)}" style="width:100%;margin-top:4px"></audio>`:"";
 async function addMusic(file,danceId){ if(!file) return; await uploadMusic(file,danceId); }
 export function danceEdit(id){ editDance=id; if(id) moreOpen.add(id); renderDances(); }
