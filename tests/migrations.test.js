@@ -107,6 +107,13 @@ test("5 → 6: practice.total is kept when valid and dropped when junk; days wit
   assert.equal("total" in migrateDoc("practice", "d", { done: [0, 1] }), false);
 });
 
+test("6 → 7: practice.custom is normalized (bad shapes become empty lists), absent stays absent", () => {
+  const d = migrateDoc("practice", "d", { _v: 6, done: [], custom: { swap: { a: "b", c: 5 }, add: "x", drop: ["z", 7] } });
+  assert.deepEqual(d.custom, { swap: { a: "b" }, add: [], drop: ["z", "7"] }); assert.equal(d._v, SCHEMA_VERSION);
+  assert.equal("custom" in migrateDoc("practice", "d", { _v: 6, done: [] }), false);
+  assert.deepEqual(migrateDoc("practice", "d", { _v: 6, custom: "junk" }).custom, { swap: {}, add: [], drop: [] });
+});
+
 test("a whole collection migrates and other collections pass through unchanged", () => {
   const out = migrateCollection("notes", { a: { title: "t", body: "b", tag: "Ideas", at: "2026-09-27T03:01:15.743Z" } });
   assert.equal(out.a._v, SCHEMA_VERSION); assert.equal(out.a.title, "t");

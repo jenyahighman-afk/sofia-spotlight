@@ -5,9 +5,13 @@ import { PRACTICE_ITEMS, PHASES, AERIAL, CLASSES } from "../data.js";
 import { S, storeSet, events } from "../store.js";
 import { computeStreak } from "../streak.js";
 import { planFor } from "../planToday.js";
+import { PRACTICE_POOL } from "../data.js";
+import { poolItems } from "../plan.js";
 import { checkBadges } from "../badges.js";
 
 const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
+const GROUP = { warm:"Warm-up", core:"Core", legs:"Legs", flex:"Flex", tech:"Technique", fix:"This week's fix", trick:"Trick", aerial:"Aerial mission", run:"Runs" };
+const SWAPPABLE = new Set(["warm","core","legs","flex","tech"]);
 let lastPct = -1, dateSel = null;
 const curDate = () => dateSel || todayStr();
 
@@ -17,7 +21,8 @@ function renderPractice(){
   const pct=plan.length?Math.round(100*[...done].filter(id=>plan.some(i=>i.id===id)).length/plan.length):0;
   const streak=computeStreak({practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today:todayStr()});
   $("#practiceHead").innerHTML=`${ring(pct)}<div class="grow"><div class="today-what">${date===todayStr()?"Today":fmt(date)}</div><div class="row"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${(rec.runs||[]).length?`<span class="chip sun">▶ ${rec.runs.length} run${rec.runs.length>1?"s":""}</span>`:""}</div><div class="small muted" style="margin-top:4px">${pct>=100?"All done. Go you! 🎉":pct>=60?"That counts as a practice day ✓":"Get to 60% and today counts."}</div></div>`;
-  $("#practiceChecklist").innerHTML=plan.map(it=>`<label class="pitem ${done.has(it.id)?"done":""}"><input type="checkbox" ${done.has(it.id)?"checked":""} data-id="${it.id}" class="pchk"><span class="pk">${KIND[it.kind]||"✨"}</span><span class="grow">${esc(it.text)}</span>${it.kind==="tech"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}</label>`).join("");
+  let lastKind=""; $("#practiceChecklist").innerHTML=plan.map(it=>{ const head=it.kind!==lastKind?`<div class="row pgroup"><span class="grow">${KIND[it.kind]||"✨"} ${GROUP[it.kind]||it.kind}</span>${SWAPPABLE.has(it.kind)?`<button type="button" class="lnk" onclick="swapOpen('${it.kind}','')">＋ one more</button>`:""}</div>`:""; lastKind=it.kind;
+    return head+`<label class="pitem ${done.has(it.id)?"done":""}"><input type="checkbox" ${done.has(it.id)?"checked":""} data-id="${it.id}" class="pchk"><span class="pk">${KIND[it.kind]||"✨"}</span><span class="grow">${esc(it.text)}</span>${it.kind==="tech"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}${SWAPPABLE.has(it.kind)?`<button type="button" class="lnk" onclick="event.preventDefault();swapOpen('${it.kind}','${it.id}')" title="Swap">🔁</button>`:""}</label>`; }).join("");
   $$(".pchk").forEach(c=>c.addEventListener("change",onCheck));
   if($("#practiceNote")!==document.activeElement) $("#practiceNote").value=rec.note||"";
   $("#practiceDate").value=date;
@@ -53,9 +58,21 @@ export function confetti(){
   for(let i=0;i<70;i++){ const s=document.createElement("i"); s.style.left=Math.random()*100+"%"; s.style.background=colors[i%colors.length]; s.style.animationDelay=(Math.random()*0.6)+"s"; s.style.animationDuration=(1.6+Math.random()*1.2)+"s"; s.style.transform=`rotate(${Math.random()*360}deg)`; box.appendChild(s); }
   document.body.appendChild(box); setTimeout(()=>box.remove(),3200);
 }
+// ---- swap / add / skip (per day) ----
+let swapKind="", swapFrom="";
+function swapOpen(kind, fromId){ swapKind=kind; swapFrom=fromId||""; const date=curDate(); const plan=planFor(date); const inPlan=new Set(plan.map(i=>i.id)); const cands=poolItems(PRACTICE_POOL,kind).filter(it=>!inPlan.has(it.id));
+  $("#swapTitle").textContent=(fromId?"Swap for…":"Add one more")+" · "+(GROUP[kind]||kind);
+  $("#swapList").innerHTML=(cands.length?cands.map(it=>`<button class="skill" onclick="swapPick('${it.id}')"><span class="st">${KIND[kind]||"✨"}</span><span class="grow">${esc(it.text)}</span><small>${Math.round((it.secs||60)/60)} min</small></button>`).join(""):`<p class="small muted">Everything in this group is already in today's plan.</p>`)+(fromId?`<button class="btn ghost" style="width:100%;margin-top:8px" onclick="swapPick('')">Skip this one today</button>`:"");
+  $("#swap").hidden=false; document.body.classList.add("modal"); }
+function swapClose(){ $("#swap").hidden=true; document.body.classList.remove("modal"); }
+async function swapPick(toId){ const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const c={swap:{...((rec.custom||{}).swap||{})},add:[...((rec.custom||{}).add||[])],drop:[...((rec.custom||{}).drop||[])]};
+  if(swapFrom&&toId) c.swap[swapFrom]=toId; else if(swapFrom&&!toId) c.drop.push(swapFrom); else if(!swapFrom&&toId) c.add.push(toId);
+  const done=(rec.done||[]).filter(id=>id!==swapFrom);
+  await storeSet("practice",date,{...rec,done,custom:c}); swapClose(); toast(toId?(swapFrom?"Swapped ✓":"Added ✓"):"Skipped for today"); renderPractice(); }
 export function initPractice(){
+  $("#swapClose").onclick=swapClose; $("#swap").addEventListener("click",e=>{ if(e.target===$("#swap")) swapClose(); });
   $("#practiceDate").addEventListener("change",(e)=>{ dateSel=e.target.value||null; lastPct=-1; renderPractice(); });
   $("#saveNote").onclick=saveNote;
 }
 export { renderPractice, toggleAerial };
-expose({ toggleAerial });
+expose({ toggleAerial, swapOpen, swapPick });

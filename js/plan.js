@@ -37,3 +37,17 @@ export function buildPlan(opts){
   return items;
 }
 export const planTotal = (items) => items.length;
+
+// Per-day customisation stored on the practice record: custom = { swap: {fromId: toId}, add: [ids], drop: [ids] }.
+// Swaps and adds only take items from the same pool kind; unknown ids are ignored so stale data can't break the plan.
+export function poolItems(pool, kind){ const slot = (pool.slots || []).find(s => s.kind === kind); return slot ? slot.pool.map(it => ({ ...it, kind })) : []; }
+export function applyCustom(items, pool, custom){
+  if (!custom || typeof custom !== "object") return items;
+  const swap = custom.swap || {}, add = Array.isArray(custom.add) ? custom.add : [], drop = new Set(Array.isArray(custom.drop) ? custom.drop : []);
+  const find = (id, kind) => (pool.slots || []).flatMap(s => s.kind === kind ? s.pool.map(it => ({ ...it, kind })) : []).find(it => it.id === id);
+  let out = items.map(it => { const to = swap[it.id]; if (!to) return it; const rep = find(to, it.kind); return rep || it; }).filter(it => !drop.has(it.id));
+  for (const id of add) { if (out.some(it => it.id === id)) continue; const kind = (pool.slots || []).find(s => s.pool.some(it => it.id === id)); if (kind) out.push({ ...kind.pool.find(it => it.id === id), kind: kind.kind, added: true }); }
+  // keep pool items grouped by kind in the slot order, custom additions after their group, dance items after
+  const order = (pool.slots || []).map(s => s.kind); const rank = (it) => { const i = order.indexOf(it.kind); return i < 0 ? 100 : i; };
+  return out.map((it, i) => ({ it, i })).sort((a, b) => rank(a.it) - rank(b.it) || a.i - b.i).map(x => x.it);
+}
