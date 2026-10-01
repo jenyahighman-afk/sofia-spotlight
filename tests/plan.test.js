@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { buildPlan, rotate, dayNumber } from "../js/plan.js";
+import { buildPlan, rotate, dayNumber, applyCustom, poolItems } from "../js/plan.js";
 import { expandMoves } from "../js/data.js";
 
 const read = (f) => JSON.parse(readFileSync(new URL("../data/" + f + ".json", import.meta.url), "utf8"));
@@ -60,4 +60,20 @@ test("rotate: deterministic window over the pool, preferred tags first, no dupli
   assert.deepEqual(rotate(p, 2, 0).map(i => i.id), ["a", "b"]); assert.deepEqual(rotate(p, 2, 1).map(i => i.id), ["c", "d"]); assert.deepEqual(rotate(p, 2, 2).map(i => i.id), ["a", "b"]);
   assert.deepEqual(rotate(p, 2, 1, ["x"]).map(i => i.id), ["c", "a"]);
   assert.deepEqual(rotate([], 2, 0), []); assert.equal(dayNumber("2026-10-02") - dayNumber("2026-10-01"), 1);
+});
+
+test("swap / add / skip for the day: same-pool only, stale ids ignored, groups stay together", () => {
+  const plan = buildPlan({ ...base, date: "2026-10-05" });
+  const core = plan.filter(i => i.kind === "core"); const other = poolItems(pool, "core").find(i => !core.some(c => c.id === i.id));
+  const swapped = applyCustom(plan, pool, { swap: { [core[0].id]: other.id } });
+  assert.ok(swapped.some(i => i.id === other.id) && !swapped.some(i => i.id === core[0].id), "swapped in from the core pool");
+  assert.equal(swapped.filter(i => i.kind === "core").length, 2);
+  const legs = poolItems(pool, "legs").find(i => !plan.some(p => p.id === i.id));
+  const added = applyCustom(plan, pool, { add: [legs.id, "nope", legs.id] });
+  assert.equal(added.filter(i => i.kind === "legs").length, 3, "one real add, duplicates and unknown ids ignored");
+  const legIdx = added.map(i => i.kind); assert.equal(legIdx.lastIndexOf("legs") < legIdx.indexOf("flex"), true, "added item sits with its group");
+  const dropped = applyCustom(plan, pool, { drop: [core[1].id] }); assert.equal(dropped.filter(i => i.kind === "core").length, 1);
+  const wrongPool = applyCustom(plan, pool, { swap: { [core[0].id]: legs.id } }); assert.ok(wrongPool.some(i => i.id === core[0].id), "a swap to another pool is ignored");
+  assert.deepEqual(applyCustom(plan, pool, null).map(i => i.id), plan.map(i => i.id));
+  assert.ok(poolItems(pool, "core").every(i => i.kind === "core") && poolItems(pool, "x").length === 0);
 });

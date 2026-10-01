@@ -255,3 +255,4 @@ body.modal{overflow:hidden}
 .mg-body{display:flex;flex-direction:column;align-items:center;gap:8px}
 .mg-cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:#000} .mg-cam video,.mg-cam canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 .mg-target{text-align:center;min-height:40px} .mg-avatar{width:90px;height:120px;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:12px} .mg-msg{font-family:Fredoka;font-size:1.2rem;text-align:center;min-height:28px}
+.pgroup{font-family:Fredoka;font-size:.95rem;color:var(--ink-2);margin:10px 0 0;padding:0 4px}
