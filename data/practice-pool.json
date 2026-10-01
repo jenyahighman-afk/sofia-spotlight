@@ -1,0 +1,56 @@
+{
+ "_note": "The daily practice plan is built from these pools (js/plan.js): each slot takes `n` items, rotating by date so the plan changes every day. Ids are stable — check-offs are stored against them. `pose` is a move id from moves.json or an exercise id from exercises.json. `tags` = which corrections the item helps with.",
+ "slots": [
+  { "kind": "warm", "n": 1, "pool": [
+   { "id": "warmup", "text": "Warm-up 5 min: jumping jacks, arm circles, leg swings", "secs": 300, "pose": "jacks" },
+   { "id": "warm-dance", "text": "Warm-up 5 min: march, skips, jumping jacks, big arm circles", "secs": 300, "pose": "armcircles" },
+   { "id": "warm-swings", "text": "Warm-up 5 min: jog in place, leg swings front and side, roll the shoulders", "secs": 300, "pose": "legswings" }
+  ]},
+  { "kind": "core", "n": 2, "pool": [
+   { "id": "hollow-superman", "text": "Hollow hold + superman, 3×20s", "secs": 120, "pose": "hollow" },
+   { "id": "planks", "text": "Plank + side plank, 2×20–30s", "secs": 120, "pose": "plank" },
+   { "id": "boat", "text": "Boat pose 3×15s — toes pointed, chest tall", "secs": 90, "pose": "boat", "tags": ["feet"] },
+   { "id": "situps", "text": "Slow sit-ups 2×12, arms by the ears", "secs": 90, "pose": "situp" },
+   { "id": "superman-holds", "text": "Superman holds 3×15s — long arms, long legs", "secs": 90, "pose": "superman", "tags": ["arms"] },
+   { "id": "side-planks", "text": "Side plank 2×20s each side, top arm long", "secs": 100, "pose": "sideplank", "tags": ["arms"] },
+   { "id": "hollow-rocks", "text": "Hollow rocks 2×15 — keep the low back down", "secs": 90, "pose": "hollow" },
+   { "id": "pike-sits", "text": "Pike sit + reach 3×20s, pointed feet", "secs": 80, "pose": "pike", "tags": ["feet"] }
+  ]},
+  { "kind": "legs", "n": 2, "pool": [
+   { "id": "releves-balance", "text": "Slow relevés 2×15 + single-leg balance 20s each", "secs": 120, "pose": "calfraise", "tags": ["feet"] },
+   { "id": "leg-lifts", "text": "Lying leg lifts, straight knee, 2×10 per side", "secs": 90, "pose": "leglift", "tags": ["knees"] },
+   { "id": "glute-bridges", "text": "Glute bridges 2×12, squeeze at the top", "secs": 90, "pose": "glutebridge" },
+   { "id": "squats", "text": "Squats 2×12 — knees over toes, chest up", "secs": 90, "pose": "squat", "tags": ["knees"] },
+   { "id": "lunges", "text": "Lunges 2×8 each leg, back knee low, arms up", "secs": 100, "pose": "lunge", "tags": ["arms"] },
+   { "id": "single-leg-squats", "text": "Single-leg squats 2×6 each leg (hold the counter)", "secs": 100, "pose": "singlesquat", "tags": ["knees"] },
+   { "id": "wall-sit", "text": "Wall sit 2×30s", "secs": 70, "pose": "wallsit" },
+   { "id": "jump-lunges-set", "text": "Jump lunges 2×10, soft landings", "secs": 80, "pose": "jumplunge" },
+   { "id": "calf-raises", "text": "Calf raises 2×20, slow down, pointed foot at the top", "secs": 80, "pose": "calfraise", "tags": ["feet"] }
+  ]},
+  { "kind": "flex", "n": 1, "pool": [
+   { "id": "splits", "text": "Right, left, middle split + straddle, 20–30s each (after warm-up only)", "secs": 180, "pose": "split" },
+   { "id": "straddle-stretch", "text": "Straddle: reach centre, right, left, 20s each (after warm-up only)", "secs": 120, "pose": "straddle" },
+   { "id": "back-warm", "text": "Cobra then seal, 3×10s — warm the back before any bridge", "secs": 90, "pose": "cobra" },
+   { "id": "pike-stretch", "text": "Pike stretch 3×20s, knees straight, feet pointed then flexed", "secs": 90, "pose": "pike", "tags": ["knees", "feet"] }
+  ]},
+  { "kind": "tech", "n": 2, "pool": [
+   { "id": "passe-balance", "text": "Passé balance on relevé 5–10s, both sides", "secs": 60, "pose": "balance", "tags": ["feet", "knees"] },
+   { "id": "pirouettes", "text": "10 single pirouettes each side", "secs": 120, "pose": "pirouette", "tags": ["eyes", "spacing"] },
+   { "id": "kicks", "text": "Kicks/développés to hip height, straight knee, pointed foot", "secs": 90, "pose": "kick", "tags": ["knees", "feet"] },
+   { "id": "arms-mirror", "text": "Arms overhead in the mirror: long elbows, shoulders down", "secs": 60, "pose": "armsmirror", "tags": ["arms"] },
+   { "id": "spot-drill", "text": "Spotting drill: quarter turns, eyes on one sticker, 2×8", "secs": 60, "pose": "spot", "tags": ["eyes"] },
+   { "id": "eyes-up-walk", "text": "Walk the opening with eyes up to the top back row, 4 times", "secs": 60, "pose": "eyesup", "tags": ["eyes"] },
+   { "id": "arabesque-holds", "text": "Arabesque hold 2×10s each side, hips square, knee straight", "secs": 70, "pose": "arab", "tags": ["knees", "arms"] },
+   { "id": "point-flex", "text": "Point and flex 2×20, slow — feel the toes reach", "secs": 60, "pose": "pike", "tags": ["feet"] },
+   { "id": "plies-tempo", "text": "Pliés in first and second with the music, 2×8, arms with the beat", "secs": 70, "pose": "plie", "tags": ["timing"] },
+   { "id": "sharp-hits", "text": "8 counts of sharp hits and freezes with the jazz track", "secs": 60, "pose": "freeze", "tags": ["energy", "timing"] }
+  ]}
+ ],
+ "runs": [
+  { "id": "solo-run", "text": "Solo: mark once, then FULL OUT once with eyes up", "secs": 300, "pose": "hold", "dance": "solo" },
+  { "id": "trio-mark", "text": "Trio: mark it once", "secs": 150, "pose": "reach", "dance": "trio" }
+ ],
+ "aerialByWeekday": { "0": 0, "1": 0, "2": 0, "3": 0, "4": 2, "5": 1, "6": 0 },
+ "aerialPoses": { "Prerequisites": "cartwheel", "Strength": "jumplunge", "Drills (mat only)": "hurdle", "In class only": "aerial" },
+ "fixPoses": { "feet": "pike", "knees": "kick", "eyes": "spot", "arms": "armsmirror", "timing": "plie", "spacing": "reach", "energy": "freeze", "other": "pose" }
+}

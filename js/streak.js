@@ -8,8 +8,8 @@ export const PRACTICE_MIN = 0.6;
 export function dayCounts(rec, totalItems){
   if (!rec) return false;
   if (Array.isArray(rec.runs) && rec.runs.length) return true;
-  const done = Array.isArray(rec.done) ? rec.done.length : 0;
-  return totalItems > 0 && done / totalItems >= PRACTICE_MIN;
+  const done = Array.isArray(rec.done) ? rec.done.length : 0; const total = rec.total > 0 ? rec.total : totalItems;
+  return total > 0 && done / total >= PRACTICE_MIN;
 }
 const weekday = (iso) => new Date(iso + "T00:00:00").getDay();
 export const isBreak = (e) => /break/i.test(e.type || "") || /break/i.test(e.name || "");

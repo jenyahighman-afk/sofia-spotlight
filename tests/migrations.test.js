@@ -101,6 +101,12 @@ test("4 → 5: reviews and goals get their defaults; the two collections are kno
   for (const col of ["reviews", "goals"]) assert.ok(COLLECTIONS.includes(col), col);
 });
 
+test("5 → 6: practice.total is kept when valid and dropped when junk; days without it still count against the old 12", () => {
+  assert.equal(migrateDoc("practice", "d", { _v: 5, done: ["warmup"], total: "14" }).total, 14);
+  assert.equal("total" in migrateDoc("practice", "d", { _v: 5, done: [], total: "x" }), false);
+  assert.equal("total" in migrateDoc("practice", "d", { done: [0, 1] }), false);
+});
+
 test("a whole collection migrates and other collections pass through unchanged", () => {
   const out = migrateCollection("notes", { a: { title: "t", body: "b", tag: "Ideas", at: "2026-09-27T03:01:15.743Z" } });
   assert.equal(out.a._v, SCHEMA_VERSION); assert.equal(out.a.title, "t");
