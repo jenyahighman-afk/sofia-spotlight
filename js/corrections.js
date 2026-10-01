@@ -74,7 +74,11 @@ export async function migrateDanceCorrections(){
     const date = todayStr();
     // Explicit #tags in data/dances.json apply even when the card was edited in-app (the edited copy of the line has no prefix).
     const explicitTags = {}; for (const d of DEFAULT_DANCES) for (const r of recordsFromDance(d, date)) if (r.explicit) explicitTags[r.id] = r.tag;
-    for (const d of dances()) for (let { explicit, ...rec } of recordsFromDance(d, date)) {
+    // Lines added to data/dances.json after a card was edited in-app would otherwise never be seen (the edited copy of
+    // the list wins) — so read both the merged card and the built-in one, de-duplicated by record id.
+    const sources = []; const seenIds = new Set();
+    for (const d of [...dances(), ...DEFAULT_DANCES]) for (const r of recordsFromDance(d, date)) { if (seenIds.has(r.id)) continue; seenIds.add(r.id); sources.push(r); }
+    for (let { explicit, ...rec } of sources) {
       if (!explicit && explicitTags[rec.id]) { explicit = true; rec = { ...rec, tag: explicitTags[rec.id] }; }
       const have = S.corrections[rec.id];
       if (!have) { await storeSet("corrections", rec.id, rec); n++; continue; }
