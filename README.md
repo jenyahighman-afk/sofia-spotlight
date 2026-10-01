@@ -30,8 +30,11 @@ MediaPipe Pose Landmarker (Tasks Vision, pinned on jsDelivr; the model file from
 ### Goals (Me → 🎯 Goals)
 `goals` collection. Presets: right / left / middle split, bridge, arabesque height, side extension height, handstand hold, hollow hold, passé balance on relevé, aerial progression; custom goals too. Each goal has a target (seconds or degrees, or photo-only), a check-in timeline (photo or short clip, date, optional number — for splits and arabesque the pose tool measures the angle from the photo and fills it in), a line chart, and a first-vs-latest slider compare. Check-ins are every two weeks: Today shows a gentle "Check-in time" line when one is due (Later snoozes it three days); never daily. Goal photos live in the family space under `photos` with a `goal` field, are hidden from the photo grid, shown only inside the goal, and have no share button. Only flexibility, strength and balance are measured. Rings and the latest photo show on Me.
 
+### The daily practice plan
+Practice is built fresh each day from `data/practice-pool.json` (`js/plan.js`): one warm-up, **two core**, **two leg**, one flexibility and **two technique** items rotate through their pools so the same moves don't come up every day (over a week she sees most of the pool). On top of that the plan takes from the dances: **this week's fix** becomes a drill, the technique picks favor the tags of her open corrections (eyes notes → spotting and eye-line drills, feet → point/relevé work…), **one trick drill** from the solo card rotates in, and the runs stay. **Aerial mission** steps are part of the plan on home days — two strength steps on Thursday, one drill on Friday — pulled from the steps not yet checked; ticking one in practice also ticks the mission. In-class-only steps never appear at home. Each day's record stores its own `total`, so the 60% streak rule is judged against that day's list.
+
 ### Practice mode (▶ Start practice)
-The checklist one item at a time, full screen: Manual (tap Done) or Timed (each item's own length from `practice-items.json` `secs`, auto-advance with a chime, pause). Every Done is saved to the day's practice record the moment it's tapped, mirrored in localStorage as a safety net, and the dancer + ring show progress. Skip moves on without checking. Confetti at the end.
+The checklist one item at a time, full screen: Manual (tap Done) or Timed (each item's own length from `practice-items.json` `secs`, auto-advance with a chime, pause). Every Done is saved to the day's practice record the moment it's tapped, mirrored in localStorage as a safety net. The dancer **performs the move** (game moves from `moves.json`, exercises from `data/exercises.json` — plank, hollow, superman, leg lifts, bridges, squats, lunges, splits, jacks and more) and a ring shows progress. Skip moves on without checking. Confetti at the end.
 
 ### Practice player
 On any dance, **▶ Practice** opens the player for that dance's music: the uploaded music file (More ▸ Add music file — any audio file, or a video file if that's what the studio sent; only the sound is used) or, failing that, a music link that points straight at an audio file (.mp3/.m4a/.wav…). Streaming links like YouTube/Spotify can't be played; add the file instead.
@@ -105,7 +108,7 @@ Everything the app shows out of the box lives in `data/`. Edit the JSON, run `np
 | `events.json` | Season events (`start`/`end` as `YYYY-MM-DD`, `pack` = which packing list). A type or name containing "break" pauses the streak. |
 | `classes.json` | Weekly studio classes: `day` 0=Sun…6=Sat, `t` like `"4:30–5:30"`, `name`, `room`. Any day with a class is a studio day (streak pauses). |
 | `home-days.json` | Home-practice days keyed by weekday number. |
-| `practice-items.json` | The daily checklist. Each item needs a **stable `id`** — check-offs are stored against it. Add items freely; don't reuse or rename ids. |
+| `practice-pool.json`, `exercises.json` | The practice pools (warm-up, core, legs, flexibility, technique, runs; each item has a stable `id`, `secs`, `pose`, `tags`) and the exercise animations for practice mode. Add items freely; don't reuse or rename ids. `practice-items.json` is the old fixed list, kept for the schema-1 migration. |
 | `phases.json` | The 15-week plan. |
 | `packs.json` | Packing lists (`comp`, `convention`, `rehearsal`). |
 | `aerial.json` | Aerial progression steps (stable `id`, `section`, `text`). |
@@ -202,8 +205,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 5) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 6) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 6 (1.3.1): `practice.total`.
 - Schema 5 (1.3.0): `reviews` and `goals` collections, `photos.goal`.
 - Schema 4 (1.2.0): `dances.cues[]` (cue sheets), normalized on read when present.
 - Schema 3 (1.1.0): `practice.runs[]` ("Run it" logs), `settings.pin` / `settings.pinOn` / `settings.weekFix`, `dances.bpm` / `dances.loops` / `dances.countOffset`, and the four new collections. Older records get the defaults on read.

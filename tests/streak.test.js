@@ -12,6 +12,8 @@ const seven = { done: Array.from({ length: 7 }, (_, i) => "i" + i) };   // 58% â
 const eight = { done: Array.from({ length: 8 }, (_, i) => "i" + i) };   // 67% â†’ counts
 
 test("a day counts at 60% or with any run", () => {
+  assert.equal(dayCounts({ done: Array.from({ length: 9 }, (_, i) => "i" + i), total: 16 }, T), false, "9/16 is under 60% even though 9/12 would pass");
+  assert.equal(dayCounts({ done: Array.from({ length: 10 }, (_, i) => "i" + i), total: 16 }, T), true);
   assert.equal(dayCounts(seven, T), false);
   assert.equal(dayCounts(eight, T), true);
   assert.equal(dayCounts({ done: [], runs: [{ at: "x" }] }, T), true);

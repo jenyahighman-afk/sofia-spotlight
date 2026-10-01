@@ -4,19 +4,20 @@ import { $, $$, esc, fmt, todayStr, toast, expose } from "../util.js";
 import { PRACTICE_ITEMS, PHASES, AERIAL, CLASSES } from "../data.js";
 import { S, storeSet, events } from "../store.js";
 import { computeStreak } from "../streak.js";
+import { planFor } from "../planToday.js";
 import { checkBadges } from "../badges.js";
 
-const KIND = { warm:"🔥", str:"💪", flex:"🧘", tech:"🩰", run:"▶️" };
+const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
 let lastPct = -1, dateSel = null;
 const curDate = () => dateSel || todayStr();
 
 function ring(pct){ const r=44, c=2*Math.PI*r; return `<svg viewBox="0 0 100 100" class="ring"><circle cx="50" cy="50" r="${r}" class="ring-bg"/><circle cx="50" cy="50" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-pct/100)}"/><text x="50" y="50" class="ring-txt">${pct}%</text></svg>`; }
 function renderPractice(){
-  const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=new Set(rec.done||[]);
-  const pct=PRACTICE_ITEMS.length?Math.round(100*[...done].filter(id=>PRACTICE_ITEMS.some(i=>i.id===id)).length/PRACTICE_ITEMS.length):0;
+  const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=new Set(rec.done||[]); const plan=planFor(date);
+  const pct=plan.length?Math.round(100*[...done].filter(id=>plan.some(i=>i.id===id)).length/plan.length):0;
   const streak=computeStreak({practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today:todayStr()});
   $("#practiceHead").innerHTML=`${ring(pct)}<div class="grow"><div class="today-what">${date===todayStr()?"Today":fmt(date)}</div><div class="row"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${(rec.runs||[]).length?`<span class="chip sun">▶ ${rec.runs.length} run${rec.runs.length>1?"s":""}</span>`:""}</div><div class="small muted" style="margin-top:4px">${pct>=100?"All done. Go you! 🎉":pct>=60?"That counts as a practice day ✓":"Get to 60% and today counts."}</div></div>`;
-  $("#practiceChecklist").innerHTML=PRACTICE_ITEMS.map(it=>`<label class="pitem ${done.has(it.id)?"done":""}"><input type="checkbox" ${done.has(it.id)?"checked":""} data-id="${it.id}" class="pchk"><span class="pk">${KIND[it.kind]||"✨"}</span><span class="grow">${esc(it.text)}</span>${it.kind==="tech"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}</label>`).join("");
+  $("#practiceChecklist").innerHTML=plan.map(it=>`<label class="pitem ${done.has(it.id)?"done":""}"><input type="checkbox" ${done.has(it.id)?"checked":""} data-id="${it.id}" class="pchk"><span class="pk">${KIND[it.kind]||"✨"}</span><span class="grow">${esc(it.text)}</span>${it.kind==="tech"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}</label>`).join("");
   $$(".pchk").forEach(c=>c.addEventListener("change",onCheck));
   if($("#practiceNote")!==document.activeElement) $("#practiceNote").value=rec.note||"";
   $("#practiceDate").value=date;
@@ -25,7 +26,7 @@ function renderPractice(){
   const apct=Math.round(100*[...ad].filter(id=>AERIAL.some(a=>a.id===id)).length/AERIAL.length); $("#aerialPct").textContent=apct+"%";
   $("#phases").innerHTML=PHASES.map(p=>`<div class="check"><span class="chip violet">${esc(p.d)}</span><span><b>${esc(p.n)}</b><br><span class="small">${esc(p.g)}</span></span></div>`).join("");
   const hist=Object.entries(S.practice).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30);
-  $("#practiceHistory").innerHTML=hist.length?hist.map(([d,r])=>`<div class="check"><span class="chip mint">${fmt(d)}</span><span>${(r.done||[]).length}/${PRACTICE_ITEMS.length}${(r.runs||[]).length?` · ▶ ${r.runs.length}`:""}${r.note?" · "+esc(r.note):""}</span></div>`).join(""):`<p class="muted small">Nothing yet. Today is a good day.</p>`;
+  $("#practiceHistory").innerHTML=hist.length?hist.map(([d,r])=>`<div class="check"><span class="chip mint">${fmt(d)}</span><span>${(r.done||[]).length}/${r.total||PRACTICE_ITEMS.length}${(r.runs||[]).length?` · ▶ ${r.runs.length}`:""}${r.note?" · "+esc(r.note):""}</span></div>`).join(""):`<p class="muted small">Nothing yet. Today is a good day.</p>`;
   lastPct=pct;
 }
 // Safety net: today's checks are mirrored in localStorage the moment they're tapped; if the record ever comes back
@@ -39,8 +40,9 @@ export function restoreTodayChecks(){
 async function onCheck(e){
   const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=$$(".pchk").filter(x=>x.checked).map(x=>x.dataset.id);
   e.target.closest(".pitem").classList.toggle("done",e.target.checked);
-  const pct=Math.round(100*done.length/PRACTICE_ITEMS.length);
-  await storeSet("practice",date,{...rec,done});
+  const plan=planFor(date); const pct=Math.round(100*done.length/Math.max(1,plan.length));
+  await storeSet("practice",date,{...rec,done,total:plan.length});
+  const aer=plan.find(i=>i.id===e.target.dataset.id&&i.aerialId); if(aer&&e.target.checked){ const ad=new Set(S.settings.aerial||[]); if(!ad.has(aer.aerialId)){ ad.add(aer.aerialId); await storeSet("settings","main",{...S.settings,aerial:[...ad]}); } }
   if(date===todayStr()){ try{ localStorage.setItem("spotlight:practice:"+date,JSON.stringify(done)); }catch(e){} }
   if(pct>=100&&lastPct<100) confetti(); lastPct=pct; checkBadges();
 }

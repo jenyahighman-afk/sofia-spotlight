@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -52,7 +52,10 @@ export const MIGRATIONS = {
     if (col === "reviews") { if (!Array.isArray(doc.thumbs)) doc.thumbs = []; if (!doc.review || typeof doc.review !== "object") doc.review = {}; if (!doc.kind) doc.kind = "video"; }
     if (col === "goals") { if (!Array.isArray(doc.checkins)) doc.checkins = []; if (typeof doc.target !== "number") doc.target = +doc.target || 0; if (typeof doc.unit !== "string") doc.unit = ""; }
     return doc;
-  }
+  },
+  // 5 → 6 (daily practice plan): practice.total = how many items that day's plan had (so 60% is judged against the right
+  // list). Older days have no total and fall back to the fixed 12-item list they were saved against.
+  6: (col, id, doc) => { if (col === "practice" && doc.total !== undefined) { const n = parseInt(doc.total, 10); if (Number.isFinite(n) && n > 0) doc.total = n; else delete doc.total; } return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

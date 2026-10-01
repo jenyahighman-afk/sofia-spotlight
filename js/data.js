@@ -8,6 +8,7 @@ export let TF_FORMS={}, TF_PATS={}, TF_MOVES=[], TF_DANCERS=[];
 export let CD_SCENES=[];
 export let SPARKLE={icons:[],party:[]};
 export let SKILLS={states:[],styles:{}};
+export let PRACTICE_POOL={slots:[],runs:[]}, EXERCISES={};
 
 // A pose = every joint from BASE, overridden by the keyframe. Same helper the games always used.
 export const P=(o={})=>Object.assign({},BASE,o);
@@ -19,7 +20,7 @@ export function expandMoves(json){
   return json.moves.map(m=>({ ...m, k:m.k.map(kf=>{ const {arms:a,...rest}=kf; if(a&&!arms[a]) throw new Error(`Unknown arm preset "${a}" in move ${m.id}`); return Object.assign({},base,a?arms[a]:{},rest); }) }));
 }
 
-export const DATA_FILES=["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills"];
+export const DATA_FILES=["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises"];
 
 export async function loadData(base="./data/"){
   const got={};
@@ -38,4 +39,5 @@ export function applyData(got){
   CD_SCENES=got.compday;
   SPARKLE=got.sparkle;
   SKILLS=got.skills||{states:[],styles:{}};
+  PRACTICE_POOL=got["practice-pool"]||{slots:[],runs:[]}; EXERCISES=got.exercises||{};
 }
