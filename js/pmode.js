@@ -9,6 +9,7 @@ import { S, storeSet } from "./store.js";
 import { avatarSVG } from "./avatar.js";
 import { checkBadges } from "./badges.js";
 import { confetti } from "./views/practice.js";
+import { demoFor, demoHtml } from "./demos.js";
 
 const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
 let ITEMS = [];
@@ -39,8 +40,10 @@ function animate(frames){ cancelAnimationFrame(animRaf); if (!frames) return;
 function ring(p){ const r = 44, c = 2 * Math.PI * r; return `<svg viewBox="0 0 100 100" class="ring pm-ring"><circle cx="50" cy="50" r="${r}" class="ring-bg"/><circle cx="50" cy="50" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p / 100)}"/><text x="50" y="50" class="ring-txt">${p}%</text></svg>`; }
 function render(){
   const items = ITEMS; const done = rec().done || []; const p = pct(); const n = done.filter(id => items.some(i => i.id === id)).length;
-  const cur = PM.i >= 0 ? items[PM.i] : null; const frames = cur ? framesFor(cur.pose) : null;
-  if (frames) animate(frames); else { cancelAnimationFrame(animRaf); $("#pmDancer").setAttribute("viewBox", "70 30 160 230"); $("#pmDancer").innerHTML = `<rect x="70" y="240" width="160" height="20" fill="#F7A8C6" opacity=".35"/>${avatarSVG(progressPose(p))}`; }
+  const cur = PM.i >= 0 ? items[PM.i] : null; const frames = cur ? framesFor(cur.pose) : null; const demo = cur ? demoFor(cur.id) : null;
+  const box = $("#pmDemo"); box.hidden = !demo; box.style.display = demo ? "grid" : "none"; const dancer = $("#pmDancer"); dancer.hidden = !!demo; dancer.style.display = demo ? "none" : ""; if (demo) { cancelAnimationFrame(animRaf); box.innerHTML = demoHtml(demo); }
+  const pic = $("#pmPic"); pic.hidden = !cur; if (cur) pic.innerHTML = `<button class="lnk" onclick="openDemoSheet('${cur.id}','${esc(cur.text.split(/[:—(]/)[0].trim())}')">${demo ? "📷 Change picture" : "📷 Use a photo or clip"}</button>`;
+  if (demo) {} else if (frames) animate(frames); else { cancelAnimationFrame(animRaf); $("#pmDancer").setAttribute("viewBox", "70 30 160 230"); $("#pmDancer").innerHTML = `<rect x="70" y="240" width="160" height="20" fill="#F7A8C6" opacity=".35"/>${avatarSVG(progressPose(p))}`; }
   $("#pmRing").innerHTML = ring(p); $("#pmCount").textContent = `${n} / ${items.length}`;
   if (PM.i < 0) { $("#pmItem").innerHTML = `<div class="pm-text">All done! 🎉</div><div class="small muted">Today counts. Go you.</div>`; $("#pmActions").innerHTML = `<button class="btn coral big-btn" onclick="pmClose()">Done</button>`; $("#pmTimer").hidden = true; return; }
   const it = items[PM.i];
@@ -74,5 +77,5 @@ export function openPracticeMode(){
   $("#pmode").hidden = false; document.body.classList.add("modal"); render(); startTimer();
 }
 export function closePracticeMode(){ clearInterval(PM.timer); cancelAnimationFrame(animRaf); $("#pmode").hidden = true; document.body.classList.remove("modal"); }
-export function initPracticeMode(){ $("#pmClose").onclick = closePracticeMode; $("#startPractice").onclick = openPracticeMode; }
+export function initPracticeMode(){ $("#pmClose").onclick = closePracticeMode; $("#startPractice").onclick = openPracticeMode; document.addEventListener("demochanged", () => { if (!$("#pmode").hidden) render(); }); }
 expose({ pmDone: done, pmSkip: skip, pmSetTimed: setTimed, pmPause: pause, pmClose: closePracticeMode, openPracticeMode });

@@ -24,6 +24,7 @@ import { initPracticeMode } from "./pmode.js";
 import { initCoach, renderReviews } from "./coach.js";
 import { initGoals } from "./goals.js";
 import { initMirror } from "./games/mirror.js";
+import { initDemos } from "./demos.js";
 import { restoreTodayChecks } from "./views/practice.js";
 import { settled } from "./store.js";
 import { installErrorCapture, installReportLinks, guard, renderReports } from "./reports.js";
@@ -39,7 +40,7 @@ const renders = [
   guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("grownups", renderGrownups), guard("settings", renderSettings),
 ];
 function renderAll(){ renders.forEach(r => r()); }
-function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); installReportLinks(); }
+function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initDemos(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
 async function registerSW(){

@@ -25,7 +25,7 @@ async function addFiles(fileList){
 }
 async function delFile(id){ if(!confirm("Delete this file?")) return; const f=S.files[id]; await storeDel("files",id); if(f&&f.path){ try{ await media.remove(f.path); }catch(e){ console.warn(e); } } }
 
-function renderPhotos(){ const list=Object.entries(S.photos).filter(([,p])=>!p.goal).sort((a,b)=>(b[1].at||"").localeCompare(a[1].at||""));
+function renderPhotos(){ const list=Object.entries(S.photos).filter(([,p])=>!p.goal&&!p.demo).sort((a,b)=>(b[1].at||"").localeCompare(a[1].at||""));
   $("#photoGrid").innerHTML=list.map(([id,p])=>`<div class="ph">${photoTile(p)}${p.cap?`<div class="cap">${esc(p.cap)}</div>`:""}<button class="del" onclick="delPhoto('${id}')">✕</button></div>`).join("");
   $("#photoHint").textContent=sync.online?"":"Offline — new photos and videos upload once you're back online."; }
 // Photos are shrunk to 1600px before upload; short videos (up to 50 MB) go up as they are.
