@@ -31,14 +31,16 @@ const pct = () => Math.round(100 * (rec().done || []).filter(id => ITEMS.some(i 
 // Keyframes for an item's pose: a game move (moves.json) or an exercise (exercises.json, same joint schema).
 export function framesFor(pose){ const mv = MOVES.find(x => x.id === pose); if (mv) return mv.k; const ex = EXERCISES[pose]; if (!ex) return null; return ex.map(kf => { const { arms, ...rest } = kf; return Object.assign({}, BASE, arms && ARMS[arms] ? ARMS[arms] : {}, rest); }); }
 let animRaf = 0, animT0 = 0;
-function animate(frames){ cancelAnimationFrame(animRaf); if (!frames) return; const k = frames.length > 1 ? frames : [frames[0], frames[0]]; const mv = { id: "ex", k }; animT0 = performance.now(); const dur = 1400 * Math.max(1, k.length - 1);
+function animate(frames){ cancelAnimationFrame(animRaf); if (!frames) return;
+  // Lying-down poses are wide, standing ones tall: pick the frame to fit.
+  const lying = frames.some(f => Math.abs(f.rot || 0) >= 45 && Math.abs(f.rot || 0) <= 135); $("#pmDancer").setAttribute("viewBox", lying ? "20 70 260 170" : "70 30 160 230"); const k = frames.length > 1 ? frames : [frames[0], frames[0]]; const mv = { id: "ex", k }; animT0 = performance.now(); const dur = 1400 * Math.max(1, k.length - 1);
   const f = () => { const t = ((performance.now() - animT0) % (dur * 2)) / dur; const u = t <= 1 ? t : 2 - t; const pose = poseAt(mv, u); $("#pmDancer").innerHTML = `<rect x="70" y="240" width="160" height="20" fill="#F7A8C6" opacity=".35"/>${avatarSVG(pose)}`; animRaf = requestAnimationFrame(f); }; f(); }
 
 function ring(p){ const r = 44, c = 2 * Math.PI * r; return `<svg viewBox="0 0 100 100" class="ring pm-ring"><circle cx="50" cy="50" r="${r}" class="ring-bg"/><circle cx="50" cy="50" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p / 100)}"/><text x="50" y="50" class="ring-txt">${p}%</text></svg>`; }
 function render(){
   const items = ITEMS; const done = rec().done || []; const p = pct(); const n = done.filter(id => items.some(i => i.id === id)).length;
   const cur = PM.i >= 0 ? items[PM.i] : null; const frames = cur ? framesFor(cur.pose) : null;
-  if (frames) animate(frames); else { cancelAnimationFrame(animRaf); $("#pmDancer").innerHTML = `<rect x="70" y="240" width="160" height="20" fill="#F7A8C6" opacity=".35"/>${avatarSVG(progressPose(p))}`; }
+  if (frames) animate(frames); else { cancelAnimationFrame(animRaf); $("#pmDancer").setAttribute("viewBox", "70 30 160 230"); $("#pmDancer").innerHTML = `<rect x="70" y="240" width="160" height="20" fill="#F7A8C6" opacity=".35"/>${avatarSVG(progressPose(p))}`; }
   $("#pmRing").innerHTML = ring(p); $("#pmCount").textContent = `${n} / ${items.length}`;
   if (PM.i < 0) { $("#pmItem").innerHTML = `<div class="pm-text">All done! 🎉</div><div class="small muted">Today counts. Go you.</div>`; $("#pmActions").innerHTML = `<button class="btn coral big-btn" onclick="pmClose()">Done</button>`; $("#pmTimer").hidden = true; return; }
   const it = items[PM.i];
