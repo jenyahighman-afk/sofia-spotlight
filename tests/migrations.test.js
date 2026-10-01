@@ -114,6 +114,12 @@ test("6 → 7: practice.custom is normalized (bad shapes become empty lists), ab
   assert.deepEqual(migrateDoc("practice", "d", { _v: 6, custom: "junk" }).custom, { swap: {}, add: [], drop: [] });
 });
 
+test("7 → 8: settings.demos normalized; entries without a url are dropped", () => {
+  const s = migrateDoc("settings", "main", { _v: 7, demos: { planks: { kind: "video", url: "https://x/y.mp4", photoId: "p1" }, bad: { kind: "photo" }, lnk: { url: "https://a.b", kind: "weird" } } });
+  assert.deepEqual(Object.keys(s.demos), ["planks", "lnk"]); assert.equal(s.demos.planks.photoId, "p1"); assert.equal(s.demos.lnk.kind, "link"); assert.equal(s._v, SCHEMA_VERSION);
+  assert.equal("demos" in migrateDoc("settings", "main", { _v: 7 }), false);
+});
+
 test("a whole collection migrates and other collections pass through unchanged", () => {
   const out = migrateCollection("notes", { a: { title: "t", body: "b", tag: "Ideas", at: "2026-09-27T03:01:15.743Z" } });
   assert.equal(out.a._v, SCHEMA_VERSION); assert.equal(out.a.title, "t");

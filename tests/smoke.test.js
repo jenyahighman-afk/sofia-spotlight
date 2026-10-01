@@ -17,7 +17,7 @@ before(async () => {
   M.store = await import("../js/store.js");
   M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
-  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js");
+  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js");
 });
 
 const SCREENS = () => ({
@@ -25,12 +25,12 @@ const SCREENS = () => ({
   events: M.events.renderEvents, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, notes: () => { M.notes.renderNotes(); M.notes.renderPhotos(); M.notes.renderFiles(); },
   lists: () => { M.lists.renderTodos(); M.lists.renderPack(); }, skillcheck: M.skillcheck.renderSkillCheck, reviews: M.coach.renderReviews, reports: M.reports.renderReports, grownups: M.grownups.renderGrownups, settings: M.settings.renderSettings,
 });
-const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode, M.coach.initCoach, M.goals.initGoals, M.mirror.initMirror];
+const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode, M.coach.initCoach, M.goals.initGoals, M.mirror.initMirror, M.demos.initDemos];
 
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPhotos", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPhotos", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -113,4 +113,12 @@ test("Grown-ups gate: locked by default, wrong PIN stays, right PIN opens, PIN o
   M.grownups.lockGrownups(); assert.equal(M.grownups.isUnlocked(), false);
   M.store.S.settings = { pinOn: false }; assert.equal(M.grownups.isUnlocked(), true); assert.equal(M.store.pin(), "2027");
   assert.ok(M.grownups.GROWNUP_PAGES.includes("settings") && M.grownups.GROWNUP_PAGES.includes("events"));
+});
+
+test("demo pictures: kind from the link, html per kind, none → dancer", async () => {
+  const D = M.demos;
+  assert.equal(D.demoKindForUrl("https://x/a.MP4?x=1"), "video"); assert.equal(D.demoKindForUrl("https://x/a.jpeg"), "photo"); assert.equal(D.demoKindForUrl("https://youtube.com/watch?v=1"), "link");
+  assert.ok(D.demoHtml({ kind: "video", url: "https://x/a.mp4" }).includes("<video") && D.demoHtml({ kind: "video", url: "https://x/a.mp4" }).includes("muted"));
+  assert.ok(D.demoHtml({ kind: "photo", url: "https://x/a.jpg" }).startsWith("<img")); assert.ok(D.demoHtml({ kind: "link", url: "https://y" }).includes("Open the clip")); assert.equal(D.demoHtml(null), "");
+  M.store.S.settings = { demos: { planks: { kind: "photo", url: "https://x/p.jpg" } } }; assert.equal(D.demoFor("planks").url, "https://x/p.jpg"); assert.equal(D.demoFor("nope"), null);
 });

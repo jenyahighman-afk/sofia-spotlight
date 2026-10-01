@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -63,6 +63,14 @@ export const MIGRATIONS = {
       const ids = (a) => (Array.isArray(a) ? a : []).map(String).filter(Boolean);
       const swap = {}; for (const [k, v] of Object.entries(c.swap && typeof c.swap === "object" ? c.swap : {})) if (k && typeof v === "string" && v) swap[k] = v;
       doc.custom = { swap, add: ids(c.add), drop: ids(c.drop) };
+    }
+    return doc;
+  },
+  // 7 → 8 (demo pictures): settings.demos = { itemId: { kind: photo|video|link, url, photoId?, name, at } }; photos.demo = itemId.
+  8: (col, id, doc) => {
+    if (col === "settings" && doc.demos !== undefined) {
+      const out = {}; for (const [k, v] of Object.entries(doc.demos && typeof doc.demos === "object" ? doc.demos : {})) if (v && typeof v === "object" && typeof v.url === "string" && v.url) out[k] = { kind: ["photo", "video", "link"].includes(v.kind) ? v.kind : "link", url: v.url, photoId: typeof v.photoId === "string" ? v.photoId : "", name: String(v.name || ""), at: String(v.at || "") };
+      doc.demos = out;
     }
     return doc;
   }
