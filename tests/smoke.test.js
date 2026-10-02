@@ -56,6 +56,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
   assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
+  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 6, "six game tiles on Play");
   assert.ok(el("#meStars").innerHTML.includes("⭐ 0") && el("#meStars").innerHTML.includes("Gold leotard"), "stars card shows the next unlock");
   assert.ok(el("#skillRings").innerHTML.includes("Acro"), "skill rings per style");
   assert.ok(el("#skillCheckList").innerHTML.includes("Teacher checked"), "grown-ups can teacher-check");
