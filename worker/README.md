@@ -20,7 +20,7 @@ npx wrangler secret put ANTHROPIC_API_KEY  # paste the key from console.anthropi
 npx wrangler deploy                      # prints https://sofia-spotlight-coach.<account>.workers.dev
 ```
 
-Then put that URL in the app: `js/firebase-config.js` → `coachConfig.url`, bump the version, push.
+Then put that URL in the app: `js/firebase-config.js` → `coachConfig.url`, bump the version, push. (Done 2026-10-01: https://sofia-spotlight-coach.sofia-spotlight-coach.workers.dev, KV `RATE` bound.)
 
 No terminal? The secret can also be set in the Cloudflare dashboard: Workers & Pages → sofia-spotlight-coach → Settings → Variables and Secrets → Add → type Secret, name `ANTHROPIC_API_KEY`.
 
