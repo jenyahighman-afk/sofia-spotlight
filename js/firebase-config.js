@@ -13,4 +13,4 @@ export const firebaseConfig = {
 export const mediaConfig = { provider: "firebase" };
 
 // The AI coach worker (worker/README.md). Leave url empty until it's deployed: "Coach me" then shows the skeleton view only.
-export const coachConfig = { url: "" };
+export const coachConfig = { url: "https://sofia-spotlight-coach.sofia-spotlight-coach.workers.dev" };

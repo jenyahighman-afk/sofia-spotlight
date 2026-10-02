@@ -11,8 +11,8 @@ MODEL = "claude-opus-5-5"
 
 # Rate limiting (20 reviews per family per day). Create once with:  npx wrangler kv namespace create RATE
 # then paste the id it prints here. Without this binding the limit is still enforced, but per worker instance only.
-# [[kv_namespaces]]
-# binding = "RATE"
-# id = "PASTE-THE-ID-HERE"
+[[kv_namespaces]]
+binding = "RATE"
+id = "8c6b0df54fe14e9d9ada3027db61f7a3"
 
 # The API key is a secret, never a var:  npx wrangler secret put ANTHROPIC_API_KEY
