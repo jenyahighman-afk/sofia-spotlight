@@ -17,7 +17,7 @@ before(async () => {
   M.store = await import("../js/store.js");
   M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
-  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js");
+  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js");
 });
 
 const SCREENS = () => ({
@@ -30,7 +30,7 @@ const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPhotos", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPhotos", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -56,6 +56,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
   assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
+  assert.ok(el("#meStars").innerHTML.includes("⭐ 0") && el("#meStars").innerHTML.includes("Gold leotard"), "stars card shows the next unlock");
   assert.ok(el("#skillRings").innerHTML.includes("Acro"), "skill rings per style");
   assert.ok(el("#skillCheckList").innerHTML.includes("Teacher checked"), "grown-ups can teacher-check");
   assert.ok(el("#reportList").innerHTML.includes("No reports"), "reports empty state");
@@ -121,4 +122,15 @@ test("demo pictures: kind from the link, html per kind, none → dancer", async 
   assert.ok(D.demoHtml({ kind: "video", url: "https://x/a.mp4" }).includes("<video") && D.demoHtml({ kind: "video", url: "https://x/a.mp4" }).includes("muted"));
   assert.ok(D.demoHtml({ kind: "photo", url: "https://x/a.jpg" }).startsWith("<img")); assert.ok(D.demoHtml({ kind: "link", url: "https://y" }).includes("Open the clip")); assert.equal(D.demoHtml(null), "");
   M.store.S.settings = { demos: { planks: { kind: "photo", url: "https://x/p.jpg" } } }; assert.equal(D.demoFor("planks").url, "https://x/p.jpg"); assert.equal(D.demoFor("nope"), null);
+});
+
+test("stars: 1–3 per play by result, unlock ladder, next unlock", () => {
+  const St = M.stars;
+  assert.equal(St.starsFor("sparkle", 1350), 3); assert.equal(St.starsFor("sparkle", 600), 2); assert.equal(St.starsFor("sparkle", 10), 1);
+  assert.equal(St.starsFor("oops", 9), 3); assert.equal(St.starsFor("oops", 7), 2); assert.equal(St.starsFor("oops", 2), 1);
+  assert.equal(St.starsFor("compday", 84), 3); assert.equal(St.starsFor("choreo", 74), 2); assert.equal(St.starsFor("trio", 50), 1); assert.equal(St.starsFor("mirror", 250), 3); assert.equal(St.starsFor("practice", 100), 2); assert.equal(St.starsFor("unknown", 0), 1);
+  assert.equal(St.isUnlocked("leo", "#FF6FA3", 0), true, "default pink is free"); assert.equal(St.isUnlocked("leo", "#FFD23F", 9), false); assert.equal(St.isUnlocked("leo", "#FFD23F", 10), true);
+  assert.equal(St.nextUnlock(0)[3], "Gold leotard"); assert.equal(St.nextUnlock(10)[3], "Flower"); assert.equal(St.nextUnlock(999), null);
+  assert.equal(St.unlockedList(35).length, 3);
+  const ladder = St.UNLOCKS.map(u => u[2]); assert.deepEqual(ladder, [...ladder].sort((a, b) => a - b), "ladder climbs");
 });

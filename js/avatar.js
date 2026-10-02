@@ -1,7 +1,8 @@
 // The dancer: SVG avatar renderer shared by every game, plus the avatar builder on the Play tab.
-import { $, esc, expose } from "./util.js";
+import { $, esc, expose, toast } from "./util.js";
 import { AVATAR_DEFAULT, AV_OPTS, P } from "./data.js";
 import { S, storeSet } from "./store.js";
+import { isUnlocked, UNLOCKS, totalStars } from "./stars.js";
 
 // Motion context the Choreo Studio feeds into the renderer (hair/skirt lag, style-specific outfit).
 export const MOTION={style:"lyrical",vel:{hx:0,hy:0,hipx:0}};
@@ -45,8 +46,8 @@ const AV={open:false};
 function avRender(){ const a=myAvatar(); $("#avName").textContent=a.name||"Sofia"; const pose=P({el:[-36,-40],er:[36,-40],hl:[-58,-52],hr:[58,-52],kr:[26,26],fr:[8,36]}); $("#avSvg").innerHTML=avatarSVG(pose,{...a});
   $("#avOpts").style.display=AV.open?"block":"none"; if(!AV.open) return;
   const lab={hairStyle:"Hair",hair:"Hair color",eyes:"Eyes",skin:"Skin",leo:"Leotard",acc:"Accessory"};
-  $("#avOpts").innerHTML=`<label class="f">Name</label><input type="text" id="avNameIn" value="${esc(a.name||"Sofia")}" onchange="avSet('name',this.value)">`+Object.entries(AV_OPTS).map(([k,opts])=>`<div class="field-lab">${lab[k]}</div><div class="row" style="margin-top:4px">${opts.map(([v,n])=>`<button class="btn sm ${a[k]===v?"coral":"ghost"}" onclick="avSet('${k}','${v}')" style="${k==="hair"||k==="leo"||k==="eyes"||k==="skin"?`border-left:10px solid ${v}`:""}">${n}</button>`).join("")}</div>`).join(""); }
-async function avSet(k,v){ const a={...myAvatar(),[k]:v}; if(k==="hair") a.hairD=shade(v); await storeSet("settings","main",{...S.settings,avatar:a}); avRender(); }
+  $("#avOpts").innerHTML=`<label class="f">Name</label><input type="text" id="avNameIn" value="${esc(a.name||"Sofia")}" onchange="avSet('name',this.value)">`+Object.entries(AV_OPTS).map(([k,opts])=>`<div class="field-lab">${lab[k]}</div><div class="row" style="margin-top:4px">${opts.map(([v,n])=>{ const u=UNLOCKS.find(x=>x[0]===k&&x[1]===v); const locked=u&&!isUnlocked(k,v); return `<button class="btn sm ${a[k]===v?"coral":"ghost"} ${locked?"locked":""}" onclick="avSet('${k}','${v}')" style="${k==="hair"||k==="leo"||k==="eyes"||k==="skin"?`border-left:10px solid ${v}`:""}">${locked?"🔒 ":""}${n}${locked?` <small>${u[2]}⭐</small>`:""}</button>`; }).join("")}</div>`).join(""); }
+async function avSet(k,v){ if(!isUnlocked(k,v)){ const u=UNLOCKS.find(x=>x[0]===k&&x[1]===v); return toast(`🔒 ${u[3]}: ${u[2]-totalStars()} more ⭐ to unlock`); } const a={...myAvatar(),[k]:v}; if(k==="hair") a.hairD=shade(v); await storeSet("settings","main",{...S.settings,avatar:a}); avRender(); }
 function avToggle(){ AV.open=!AV.open; avRender(); }
 export { shade, myAvatar, avatarSVG, avRender, avSet, avToggle };
 expose({ avSet, avToggle, avRender });

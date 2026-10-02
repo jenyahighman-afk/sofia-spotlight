@@ -2,6 +2,7 @@
 import { $, toast, expose } from "../util.js";
 import { SPARKLE } from "../data.js";
 import { S, storeSet } from "../store.js";
+import { awardStars } from "../stars.js";
 
 const G={icons:[],on:false};
 function startGame(bpm,title,party){ G.bpm=bpm; G.title=title; G.icons=party?SPARKLE.party:SPARKLE.icons; G.party=!!party; G.on=true; G.score=0; G.combo=0; G.best=S.settings.gameBest||0; G.notes=[]; G.t0=performance.now(); G.last=G.t0; G.nextBeat=0; G.dur=30000; G.hits=0; G.total=0;
@@ -26,7 +27,7 @@ function gameFrame(){ if(!G.on) return; const now=performance.now()-G.t0; const 
   G.notes.forEach(n=>{ const y=(now-n.t)*speed; if(n.hit||y>H+30) return; if(y>zoneY+40&&!n.missed){n.missed=true;G.combo=0;} ctx.globalAlpha=n.missed?.3:1; if(n.gold){ ctx.fillStyle="rgba(255,210,63,.35)"; ctx.beginPath(); ctx.arc(n.lane*lw+lw/2,y,22,0,7); ctx.fill(); } ctx.fillStyle="#000"; ctx.fillText(G.icons[n.lane],n.lane*lw+lw/2,y+10); ctx.globalAlpha=1; });
   if(G.pop&&performance.now()-G.pop.t<500){ ctx.fillStyle="#7B3F6A"; ctx.font="bold 18px Fredoka, system-ui"; ctx.fillText(G.pop.txt,G.pop.x*lw+lw/2,zoneY-50); }
   ctx.fillStyle="#8A6A80"; ctx.font="bold 13px system-ui"; ctx.textAlign="left"; ctx.fillText("combo ×"+G.combo+"   "+Math.max(0,Math.ceil((G.dur-now)/1000))+"s",10,20);
-  if(now>G.dur+1500){ G.on=false; const acc=G.total?Math.round(100*G.hits/G.total):0; $("#gameMsg").innerHTML=`Score ${G.score}<br><span style="font-size:1rem;color:#8A6A80">${acc}% on the beat${G.score>G.best?" · NEW BEST!":""}</span><br><button class="btn coral" style="pointer-events:auto;margin-top:10px" onclick="startGame(${G.bpm},'${G.title}')">Again</button>`; document.removeEventListener("keydown",gameKey); if(G.score>(S.settings.gameBest||0)) storeSet("settings","main",{...S.settings,gameBest:G.score}); return; }
+  if(now>G.dur+1500){ G.on=false; const acc=G.total?Math.round(100*G.hits/G.total):0; $("#gameMsg").innerHTML=`Score ${G.score}<br><span style="font-size:1rem;color:#8A6A80">${acc}% on the beat${G.score>G.best?" · NEW BEST!":""}</span><br><button class="btn coral" style="pointer-events:auto;margin-top:10px" onclick="startGame(${G.bpm},'${G.title}')">Again</button>`; document.removeEventListener("keydown",gameKey); if(G.score>(S.settings.gameBest||0)) storeSet("settings","main",{...S.settings,gameBest:G.score}); setTimeout(()=>awardStars("sparkle",G.score,"Step & Sparkle"),400); return; }
   requestAnimationFrame(gameFrame); }
 export { G, startGame, stopGame, laneHit };
 expose({ startGame, stopGame, laneHit });

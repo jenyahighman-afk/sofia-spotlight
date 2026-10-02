@@ -50,6 +50,12 @@ On any dance, **▶ Practice** opens the player for that dance's music: the uplo
 - **Pattern spotting**: a tag seen 3+ times in the last 60 days shows "You've had this note N times" on that dance and on Me, with a **Got it!** that closes the newest open one (badge on the 1st, 5th and 10th).
 - **This week's fix**: on Sunday (film-review day) Today offers **Pick one**; it chooses the open correction whose tag repeats most (then the oldest) and shows it on Today all week (`settings.weekFix`). Any other day without a pick shows the same button.
 
+### Stars (what points are for)
+Every game pays **1–3 stars** per play depending on the result (`js/stars.js`: Sparkle 500/1000, Oops 7/9 of 10, Comp Day 70/84, Choreo and Trio 74/84, Mirror 120/250, a finished practice day 2), plus **+1 for the first play of each game each day**. Stars add up on Me (`settings.stars`) and unlock looks in the avatar builder — gold leotard at 10, flower at 20, lilac hair at 35, aqua leotard at 50, braids at 70, black leotard at 90, violet eyes at 120 — shown with a 🔒 and the stars still needed. Best scores and badges stay as they were; stars are the everyday reward loop.
+
+### Mirror (Play)
+Front camera + on-device pose. The target dancer is as big as the camera view, beside it on a laptop and above it on a phone, mirrored so she can copy directly, swaying so she isn't a statue. One instruction at a time ("Arms up high!"), a match meter that fills while the pose is held (2 s), green skeleton when it matches, a chime and a green flash on success, 3-2-1 between rounds. Rounds: five poses, a 6-second relevé, then "arms up on count 1" to the solo's own track when it's uploaded (click track otherwise). Nothing is recorded.
+
 ### Skills, badges, streaks
 - `data/skills.json`: a beginner → advanced ladder per style (ballet, jazz, contemporary, acro, hip hop), 10 skills each. States: not yet → learning → clean (Sofia taps on Me) → **teacher-checked** (Grown-ups → Skills & awards, with the teacher's name and date). Rings on Me: learning ⅓, clean ⅔, checked full.
 - Badges (`badges` collection): 3- and 7-day streaks; fixes closed 1/5/10; aerial mission ¼ ½ ¾ full; game bests (Sparkle 1,000, Oops 9/10, Comp Day High Gold, Trio Platinum); first film review; first full run at 100%; parent-awarded **No cues** (per dance) and **Clean 5 in a row** (per skill or any trick). A toast fires when one is earned; the case on Me shows earned and locked.
@@ -137,7 +143,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 70 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 72 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -207,8 +213,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 8) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 9) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 9 (1.4.0): `settings.stars`, `settings.starLog`, `settings.mirrorBest`.
 - Schema 8 (1.3.6): `settings.demos`, `photos.demo`.
 - Schema 7 (1.3.5): `practice.custom` (swap / add / skip for the day).
 - Schema 6 (1.3.1): `practice.total`.

@@ -120,6 +120,12 @@ test("7 → 8: settings.demos normalized; entries without a url are dropped", ()
   assert.equal("demos" in migrateDoc("settings", "main", { _v: 7 }), false);
 });
 
+test("8 → 9: settings.stars normalized, junk starLog reset, absent stays absent", () => {
+  const s = migrateDoc("settings", "main", { _v: 8, stars: "12", starLog: "x" }); assert.equal(s.stars, 12); assert.deepEqual(s.starLog, {}); assert.equal(s._v, SCHEMA_VERSION);
+  assert.equal(migrateDoc("settings", "main", { _v: 8, stars: -3 }).stars, 0);
+  assert.equal("stars" in migrateDoc("settings", "main", { _v: 8 }), false);
+});
+
 test("a whole collection migrates and other collections pass through unchanged", () => {
   const out = migrateCollection("notes", { a: { title: "t", body: "b", tag: "Ideas", at: "2026-09-27T03:01:15.743Z" } });
   assert.equal(out.a._v, SCHEMA_VERSION); assert.equal(out.a.title, "t");

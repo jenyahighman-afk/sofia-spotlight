@@ -9,6 +9,7 @@ import { styleProgress, skillState, kidCycle, STATE_EMOJI, STATE_LABEL } from ".
 import { patterns, TAG_LABEL, TAG_EMOJI, closeCorrection, closedCount, isOpen } from "../corrections.js";
 import { openGrownups } from "../grownups.js";
 import { renderGoalsCard } from "../goals.js";
+import { totalStars, nextUnlock, unlockedList } from "../stars.js";
 
 let styleOpen = null;
 const ring = (pct, ic) => { const r = 26, c = 2 * Math.PI * r; return `<svg viewBox="0 0 64 64" class="mini-ring"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/><text x="32" y="32" class="ring-ic">${ic}</text></svg>`; };
@@ -17,6 +18,7 @@ function renderMe(){
   avRender(); renderGoalsCard();
   const today = todayStr(); const streak = computeStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today });
   const best = bestStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today });
+  const nu = nextUnlock(); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;
   $("#meStreak").innerHTML = `<div class="stat"><b>${streak}</b><span>day streak 🔥</span></div><div class="stat"><b>${best}</b><span>best streak</span></div><div class="stat"><b>${practicedDays(S.practice, PRACTICE_ITEMS.length)}</b><span>practice days</span></div><div class="stat"><b>${closedCount(S.corrections)}</b><span>fixes closed ✅</span></div>`;
   // badge case
   const got = earned(); const gotKeys = new Set(got.map(b => b.key));

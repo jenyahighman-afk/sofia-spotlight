@@ -4,6 +4,7 @@ import { STYLES, MOVES } from "../data.js";
 import { S, storeSet, storeDel } from "../store.js";
 import { avatarSVG, MOTION } from "../avatar.js";
 import { openStage, stageActions, stageOpen } from "../stage.js";
+import { awardStars } from "../stars.js";
 
 const CS={style:"lyrical",seq:[],playing:false,cur:null,vel:MOTION.vel,tail:[],prevH:null,prevHip:null,t:0};
 function csRender(){
@@ -63,7 +64,7 @@ function csJudge(){ const seq=CS.seq.map(id=>MOVES.find(x=>x.id===id)); if(!seq.
   if(!hasAir&&["jazz","ballet","acro"].includes(CS.style)) c.push(["Miss Relevé","No air time! A Sauté, Grand jeté or Cartwheel would lift this."]);
   if(uniq>=9) c.push(["DJ Groove","So much variety! Every 8 looked different."]);
   if(n<4) c.push(["Miss Relevé","That was over before I sat down. Make it longer!"]);
-  CS.last={total,award}; if(!stageOpen()) openStage("⭐ The judges", [$("#csStage"), $("#csResult")], `<button class="btn sun" onclick="csPlay()">▶ Again</button><button class="btn ghost" onclick="closeStage()">Done</button>`); $("#csStage").style.display="block"; $("#csResult").style.display="block"; const crowd=total>=92?"🎉 The crowd is on its feet. Someone's mom is crying.":total>=84?"👏 Big applause. The PITCH girls are screaming your name.":total>=74?"👏 Warm applause, one whoop from the back.":"🙂 Polite clapping. Someone yawned. Rude.";
+  CS.last={total,award}; awardStars("choreo",total,"Choreo Studio"); if(!stageOpen()) openStage("⭐ The judges", [$("#csStage"), $("#csResult")], `<button class="btn sun" onclick="csPlay()">▶ Again</button><button class="btn ghost" onclick="closeStage()">Done</button>`); $("#csStage").style.display="block"; $("#csResult").style.display="block"; const crowd=total>=92?"🎉 The crowd is on its feet. Someone's mom is crying.":total>=84?"👏 Big applause. The PITCH girls are screaming your name.":total>=74?"👏 Warm applause, one whoop from the back.":"🙂 Polite clapping. Someone yawned. Rude.";
   $("#csResult").innerHTML=`<div class="card sun" style="margin:0"><div class="row"><h3 class="grow">${award}</h3><span class="big">${total}</span></div>
     <p class="small">${crowd}</p><div class="grid2 small" style="margin:6px 0"><div>Technique <b>${tech}</b>/25</div><div>Musicality <b>${mus}</b>/25</div><div>Performance <b>${perf}</b>/25</div><div>Creativity <b>${cre}</b>/25</div></div>
     ${c.map(([who,txt])=>`<div class="check"><span class="chip ${who==="DJ Groove"?"violet":who==="Miss Relevé"?"":"mint"}">${who}</span><span>${esc(txt)}</span></div>`).join("")}</div>`; $("#csResult").scrollIntoView({behavior:"smooth",block:"nearest"}); }
