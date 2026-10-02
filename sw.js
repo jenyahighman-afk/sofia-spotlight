@@ -10,7 +10,7 @@ const APP_FILES = [
   "./", "./index.html", "./manifest.json", "./css/app.css",
   "./js/version.js", "./js/app.js", "./js/util.js", "./js/data.js", "./js/store.js", "./js/nav.js", "./js/sync.js", "./js/firebase-config.js",
   "./js/media.js", "./js/ics.js", "./js/seed.js", "./js/backup.js", "./js/family.js", "./js/avatar.js",
-  "./js/corrections.js", "./js/streak.js", "./js/badges.js", "./js/skills.js", "./js/reports.js", "./js/grownups.js", "./js/showme.js", "./js/player.js", "./js/cues.js", "./js/stage.js", "./js/pmode.js", "./js/plan.js", "./js/planToday.js", "./js/demos.js", "./js/stars.js", "./js/coach.js", "./js/goals.js", "./js/frames.js", "./js/pose.js", "./js/posemath.js", "./js/games/mirror.js",
+  "./js/corrections.js", "./js/streak.js", "./js/badges.js", "./js/skills.js", "./js/reports.js", "./js/grownups.js", "./js/showme.js", "./js/player.js", "./js/cues.js", "./js/stage.js", "./js/pmode.js", "./js/plan.js", "./js/planToday.js", "./js/demos.js", "./js/stars.js", "./js/coach.js", "./js/goals.js", "./js/frames.js", "./js/pose.js", "./js/posemath.js", "./js/games/mirror.js", "./js/games/along.js",
   "./js/games/choreo.js", "./js/games/oops.js", "./js/games/trio.js", "./js/games/compday.js", "./js/games/sparkle.js",
   "./js/views/home.js", "./js/views/dances.js", "./js/views/events.js", "./js/views/schedule.js", "./js/views/practice.js", "./js/views/notes.js", "./js/views/play.js", "./js/views/lists.js", "./js/views/settings.js", "./js/views/me.js", "./js/views/skillcheck.js",
   "./data/dances.json", "./data/events.json", "./data/classes.json", "./data/home-days.json", "./data/practice-items.json", "./data/phases.json", "./data/packs.json", "./data/aerial.json", "./data/season.json",

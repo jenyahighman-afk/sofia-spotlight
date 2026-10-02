@@ -15,9 +15,12 @@ const POSES = [
   { key: "up", say: "Arms up high!", emoji: "🙌" }, { key: "second", say: "Arms out wide!", emoji: "🤸" }, { key: "low", say: "Arms down, stand tall", emoji: "🧍" },
   { key: "up", say: "Up again — reach!", emoji: "🙌" }, { key: "second", say: "Wide, like wings", emoji: "🕊️" },
 ];
-const M = { on: false, stream: null, raf: 0, phase: "", score: 0, pi: 0, hold: 0, need: 2, t0: 0, ctx: null, audio: null, beat: 0, hits: 0, lastWristY: 0, lastVel: 0, lastBeat: -1, sway: 0, matching: false, armed: false };
+const M = { speak: true, on: false, stream: null, raf: 0, phase: "", score: 0, pi: 0, hold: 0, need: 2, t0: 0, ctx: null, audio: null, beat: 0, hits: 0, lastWristY: 0, lastVel: 0, lastBeat: -1, sway: 0, matching: false, armed: false };
 
-const say = (t) => { $("#mgSay").textContent = t; };
+const say = (t, speak = true) => { if ($("#mgSay").textContent === t) return; $("#mgSay").textContent = t; if (speak && M.speak) speakOut(t); };
+function speakOut(t){ try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t).replace(/[^\p{L}\p{N} ,.!?'-]/gu, "")); u.rate = 1.05; u.pitch = 1.1; speechSynthesis.speak(u); } catch (e) {} }
+const seen = (t) => { $("#mgSeen").textContent = t; };
+const SEE = { up: "I see: arms up", second: "I see: arms wide", low: "I see: arms down", mixed: "I see: one arm up, one down" };
 const meter = (f) => { $("#mgMeterFill").style.width = Math.round(Math.max(0, Math.min(1, f)) * 100) + "%"; };
 function ensureCtx(){ try { if (!M.ctx) M.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (M.ctx.state === "suspended") M.ctx.resume(); } catch (e) {} }
 function tone(freq, dur = 0.12, gain = 0.25, type = "sine"){ if (!M.ctx) return; const o = M.ctx.createOscillator(), g = M.ctx.createGain(); o.type = type; o.frequency.value = freq; g.gain.value = gain; o.connect(g); g.connect(M.ctx.destination); const t = M.ctx.currentTime; o.start(t); g.gain.exponentialRampToValueAtTime(0.001, t + dur); o.stop(t + dur + 0.02); }
@@ -35,7 +38,7 @@ function drawTarget(key, extra = {}){
 
 export async function startMirror(){
   if (!poseAvailable() || !navigator.mediaDevices) return toast("The mirror needs a camera and a newer phone");
-  $("#mirror").hidden = false; document.body.classList.add("modal"); M.score = 0; $("#mgScore").textContent = "0"; say("Loading the mirror…"); meter(0); drawTarget("up"); $("#mgActions").innerHTML = `<button class="btn ghost" onclick="stopMirror()">✕ Stop</button>`; $("#mgRound").textContent = "";
+  $("#mirror").hidden = false; document.body.classList.add("modal"); M.speak = localStorage.getItem("spotlight:mirrorVoice") !== "off"; $("#mgVoice").textContent = M.speak ? "🔊" : "🔇"; seen(""); M.score = 0; $("#mgScore").textContent = "0"; say("Loading the mirror…"); meter(0); drawTarget("up"); $("#mgActions").innerHTML = `<button class="btn ghost" onclick="stopMirror()">✕ Stop</button>`; $("#mgRound").textContent = "";
   try {
     M.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 } }, audio: false });
     const v = $("#mgVideo"); v.srcObject = M.stream; await v.play(); await videoDetector();
@@ -44,7 +47,7 @@ export async function startMirror(){
 }
 export function stopMirror(){ M.on = false; cancelAnimationFrame(M.raf); if (M.stream) { M.stream.getTracks().forEach(t => t.stop()); M.stream = null; } if (M.audio) { try { M.audio.pause(); } catch (e) {} M.audio = null; } $("#mirror").hidden = true; document.body.classList.remove("modal"); }
 
-async function countdown(label){ for (const n of [3, 2, 1]) { if (!M.on) return; $("#mgRound").textContent = label; say(String(n)); click(n === 1); await new Promise(r => setTimeout(r, 700)); } }
+async function countdown(label){ speakOut(label); await new Promise(r => setTimeout(r, 900)); for (const n of [3, 2, 1]) { if (!M.on) return; $("#mgRound").textContent = label; say(String(n)); click(n === 1); await new Promise(r => setTimeout(r, 700)); } }
 
 // ---- round 1: copy poses ----
 function startPose(){ M.phase = "pose"; M.hold = 0; M.need = 2; const p = POSES[M.pi]; $("#mgRound").textContent = `Pose ${M.pi + 1} of ${POSES.length}`; say(`${p.emoji} ${p.say}`); meter(0); }
@@ -76,15 +79,15 @@ async function loop(){
     cv.width = v.videoWidth; cv.height = v.videoHeight; const ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
     let lm = null; try { lm = await detectVideoFrame(v, performance.now()); } catch (e) {}
     const dt = 1 / 30;
-    if (M.phase === "pose") { const ok = !!lm && armPose(lm) === POSES[M.pi].key; M.matching = ok; if (ok) { M.hold += dt; meter(M.hold / M.need); if (M.hold >= M.need) { await posePassed(); } } else { M.hold = Math.max(0, M.hold - dt * 2); meter(M.hold / M.need); if (lm && M.hold === 0) say(`${POSES[M.pi].emoji} ${POSES[M.pi].say}`); } }
-    else if (M.phase === "releve") { const ok = !!lm && onReleve(lm); M.matching = ok; if (ok) { M.hold += dt; meter(M.hold / M.need); say(`Hold… ${Math.ceil(M.need - M.hold)}`); if (M.hold >= M.need) await relevePassed(); } else { M.hold = Math.max(0, M.hold - dt); meter(M.hold / M.need); if (lm) say("🩰 Heels up! Rise and hold"); } }
+    if (M.phase === "pose") { const ap = lm ? armPose(lm) : null; seen(ap ? SEE[ap] || "" : ""); const ok = !!lm && ap === POSES[M.pi].key; M.matching = ok; if (ok) { M.hold += dt; meter(M.hold / M.need); if (M.hold >= M.need) { await posePassed(); } } else { M.hold = Math.max(0, M.hold - dt * 2); meter(M.hold / M.need); if (lm && M.hold === 0) say(`${POSES[M.pi].emoji} ${POSES[M.pi].say}`, false); } }
+    else if (M.phase === "releve") { const ok = !!lm && onReleve(lm); seen(lm ? (ok ? "I see: on your toes" : "I see: heels down") : ""); M.matching = ok; if (ok) { M.hold += dt; meter(M.hold / M.need); say(`Hold… ${Math.ceil(M.need - M.hold)}`, false); if (M.hold >= M.need) await relevePassed(); } else { M.hold = Math.max(0, M.hold - dt); meter(M.hold / M.need); if (lm) say("🩰 Heels up! Rise and hold", false); } }
     else if (M.phase === "beat" && lm) { const wy = ((lm[15] ? lm[15].y : 0) + (lm[16] ? lm[16].y : 0)) / 2; const vel = M.lastWristY - wy; const peak = vel > 0.02 && M.lastVel <= 0.02; M.lastVel = vel; M.lastWristY = wy;
       if (peak) { const phase = ((performance.now() - M.t0) % (M.beat * 8)) / M.beat; const near = phase < 0.6 || phase > 7.4; M.matching = near; if (near) { M.hits++; addScore(0); meter(M.hits / 4); say(`On it! ${M.hits} of 4 ✨`); chime(); } else say("Almost — wait for the 1"); if (M.hits >= 4) await beatDone(); }
       if (performance.now() - M.t0 > M.beat * 8 * 6) await beatDone(); }
     if (lm) drawSkeleton(ctx, lm, cv.width, cv.height, M.matching ? "#2E9E6B" : "#FF5C93");
-    else if (M.phase === "pose" || M.phase === "releve") say("Step back so I can see all of you");
+    else if (M.phase === "pose" || M.phase === "releve") say("Step back so I can see all of you", false);
   }
   M.raf = requestAnimationFrame(loop);
 }
-export function initMirror(){ $("#mgClose").onclick = stopMirror; }
+export function initMirror(){ $("#mgClose").onclick = stopMirror; $("#mgVoice").onclick = () => { M.speak = !M.speak; localStorage.setItem("spotlight:mirrorVoice", M.speak ? "on" : "off"); $("#mgVoice").textContent = M.speak ? "🔊" : "🔇"; }; }
 expose({ startMirror, stopMirror });

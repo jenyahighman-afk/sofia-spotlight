@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 9;
+export const SCHEMA_VERSION = 10;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -77,6 +77,11 @@ export const MIGRATIONS = {
   // 8 → 9 (stars): settings.stars (total), settings.starLog ({date: {game: plays}}), settings.mirrorBest. Normalized when present.
   9: (col, id, doc) => {
     if (col === "settings") { if (doc.stars !== undefined) { const n = parseInt(doc.stars, 10); doc.stars = Number.isFinite(n) && n > 0 ? n : 0; } if (doc.starLog !== undefined && (!doc.starLog || typeof doc.starLog !== "object")) doc.starLog = {}; }
+    return doc;
+  },
+  // 9 → 10 (Dance Along): choreo docs may be routines — kind "along" with url/path, fps, frames[] (pose features per frame), best.
+  10: (col, id, doc) => {
+    if (col === "choreo" && doc.kind === "along") { if (!Array.isArray(doc.frames)) doc.frames = []; if (!(doc.fps > 0)) doc.fps = 8; if (typeof doc.best !== "number") doc.best = 0; if (!Array.isArray(doc.seq)) doc.seq = []; if (!doc.style) doc.style = "along"; }
     return doc;
   }
 };

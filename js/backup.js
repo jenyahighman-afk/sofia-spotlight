@@ -12,6 +12,7 @@ function mediaRefs(){
   for (const [id, p] of Object.entries(S.photos)) if (p.path) out.push({ col: "photos", id, path: p.path, url: p.url });
   for (const [id, f] of Object.entries(S.files)) if (f.path) out.push({ col: "files", id, path: f.path, url: f.url });
   for (const [id, d] of Object.entries(S.dances)) if (d.musicFile && d.musicFile.path) out.push({ col: "dances", id, path: d.musicFile.path, url: d.musicFile.url });
+  for (const [id, c] of Object.entries(S.choreo)) if (c.kind === "along" && c.path) out.push({ col: "choreo", id, path: c.path, url: c.url });
   return out;
 }
 const pathOf = (col, doc) => col === "dances" ? (doc.musicFile && doc.musicFile.path) : doc.path;

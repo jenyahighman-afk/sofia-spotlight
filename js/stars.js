@@ -13,6 +13,7 @@ export function starsFor(game, value){
     case "choreo":  return v >= 84 ? 3 : v >= 74 ? 2 : 1;
     case "trio":    return v >= 84 ? 3 : v >= 74 ? 2 : 1;
     case "mirror":  return v >= 250 ? 3 : v >= 120 ? 2 : 1;
+    case "along":   return v >= 80 ? 3 : v >= 50 ? 2 : 1; // % in step with the video
     case "practice": return v >= 100 ? 2 : 1; // a finished practice day
     default: return 1;
   }

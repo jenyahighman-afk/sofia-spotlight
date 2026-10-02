@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validateRequest, buildUserContent, parseReview, checkAndCount, memoryStore, corsHeaders, parseOrigins, SYSTEM_PROMPT, MAX_FRAMES, DAILY_LIMIT } from "../worker/src/core.js";
 import { evenTimes, sampleTimes, loudness, peakTime, aroundPeak } from "../js/frames.js";
-import { angleAt, readouts, onReleve, armPose, LM } from "../js/posemath.js";
+import { angleAt, readouts, onReleve, armPose, LM, poseFeatures, featureDistance } from "../js/posemath.js";
 
 const FID = "ABCDEFGHJKLMNPQRSTUVWXYZ".slice(0, 24);
 const frame = Buffer.from("x".repeat(3000)).toString("base64");
@@ -82,4 +82,24 @@ test("pose math: knee angle, working leg, arms vs shoulders, relevé, arm poses"
   set(LM.lWrist, 0.1, 0.3); set(LM.rWrist, 0.9, 0.3); assert.equal(armPose(lm), "second");
   set(LM.lWrist, 0.4, 0.8); set(LM.rWrist, 0.6, 0.8); assert.equal(armPose(lm), "low");
   assert.deepEqual(readouts([]), { numbers: {}, lines: [] });
+});
+
+test("Dance Along features: shoulder-relative, mirror-invariant, far from a different pose", () => {
+  const lm = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5 }));
+  const set = (i, x, y) => { lm[i] = { x, y }; };
+  set(LM.lShoulder, 0.4, 0.3); set(LM.rShoulder, 0.6, 0.3); set(LM.lHip, 0.42, 0.55); set(LM.rHip, 0.58, 0.55); set(LM.lKnee, 0.42, 0.75); set(LM.rKnee, 0.58, 0.75); set(LM.lAnkle, 0.42, 0.95); set(LM.rAnkle, 0.58, 0.95);
+  set(LM.lElbow, 0.3, 0.2); set(LM.rElbow, 0.7, 0.2); set(LM.lWrist, 0.25, 0.05); set(LM.rWrist, 0.75, 0.05); // arms up
+  const up = poseFeatures(lm); assert.equal(up.length, 10); assert.ok(up[1] < -0.5 && up[3] < -0.5, "wrists above the shoulders");
+  const mirrored = lm.map(p => ({ x: 1 - p.x, y: p.y })); for (const [l, r] of [[11, 12], [13, 14], [15, 16], [23, 24], [25, 26], [27, 28], [29, 30], [31, 32]]) { const tmp = mirrored[l]; mirrored[l] = mirrored[r]; mirrored[r] = tmp; } // a true mirror image swaps left and right
+  assert.ok(featureDistance(up, poseFeatures(mirrored)) < 0.05, "mirror image matches");
+  set(LM.lWrist, 0.42, 0.7); set(LM.rWrist, 0.58, 0.7); set(LM.lElbow, 0.4, 0.5); set(LM.rElbow, 0.6, 0.5); // arms down
+  const down = poseFeatures(lm); assert.ok(featureDistance(up, down) > 1, "arms up vs down is a miss: " + featureDistance(up, down));
+  assert.equal(featureDistance(null, up), Infinity);
+});
+test("looser arm-pose rules: arms up counts with wrists above the shoulders even if not above the head", () => {
+  const lm = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5 })); const set = (i, x, y) => { lm[i] = { x, y }; };
+  set(LM.nose, 0.5, 0.15); set(LM.lShoulder, 0.4, 0.3); set(LM.rShoulder, 0.6, 0.3);
+  set(LM.lWrist, 0.35, 0.17); set(LM.rWrist, 0.65, 0.17); assert.equal(armPose(lm), "up", "just above the shoulders, below the nose");
+  set(LM.lWrist, 0.1, 0.36); set(LM.rWrist, 0.9, 0.36); assert.equal(armPose(lm), "second", "a bit below shoulder height still counts as wide");
+  set(LM.lWrist, 0.42, 0.52); set(LM.rWrist, 0.58, 0.52); assert.equal(armPose(lm), "low");
 });

@@ -115,6 +115,13 @@
   <div class="card aqua game-card" data-game="mirror">
     <div class="row"><div class="grow"><h3>🪞 Mirror</h3><p class="small muted">Copy the dancer, hold a relevé, hit count 1. Camera stays on the phone.</p><p class="small">Best: <b id="mirrorBest">0</b></p></div><button class="btn sm coral" onclick="startMirror()">Play</button></div>
   </div>
+  <div class="card coral game-card" data-game="along">
+    <h3>🕺 Dance Along</h3>
+    <p class="small muted">Learn a dance from a video. The clip plays with its music next to your camera and scores you copying it.</p>
+    <div class="row"><label class="btn sm coral" for="alongFile">＋ Add a dance (pick a clip)</label><input type="file" id="alongFile" accept="video/*" hidden><span class="small muted" id="alongStatus"></span></div>
+    <div id="alongList" style="margin-top:8px"></div>
+    <p class="small muted">Use clips you have on the phone: a tutorial you saved, a clip of a teacher, a dance you filmed. Up to 2 minutes; whole body in view works best.</p>
+  </div>
   <div class="card violet game-card" data-game="sparkle">
     <div class="row"><div class="grow"><h3>🎀 Step & Sparkle</h3><p class="small muted">Tap the lane when a sparkle hits the line. Stay on the beat!</p><p class="small">Best: <b id="gameBest">0</b></p></div>
     <div><button class="btn sm coral" onclick="startGame(76,'Stay a Little Longer · 76 BPM')">Lyrical</button><br><button class="btn sm sun" style="margin-top:6px" onclick="startGame(123,'Groove · 123 BPM')">Jazz</button><br><button class="btn sm" style="margin-top:6px;background:#B98BEF;color:#fff" onclick="startGame(140,'🦄 Party · 140 BPM',true)">Party</button></div></div>
@@ -383,7 +390,7 @@
 
 <!-- MIRROR GAME -->
 <div class="stage" id="mirror" hidden>
-  <div class="stage-top"><span class="grow">🪞 Mirror</span><span class="chip sun" id="mgScore">0</span><button class="btn sm ghost" id="mgClose">✕</button></div>
+  <div class="stage-top"><span class="grow">🪞 Mirror</span><button class="btn sm ghost" id="mgVoice" title="Voice">🔊</button><span class="chip sun" id="mgScore">0</span><button class="btn sm ghost" id="mgClose">✕</button></div>
   <div class="stage-body mg-body">
     <div class="mg-say" id="mgSay"></div>
     <div class="mg-pair">
@@ -392,8 +399,23 @@
     </div>
     <div class="mg-meter"><i id="mgMeterFill"></i></div>
     <div class="small muted" id="mgRound"></div>
+    <div class="small mg-seen" id="mgSeen"></div>
   </div>
   <div class="stage-actions row" id="mgActions"></div>
+</div>
+
+<!-- DANCE ALONG -->
+<div class="stage" id="along" hidden>
+  <div class="stage-top"><span class="grow" id="alTitle">Dance Along</span><button class="btn sm ghost" id="alVoice" title="Voice">🔊</button><span class="chip sun" id="alScore">0</span><button class="btn sm ghost" id="alClose">✕</button></div>
+  <div class="stage-body mg-body">
+    <div class="mg-say" id="alSay"></div>
+    <div class="mg-pair">
+      <div class="mg-target al-video"><video id="alVideo" playsinline preload="auto"></video><div class="mg-lab">Copy this</div></div>
+      <div class="mg-cam"><video id="alCam" playsinline muted></video><canvas id="alCanvas"></canvas><div class="mg-lab">You</div></div>
+    </div>
+    <div class="al-judge" id="alJudge"></div>
+  </div>
+  <div class="stage-actions row" id="alActions"></div>
 </div>
 
 <!-- SHOW ME: wrong vs fixed, side by side -->

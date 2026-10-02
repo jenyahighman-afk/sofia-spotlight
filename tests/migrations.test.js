@@ -126,6 +126,12 @@ test("8 → 9: settings.stars normalized, junk starLog reset, absent stays absen
   assert.equal("stars" in migrateDoc("settings", "main", { _v: 8 }), false);
 });
 
+test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio dances untouched", () => {
+  const r = migrateDoc("choreo", "r", { _v: 9, kind: "along", name: "Tutorial", url: "https://x/v.mp4" });
+  assert.deepEqual(r.frames, []); assert.equal(r.fps, 8); assert.equal(r.best, 0); assert.deepEqual(r.seq, []); assert.equal(r._v, SCHEMA_VERSION);
+  const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
+});
+
 test("a whole collection migrates and other collections pass through unchanged", () => {
   const out = migrateCollection("notes", { a: { title: "t", body: "b", tag: "Ideas", at: "2026-09-27T03:01:15.743Z" } });
   assert.equal(out.a._v, SCHEMA_VERSION); assert.equal(out.a.title, "t");
