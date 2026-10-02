@@ -267,3 +267,8 @@ body.modal{overflow:hidden}
 @media (max-width:480px){ .mg-pair{grid-template-columns:1fr 1fr} .mg-say{font-size:1.25rem} }
 .stars-card{text-align:center} .stars-big{font-family:Fredoka;font-size:2.2rem;line-height:1.1;color:#D9B26F}
 .btn.locked{opacity:.55} .btn.locked small{font-size:.65rem}
+.game-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 12px}
+.game-tile{border:2px solid var(--line);border-radius:18px;background:var(--card);padding:14px 8px 10px;text-align:center;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px}
+.game-tile:active{transform:translateY(2px);box-shadow:none}
+.gt-emoji{font-size:2.4rem;line-height:1.1} .gt-name{font-family:Fredoka;font-size:1.05rem;line-height:1.1;margin-top:4px} .game-tile small{font-size:.7rem;color:var(--ink-2);font-weight:700;line-height:1.2} .gt-best{color:#FF5C93}
+.game-tile:nth-child(1){border-color:var(--coral)} .game-tile:nth-child(2){border-color:var(--violet)} .game-tile:nth-child(3){border-color:var(--sun)} .game-tile:nth-child(4){border-color:var(--coral)} .game-tile:nth-child(5){border-color:var(--violet)} .game-tile:nth-child(6){border-color:var(--aqua)}

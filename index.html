@@ -75,7 +75,9 @@
 <section class="page" id="p-play">
   <h2>Play</h2>
   <p class="small muted">Every game pays stars ⭐ — they unlock new looks for your dancer on Me.</p>
-  <div class="card coral">
+  <div class="game-grid" id="gameGrid"></div>
+  <div class="row" id="gameBack" hidden><button class="btn sm ghost" onclick="playOpen('')">‹ All games</button></div>
+  <div class="card coral game-card" data-game="choreo">
     <h3>💃 Choreo Studio</h3>
     <p class="small muted">Build your own dance from moves, watch your dancer perform it, then face the judges.</p>
     <div class="row" style="margin:6px 0" id="csStyles"></div><div class="row"><span class="grow"></span><span class="small muted" id="csCounts">0 counts</span></div>
@@ -88,7 +90,7 @@
     <div class="row" style="margin-top:8px"><input type="text" id="csName" placeholder="Name this dance"><button class="btn sm" id="csSave">Save</button></div>
     <div id="csSaved" class="small" style="margin-top:6px"></div>
   </div>
-  <div class="card violet">
+  <div class="card violet game-card" data-game="oops">
     <h3>👀 Spot the Oops</h3>
     <p class="small muted">You hit a pose. Something might be wrong: a real correction, or something silly. Or it's perfect. Fast rounds, timer ticking.</p>
     <div class="row"><span class="small">Best: <b id="jeBest">0</b>/10</span><span class="grow"></span><button class="btn sm coral" onclick="jeStart()">Play</button></div>
@@ -96,7 +98,7 @@
       <div class="row" style="margin:6px 0"><span class="chip sun" id="jeRound"></span><span class="chip" id="jeMove"></span><span class="grow"></span><span class="chip mint" id="jeScore">0</span></div>
       <div id="jeOpts" style="display:grid;grid-template-columns:1fr 1fr;gap:6px"></div><div id="jeMsg" class="small" style="margin-top:6px;min-height:20px"></div></div>
   </div>
-  <div class="card sun">
+  <div class="card sun game-card" data-game="trio">
     <h3>👯 Trio Formations</h3>
     <p class="small muted">You, plus your two trio mates. Pick a formation and a pattern for each 8-count, watch it, then get judged on spacing and pictures.</p>
     <div id="tfBuild"></div>
@@ -104,16 +106,16 @@
     <div id="tfStage" style="display:none;margin-top:8px"><svg id="tfSvg" viewBox="0 0 300 200" style="width:100%;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:14px"></svg><div class="row" style="margin-top:4px"><span class="chip sun" id="tfNow"></span></div></div>
     <div id="tfResult" style="display:none;margin-top:8px"></div>
   </div>
-  <div class="card coral">
+  <div class="card coral game-card" data-game="compday">
     <h3>🎒 Comp Day</h3>
     <p class="small muted">A whole competition day with the PITCH girls, one choice at a time. Glitter emergencies, hallway battles, a famous choreographer, one slushie. Different every time.</p>
     <div class="row"><span class="small">Best: <b id="cdBest">0</b></span><span class="grow"></span><button class="btn sm coral" onclick="cdStart()">Start the day</button></div>
     <div id="cdArea" style="display:none;margin-top:8px"></div>
   </div>
-  <div class="card aqua">
+  <div class="card aqua game-card" data-game="mirror">
     <div class="row"><div class="grow"><h3>🪞 Mirror</h3><p class="small muted">Copy the dancer, hold a relevé, hit count 1. Camera stays on the phone.</p><p class="small">Best: <b id="mirrorBest">0</b></p></div><button class="btn sm coral" onclick="startMirror()">Play</button></div>
   </div>
-  <div class="card violet">
+  <div class="card violet game-card" data-game="sparkle">
     <div class="row"><div class="grow"><h3>🎀 Step & Sparkle</h3><p class="small muted">Tap the lane when a sparkle hits the line. Stay on the beat!</p><p class="small">Best: <b id="gameBest">0</b></p></div>
     <div><button class="btn sm coral" onclick="startGame(76,'Stay a Little Longer · 76 BPM')">Lyrical</button><br><button class="btn sm sun" style="margin-top:6px" onclick="startGame(123,'Groove · 123 BPM')">Jazz</button><br><button class="btn sm" style="margin-top:6px;background:#B98BEF;color:#fff" onclick="startGame(140,'🦄 Party · 140 BPM',true)">Party</button></div></div>
   </div>
