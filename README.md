@@ -137,7 +137,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 58 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 70 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -154,10 +154,12 @@ If a first deploy ever fails on "Pages not enabled": GitHub repo → Settings �
 ### What to test after each deploy (on a phone, 390 px wide)
 1. Open the app: the "Updated ✨ vX" toast shows, Today renders with today's studio classes or home plan.
 2. Dances: tap a chip → Show me opens; **＋ Note** → save a note → it appears as a chip on the card.
-3. ▶ Practice on the solo: track loads, 50% is slower and in tune, A–B loops, 8-count shows digits.
-4. Practice: tick items → ring moves; 100% → confetti; Today shows the streak.
-5. Me → long-press the avatar → PIN → Grown-ups hub; Settings shows "Online · synced".
-6. Second phone: the note from step 2 is there.
+3. ▶ Practice on the solo: track loads, 50% is slower and in tune, A–B loops, 8-count shows digits, the cue sheet shows the current move and counts down to the next.
+4. Practice: the list is today's plan (grouped), 🔁 swaps a move; **▶ Start practice** walks items one at a time with the dancer performing each; Done saves at once; 100% → confetti; Today shows the streak.
+5. 🎬 Coach me on the solo with three photos: skeleton readouts appear, "Ask the coach" returns a card within a minute, "Make it a note" adds the fix; Grown-ups → Coach reviews lists it.
+6. Me → 🎯 Goals → a goal → check in with a photo; Today shows the two-week reminder when due. Play → 🪞 Mirror opens the camera.
+7. Me → long-press the avatar → PIN → Grown-ups hub; Settings shows "Online · synced".
+8. Second phone: the note from step 2, the review from step 5 and the goal from step 6 are there.
 
 ## Family space, join code, QR
 
@@ -225,3 +227,44 @@ No analytics, no accounts, no chat, no third-party requests beyond the pinned CD
 
 ## Rotating the coach API key
 Create a new key in the Anthropic console → `cd worker && npx wrangler secret put ANTHROPIC_API_KEY` (or replace the secret in the Cloudflare dashboard) → delete the old key. The app doesn't change.
+
+## Session report — 2026-09-30 and 2026-10-01 (sessions 2A, 2B and the feedback round)
+
+Everything below is live at **1.3.7**. Each item was verified in the desktop browser at a 390 px viewport against a throwaway family space unless noted; "on a phone" items are what Jenya and Sofia confirmed.
+
+### Shipped
+| Version | What |
+|---|---|
+| 1.1.0 | Kid mode (Today · Dances · Practice · Play · Me, PIN-locked Grown-ups), practice player (speed, A–B loop, 8-count, Run it), corrections tracker with Show me, skills/badges/streaks, per-screen error states + reports, SCHEMA 3, Node smoke harness |
+| 1.1.1–1.1.4 | Explicit `#tag` on card lines (donut roll → Feet), music picker accepts any file (iOS greyed MP3s out), Stop button on Run it + Escape |
+| 1.2.0–1.2.1 | Cue sheets (＋ Cue here, List, Test me, run-screen cues), story line + performance notes from the two study sheets, trio song corrected |
+| 1.2.2–1.2.3 | Games play full screen with the buttons under the dancer, Oops timer 10 s; Practice mode (one item at a time, manual/timed, saved on every Done, localStorage safety net) |
+| 1.3.0 | AI coach (Cloudflare Worker + Coach me), skeleton view + Mirror game, goals with photos, SCHEMA 5 |
+| 1.3.1–1.3.2 | Daily practice plan from pools (rotating core/legs/flex/tech, week's fix drill, correction-tag technique picks, trick drill, aerial mission on home days), animated exercise poses, SCHEMA 6 |
+| 1.3.3–1.3.4 | Calypso move + drill + Ms. Brittany's calypso and timing notes; built-in card lines always copied into the tracker |
+| 1.3.5 | Swap / add / skip moves per group for the day (SCHEMA 7) |
+| 1.3.6 | Photo / clip / link in place of the dancer per move (SCHEMA 8) |
+| 1.3.7 | Coach worker deployed and wired in |
+
+### Infrastructure done by Jenya
+- Firestore rules republished twice (1.1.0 and 1.3.0 collections) — verified both times: the new collections are server-confirmed and round-trip.
+- Cloudflare account + `wrangler login` on this machine; worker `sofia-spotlight-coach` deployed with KV `RATE`; `ANTHROPIC_API_KEY` set as a dashboard secret.
+- Two PDFs (solo study sheet, trio guide) and two music files added to the family space.
+
+### Verified
+- Coach, end to end with the real key: three stills → skeleton readouts → model → review card (praise, one fix tagged Knees with one-tap note, four-point check, drill). Foreign origins get 403; the no-key state gave a clear 503 message before the key was set. One test review cost about 2 cents.
+- Practice plan: 13–14 items on a Thursday with two aerial strength steps and a trick drill; core and leg moves differ day to day; swap and add update the list and the day's total; practice mode animates every pool pose, widens the frame for lying-down moves, and shows a chosen picture instead.
+- Player: 50 % speed, A–B loop, 8-count, Run it with Stop, cue sheet current/next with countdown, Test me.
+- Reviews and goals: saved, returned from the cloud after reload, listed under Grown-ups → Coach reviews; goal reminder on Today after 14 days.
+- Games open in the full-screen stage with results under the dancer.
+- 70 Node tests, every deploy green.
+
+### Not verified (needs a phone or real footage)
+- A real video review (60 s clip, loudest-moment frames) and the Mirror game's camera rounds.
+- Goal check-in with the pose tool measuring a real split photo.
+- Voice-to-text for class notes on iOS; Web Audio click track on iOS Safari.
+
+### Known limits
+- Saves replace whole records: two phones saving the same card at the same moment → the later save wins. Different records never collide. Field-level merging is a contained change if several adults will edit at once.
+- Lyrics are never shipped in the data; type them into the cue sheet on the phone.
+- Three throwaway test family spaces exist in Firestore from verification; they are unenumerable and can be deleted from the Firebase console.
