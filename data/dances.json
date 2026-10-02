@@ -148,13 +148,13 @@
   "style": "Contemporary",
   "choreo": "Larisa",
   "teacher": "Larisa",
-  "rehearsal": "Choreography day Sun Sep 27, 10:00–12:00 · mark it once a week at home (Thursday)",
+  "rehearsal": "Choreography with Larisa · mark it once a week at home (Thursday) · trio with Hannah and Lauren",
   "costume": "",
   "shoes": "",
   "hair": "",
   "color": "violet",
-  "music": "",
-  "map": "Kneeling line → floor phrase with all three legs up (~0:12) → rolls (~0:19–0:24) → kneeling reach → low crawl into lying arch (~0:36–0:44) → rise (~0:45) → wide traveling triangle (~0:48–1:05) → run with acro (~1:06–1:16). More to come.",
+  "music": "Final cut is 2:24. The music itself ends at 2:13 and the last 11 seconds are SILENT — hold the final picture until 2:24. Builds steadily from the start: pulses at ~0:22, a big hit at 0:30 (the loudest moment of the first half), ~0:44 and ~0:58. The sound opens up at 1:06, breathes at 1:12–1:17 and 1:23–1:30, then runs full-out from 1:36 to the end. 86 BPM, a slow half-time feel (the pulse ticks at 172).",
+  "map": "Kneeling line → floor phrase with all three legs up (~0:12) → rolls (~0:19–0:24) → 0:30 big hit (freeze together) → kneeling reach → low crawl into lying arch (~0:36–0:44) → rise (~0:45) → wide traveling triangle (~0:48–1:05) → 1:06 the music opens — run with acro (~1:06–1:16) · 1:12 breath · 1:36 final push to the end · 2:13 music gone — hold until 2:24",
   "strengths": [
    "Straight vertical leg with a pointed foot in the floor phrase",
    "Deep lunge + arm reach (~0:57) is her best line",
@@ -165,31 +165,37 @@
    "Count the rolls out loud (she was a beat behind at ~0:21)",
    "Arms in second: at or above shoulder, long elbows",
    "Forward folds hinge at the hips, not through the back",
-   "Eyelines agree with the other two in the standing section"
+   "Eyelines agree with the other two in the standing section",
+   "#timing Hold the final picture through the silence to 2:24 — count 11 slow seconds"
   ],
   "notes": "",
   "links": [],
   "bpm": 86,
   "loops": [
    {
-    "n": "Floor phrase",
-    "a": 8,
-    "b": 26
+    "n": "Opening + floor",
+    "a": 0,
+    "b": 34
    },
    {
-    "n": "Crawl + rise",
+    "n": "Build",
     "a": 34,
-    "b": 48
-   },
-   {
-    "n": "Traveling triangle",
-    "a": 48,
     "b": 66
    },
    {
-    "n": "Run + acro",
+    "n": "Music opens",
     "a": 64,
-    "b": 78
+    "b": 96
+   },
+   {
+    "n": "Final push",
+    "a": 94,
+    "b": 134
+   },
+   {
+    "n": "Ending hold",
+    "a": 125,
+    "b": 144
    }
   ],
   "cues": [
@@ -214,6 +220,11 @@
     "move": "Kneeling reach"
    },
    {
+    "t": 30,
+    "lyric": "",
+    "move": "BIG HIT — freeze as one"
+   },
+   {
     "t": 36,
     "lyric": "",
     "move": "Low crawl into lying arch — don't rush the float"
@@ -221,7 +232,7 @@
    {
     "t": 45,
     "lyric": "",
-    "move": "Rise — eyes meet"
+    "move": "Rise — eyes meet Hannah and Lauren"
    },
    {
     "t": 48,
@@ -236,17 +247,33 @@
    {
     "t": 66,
     "lyric": "",
-    "move": "Run with acro — crisp on the hits"
+    "move": "Music opens — run with acro, crisp on the hits"
+   },
+   {
+    "t": 72,
+    "lyric": "",
+    "move": "Breath — soften, stay connected"
+   },
+   {
+    "t": 96,
+    "lyric": "",
+    "move": "Final push — everything full-out"
+   },
+   {
+    "t": 133,
+    "lyric": "",
+    "move": "Music gone — HOLD until 2:24"
    }
   ],
-  "story": "The world is loud. The three of you are safe together without a word.",
+  "story": "The world is loud. You, Hannah and Lauren are safe together without a word.",
   "performance": [
-   "Story: words cause hurt and noise; the trio has built a quiet, safe bubble. Connection without words is the point.",
+   "Story: words cause hurt and noise; Sofia, Hannah and Lauren have built a quiet, safe bubble. Connection without words is the point.",
    "Face — sharp, heavy lines: intense, guarded or reaching, as if the noise is intruding.",
    "Face — chorus: soften jaw and forehead, let out a gentle breath — relief, warmth, trust.",
-   "Connection: lock eyes with the other two to say 'I've got your back'. Inhale together on lifts, exhale on melts — one heartbeat.",
+   "Connection: lock eyes with Hannah and Lauren to say 'I've got your back'. Inhale together on lifts, exhale on melts — one heartbeat.",
    "Musicality: hits and catches sudden and crisp on the sharp beats. When the piano floats, don't rush — stillness is as strong as a leap.",
-   "Golden tip: every time the chorus comes back, show how much comfort and strength the three of you give each other without speaking."
+   "Golden tip: every time the chorus comes back, show how much comfort and strength the three of you give each other without speaking.",
+   "Ending: the music is gone for the last 11 seconds (2:13–2:24). Three bodies still, three faces still, breathing together — the judges are still watching."
   ]
  },
  {
