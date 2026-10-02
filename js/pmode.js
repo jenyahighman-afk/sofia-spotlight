@@ -10,6 +10,7 @@ import { avatarSVG } from "./avatar.js";
 import { checkBadges } from "./badges.js";
 import { confetti } from "./views/practice.js";
 import { demoFor, demoHtml } from "./demos.js";
+import { awardStars } from "./stars.js";
 
 const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
 let ITEMS = [];
@@ -67,7 +68,7 @@ async function done(){
   advance();
   } finally { PM.busy = false; }
 }
-function advance(){ PM.i = nextIndex(ITEMS, rec().done, PM.i + 1); render(); if (PM.i < 0) { clearInterval(PM.timer); confetti(); checkBadges(); } else startTimer(); }
+function advance(){ PM.i = nextIndex(ITEMS, rec().done, PM.i + 1); render(); if (PM.i < 0) { clearInterval(PM.timer); confetti(); checkBadges(); awardStars("practice", 100, "Practice done"); } else startTimer(); }
 function skip(){ PM.i = nextIndex(ITEMS, rec().done, PM.i + 1); if (PM.i < 0) PM.i = nextIndex(ITEMS, rec().done, 0); render(); startTimer(); }
 function setTimed(v){ PM.timed = v; try { localStorage.setItem("spotlight:pmode", v ? "timed" : "manual"); } catch (e) {} render(); startTimer(); }
 function pause(){ PM.paused = !PM.paused; render(); }

@@ -4,11 +4,12 @@ import { MOVES, JE_FLAWS, JE_MOVES } from "../data.js";
 import { S, storeSet } from "../store.js";
 import { avatarSVG } from "../avatar.js";
 import { openStage, stageActions } from "../stage.js";
+import { awardStars } from "../stars.js";
 
 const JE={r:0,score:0,flaw:"",move:null};
 function jeStart(){ JE.r=0; JE.score=0; openStage("👀 Spot the Oops", [$("#jeArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); jeRound(); }
 document.addEventListener("stageclosed", ()=>{ clearTimeout(JE.timer); });
-function jeRound(){ clearTimeout(JE.timer); if(JE.r>=10){ $("#jeOpts").innerHTML=""; $("#jeMsg").innerHTML=`<b>Done! ${JE.score}/10.</b> ${JE.score>=9?"You have a judge's eye. 👁️✨":JE.score>=7?"Sharp! A couple slipped by.":"Keep looking at feet, knees, eyes and arms — in that order."} <button class="btn sm coral" onclick="jeStart()">Again</button>`; if(JE.score>(S.settings.jeBest||0)) storeSet("settings","main",{...S.settings,jeBest:JE.score}); $("#jeBest").textContent=Math.max(JE.score,S.settings.jeBest||0); return; }
+function jeRound(){ clearTimeout(JE.timer); if(JE.r>=10){ $("#jeOpts").innerHTML=""; $("#jeMsg").innerHTML=`<b>Done! ${JE.score}/10.</b> ${JE.score>=9?"You have a judge's eye. 👁️✨":JE.score>=7?"Sharp! A couple slipped by.":"Keep looking at feet, knees, eyes and arms — in that order."} <button class="btn sm coral" onclick="jeStart()">Again</button>`; if(JE.score>(S.settings.jeBest||0)) storeSet("settings","main",{...S.settings,jeBest:JE.score}); $("#jeBest").textContent=Math.max(JE.score,S.settings.jeBest||0); awardStars("oops",JE.score,"Spot the Oops"); return; }
   JE.r++; const m=MOVES.find(x=>x.id===JE_MOVES[Math.floor(Math.random()*JE_MOVES.length)])||MOVES.find(x=>x.id==="arab"); JE.move=m; const f=JE_FLAWS[Math.floor(Math.random()*JE_FLAWS.length)]; JE.flaw=f[0];
   const p=JSON.parse(JSON.stringify(m.k[m.k.length-1])); if(m.id==="kick"||m.id==="leap"){ const mid=m.k[1]; Object.assign(p,JSON.parse(JSON.stringify(mid))); }
   if(JE.flaw==="knee"){ p.kr=[(p.kr[0]+p.fr[0])/2-8,(p.kr[1]+p.fr[1])/2+10]; } if(JE.flaw==="arms"){ p.hl=[p.hl[0]*0.6,p.hl[1]+22]; p.hr=[p.hr[0]*0.6,p.hr[1]+22]; p.el=[p.el[0],p.el[1]+14]; p.er=[p.er[0],p.er[1]+14]; }

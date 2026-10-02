@@ -5,6 +5,7 @@ import { S, storeSet } from "../store.js";
 import { avatarSVG } from "../avatar.js";
 import { poseAt } from "./choreo.js";
 import { openStage, stageActions, stageOpen } from "../stage.js";
+import { awardStars } from "../stars.js";
 
 const TF={eights:[],playing:false};
 function tfAdd(){ if(TF.eights.length>=8) return toast("8 eights is a full trio!"); TF.eights.push({form:"line",pat:"unison",mv:"reach"}); tfRender(); }
@@ -31,7 +32,7 @@ function tfJudge(){ const E=TF.eights; if(!E.length) return toast("Build it firs
   if(solos>1) c.push(["Coach Sparkle","A trio is three. More than one Sofia-solo eight and it stops being a trio."]);
   if(["triangle","vee","cluster"].includes(E[n-1].form)) c.push(["Coach Sparkle","Strong final picture. Hold it!"]); else c.push(["Coach Sparkle","End in a shape that photographs — a triangle, a V or a cluster."]);
   if(rep) c.push(["Miss Relevé","Two eights in a row that look identical read as a repeat."]);
-  if(!stageOpen()) openStage("⭐ The judges", [$("#tfStage"), $("#tfResult")], `<button class="btn sun" onclick="tfPlay()">▶ Again</button><button class="btn ghost" onclick="closeStage()">Done</button>`); $("#tfStage").style.display="block"; $("#tfResult").style.display="block"; $("#tfResult").innerHTML=`<div class="card sun" style="margin:0"><div class="row"><h3 class="grow">${award}</h3><span class="big">${total}</span></div><div class="grid2 small" style="margin:6px 0"><div>Spacing <b>${sp}</b>/25</div><div>Pictures <b>${pic}</b>/25</div><div>Togetherness <b>${tog}</b>/25</div><div>Flow <b>${fl}</b>/25</div></div>${c.map(([who,txt])=>`<div class="check"><span class="chip ${who==="DJ Groove"?"violet":who==="Miss Relevé"?"":"mint"}">${who}</span><span>${esc(txt)}</span></div>`).join("")}</div>`; if(total>(S.settings.tfBest||0)) storeSet("settings","main",{...S.settings,tfBest:total}); }
+  if(!stageOpen()) openStage("⭐ The judges", [$("#tfStage"), $("#tfResult")], `<button class="btn sun" onclick="tfPlay()">▶ Again</button><button class="btn ghost" onclick="closeStage()">Done</button>`); $("#tfStage").style.display="block"; $("#tfResult").style.display="block"; $("#tfResult").innerHTML=`<div class="card sun" style="margin:0"><div class="row"><h3 class="grow">${award}</h3><span class="big">${total}</span></div><div class="grid2 small" style="margin:6px 0"><div>Spacing <b>${sp}</b>/25</div><div>Pictures <b>${pic}</b>/25</div><div>Togetherness <b>${tog}</b>/25</div><div>Flow <b>${fl}</b>/25</div></div>${c.map(([who,txt])=>`<div class="check"><span class="chip ${who==="DJ Groove"?"violet":who==="Miss Relevé"?"":"mint"}">${who}</span><span>${esc(txt)}</span></div>`).join("")}</div>`; if(total>(S.settings.tfBest||0)) storeSet("settings","main",{...S.settings,tfBest:total}); awardStars("trio",total,"Trio"); }
 
 export { TF, tfAdd, tfUndo, tfSet, tfRender, tfDrawFrame, tfPlay, tfJudge };
 expose({ tfAdd, tfUndo, tfSet, tfPlay, tfJudge });
