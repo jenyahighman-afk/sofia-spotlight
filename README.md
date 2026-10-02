@@ -14,7 +14,7 @@ Sofia sees five tabs, each built to *do* something with as few words as possible
 | **Today** | One card: what's on (studio classes or the home-practice plan), a big **Start** / **Play** button, the countdown to the next event, the practice streak. Below it: this week's fix, then the week strip. |
 | **Dances** | One cover card per dance: emoji or the latest photo, song, **▶ Practice** (opens the practice player), **＋ Note** (quick note from class, with voice-to-text where the browser has it), the top three open fixes as chips. Tap a chip → **Show me**: the dancer does the wrong version and the fixed version side by side. Everything text-heavy is under **More ▸** (music map, moments, all corrections, strengths, tricks, costume, links, notes, photos, Edit). |
 | **Practice** | The checklist *is* the screen: progress ring, tap to check (saved as you go), confetti at 100%. Notes, the aerial mission, the 15-week plan, safety rules and history sit under accordions. |
-| **Play** | A grid of six game tiles (Choreo Studio, Spot the Oops, Trio Formations, Comp Day, Step & Sparkle, Mirror) with each game's best; tap one to open it, **‹ All games** to come back. |
+| **Play** | A grid of seven game tiles (Choreo Studio, Spot the Oops, Trio Formations, Comp Day, Step & Sparkle, Mirror, Dance Along) with each game's best; tap one to open it, **‹ All games** to come back. |
 | **Me** | Avatar (tap = customize, **long-press = Grown-ups**), streak + personal bests, badge case, skill progress rings per style, "notes that keep coming back", and the **Grown-ups 🔒** link at the bottom. |
 
 **Grown-ups** (PIN, default **2027**; change it or switch it off under Grown-ups → PIN) holds: Events (costs, notes, hotels), Schedule (classes, calendar, print, .ics), Lists (to-dos, packing), Notes (notes, files, photos), Skills & awards (teacher-checked skills, "No cues" / "Clean 5 in a row" badges), Coach reviews (placeholder until session 2B), Reports, Settings & backup. The ⚙️ in the header goes through the same gate. The gate stays open for 20 minutes after the PIN is typed. Nothing was deleted from the old tabs; it moved here.
@@ -54,7 +54,10 @@ On any dance, **▶ Practice** opens the player for that dance's music: the uplo
 Every game pays **1–3 stars** per play depending on the result (`js/stars.js`: Sparkle 500/1000, Oops 7/9 of 10, Comp Day 70/84, Choreo and Trio 74/84, Mirror 120/250, a finished practice day 2), plus **+1 for the first play of each game each day**. Stars add up on Me (`settings.stars`) and unlock looks in the avatar builder — gold leotard at 10, flower at 20, lilac hair at 35, aqua leotard at 50, braids at 70, black leotard at 90, violet eyes at 120 — shown with a 🔒 and the stars still needed. Best scores and badges stay as they were; stars are the everyday reward loop.
 
 ### Mirror (Play)
-Front camera + on-device pose. The target dancer is as big as the camera view, beside it on a laptop and above it on a phone, mirrored so she can copy directly, swaying so she isn't a statue. One instruction at a time ("Arms up high!"), a match meter that fills while the pose is held (2 s), green skeleton when it matches, a chime and a green flash on success, 3-2-1 between rounds. Rounds: five poses, a 6-second relevé, then "arms up on count 1" to the solo's own track when it's uploaded (click track otherwise). Nothing is recorded.
+Front camera + on-device pose. The target dancer is as big as the camera view, beside it on a laptop and above it on a phone, mirrored so she can copy directly, swaying so she isn't a statue. One instruction at a time ("Arms up high!"), a match meter that fills while the pose is held (2 s), green skeleton when it matches, a chime and a green flash on success, 3-2-1 between rounds. Rounds: five poses, a 6-second relevé, then "arms up on count 1" to the solo's own track when it's uploaded (click track otherwise). The announcer speaks each instruction and result (🔊 toggles it), and an "I see: arms wide" line shows what the camera is reading so she can adjust. Pose rules are forgiving (a phone propped low foreshortens the arms). Nothing is recorded.
+
+### Dance Along (Play) — learn a routine from a real video
+Pick a clip on the phone (a tutorial she saved, a clip of her teacher, a dance she filmed; up to 2 minutes, whole body in view). The app reads the dancer's poses from it on-device at 8 frames a second (`poseFeatures` in `js/posemath.js`: wrists and elbows relative to the shoulders, knee angles — mirror-invariant), keeps the clip in the family space (`choreo` record with `kind: "along"`, in backups) and the features with it. To play: the clip runs with its own music beside the camera, her pose is compared to the clip's every half second with a ±0.4 s timing window, PERFECT / Good / Keep going flash as she dances, a score and stars at the end (3 stars at 80 % in step). The announcer speaks the countdown and the result (🔊 to mute). Nothing is recorded. Clips are the family's own: the app never downloads or redistributes anything.
 
 ### Skills, badges, streaks
 - `data/skills.json`: a beginner → advanced ladder per style (ballet, jazz, contemporary, acro, hip hop), 10 skills each. States: not yet → learning → clean (Sofia taps on Me) → **teacher-checked** (Grown-ups → Skills & awards, with the teacher's name and date). Rings on Me: learning ⅓, clean ⅔, checked full.
@@ -143,7 +146,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 72 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 75 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -213,8 +216,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 9) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 10) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 10 (1.5.0): Dance Along routines in `choreo` (`kind`, `url`, `path`, `fps`, `frames`, `best`).
 - Schema 9 (1.4.0): `settings.stars`, `settings.starLog`, `settings.mirrorBest`.
 - Schema 8 (1.3.6): `settings.demos`, `photos.demo`.
 - Schema 7 (1.3.5): `practice.custom` (swap / add / skip for the day).

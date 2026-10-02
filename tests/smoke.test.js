@@ -17,7 +17,7 @@ before(async () => {
   M.store = await import("../js/store.js");
   M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
-  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js");
+  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js"); M.along = await import("../js/games/along.js");
 });
 
 const SCREENS = () => ({
@@ -25,7 +25,7 @@ const SCREENS = () => ({
   events: M.events.renderEvents, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, notes: () => { M.notes.renderNotes(); M.notes.renderPhotos(); M.notes.renderFiles(); },
   lists: () => { M.lists.renderTodos(); M.lists.renderPack(); }, skillcheck: M.skillcheck.renderSkillCheck, reviews: M.coach.renderReviews, reports: M.reports.renderReports, grownups: M.grownups.renderGrownups, settings: M.settings.renderSettings,
 });
-const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode, M.coach.initCoach, M.goals.initGoals, M.mirror.initMirror, M.demos.initDemos];
+const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode, M.coach.initCoach, M.goals.initGoals, M.mirror.initMirror, M.demos.initDemos, M.along.initAlong];
 
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
@@ -56,7 +56,8 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
   assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
-  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 6, "six game tiles on Play");
+  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 7, "seven game tiles on Play");
+  assert.ok(el("#alongList").innerHTML.includes("No routines yet"), "Dance Along empty state");
   assert.ok(el("#meStars").innerHTML.includes("⭐ 0") && el("#meStars").innerHTML.includes("Gold leotard"), "stars card shows the next unlock");
   assert.ok(el("#skillRings").innerHTML.includes("Acro"), "skill rings per style");
   assert.ok(el("#skillCheckList").innerHTML.includes("Teacher checked"), "grown-ups can teacher-check");
