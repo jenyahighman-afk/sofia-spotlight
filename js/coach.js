@@ -28,7 +28,7 @@ export function openCoach(danceId = "", trick = ""){
 export function closeCoach(){ $("#coach").hidden = true; document.body.classList.remove("modal"); }
 function step(name, html){
   const el = $("#coachBody");
-  if (name === "pick") el.innerHTML = `<p class="coach-line">Film or pick a clip (up to 60 s), or use photos.</p>
+  if (name === "pick") el.innerHTML = `<p class="coach-line">Film or pick a clip (a full run is fine, up to 3 min), or use photos.</p>
     <div class="coach-pick"><label class="btn coral big-btn" for="coachVideo">🎥 Film now</label><input type="file" id="coachVideo" accept="video/*" capture="environment" hidden>
     <label class="btn sun big-btn" for="coachPickClip">🎞️ Pick a clip from Photos</label><input type="file" id="coachPickClip" accept="video/*" hidden>
     <label class="btn big-btn" for="coachPhotos">📷 Photos</label><input type="file" id="coachPhotos" accept="image/*" multiple hidden></div>
@@ -50,7 +50,7 @@ async function fromVideo(file){
   try {
     clip = await openClip(file); const video = clip.video;
     const duration = video.duration; if (!(duration > 0) || !Number.isFinite(duration)) throw new Error("That clip has no length. Film it again, or pick it from Photos.");
-    if (duration > MAX_CLIP_SEC + 1) throw new Error(`Clips are up to ${MAX_CLIP_SEC} seconds — this one is ${Math.round(duration)}. Trim it in Photos, or film a shorter run.`);
+    if (duration > MAX_CLIP_SEC + 1) throw new Error(`Clips are up to ${Math.round(MAX_CLIP_SEC / 60)} minutes — this one is ${Math.round(duration)} seconds. Trim it in Photos, or film a shorter run.`);
     busy("Listening for the loudest moment…"); let peak = null;
     // Optional: skipped on big files and whenever the phone is slow or can't decode the sound.
     if (file.size <= 40 * 1024 * 1024) { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const buf = await withTimeout(ctx.decodeAudioData(await file.arrayBuffer()), 8000, "audio timeout"); const ch = buf.getChannelData(0); peak = peakTime(loudness(ch, buf.sampleRate)); ctx.close && ctx.close(); } catch (e) { console.warn("no audio peak", e); } }
