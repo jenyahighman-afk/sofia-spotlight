@@ -87,7 +87,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#practiceHead").innerHTML.includes("1 run"), "run shown on Practice");
   assert.ok(el("#todayCard").innerHTML.includes("1-day streak"), "a run makes today count");
   assert.ok(el("#reportList").innerHTML.includes("it froze"), "report listed for Mom");
-  assert.ok(el("#reviewList").innerHTML.includes("Great reach") && el("#reviewList").innerHTML.includes("Mom can see this"), "review card renders for Grown-ups");
+  assert.ok(el("#reviewList").innerHTML.includes("Great reach") && !el("#reviewList").innerHTML.includes("Mom can see"), "review card renders for Grown-ups");
   assert.ok(el("#coachHub").innerHTML.includes("Solo") && el("#coachHub").innerHTML.includes("Fixes the coach gave") && el("#coachHub").innerHTML.includes("Point your foot"), "Coach corner groups the review under its dance with the fix");
   assert.ok(el("#coachNew").innerHTML.includes("openCoach('solo')"), "Coach corner starts a review for any dance");
   assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");
