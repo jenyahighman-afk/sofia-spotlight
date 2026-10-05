@@ -128,7 +128,7 @@ export function reviewCard(r, opts = {}){
     <p class="small muted" style="margin-top:6px">👀 Mom can see this.</p></div>`;
 }
 function renderReview(){ const r = S.reviews[C.saved] || { id: C.saved, danceId: C.danceId, trick: C.trick, kind: C.kind, date: todayStr(), thumbs: C.thumbs.map(t => t.data), pose: C.pose, review: C.review }; step("review", reviewCard(r) + `<div class="row" style="margin-top:8px"><button class="btn coral big-btn grow" onclick="closeCoach()">Done</button><button class="btn ghost" onclick="coachRetry()">Another</button></div>`); }
-async function addFix(reviewId){ const r = S.reviews[reviewId]; if (!r || !r.review) return; if (r.fixAdded) return toast("Already a note"); await addCorrection({ danceId: r.danceId, text: r.review.fix, tag: r.review.tag, source: "AI coach" }); await storeSet("reviews", reviewId, { ...r, fixAdded: true }); toast("Added as a note ✓"); }
+async function addFix(reviewId){ const r = S.reviews[reviewId]; if (!r || !r.review) return; if (r.fixAdded) return toast("Already a note"); const corr = await addCorrection({ danceId: r.danceId, text: r.review.fix, tag: r.review.tag, source: "AI coach" }); await storeSet("reviews", reviewId, { ...r, fixAdded: true, fixId: corr.id }); toast("Added as a note ✓"); }
 function retry(){ C.frames = []; C.thumbs = []; C.review = null; step("pick"); }
 
 // ---------- Grown-ups → Coach reviews ----------

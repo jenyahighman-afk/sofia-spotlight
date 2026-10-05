@@ -17,20 +17,20 @@ before(async () => {
   M.store = await import("../js/store.js");
   M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
-  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js"); M.along = await import("../js/games/along.js");
+  M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js"); M.along = await import("../js/games/along.js"); M.hub = await import("../js/coachhub.js");
 });
 
 const SCREENS = () => ({
   home: M.home.renderHome, dances: M.dances.renderDances, practice: M.practice.renderPractice, play: M.play.renderPlay, me: M.me.renderMe,
   events: M.events.renderEvents, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, notes: () => { M.notes.renderNotes(); M.notes.renderPhotos(); M.notes.renderFiles(); },
-  lists: () => { M.lists.renderTodos(); M.lists.renderPack(); }, skillcheck: M.skillcheck.renderSkillCheck, reviews: M.coach.renderReviews, reports: M.reports.renderReports, grownups: M.grownups.renderGrownups, settings: M.settings.renderSettings,
+  lists: () => { M.lists.renderTodos(); M.lists.renderPack(); }, skillcheck: M.skillcheck.renderSkillCheck, reviews: M.coach.renderReviews, coach: M.hub.renderCoachHub, reports: M.reports.renderReports, grownups: M.grownups.renderGrownups, settings: M.settings.renderSettings,
 });
 const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode, M.coach.initCoach, M.goals.initGoals, M.mirror.initMirror, M.demos.initDemos, M.along.initAlong];
 
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -88,6 +88,8 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#todayCard").innerHTML.includes("1-day streak"), "a run makes today count");
   assert.ok(el("#reportList").innerHTML.includes("it froze"), "report listed for Mom");
   assert.ok(el("#reviewList").innerHTML.includes("Great reach") && el("#reviewList").innerHTML.includes("Mom can see this"), "review card renders for Grown-ups");
+  assert.ok(el("#coachHub").innerHTML.includes("Solo") && el("#coachHub").innerHTML.includes("Fixes the coach gave") && el("#coachHub").innerHTML.includes("Point your foot"), "Coach corner groups the review under its dance with the fix");
+  assert.ok(el("#coachNew").innerHTML.includes("openCoach('solo')"), "Coach corner starts a review for any dance");
   assert.ok(el("#goalRings").innerHTML.includes("Right split") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Me");
   assert.ok(el("#goalReminder").innerHTML.includes("Check-in time"), "goal due after 14 days shows on Today");
   assert.ok(el("#danceList").innerHTML.includes("openCoach('solo')"), "Coach me on the dance cover");
@@ -135,4 +137,17 @@ test("stars: 1–3 per play by result, unlock ladder, next unlock", () => {
   assert.equal(St.nextUnlock(0)[3], "Gold leotard"); assert.equal(St.nextUnlock(10)[3], "Flower"); assert.equal(St.nextUnlock(999), null);
   assert.equal(St.unlockedList(35).length, 3);
   const ladder = St.UNLOCKS.map(u => u[2]); assert.deepEqual(ladder, [...ladder].sort((a, b) => a - b), "ladder climbs");
+});
+
+test("Coach corner: grouping by dance or skill, check trends, fix status", () => {
+  const H = M.hub; const rv = (id, danceId, trick, date, checks, extra = {}) => ({ id, danceId, trick, date, at: date + "T10:00:00Z", review: { loved: "x", fix: "fix " + id, tag: "feet", feet: "✓", knees: "✓", eyes: "✓", arms: "✓", ...checks }, ...extra });
+  const reviews = { a: rv("a", "solo", "", "2026-10-01", { feet: "flexed" }), b: rv("b", "solo", "", "2026-10-03", { feet: "✓" }), c: rv("c", "", "Calypso", "2026-10-02", { knees: "bent" }), gone: { ...rv("z", "solo", "", "2026-10-04", {}), deleted: true } };
+  const g = H.groupReviews(reviews); assert.deepEqual(g.map(x => x.key), ["dance:solo", "trick:Calypso"]); assert.deepEqual(g[0].list.map(r => r.id), ["b", "a"], "newest first, deleted skipped");
+  const t = H.checkTrend(g[0].list); assert.deepEqual(t.feet.hist, [true, false]); assert.equal(t.feet.good, 1); assert.equal(t.feet.of, 2); assert.equal(t.knees.good, 2);
+  const many = [true, true, true, false, false, true].map((v, i) => rv("m" + i, "solo", "", "2026-09-" + (20 - i), { eyes: v ? "✓" : "down" })); assert.equal(H.checkTrend(many).eyes.trend, "up");
+  assert.equal(H.fixStatus(reviews.a, {}), "open");
+  assert.equal(H.fixStatus({ ...reviews.a, fixAdded: true, fixId: "c1" }, { c1: { id: "c1", status: "working" } }), "working");
+  assert.equal(H.fixStatus({ ...reviews.a, fixAdded: true, fixId: "c1" }, { c1: { id: "c1", status: "done" } }), "done");
+  assert.equal(H.fixStatus({ ...reviews.a, fixAdded: true }, { x: { source: "AI coach", danceId: "solo", text: "fix a", status: "done" } }), "done", "older reviews match by text");
+  assert.equal(H.fixStatus({ ...reviews.a, fixAdded: true, fixId: "gone" }, {}), "noted");
 });

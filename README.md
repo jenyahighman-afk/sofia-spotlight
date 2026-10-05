@@ -24,6 +24,9 @@ Every screen has an error state ("This screen hit a snag … Send a report") and
 ### AI coach (🎬 Coach me)
 On every dance cover and next to the technique items and aerial drills in Practice. Film a clip (up to 60 s) or pick photos on the phone. The app samples 16 frames evenly plus 4 around the loudest moment of the audio, shrinks them to 768 px, draws the skeleton on four of them (on-device, see below) and sends only those stills — never the video — to the coach worker in `worker/` with the dance name and style, its music map, the open corrections and the trick name. The worker adds the fixed coaching prompt (verbatim in `worker/src/core.js`; the app cannot send a prompt, so there is no chat) and returns one review: **One thing you did really well**, **One fix for this week** (one tap turns it into a correction, tag pre-filled, source "AI coach"), a feet/knees/eyes/arms check, and an optional **Try this** drill. Reviews are saved to `reviews` with thumbnails and numbers only, carry "Mom can see this", and are listed under Grown-ups → Coach reviews. Limits: 20 reviews per family per day; needs a connection. Until the worker is deployed (`worker/README.md`) and its URL is set in `js/firebase-config.js` → `coachConfig.url`, Coach me still works as a skeleton view and says the coach isn't connected.
 
+### Coach corner (Practice → 🎬 Coach corner)
+One place for everything coach: start a review for any dance (chips) or any skill (the ladder skills, Calypso, aerial drills), and look back. Reviews are grouped by dance or skill; each group shows how **feet, knees, eyes and arms** checked out over the last three reviews with a row of dots and an up/down arrow against the three before, the list of **fixes the coach gave** with their state (new → noted → working on it → ✅ got it, following the correction it became), the latest review, and older ones folded away. Sofia can see it; the full list with delete stays under Grown-ups → Coach reviews. "Film now" and "Pick a clip from Photos" are separate buttons (a single button forces the camera on iPhones).
+
 ### Skeleton view (free, on-device)
 MediaPipe Pose Landmarker (Tasks Vision, pinned on jsDelivr; the model file from Google's model store) runs in the browser. On any clip or photo it draws the skeleton and reads out the working-leg knee angle ("Knee: 176° — straight!" at 170° or more), arm height against the shoulder line, shoulder and hip tilt, and the split angle. Only the numbers and thumbnails are stored with a review. The first use needs a connection to fetch the model (~5 MB); after that it is cached. **🪞 Mirror** in Play uses the same tool live on the front camera: hold a relevé for 10 s, match three arm positions to the dancer, then lift your arms on count 1 at the solo's BPM. Nothing is recorded.
 
@@ -146,7 +149,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 75 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 77 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -216,8 +219,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 10) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 11) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 11 (1.6.0): `reviews.fixId`.
 - Schema 10 (1.5.0): Dance Along routines in `choreo` (`kind`, `url`, `path`, `fps`, `frames`, `best`).
 - Schema 9 (1.4.0): `settings.stars`, `settings.starLog`, `settings.mirrorBest`.
 - Schema 8 (1.3.6): `settings.demos`, `photos.demo`.

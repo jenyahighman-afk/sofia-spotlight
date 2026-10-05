@@ -132,6 +132,11 @@ test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio
   const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
 });
 
+test("10 → 11: reviews keep a string fixId, drop a junk one, and fixAdded is a boolean", () => {
+  assert.equal(migrateDoc("reviews", "v", { _v: 10, review: {}, fixAdded: true, fixId: "c9" }).fixId, "c9");
+  const j = migrateDoc("reviews", "v", { _v: 10, review: {}, fixId: 5 }); assert.equal("fixId" in j, false); assert.equal(j.fixAdded, false); assert.equal(j._v, SCHEMA_VERSION);
+});
+
 test("a whole collection migrates and other collections pass through unchanged", () => {
   const out = migrateCollection("notes", { a: { title: "t", body: "b", tag: "Ideas", at: "2026-09-27T03:01:15.743Z" } });
   assert.equal(out.a._v, SCHEMA_VERSION); assert.equal(out.a.title, "t");

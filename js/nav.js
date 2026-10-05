@@ -7,7 +7,7 @@ export function setGuard(fn){ guard = fn; }
 export function showPage(p){
   if (guard) { const r = guard(p); if (typeof r === "string") p = r; }
   $$("section.page").forEach(s=>s.classList.toggle("on",s.id==="p-"+p));
-  $$("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.p===p||(b.dataset.p==="me"&&["pin","grownups","events","schedule","lists","notes","reviews","reports","settings","skillcheck"].includes(p))));
+  $$("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.p===p||(b.dataset.p==="practice"&&p==="coach")||(b.dataset.p==="me"&&["pin","grownups","events","schedule","lists","notes","reviews","reports","settings","skillcheck"].includes(p))));
   window.scrollTo({top:0});
   document.dispatchEvent(new CustomEvent("page", { detail: p }));
 }
