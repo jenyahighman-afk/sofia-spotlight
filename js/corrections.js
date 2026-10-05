@@ -67,6 +67,9 @@ export function chooseWeekFix(corrections, today = todayStr()){
 // ---------- store-backed ----------
 let migrating = false;
 // Copy each dance's "Corrections to work on" lines into the collection, once the cloud has told us what's already there.
+// Card lines the teacher has since corrected. Their notes are removed (and never re-created from an edited card) so the old advice stops showing.
+export const RETIRED_LINES = { solo: ["Donut roll: chin tucked, roll over the shoulder, chest leads"] };
+export const retiredIds = () => new Set(Object.entries(RETIRED_LINES).flatMap(([danceId, lines]) => lines.map(t => migratedId(danceId, t))));
 export async function migrateDanceCorrections(){
   if (migrating || !settled("corrections") || !settled("dances")) return 0;
   migrating = true; let n = 0;
@@ -78,7 +81,10 @@ export async function migrateDanceCorrections(){
     // the list wins) — so read both the merged card and the built-in one, de-duplicated by record id.
     const sources = []; const seenIds = new Set();
     for (const d of [...dances(), ...DEFAULT_DANCES]) for (const r of recordsFromDance(d, date)) { if (seenIds.has(r.id)) continue; seenIds.add(r.id); sources.push(r); }
+    const retired = retiredIds();
+    for (const id of retired) { const old = S.corrections[id]; if (old && !old.deleted && old.source === "notes") await storeSet("corrections", id, { ...old, deleted: true }); }
     for (let { explicit, ...rec } of sources) {
+      if (retired.has(rec.id)) continue;
       if (!explicit && explicitTags[rec.id]) { explicit = true; rec = { ...rec, tag: explicitTags[rec.id] }; }
       const have = S.corrections[rec.id];
       if (!have) { await storeSet("corrections", rec.id, rec); n++; continue; }

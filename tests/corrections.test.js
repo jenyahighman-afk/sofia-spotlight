@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { inferTag, parseLine, migratedId, hashText, recordsFromDance, patterns, chooseWeekFix, weekKey, shiftDate, topFixes, openFor } from "../js/corrections.js";
+import { retiredIds, inferTag, parseLine, migratedId, hashText, recordsFromDance, patterns, chooseWeekFix, weekKey, shiftDate, topFixes, openFor } from "../js/corrections.js";
 
 const dances = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8"));
 
@@ -76,4 +76,9 @@ test("an explicit #tag prefix on a card line wins and is stripped from the text;
   assert.equal(migratedId("solo", "Donut roll"), recordsFromDance({ id: "solo", corrections: ["#feet Donut roll"] }, "2026-09-30")[0].id);
   const donut = recordsFromDance(dances.find(d => d.id === "solo"), "2026-09-30").find(r => r.text.startsWith("Donut roll"));
   assert.equal(donut.tag, "feet"); assert.ok(!donut.text.startsWith("#"));
+});
+
+test("the corrected donut-roll line is retired: its old note id is on the retired list and the card no longer carries it", () => {
+  const ids = retiredIds(); assert.ok(ids.has(migratedId("solo", "Donut roll: chin tucked, roll over the shoulder, chest leads")));
+  const now = recordsFromDance(dances.find(d => d.id === "solo"), "2026-10-04"); assert.ok(now.every(r => !ids.has(r.id))); assert.ok(now.some(r => /head ALL the way back/.test(r.text) && r.tag === "feet"));
 });

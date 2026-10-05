@@ -132,6 +132,12 @@ test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio
   const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
 });
 
+test("11 → 12: dances.steps is cleaned when present and never invented", () => {
+  const a = migrateDoc("dances", "solo", { _v: 11, name: "Solo", steps: [" Reach ", "", null, 7] }); assert.deepEqual(a.steps, ["Reach", "7"]); assert.equal(a._v, SCHEMA_VERSION); assert.equal(a.name, "Solo");
+  assert.deepEqual(migrateDoc("dances", "solo", { _v: 11, steps: "junk" }).steps, []);
+  assert.equal("steps" in migrateDoc("dances", "solo", { _v: 11, musicUrl: "x" }), false);
+});
+
 test("10 → 11: reviews keep a string fixId, drop a junk one, and fixAdded is a boolean", () => {
   assert.equal(migrateDoc("reviews", "v", { _v: 10, review: {}, fixAdded: true, fixId: "c9" }).fixId, "c9");
   const j = migrateDoc("reviews", "v", { _v: 10, review: {}, fixId: 5 }); assert.equal("fixId" in j, false); assert.equal(j.fixAdded, false); assert.equal(j._v, SCHEMA_VERSION);
