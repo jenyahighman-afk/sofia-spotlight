@@ -29,9 +29,11 @@ test("nothing is earned from a blank slate; streaks, closed fixes, aerial, games
   assert.deepEqual(evalBadges(ctx({ fullRun: true })), ["run100"]);
 });
 
-test("skills.json: five styles with 8–12 skills each, unique ids, states listed", () => {
+test("skills.json: the solo's tricks first, then five styles; 8–12 skills each, unique ids, states listed", () => {
   const styles = Object.keys(ladder.styles);
-  assert.deepEqual(styles, ["ballet", "jazz", "contemporary", "acro", "hiphop"]);
+  assert.deepEqual(styles, ["solo", "ballet", "jazz", "contemporary", "acro", "hiphop"]);
+  for (const n of ["Donut roll", "Calypso", "Front walkover to knee", "Scorpion → needle"]) assert.ok(ladder.styles.solo.skills.some(s => s.n === n), n);
+  assert.ok(ladder.styles.solo.skills.every(s => s.tip), "every solo trick has a one-line cue");
   const ids = new Set();
   for (const [k, st] of Object.entries(ladder.styles)) {
     assert.ok(st.n && st.ic, k);

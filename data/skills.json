@@ -1,65 +1,292 @@
 {
- "states": ["notyet", "learning", "clean", "checked"],
+ "states": [
+  "notyet",
+  "learning",
+  "clean",
+  "checked"
+ ],
  "styles": {
-  "ballet": { "n": "Ballet", "ic": "🩰", "skills": [
-   { "id": "b-plie", "n": "Plié in first & second" },
-   { "id": "b-tendu", "n": "Tendu with a pointed foot" },
-   { "id": "b-releve", "n": "Relevé balance, 10 seconds" },
-   { "id": "b-passe", "n": "Passé on relevé, 5 seconds" },
-   { "id": "b-chasse", "n": "Chassé across the floor" },
-   { "id": "b-arab", "n": "Arabesque, hip height" },
-   { "id": "b-attitude", "n": "Attitude, front and back" },
-   { "id": "b-pirouette1", "n": "Single pirouette, clean landing" },
-   { "id": "b-jete", "n": "Grand jeté with straight legs" },
-   { "id": "b-pirouette2", "n": "Double pirouette" }
-  ]},
-  "jazz": { "n": "Jazz", "ic": "⚡", "skills": [
-   { "id": "j-iso", "n": "Isolations: head, ribs, hips" },
-   { "id": "j-square", "n": "Jazz square on the beat" },
-   { "id": "j-kick", "n": "Kick to hip height, pointed foot" },
-   { "id": "j-pivot", "n": "Pivot turn, sharp" },
-   { "id": "j-chasse-leap", "n": "Chassé into a leap" },
-   { "id": "j-pirouette", "n": "Jazz pirouette in parallel" },
-   { "id": "j-fankick", "n": "Fan kick" },
-   { "id": "j-layout", "n": "Layout" },
-   { "id": "j-turning-leap", "n": "Turning leap" },
-   { "id": "j-double", "n": "Double pirouette, spotted" }
-  ]},
-  "contemporary": { "n": "Contemporary", "ic": "🌊", "skills": [
-   { "id": "c-contract", "n": "Contraction and release" },
-   { "id": "c-swing", "n": "Leg swings with a soft knee" },
-   { "id": "c-floor-roll", "n": "Floor roll, no crash" },
-   { "id": "c-spiral", "n": "Spiral to the floor and up" },
-   { "id": "c-tilt", "n": "Tilt, straight standing leg" },
-   { "id": "c-fall", "n": "Controlled fall and recover" },
-   { "id": "c-backroll", "n": "Back roll to standing" },
-   { "id": "c-develop", "n": "Développé side, hip height" },
-   { "id": "c-turn-floor", "n": "Turn into the floor" },
-   { "id": "c-improv", "n": "8 counts of improv, eyes up" }
-  ]},
-  "acro": { "n": "Acro", "ic": "🤸", "skills": [
-   { "id": "a-cartwheel", "n": "Cartwheel, straight arms and legs" },
-   { "id": "a-onehand", "n": "One-hand cartwheel" },
-   { "id": "a-roundoff", "n": "Round-off, feet together" },
-   { "id": "a-bridge", "n": "Bridge, 10 seconds" },
-   { "id": "a-handstand", "n": "Handstand, 3 seconds" },
-   { "id": "a-dive", "n": "Dive cartwheel" },
-   { "id": "a-frontwalkover", "n": "Front walkover" },
-   { "id": "a-backwalkover", "n": "Back walkover" },
-   { "id": "a-chin", "n": "Chin stand" },
-   { "id": "a-aerial", "n": "Aerial" }
-  ]},
-  "hiphop": { "n": "Hip hop", "ic": "🎧", "skills": [
-   { "id": "h-bounce", "n": "Bounce on the beat" },
-   { "id": "h-toprock", "n": "Top rock" },
-   { "id": "h-bodyroll", "n": "Body roll" },
-   { "id": "h-wave", "n": "Arm wave" },
-   { "id": "h-freeze", "n": "Freeze on the hit" },
-   { "id": "h-groove", "n": "Groove change on the 8" },
-   { "id": "h-pop", "n": "Pop and lock" },
-   { "id": "h-footwork", "n": "6-step footwork" },
-   { "id": "h-slide", "n": "Slide / glide" },
-   { "id": "h-freestyle", "n": "8 counts of freestyle" }
-  ]}
+  "solo": {
+   "n": "Solo tricks",
+   "ic": "🌸",
+   "dance": "solo",
+   "skills": [
+    {
+     "id": "s-donut",
+     "n": "Donut roll",
+     "tip": "Chin tucked, roll over the shoulder, chest leads."
+    },
+    {
+     "id": "s-calypso",
+     "n": "Calypso",
+     "tip": "Front leg straight and turned out, back knee high, land soft."
+    },
+    {
+     "id": "s-walkover-knee",
+     "n": "Front walkover to knee",
+     "tip": "Reach long, legs split at the top, lower to the knee with control."
+    },
+    {
+     "id": "s-scorpion-needle",
+     "n": "Scorpion → needle",
+     "tip": "Warm the back first. Hips square, standing knee straight. Never force it."
+    },
+    {
+     "id": "s-cartwheel",
+     "n": "Cartwheel on the swell",
+     "tip": "Dance the 4 counts in. Head up until the hands go down."
+    },
+    {
+     "id": "s-tailbone",
+     "n": "Tailbone balance",
+     "tip": "Lock the knee before the foot leaves the floor. Point."
+    },
+    {
+     "id": "s-side-ext",
+     "n": "Side extension",
+     "tip": "Clean attitude or straight — never halfway."
+    },
+    {
+     "id": "s-floor-kick",
+     "n": "Floor kick",
+     "tip": "Kick from the hip, pointed foot at the top."
+    },
+    {
+     "id": "s-passe-turns",
+     "n": "Passé turns",
+     "tip": "Toe to the side of the knee, high relevé, sharp spot."
+    }
+   ]
+  },
+  "ballet": {
+   "n": "Ballet",
+   "ic": "🩰",
+   "skills": [
+    {
+     "id": "b-plie",
+     "n": "Plié in first & second"
+    },
+    {
+     "id": "b-tendu",
+     "n": "Tendu with a pointed foot"
+    },
+    {
+     "id": "b-releve",
+     "n": "Relevé balance, 10 seconds"
+    },
+    {
+     "id": "b-passe",
+     "n": "Passé on relevé, 5 seconds"
+    },
+    {
+     "id": "b-chasse",
+     "n": "Chassé across the floor"
+    },
+    {
+     "id": "b-arab",
+     "n": "Arabesque, hip height"
+    },
+    {
+     "id": "b-attitude",
+     "n": "Attitude, front and back"
+    },
+    {
+     "id": "b-pirouette1",
+     "n": "Single pirouette, clean landing"
+    },
+    {
+     "id": "b-jete",
+     "n": "Grand jeté with straight legs"
+    },
+    {
+     "id": "b-pirouette2",
+     "n": "Double pirouette"
+    }
+   ]
+  },
+  "jazz": {
+   "n": "Jazz",
+   "ic": "⚡",
+   "skills": [
+    {
+     "id": "j-iso",
+     "n": "Isolations: head, ribs, hips"
+    },
+    {
+     "id": "j-square",
+     "n": "Jazz square on the beat"
+    },
+    {
+     "id": "j-kick",
+     "n": "Kick to hip height, pointed foot"
+    },
+    {
+     "id": "j-pivot",
+     "n": "Pivot turn, sharp"
+    },
+    {
+     "id": "j-chasse-leap",
+     "n": "Chassé into a leap"
+    },
+    {
+     "id": "j-pirouette",
+     "n": "Jazz pirouette in parallel"
+    },
+    {
+     "id": "j-fankick",
+     "n": "Fan kick"
+    },
+    {
+     "id": "j-layout",
+     "n": "Layout"
+    },
+    {
+     "id": "j-turning-leap",
+     "n": "Turning leap"
+    },
+    {
+     "id": "j-double",
+     "n": "Double pirouette, spotted"
+    }
+   ]
+  },
+  "contemporary": {
+   "n": "Contemporary",
+   "ic": "🌊",
+   "skills": [
+    {
+     "id": "c-contract",
+     "n": "Contraction and release"
+    },
+    {
+     "id": "c-swing",
+     "n": "Leg swings with a soft knee"
+    },
+    {
+     "id": "c-floor-roll",
+     "n": "Floor roll, no crash"
+    },
+    {
+     "id": "c-spiral",
+     "n": "Spiral to the floor and up"
+    },
+    {
+     "id": "c-tilt",
+     "n": "Tilt, straight standing leg"
+    },
+    {
+     "id": "c-fall",
+     "n": "Controlled fall and recover"
+    },
+    {
+     "id": "c-backroll",
+     "n": "Back roll to standing"
+    },
+    {
+     "id": "c-develop",
+     "n": "Développé side, hip height"
+    },
+    {
+     "id": "c-turn-floor",
+     "n": "Turn into the floor"
+    },
+    {
+     "id": "c-improv",
+     "n": "8 counts of improv, eyes up"
+    }
+   ]
+  },
+  "acro": {
+   "n": "Acro",
+   "ic": "🤸",
+   "skills": [
+    {
+     "id": "a-cartwheel",
+     "n": "Cartwheel, straight arms and legs"
+    },
+    {
+     "id": "a-onehand",
+     "n": "One-hand cartwheel"
+    },
+    {
+     "id": "a-roundoff",
+     "n": "Round-off, feet together"
+    },
+    {
+     "id": "a-bridge",
+     "n": "Bridge, 10 seconds"
+    },
+    {
+     "id": "a-handstand",
+     "n": "Handstand, 3 seconds"
+    },
+    {
+     "id": "a-dive",
+     "n": "Dive cartwheel"
+    },
+    {
+     "id": "a-frontwalkover",
+     "n": "Front walkover"
+    },
+    {
+     "id": "a-backwalkover",
+     "n": "Back walkover"
+    },
+    {
+     "id": "a-chin",
+     "n": "Chin stand"
+    },
+    {
+     "id": "a-aerial",
+     "n": "Aerial"
+    }
+   ]
+  },
+  "hiphop": {
+   "n": "Hip hop",
+   "ic": "🎧",
+   "skills": [
+    {
+     "id": "h-bounce",
+     "n": "Bounce on the beat"
+    },
+    {
+     "id": "h-toprock",
+     "n": "Top rock"
+    },
+    {
+     "id": "h-bodyroll",
+     "n": "Body roll"
+    },
+    {
+     "id": "h-wave",
+     "n": "Arm wave"
+    },
+    {
+     "id": "h-freeze",
+     "n": "Freeze on the hit"
+    },
+    {
+     "id": "h-groove",
+     "n": "Groove change on the 8"
+    },
+    {
+     "id": "h-pop",
+     "n": "Pop and lock"
+    },
+    {
+     "id": "h-footwork",
+     "n": "6-step footwork"
+    },
+    {
+     "id": "h-slide",
+     "n": "Slide / glide"
+    },
+    {
+     "id": "h-freestyle",
+     "n": "8 counts of freestyle"
+    }
+   ]
+  }
  }
 }
