@@ -177,7 +177,7 @@ details.acc[open]>summary{margin-bottom:8px}
 .badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
 .badge{background:var(--blush);border-radius:14px;padding:8px 4px;text-align:center;opacity:.35;filter:grayscale(1)} .badge.on{opacity:1;filter:none;background:#FBEBC8;box-shadow:0 3px 0 rgba(74,35,64,.1)}
 .badge span{display:block;font-size:1.7rem;line-height:1.2} .badge small{display:block;font-size:.62rem;font-weight:800;line-height:1.15;margin-top:2px}
-.skill-rings{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.skill-rings{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .skill-ring{background:none;border:2px solid transparent;border-radius:12px;padding:2px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;color:var(--ink)} .skill-ring.on{border-color:var(--violet);background:var(--blush)}
 .skill-ring small{font-size:.62rem;font-weight:800;line-height:1.1}
 .mini-ring{width:54px;height:54px;transform:rotate(-90deg)} .mini-ring .ring-bg,.mini-ring .ring-fg{stroke-width:7} .mini-ring .ring-fg{stroke:#B98BEF}
@@ -281,3 +281,6 @@ body.modal{overflow:hidden}
 .trend-cell{background:var(--blush);border-radius:12px;padding:6px 4px;text-align:center} .trend-cell span{font-size:1.2rem;display:block} .trend-cell b{font-size:.8rem;display:block} .trend-cell small{font-size:.65rem;color:var(--ink-2);font-weight:800}
 .dots{display:flex;gap:3px;justify-content:center;margin-top:3px} .dots i{width:7px;height:7px;border-radius:50%;background:var(--line);display:block} .dots i.on{background:#2E9E6B}
 #coachHub .check .btn{white-space:nowrap;flex:none}
+.trick-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.trick-state{width:40px;height:40px;flex:none;border-radius:50%;border:2px solid var(--line);background:var(--card);font-size:1.2rem;cursor:pointer;color:var(--ink-2)}
+.trick-state.learning{border-color:#B98BEF;color:#B98BEF} .trick-state.clean{border-color:#FF5C93;color:#FF5C93;background:var(--blush)} .trick-state.checked{border-color:#D9B26F;color:#D9B26F;background:#FBEBC8}

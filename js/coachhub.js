@@ -4,7 +4,8 @@ import { $, esc, expose } from "./util.js";
 import { S, dances } from "./store.js";
 import { showPage } from "./nav.js";
 import { reviewCard, coachReady, openCoach } from "./coach.js";
-import { allSkills } from "./skills.js";
+import { allSkills, skillState, kidCycle, STATE_EMOJI, STATE_LABEL } from "./skills.js";
+import { SKILLS } from "./data.js";
 import { TAG_EMOJI, TAG_LABEL } from "./corrections.js";
 
 export const CHECKS = ["feet", "knees", "eyes", "arms"];
@@ -34,6 +35,19 @@ export function fixStatus(r, corrections){
   if (!c || c.deleted) return "noted"; return c.status === "done" ? "done" : "working";
 }
 
+// Latest review for a named trick (reviews started from a trick chip carry its name).
+export function lastTrickReview(reviews, name){ return Object.values(reviews || {}).filter(r => r && !r.deleted && r.review && r.trick === name).sort((a, b) => (b.at || b.date || "").localeCompare(a.at || a.date || ""))[0] || null; }
+function tricksCard(){
+  const st = (SKILLS.styles || {}).solo; if (!st) return "";
+  const done = st.skills.filter(k => ["clean", "checked"].includes(skillState(S.skills, k.id))).length;
+  return `<div class="card sun"><div class="row"><h3 class="grow">${st.ic} ${esc(st.n)}</h3><span class="chip sun">${done}/${st.skills.length} clean</span></div>
+    <p class="small muted">Tap the circle: learning → clean. A grown-up adds the ★ when the teacher has checked it.</p>
+    ${st.skills.map(k => { const state = skillState(S.skills, k.id); const rec = S.skills[k.id] || {}; const rv = lastTrickReview(S.reviews, k.n);
+      return `<div class="trick-row"><button class="trick-state ${state}" onclick="hubSkill('${k.id}')" title="${STATE_LABEL[state]}">${STATE_EMOJI[state]}</button><div class="grow"><b>${esc(k.n)}</b> <span class="small muted">${STATE_LABEL[state]}${state === "checked" && rec.teacher ? " · " + esc(rec.teacher) + " " + esc(rec.checkedAt || "") : ""}</span>
+        <div class="small">${rv ? `🎬 ${esc(rv.date || "")}: ${esc(rv.review.fix)}` : `<span class="muted">${esc(k.tip || "")}</span>`}</div></div><button class="btn sm coral" onclick="openCoach('solo','${esc(k.n).replace(/'/g, "&#39;")}')">🎬</button></div>`; }).join("")}</div>`;
+}
+async function hubSkill(id){ await kidCycle(id); renderCoachHub(); }
+
 // ---- UI ----
 let filter = "all";
 function targetName(key){ if (key.startsWith("trick:")) return "✨ " + key.slice(6); const d = dances().find(x => x.id === key.slice(6)); return d ? d.name : "Other"; }
@@ -46,6 +60,7 @@ export function renderCoachHub(){
   const chips = [["all", "All"], ...groups.map(g => [g.key, targetName(g.key).replace(/^✨ /, "")])];
   $("#coachFilter").innerHTML = groups.length > 1 ? chips.map(([k, n]) => `<button class="chip ${filter === k ? "coral" : ""}" onclick="coachFilterSet('${esc(k).replace(/'/g, "&#39;")}')">${esc(n)}</button>`).join("") : "";
   const shown = groups.filter(g => filter === "all" || g.key === filter);
+  $("#coachTricks").innerHTML = tricksCard();
   el.innerHTML = shown.length ? shown.map(g => {
     const tr = checkTrend(g.list); const arrow = { up: "⬆️", down: "⬇️", same: "", new: "" };
     const fixes = g.list.slice(0, 6).map(r => { const st = fixStatus(r, S.corrections); return `<div class="check"><span class="chip ${st === "done" ? "mint" : st === "working" ? "violet" : ""}">${st === "done" ? "✅ got it" : st === "working" ? "working on it" : st === "noted" ? "noted" : "new"}</span><span class="grow">${TAG_EMOJI[r.review.tag] || "✨"} ${esc(r.review.fix)}<br><span class="small muted">${esc(r.date || "")}</span></span>${st === "open" ? `<button class="btn sm ghost" onclick="coachAddFix('${r.id}')">＋ note</button>` : ""}</div>`; }).join("");
@@ -59,4 +74,4 @@ export function renderCoachHub(){
 function filterSet(k){ filter = k; renderCoachHub(); }
 function skillGo(){ const v = ($("#coachSkill") || {}).value; if (v) openCoach("", v); }
 export function openCoachHub(){ showPage("coach"); renderCoachHub(); }
-expose({ openCoachHub, coachFilterSet: filterSet, coachSkillGo: skillGo });
+expose({ openCoachHub, coachFilterSet: filterSet, coachSkillGo: skillGo, hubSkill });

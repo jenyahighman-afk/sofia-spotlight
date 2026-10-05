@@ -90,6 +90,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#reviewList").innerHTML.includes("Great reach") && el("#reviewList").innerHTML.includes("Mom can see this"), "review card renders for Grown-ups");
   assert.ok(el("#coachHub").innerHTML.includes("Solo") && el("#coachHub").innerHTML.includes("Fixes the coach gave") && el("#coachHub").innerHTML.includes("Point your foot"), "Coach corner groups the review under its dance with the fix");
   assert.ok(el("#coachNew").innerHTML.includes("openCoach('solo')"), "Coach corner starts a review for any dance");
+  assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");
   assert.ok(el("#goalRings").innerHTML.includes("Right split") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Me");
   assert.ok(el("#goalReminder").innerHTML.includes("Check-in time"), "goal due after 14 days shows on Today");
   assert.ok(el("#danceList").innerHTML.includes("openCoach('solo')"), "Coach me on the dance cover");
@@ -150,4 +151,5 @@ test("Coach corner: grouping by dance or skill, check trends, fix status", () =>
   assert.equal(H.fixStatus({ ...reviews.a, fixAdded: true, fixId: "c1" }, { c1: { id: "c1", status: "done" } }), "done");
   assert.equal(H.fixStatus({ ...reviews.a, fixAdded: true }, { x: { source: "AI coach", danceId: "solo", text: "fix a", status: "done" } }), "done", "older reviews match by text");
   assert.equal(H.fixStatus({ ...reviews.a, fixAdded: true, fixId: "gone" }, {}), "noted");
+  assert.equal(H.lastTrickReview(reviews, "Calypso").id, "c"); assert.equal(H.lastTrickReview(reviews, "Donut roll"), null);
 });
