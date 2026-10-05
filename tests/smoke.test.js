@@ -93,6 +93,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");
   assert.ok(el("#goalRings").innerHTML.includes("Right split") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Me");
   assert.ok(el("#goalReminder").innerHTML.includes("Check-in time"), "goal due after 14 days shows on Today");
+  M.goals.openGoal("g1"); assert.ok(el("#goalBody").innerHTML.includes("openCoach('','Right split')"), "a goal's sheet has a coach button for that goal");
   assert.ok(el("#danceList").innerHTML.includes("openCoach('solo')"), "Coach me on the dance cover");
   assert.ok(el("#practiceChecklist").innerHTML.includes("openCoach('',"), "Coach me on tricks in Practice");
   assert.ok(el("#skillCheckList").innerHTML.includes("Hannah"), "teacher name shown");
