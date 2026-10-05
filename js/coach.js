@@ -89,7 +89,7 @@ async function finishFrames(canvases, labels){
 function renderPreview(){
   step("preview", `<div class="thumbs">${C.thumbs.map(t => `<div class="thumb"><img src="${t.data}" alt=""><small>${esc(t.label)}</small></div>`).join("")}</div>
     ${C.poseLines.length ? `<div class="pose-lines">${C.poseLines.map(l => `<div>🦴 ${esc(l)}</div>`).join("")}</div>` : ""}
-    <p class="small muted">${C.frames.length} frame${C.frames.length === 1 ? "" : "s"} ready. Mom can see this review.</p>
+    <p class="small muted">${C.frames.length} frame${C.frames.length === 1 ? "" : "s"} ready.</p>
     <div class="row"><button class="btn coral big-btn grow" onclick="coachSend()" ${coachReady() ? "" : "disabled"}>✨ Ask the coach</button><button class="btn ghost" onclick="coachRetry()">Redo</button></div>
     ${coachReady() ? "" : `<p class="small bad" style="margin-top:8px">The coach isn't connected yet. Ask a grown-up (worker/README.md).</p>`}`);
 }
@@ -124,8 +124,7 @@ export function reviewCard(r, opts = {}){
     <div class="rv-fix"><div class="field-lab">One fix for this week</div><p>${esc(v.fix)}</p>${opts.addFix !== false ? `<button class="btn sm coral" onclick="coachAddFix('${r.id}')">＋ Make it a note (${esc(TAG_LABEL[v.tag] || "Other")})</button>` : ""}</div>
     <div class="chk">${check("feet")}${check("knees")}${check("eyes")}${check("arms")}</div>
     ${v.try ? `<div class="field-lab">Try this</div><p class="small">${esc(v.try)}</p>` : ""}
-    ${r.pose ? `<div class="small muted">🦴 ${Object.entries(r.pose).map(([k, val]) => esc(k) + ": " + esc(val)).join(" · ")}</div>` : ""}
-    <p class="small muted" style="margin-top:6px">👀 Mom can see this.</p></div>`;
+    ${r.pose ? `<div class="small muted">🦴 ${Object.entries(r.pose).map(([k, val]) => esc(k) + ": " + esc(val)).join(" · ")}</div>` : ""}</div>`;
 }
 function renderReview(){ const r = S.reviews[C.saved] || { id: C.saved, danceId: C.danceId, trick: C.trick, kind: C.kind, date: todayStr(), thumbs: C.thumbs.map(t => t.data), pose: C.pose, review: C.review }; step("review", reviewCard(r) + `<div class="row" style="margin-top:8px"><button class="btn coral big-btn grow" onclick="closeCoach()">Done</button><button class="btn ghost" onclick="coachRetry()">Another</button></div>`); }
 async function addFix(reviewId){ const r = S.reviews[reviewId]; if (!r || !r.review) return; if (r.fixAdded) return toast("Already a note"); const corr = await addCorrection({ danceId: r.danceId, text: r.review.fix, tag: r.review.tag, source: "AI coach" }); await storeSet("reviews", reviewId, { ...r, fixAdded: true, fixId: corr.id }); toast("Added as a note ✓"); }
