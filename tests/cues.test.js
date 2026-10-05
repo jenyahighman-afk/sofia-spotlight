@@ -27,3 +27,12 @@ test("the built-in dances ship cue sheets seeded from their maps, moves only (wo
   const fromMap = cuesFromMap(dances.find(x => x.id === "solo").map);
   assert.ok(fromMap.some(c => c.t === 50 && c.move === "cartwheel"), "0:50 cartwheel, parenthetical dropped");
 });
+
+test("the solo carries the step order from the walkthrough: short lines, tricks in the teacher's order, head back on the donut roll", () => {
+  const dances = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8"));
+  const solo = dances.find(x => x.id === "solo"); const st = solo.steps;
+  assert.ok(Array.isArray(st) && st.length >= 25); assert.ok(st.every(x => typeof x === "string" && x.length > 0 && x.length <= 70));
+  const at = (w) => st.findIndex(x => x.toLowerCase().includes(w)); const order = ["handstand", "walkover", "donut roll", "calypso", "scorpion"].map(at);
+  assert.ok(order.every(i => i >= 0)); assert.deepEqual(order, [...order].sort((a, b) => a - b));
+  assert.ok(solo.corrections.some(c => /Donut roll/.test(c) && /head ALL the way back/.test(c))); assert.ok(!solo.corrections.some(c => /chin tucked/i.test(c))); assert.ok(!solo.tricks.some(c => /chin tucked/i.test(c)));
+});

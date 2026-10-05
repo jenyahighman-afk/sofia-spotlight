@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -85,7 +85,9 @@ export const MIGRATIONS = {
     return doc;
   },
   // 10 → 11 (Coach corner): reviews.fixId = the correction a review's fix became (older reviews are matched by text instead).
-  11: (col, id, doc) => { if (col === "reviews") { if (doc.fixId !== undefined && typeof doc.fixId !== "string") delete doc.fixId; if (typeof doc.fixAdded !== "boolean") doc.fixAdded = !!doc.fixAdded; } return doc; }
+  11: (col, id, doc) => { if (col === "reviews") { if (doc.fixId !== undefined && typeof doc.fixId !== "string") delete doc.fixId; if (typeof doc.fixAdded !== "boolean") doc.fixAdded = !!doc.fixAdded; } return doc; },
+  // 12: dances.steps — the step order, one short line per step. Normalized when present; never invented.
+  12: (col, id, doc) => { if (col === "dances" && doc.steps !== undefined) doc.steps = Array.isArray(doc.steps) ? doc.steps.map(x => String(x == null ? "" : x).trim()).filter(Boolean) : []; return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

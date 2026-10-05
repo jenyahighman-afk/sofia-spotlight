@@ -149,7 +149,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 78 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 81 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -219,8 +219,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 11) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 12) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 12 (1.6.3): `dances.steps[]` — the step order of a dance, one short line per step (the solo's comes from Hannah's talk-through; shown and editable on the dance card under More / Edit).
 - Schema 11 (1.6.0): `reviews.fixId`.
 - Schema 10 (1.5.0): Dance Along routines in `choreo` (`kind`, `url`, `path`, `fps`, `frames`, `best`).
 - Schema 9 (1.4.0): `settings.stars`, `settings.starLog`, `settings.mirrorBest`.
