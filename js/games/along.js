@@ -9,6 +9,7 @@ import { VIDEO_MAX_BYTES } from "../media.js";
 import { imageDetector, videoDetector, detectVideoFrame, drawSkeleton, poseAvailable } from "../pose.js";
 import { poseFeatures, featureDistance } from "../posemath.js";
 import { awardStars } from "../stars.js";
+import { openClip, seekTo, isBlank } from "../videoframes.js";
 
 export const FPS = 8, MAX_SEC = 120;
 const A = { on: false, stream: null, raf: 0, routine: null, video: null, score: 0, hits: { perfect: 0, good: 0, miss: 0 }, lastJudged: -1, speak: true, synth: null };
@@ -27,17 +28,17 @@ async function addRoutine(file){
   if (!poseAvailable()) return toast("Needs a newer phone");
   if (file.size > VIDEO_MAX_BYTES) return toast("Clips up to 50 MB — trim it first", 3000);
   const st = $("#alongStatus"); const status = (t) => { if (st) st.textContent = t; };
-  const url = URL.createObjectURL(file); const v = document.createElement("video"); v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+  let clip = null;
   try {
     status("Reading the clip…");
-    await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = () => rej(new Error("This clip can't be read on this phone.")); });
+    clip = await openClip(file); const v = clip.video;
     const duration = Math.min(v.duration, MAX_SEC); if (!(duration > 1)) throw new Error("That clip is too short.");
     if (v.duration > MAX_SEC + 1) toast(`Using the first ${MAX_SEC} seconds`, 2500);
     const det = await imageDetector(); const cv = document.createElement("canvas"); const sc = Math.min(1, 480 / Math.max(v.videoWidth, v.videoHeight)); cv.width = Math.round(v.videoWidth * sc); cv.height = Math.round(v.videoHeight * sc); const ctx = cv.getContext("2d");
     const frames = []; const n = Math.floor(duration * FPS); let found = 0;
     for (let i = 0; i < n; i++) {
-      const t = i / FPS; await new Promise((res, rej) => { const done = () => { v.removeEventListener("seeked", done); res(); }; v.addEventListener("seeked", done); v.onerror = () => rej(new Error("Couldn't read a frame.")); v.currentTime = t; });
-      ctx.drawImage(v, 0, 0, cv.width, cv.height); const r = det.detect(cv); const lm = r && r.landmarks && r.landmarks[0]; const f = lm ? poseFeatures(lm) : null; if (f) found++; frames.push(f);
+      const t = i / FPS; const ok = await seekTo(v, t, 3000); if (!ok) { frames.push(null); continue; }
+      ctx.drawImage(v, 0, 0, cv.width, cv.height); if (isBlank(cv)) { frames.push(null); continue; } const r = det.detect(cv); const lm = r && r.landmarks && r.landmarks[0]; const f = lm ? poseFeatures(lm) : null; if (f) found++; frames.push(f);
       if (i % 8 === 0) status(`Learning the moves… ${Math.round(100 * i / n)}%`);
     }
     if (found < n * 0.4) throw new Error("I couldn't see a dancer clearly in most of the clip. Try one where the whole body is in view.");
@@ -46,7 +47,7 @@ async function addRoutine(file){
     await storeSet("choreo", id, { kind: "along", name, path: up.path, url: up.url, size: file.size, duration, fps: FPS, frames, at: new Date().toISOString(), best: 0, style: "along", seq: [] });
     toast("Ready to dance! 🕺"); renderAlong();
   } catch (e) { console.warn(e); status(""); toast(e.message && !e.code ? e.message : "Couldn't add it: " + friendlyError(e), 4000); }
-  finally { URL.revokeObjectURL(url); }
+  finally { if (clip) clip.close(); }
 }
 async function delRoutine(id){ const r = S.choreo[id]; if (!r || !confirm(`Remove "${r.name}"?`)) return; await storeDel("choreo", id); if (r.path) { try { await media.remove(r.path); } catch (e) { console.warn(e); } } renderAlong(); }
 
