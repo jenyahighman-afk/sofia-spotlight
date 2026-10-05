@@ -22,6 +22,7 @@ import { initPlayer } from "./player.js";
 import { initStage } from "./stage.js";
 import { initPracticeMode } from "./pmode.js";
 import { initCoach, renderReviews } from "./coach.js";
+import { renderCoachHub } from "./coachhub.js";
 import { initGoals } from "./goals.js";
 import { initMirror } from "./games/mirror.js";
 import { initAlong } from "./games/along.js";
@@ -38,7 +39,7 @@ const VERSION_KEY = "spotlight:version";
 const renders = [
   guard("home", renderHome), guard("dances", renderDances), guard("practice", renderPractice), guard("play", renderPlay), guard("me", renderMe),
   guard("events", renderEvents), guard("schedule", () => { renderClasses(); renderCalendar(); }), guard("notes", () => { renderNotes(); renderPhotos(); renderFiles(); }),
-  guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("grownups", renderGrownups), guard("settings", renderSettings),
+  guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("coach", renderCoachHub), guard("grownups", renderGrownups), guard("settings", renderSettings),
 ];
 function renderAll(){ renders.forEach(r => r()); }
 function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initDemos(); installReportLinks(); }

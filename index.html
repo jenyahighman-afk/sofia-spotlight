@@ -48,7 +48,7 @@
 <section class="page" id="p-practice">
   <div class="card sun">
     <div class="row practice-head" id="practiceHead"></div>
-    <button class="btn coral big-btn" id="startPractice" style="width:100%;margin-top:8px">▶ Start practice</button>
+    <div class="today-actions" style="margin-bottom:0"><button class="btn coral big-btn" id="startPractice">▶ Start practice</button><button class="btn big-btn" onclick="openCoachHub()">🎬 Coach corner</button></div>
     <div id="practiceChecklist" class="plist"></div>
   </div>
   <details class="card acc"><summary>💬 How did it feel?</summary>
@@ -286,7 +286,16 @@
   </div>
 </section>
 
-<!-- COACH REVIEWS (placeholder until the AI coach session) -->
+<!-- COACH CORNER (kid-visible: start a review, look back, see progress) -->
+<section class="page" id="p-coach">
+  <div class="row noprint"><button class="btn sm ghost" onclick="showPage('practice')">‹ Practice</button><h2 class="grow" style="margin:0">Coach corner</h2></div>
+  <div class="card coral" id="coachNew"></div>
+  <div class="row hub-filter" id="coachFilter"></div>
+  <div id="coachHub"></div>
+  <p class="small muted" style="text-align:center">👀 Mom can see every review.</p>
+</section>
+
+<!-- COACH REVIEWS (Grown-ups: the full list, with delete) -->
 <section class="page" id="p-reviews">
   <div class="row noprint"><button class="btn sm ghost" onclick="showPage('grownups')">‹ Grown-ups</button></div>
   <h2>Coach reviews</h2>
