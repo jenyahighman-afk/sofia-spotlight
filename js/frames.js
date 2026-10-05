@@ -14,4 +14,4 @@ export function peakTime(rms, windowSec = 0.1){ if (!rms.length) return null; le
 export function aroundPeak(peak, duration, offsets = [-0.6, -0.2, 0.2, 0.6]){ if (peak === null || !(duration > 0)) return []; return offsets.map(o => +Math.max(0.05, Math.min(duration - 0.05, peak + o)).toFixed(2)); }
 // All sample times, sorted, de-duplicated (two times within 0.15 s count as one).
 export function sampleTimes(duration, peak){ const all = [...evenTimes(duration, 16), ...aroundPeak(peak, duration)].sort((a, b) => a - b); const out = []; for (const t of all) if (!out.length || t - out[out.length - 1] > 0.15) out.push(t); return out.slice(0, 20); }
-export const MAX_CLIP_SEC = 60;
+export const MAX_CLIP_SEC = 180; // a full run: solo 2:04, trio 2:24, jazz 2:31. Still 20 frames, so the cost per review is the same.
