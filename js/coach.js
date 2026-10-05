@@ -10,6 +10,7 @@ import { sampleTimes, loudness, peakTime, MAX_CLIP_SEC } from "./frames.js";
 import { detectImage, drawSkeleton, poseAvailable } from "./pose.js";
 import { readouts } from "./posemath.js";
 import { checkBadges } from "./badges.js";
+import { openClip, seekTo, isBlank, withTimeout } from "./videoframes.js";
 
 const FRAME_PX = 768, THUMB_PX = 160;
 const C = { danceId: "", trick: "", kind: "", frames: [], thumbs: [], pose: null, poseLines: [], busy: false, review: null, saved: null };
@@ -27,13 +28,14 @@ export function openCoach(danceId = "", trick = ""){
 export function closeCoach(){ $("#coach").hidden = true; document.body.classList.remove("modal"); }
 function step(name, html){
   const el = $("#coachBody");
-  if (name === "pick") el.innerHTML = `<p class="coach-line">Film a clip (up to 60 s) or pick photos.</p>
-    <div class="coach-pick"><label class="btn coral big-btn" for="coachVideo">🎥 Film / pick a clip</label><input type="file" id="coachVideo" accept="video/*" capture="environment" hidden>
+  if (name === "pick") el.innerHTML = `<p class="coach-line">Film or pick a clip (up to 60 s), or use photos.</p>
+    <div class="coach-pick"><label class="btn coral big-btn" for="coachVideo">🎥 Film now</label><input type="file" id="coachVideo" accept="video/*" capture="environment" hidden>
+    <label class="btn sun big-btn" for="coachPickClip">🎞️ Pick a clip from Photos</label><input type="file" id="coachPickClip" accept="video/*" hidden>
     <label class="btn big-btn" for="coachPhotos">📷 Photos</label><input type="file" id="coachPhotos" accept="image/*" multiple hidden></div>
     <p class="small muted" style="margin-top:10px">The video stays on this phone. Only 20 small still frames go to the coach.${coachReady() ? "" : "<br><b>The coach isn't connected yet</b> — a grown-up needs to set up the worker (README). The skeleton view still works."}</p>`;
   else if (name === "busy") el.innerHTML = `<div class="coach-busy"><div class="spinner"></div><p class="small" id="coachBusyText">${esc(html || "Working…")}</p></div>`;
   else el.innerHTML = html;
-  if (name === "pick") { $("#coachVideo").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) fromVideo(f); }; $("#coachPhotos").onchange = (e) => { const fs = [...e.target.files]; e.target.value = ""; if (fs.length) fromPhotos(fs); }; }
+  if (name === "pick") { $("#coachVideo").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) fromVideo(f); }; $("#coachPickClip").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) fromVideo(f); }; $("#coachPhotos").onchange = (e) => { const fs = [...e.target.files]; e.target.value = ""; if (fs.length) fromPhotos(fs); }; }
 }
 const busy = (t) => { const el = $("#coachBusyText"); if (el) el.textContent = t; };
 const errState = (msg, retry = true) => step("err", `<div class="card err-state" style="margin:0"><h3>Hmm.</h3><p class="small">${esc(msg)}</p><div class="row">${retry ? `<button class="btn coral" onclick="coachRetry()">Try again</button>` : ""}<button class="btn ghost" onclick="closeCoach()">Close</button></div></div>`);
@@ -44,23 +46,26 @@ const jpeg = (cv, q) => cv.toDataURL("image/jpeg", q);
 const b64 = (dataUrl) => dataUrl.split(",")[1];
 
 async function fromVideo(file){
-  step("busy", "Reading the clip…"); C.kind = "video";
-  const url = URL.createObjectURL(file); const video = document.createElement("video"); video.muted = true; video.playsInline = true; video.preload = "auto"; video.src = url;
+  step("busy", "Reading the clip…"); C.kind = "video"; let clip = null;
   try {
-    await new Promise((res, rej) => { video.onloadedmetadata = res; video.onerror = () => rej(new Error("This clip can't be read on this phone. Try a different one.")); });
-    const duration = video.duration; if (!(duration > 0)) throw new Error("That clip has no length. Film it again.");
-    if (duration > MAX_CLIP_SEC + 1) throw new Error(`Clips are up to ${MAX_CLIP_SEC} seconds. Trim it, or film a shorter run.`);
+    clip = await openClip(file); const video = clip.video;
+    const duration = video.duration; if (!(duration > 0) || !Number.isFinite(duration)) throw new Error("That clip has no length. Film it again, or pick it from Photos.");
+    if (duration > MAX_CLIP_SEC + 1) throw new Error(`Clips are up to ${MAX_CLIP_SEC} seconds — this one is ${Math.round(duration)}. Trim it in Photos, or film a shorter run.`);
     busy("Listening for the loudest moment…"); let peak = null;
-    try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const buf = await ctx.decodeAudioData(await file.arrayBuffer()); const ch = buf.getChannelData(0); peak = peakTime(loudness(ch, buf.sampleRate)); ctx.close && ctx.close(); } catch (e) { console.warn("no audio peak", e); }
-    const times = sampleTimes(duration, peak); C.frames = []; C.thumbs = []; const canvases = [];
+    // Optional: skipped on big files and whenever the phone is slow or can't decode the sound.
+    if (file.size <= 40 * 1024 * 1024) { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const buf = await withTimeout(ctx.decodeAudioData(await file.arrayBuffer()), 8000, "audio timeout"); const ch = buf.getChannelData(0); peak = peakTime(loudness(ch, buf.sampleRate)); ctx.close && ctx.close(); } catch (e) { console.warn("no audio peak", e); } }
+    const times = sampleTimes(duration, peak); C.frames = []; C.thumbs = []; const canvases = [], labels = []; let skipped = 0;
     for (let i = 0; i < times.length; i++) {
       busy(`Grabbing frame ${i + 1} of ${times.length}…`);
-      await new Promise((res, rej) => { const done = () => { video.removeEventListener("seeked", done); res(); }; video.addEventListener("seeked", done); video.onerror = () => rej(new Error("Couldn't read a frame.")); video.currentTime = times[i]; });
-      const cv = canvasFrom(video, video.videoWidth, video.videoHeight, FRAME_PX); canvases.push(cv); C.frames.push(b64(jpeg(cv, 0.72)));
+      const ok = await seekTo(video, times[i]); if (!ok || !video.videoWidth) { skipped++; continue; }
+      const cv = canvasFrom(video, video.videoWidth, video.videoHeight, FRAME_PX); if (isBlank(cv)) { skipped++; continue; }
+      canvases.push(cv); labels.push(times[i].toFixed(1) + "s"); C.frames.push(b64(jpeg(cv, 0.72)));
     }
-    await finishFrames(canvases, times.map(t => t.toFixed(1) + "s"));
+    if (canvases.length < 3) throw new Error("This phone couldn't read frames from that clip. Try: pick the clip from Photos instead of filming here, or send 3–4 photos with the 📷 Photos button.");
+    if (skipped) console.warn("coach: skipped frames", skipped);
+    await finishFrames(canvases, labels);
   } catch (e) { console.warn(e); errState(e.message || String(e)); }
-  finally { URL.revokeObjectURL(url); }
+  finally { if (clip) clip.close(); }
 }
 async function fromPhotos(files){
   step("busy", "Reading photos…"); C.kind = "photo"; C.frames = []; const canvases = [];
@@ -74,9 +79,9 @@ async function finishFrames(canvases, labels){
   const pick = canvases.length <= 4 ? canvases.map((_, i) => i) : [0, Math.floor(canvases.length / 3), Math.floor(2 * canvases.length / 3), canvases.length - 1];
   C.poseLines = []; C.pose = null; C.thumbs = [];
   if (poseAvailable()) {
-    try { busy("Drawing the skeleton…"); const nums = {}; for (const i of pick) { const lm = await detectImage(canvases[i]); if (lm) { const ctx = canvases[i].getContext("2d"); drawSkeleton(ctx, lm, canvases[i].width, canvases[i].height); const r = readouts(lm); if (!C.poseLines.length && r.lines.length) { C.poseLines = r.lines; Object.assign(nums, r.numbers); } } }
+    try { busy("Drawing the skeleton…"); const nums = {}; for (const i of pick) { const lm = await withTimeout(detectImage(canvases[i]), 25000, "pose timeout"); if (lm) { const ctx = canvases[i].getContext("2d"); drawSkeleton(ctx, lm, canvases[i].width, canvases[i].height); const r = readouts(lm); if (!C.poseLines.length && r.lines.length) { C.poseLines = r.lines; Object.assign(nums, r.numbers); } } }
       if (Object.keys(nums).length) C.pose = nums; }
-    catch (e) { console.warn("pose failed", e); C.poseLines = ["Skeleton view needs a connection the first time."]; }
+    catch (e) { console.warn("pose failed", e); C.poseLines = ["Skeleton view isn't ready (it needs a connection the first time) — the coach still works."]; }
   }
   for (const i of pick) C.thumbs.push({ label: labels[i], data: jpeg(canvasFrom(canvases[i], canvases[i].width, canvases[i].height, THUMB_PX), 0.6) });
   renderPreview();
