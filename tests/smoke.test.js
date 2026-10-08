@@ -30,7 +30,7 @@ const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["rcStart", "plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -91,6 +91,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#coachHub").innerHTML.includes("Solo") && el("#coachHub").innerHTML.includes("Fixes the coach gave") && el("#coachHub").innerHTML.includes("Point your foot"), "Coach corner groups the review under its dance with the fix");
   assert.ok(el("#coachNew").innerHTML.includes("openCoach('solo')"), "Coach corner starts a review for any dance");
   assert.ok(el("#gameGrid").innerHTML.includes("playOpen('nextmove')"), "What's Next? has a tile on Play");
+  assert.ok(el("#coachNew").innerHTML.includes("Run check"), "Coach corner offers a run check");
   S.dances = { solo: { id: "solo", links: ["Original choreo | https://photos.app.goo.gl/abc", "https://example.com/x"] } }; M.dances.danceEdit("solo"); M.dances.danceEdit(null); const dh = el("#danceList").innerHTML; assert.ok(dh.includes(">🔗 Original choreo<") && dh.includes(">🔗 Link 2<") && dh.includes("href=\"https://photos.app.goo.gl/abc\""), "dance links take a name before a |"); S.dances = {};
   assert.ok(el("#quickRow").innerHTML.includes("openQuick('strength')") && el("#quickRow").innerHTML.includes("openQuick('flex')"), "Practice offers the two quick sessions");
   assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");

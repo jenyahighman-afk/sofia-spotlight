@@ -284,6 +284,11 @@ body.modal{overflow:hidden}
 .trick-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
 .trick-state{width:40px;height:40px;flex:none;border-radius:50%;border:2px solid var(--line);background:var(--card);font-size:1.2rem;cursor:pointer;color:var(--ink-2)}
 .trick-state.learning{border-color:#B98BEF;color:#B98BEF} .trick-state.clean{border-color:#FF5C93;color:#FF5C93;background:var(--blush)} .trick-state.checked{border-color:#D9B26F;color:#D9B26F;background:#FBEBC8}
+.rc-cam{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:3/4;max-height:58vh} .rc-cam video{width:100%;height:100%;object-fit:cover;display:block} .rc-cam video.mirrored{transform:scaleX(-1)}
+.rc-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none} .rc-flash.on{animation:rcflash .35s ease-out} @keyframes rcflash{0%{opacity:.8}100%{opacity:0}}
+.rc-big{position:absolute;inset:0;display:grid;place-items:center;font-family:Fredoka;font-weight:700;font-size:6rem;color:#fff;text-shadow:0 4px 16px rgba(0,0,0,.6)}
+.rc-strip{display:flex;gap:4px;overflow-x:auto;margin-top:6px;min-height:52px} .rc-strip img{height:52px;border-radius:6px;flex:none}
+.btn.violet{background:#EBDDFF;color:#4A2340}
 /* Pastel backgrounds stay pastel in dark mode, so their text must stay dark too. */
 .review .rv-loved,.review .rv-loved *,.day .ev,.cal .d .ev,.mapbar .soft,.mapbar .loud,.mapbar .fade,.cover-art.sun,.cover-art.violet,.cover-art.aqua{color:#4A2340}
 .chip{color:var(--ink)} .chip.aqua,.chip.sun,.chip.violet,.chip.mint,.chip[style*="background:#fff"]{color:#4A2340} .chip.coral{color:#fff}

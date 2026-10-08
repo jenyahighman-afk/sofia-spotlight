@@ -17,6 +17,7 @@ const FRAME_PX = 768, THUMB_PX = 160;
 const C = { danceId: "", trick: "", kind: "", frames: [], thumbs: [], pose: null, poseLines: [], busy: false, review: null, saved: null };
 
 export const coachReady = () => !!(coachConfig && coachConfig.url);
+const runCheckable = (id) => { const d = dances().find(x => x.id === id); return !!(d && ((d.musicFile && d.musicFile.url) || d.musicUrl)); };
 
 // ---------- open / UI ----------
 export function openCoach(danceId = "", trick = ""){
@@ -26,11 +27,17 @@ export function openCoach(danceId = "", trick = ""){
   $("#coach").hidden = false; document.body.classList.add("modal");
   step("pick");
 }
+// Frames already grabbed elsewhere (Run check): straight to the skeleton + preview step.
+export async function openCoachFrames(danceId, canvases, labels){
+  openCoach(danceId); C.kind = "video"; C.frames = canvases.map(cv => b64(jpeg(cv, 0.72))); step("busy", "Drawing the skeleton…");
+  try { await finishFrames(canvases, labels); } catch (e) { console.warn(e); errState(e.message || String(e)); }
+}
 export function closeCoach(){ $("#coach").hidden = true; document.body.classList.remove("modal"); }
 function step(name, html){
   const el = $("#coachBody");
   if (name === "pick") el.innerHTML = `<p class="coach-line">Film or pick a clip (a full run is fine, up to 3 min), or use photos.</p>
     <p class="small muted">Full run? Start the music right after you tap record.</p>
+    ${runCheckable(C.danceId) ? `<button class="btn violet big-btn" style="width:100%;margin-top:8px" onclick="closeCoach();openRunCheck('${C.danceId}')">🎥 Run check — the app plays the music and snaps the frames</button>` : ""}
     <div class="coach-pick"><label class="btn coral big-btn" for="coachVideo">🎥 Film now</label><input type="file" id="coachVideo" accept="video/*" capture="environment" hidden>
     <label class="btn sun big-btn" for="coachPickClip">🎞️ Pick a clip from Photos</label><input type="file" id="coachPickClip" accept="video/*" hidden>
     <label class="btn big-btn" for="coachPhotos">📷 Photos</label><input type="file" id="coachPhotos" accept="image/*" multiple hidden></div>

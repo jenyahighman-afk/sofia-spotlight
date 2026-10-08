@@ -42,6 +42,9 @@ The checklist one item at a time, full screen: Manual (tap Done) or Timed (each 
 ### Quick sessions (💪 5-min strength · 🧘 5-min stretch)
 Under Start practice on the Practice tab (`js/quick.js`): a one-minute warm-up plus three timed items from the same pools as the daily plan (strength: core + legs, alternating 2+1 / 1+2 by day; stretch: three flexibility items), each capped at 90 s so the whole thing is about five minutes. Runs in practice mode (timed, with its own done list, so it never touches the day's checklist). Finishing one is saved as `practice.quick` for the day, counts the day for the streak like a run does, shows ⚡ on Today and ✓ on the button, and pays a star. Any number per day.
 
+### Run check (Coach corner → 🎥, or inside Coach me)
+Prop the phone up, tap ▶ Start: a spoken 5-count, then the app plays the dance's own music (uploaded file or music link) and snaps frames by itself — the cue-sheet moments plus a few spread evenly (`snapTimes` in `js/runcheck.js`; a chime and a flash at each) — then hands them to the coach like any clip. Nothing is recorded; only the stills go. Before the start a "👀 I see all of you / step back" check uses the skeleton model when it's loaded. Front camera by default (mirrored preview), 🔄 Flip for the back camera; screen stays awake while it runs. Needs camera permission; on the home-screen app iOS asks each time.
+
 ### What's Next? (Play)
 A memory game built from a dance's step order (`js/games/nextmove.js`, any dance with 8+ `steps`; today that is the solo): a step comes up, Sofia taps which of three steps comes next, ten rounds spread through the dance. Best score in `settings.nmBest`, stars like Spot the Oops (9+ = 3).
 
@@ -155,7 +158,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 89 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 92 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
