@@ -42,6 +42,7 @@ function tricksCard(){
   const done = st.skills.filter(k => ["clean", "checked"].includes(skillState(S.skills, k.id))).length;
   return `<div class="card sun"><div class="row"><h3 class="grow">${st.ic} ${esc(st.n)}</h3><span class="chip sun">${done}/${st.skills.length} clean</span></div>
     <p class="small muted">Tap the circle: learning → clean. A grown-up adds the ★ when the teacher has checked it.</p>
+    <button class="btn sm coral" onclick="showPage('play');playOpen('quest');qsStart()">⚔️ Trick Quest</button>
     ${st.skills.map(k => { const state = skillState(S.skills, k.id); const rec = S.skills[k.id] || {}; const rv = lastTrickReview(S.reviews, k.n);
       return `<div class="trick-row"><button class="trick-state ${state}" onclick="hubSkill('${k.id}')" title="${STATE_LABEL[state]}">${STATE_EMOJI[state]}</button><div class="grow"><b>${esc(k.n)}</b> <span class="small muted">${STATE_LABEL[state]}${state === "checked" && rec.teacher ? " · " + esc(rec.teacher) + " " + esc(rec.checkedAt || "") : ""}</span>
         <div class="small">${rv ? `🎬 ${esc(rv.date || "")}: ${esc(rv.review.fix)}` : `<span class="muted">${esc(k.tip || "")}</span>`}</div></div><button class="btn sm coral" onclick="openCoach('solo','${esc(k.n).replace(/'/g, "&#39;")}')">🎬</button></div>`; }).join("")}</div>`;

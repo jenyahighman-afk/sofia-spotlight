@@ -132,6 +132,12 @@ test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio
   const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
 });
 
+test("14 → 15: skills.quest bars are clamped 0–100 with 70 for junk, gems are dates; settings.gold keeps only shapes with features", () => {
+  const k = migrateDoc("skills", "s-calypso", { _v: 14, state: "learning", quest: { bars: { feet: "150", knees: -4, arms: "x" }, gems: ["2026-10-07", "nope", 3] } }); assert.deepEqual(k.quest, { bars: { feet: 100, knees: 0, arms: 70 }, gems: ["2026-10-07"] }); assert.equal(k.state, "learning"); assert.equal(k._v, SCHEMA_VERSION);
+  assert.equal("quest" in migrateDoc("skills", "s", { _v: 14, state: "clean" }), false);
+  const s = migrateDoc("settings", "main", { _v: 14, gold: { a: { f: [1, 2], at: "2026-10-07" }, b: { at: "x" }, c: null } }); assert.deepEqual(Object.keys(s.gold), ["a"]);
+});
+
 test("13 → 14: settings.nmBest is a whole number 0–10 when present", () => {
   assert.equal(migrateDoc("settings", "main", { _v: 13, nmBest: "7" }).nmBest, 7); assert.equal(migrateDoc("settings", "main", { _v: 13, nmBest: 44 }).nmBest, 10); assert.equal(migrateDoc("settings", "main", { _v: 13, nmBest: "x" }).nmBest, 0);
   assert.equal("nmBest" in migrateDoc("settings", "main", { _v: 13, stars: 1 }), false);

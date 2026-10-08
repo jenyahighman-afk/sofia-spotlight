@@ -289,6 +289,9 @@ body.modal{overflow:hidden}
 .rc-big{position:absolute;inset:0;display:grid;place-items:center;font-family:Fredoka;font-weight:700;font-size:6rem;color:#fff;text-shadow:0 4px 16px rgba(0,0,0,.6)}
 .rc-strip{display:flex;gap:4px;overflow-x:auto;margin-top:6px;min-height:52px} .rc-strip img{height:52px;border-radius:6px;flex:none}
 .btn.violet{background:#EBDDFF;color:#4A2340}
+.qs-bars{display:grid;gap:4px;margin:8px 0} .qs-bar{display:flex;align-items:center;gap:6px;font-size:.9rem} .qs-bar small{width:28px;text-align:right}
+.qs-track{flex:1;height:12px;border-radius:6px;background:var(--line);overflow:hidden} .qs-fill{height:100%;background:linear-gradient(90deg,#FF5C93,#B98BEF);transition:width .4s}
+.qs-boss{display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);padding:10px 12px;margin-top:8px;cursor:pointer;font:inherit}
 /* Pastel backgrounds stay pastel in dark mode, so their text must stay dark too. */
 .review .rv-loved,.review .rv-loved *,.day .ev,.cal .d .ev,.mapbar .soft,.mapbar .loud,.mapbar .fade,.cover-art.sun,.cover-art.violet,.cover-art.aqua{color:#4A2340}
 .chip{color:var(--ink)} .chip.aqua,.chip.sun,.chip.violet,.chip.mint,.chip[style*="background:#fff"]{color:#4A2340} .chip.coral{color:#fff}

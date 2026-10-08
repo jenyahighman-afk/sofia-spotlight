@@ -14,7 +14,7 @@ Sofia sees five tabs, each built to *do* something with as few words as possible
 | **Today** | One card: what's on (studio classes or the home-practice plan), a big **Start** / **Play** button, the countdown to the next event, the practice streak. Below it: this week's fix, then the week strip. |
 | **Dances** | One cover card per dance: emoji or the latest photo, song, **▶ Practice** (opens the practice player), **＋ Note** (quick note from class, with voice-to-text where the browser has it), the top three open fixes as chips. Tap a chip → **Show me**: the dancer does the wrong version and the fixed version side by side. Everything text-heavy is under **More ▸** (music map, moments, all corrections, strengths, tricks, costume, links, notes, photos, Edit). |
 | **Practice** | The checklist *is* the screen: progress ring, tap to check (saved as you go), confetti at 100%. Notes, the aerial mission, the 15-week plan, safety rules and history sit under accordions. |
-| **Play** | A grid of eight game tiles (Choreo Studio, Spot the Oops, What's Next?, Trio Formations, Comp Day, Step & Sparkle, Mirror, Dance Along) with each game's best; tap one to open it, **‹ All games** to come back. |
+| **Play** | A grid of nine game tiles (Choreo Studio, Spot the Oops, Trick Quest, What's Next?, Trio Formations, Comp Day, Step & Sparkle, Mirror, Dance Along) with each game's best; tap one to open it, **‹ All games** to come back. |
 | **Me** | Avatar (tap = customize, **long-press = Grown-ups**), streak + personal bests, badge case, skill progress rings per style, "notes that keep coming back", and the **Grown-ups 🔒** link at the bottom. |
 
 **Grown-ups** (PIN, default **2027**; change it or switch it off under Grown-ups → PIN) holds: Events (costs, notes, hotels), Schedule (classes, calendar, print, .ics), Lists (to-dos, packing), Notes (notes, files, photos), Skills & awards (teacher-checked skills, "No cues" / "Clean 5 in a row" badges), Coach reviews (placeholder until session 2B), Reports, Settings & backup. The ⚙️ in the header goes through the same gate. The gate stays open for 20 minutes after the PIN is typed. Nothing was deleted from the old tabs; it moved here.
@@ -44,6 +44,9 @@ Under Start practice on the Practice tab (`js/quick.js`): a one-minute warm-up p
 
 ### Run check (Coach corner → 🎥, or inside Coach me)
 Prop the phone up, tap ▶ Start: a spoken 5-count, then the app plays the dance's own music (uploaded file or music link) and snaps frames by itself — the cue-sheet moments plus a few spread evenly (`snapTimes` in `js/runcheck.js`; a chime and a flash at each) — then hands them to the coach like any clip. Nothing is recorded; only the stills go. Before the start a "👀 I see all of you / step back" check uses the skeleton model when it's loaded. Front camera by default (mirrored preview), 🔄 Flip for the back camera; screen stays awake while it runs. Needs camera permission; on the home-screen app iOS asks each time.
+
+### Trick Quest (Play, and ⚔️ in the Coach corner's Solo tricks card)
+Every solo trick (`data/skills.json` → `solo`) is a boss with three bars — 🦶 feet, 🦵 knees, 💪 arms — seeded from the trick's last coach review (a ticked check starts at 35, a flagged one at 100, no review 70). Three timed stations (`js/games/quest.js` `buildStations`): **Prep** (the drill from the solo card, 90 s), **Slow five** (the trick ×5 with the open correction for it — or the skill's tip — as the one line on screen, a chime per rep), **To the music** (the solo's music loops the trick's section from the cue sheet, 6 s before to 8 s after the cue: twice at 85%, twice full speed; needs the music file). Each finished station takes 15 off its bar. Then the **freeze shot**: front camera, 5-count, the section plays and the camera snaps the shape at the cue moment, draws the skeleton and scores it against the trick's **gold shape** (`settings.gold[skillId]`, saved with ⭐ Make this gold — pose features from `posemath.js`, so it's shape, not pixels); 70%+ takes 25 off every bar. Empty bars = a gem (`skills.quest.gems`, one per day); three gems on different days move the trick's circle to "clean". Stars: 3 for a gem, 2 for a good shot, 1 for showing up.
 
 ### What's Next? (Play)
 A memory game built from a dance's step order (`js/games/nextmove.js`, any dance with 8+ `steps`; today that is the solo): a step comes up, Sofia taps which of three steps comes next, ten rounds spread through the dance. Best score in `settings.nmBest`, stars like Spot the Oops (9+ = 3).
@@ -158,7 +161,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 92 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 97 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -228,8 +231,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 14) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 15) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 15 (1.9.0): `skills.quest` (Trick Quest bars and gems), `settings.gold` (freeze-shot gold shapes).
 - Schema 14 (1.7.1): `settings.nmBest` (What's Next? best score).
 - Schema 13 (1.7.0): `practice.quick[]` — quick sessions finished that day (`"strength"` / `"flex"`); a day with one counts for the streak.
 - Schema 12 (1.6.3): `dances.steps[]` — the step order of a dance, one short line per step (the solo's comes from Hannah's talk-through; shown and editable on the dance card under More / Edit).

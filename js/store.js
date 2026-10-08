@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 14;
+export const SCHEMA_VERSION = 15;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -91,7 +91,13 @@ export const MIGRATIONS = {
   // 13: practice.quick — the quick sessions finished that day, e.g. ["strength", "flex"]. Normalized when present.
   13: (col, id, doc) => { if (col === "practice" && doc.quick !== undefined) doc.quick = Array.isArray(doc.quick) ? doc.quick.filter(k => k === "strength" || k === "flex") : []; return doc; },
   // 14: settings.nmBest — best What's Next? score (0–10). Normalized when present.
-  14: (col, id, doc) => { if (col === "settings" && doc.nmBest !== undefined) { const n = parseInt(doc.nmBest, 10); doc.nmBest = Number.isFinite(n) && n > 0 ? Math.min(10, n) : 0; } return doc; }
+  14: (col, id, doc) => { if (col === "settings" && doc.nmBest !== undefined) { const n = parseInt(doc.nmBest, 10); doc.nmBest = Number.isFinite(n) && n > 0 ? Math.min(10, n) : 0; } return doc; },
+  // 15 (Trick Quest): skills.quest = { bars: {feet, knees, arms: 0–100}, gems: [dates] }; settings.gold = { skillId: { f: [numbers], at } }. Normalized when present.
+  15: (col, id, doc) => {
+    if (col === "skills" && doc.quest !== undefined) { const q = doc.quest && typeof doc.quest === "object" ? doc.quest : {}; const bars = {}; for (const k of ["feet", "knees", "arms"]) { const n = parseInt((q.bars || {})[k], 10); bars[k] = Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 70; } doc.quest = { bars, gems: Array.isArray(q.gems) ? q.gems.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)) : [] }; }
+    if (col === "settings" && doc.gold !== undefined) { const g = doc.gold && typeof doc.gold === "object" ? doc.gold : {}; doc.gold = Object.fromEntries(Object.entries(g).filter(([, v]) => v && Array.isArray(v.f))); }
+    return doc;
+  }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

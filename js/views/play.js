@@ -6,6 +6,7 @@ import { initChoreo, csRender } from "../games/choreo.js";
 import { tfRender } from "../games/trio.js";
 import "../games/oops.js";
 import "../games/nextmove.js";
+import "../games/quest.js";
 import "../games/compday.js";
 import "../games/sparkle.js";
 import "../games/mirror.js";
@@ -14,6 +15,7 @@ import { renderAlong } from "../games/along.js";
 export const GAMES = [
   { id: "choreo",  emoji: "💃", name: "Choreo Studio",  blurb: "Build a dance, face the judges", best: (s) => s.csBest ? s.csBest : null },
   { id: "oops",    emoji: "👀", name: "Spot the Oops",  blurb: "Find the correction, fast",     best: (s) => (s.jeBest || 0) + "/10" },
+  { id: "quest",   emoji: "⚔️", name: "Trick Quest",    blurb: "Beat a trick, win a gem",        best: (s) => null },
   { id: "nextmove", emoji: "🧠", name: "What's Next?",   blurb: "Know your dance by heart",    best: (s) => s.nmBest ? s.nmBest + "/10" : null },
   { id: "trio",    emoji: "👯", name: "Trio Formations", blurb: "Shapes for three",             best: (s) => s.tfBest || 0 },
   { id: "compday", emoji: "🎒", name: "Comp Day",       blurb: "One choice at a time",         best: (s) => s.cdBest || 0 },
