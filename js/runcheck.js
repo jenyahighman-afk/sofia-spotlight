@@ -20,7 +20,7 @@ export const fullBody = (lm) => !!lm && [11, 12, 27, 28].every(i => lm[i] && (lm
 
 // iPhone: a sound can only start inside a tap. Start the music for a moment (and an empty utterance) on the tap itself, then the real play after the countdown is allowed.
 function unlock(a){ try { const p = a.play(); if (p && p.then) p.then(() => { if (!a._armed) { a.pause(); a.currentTime = 0; } }).catch(() => {}); } catch (e) {} try { speechSynthesis.speak(new SpeechSynthesisUtterance("")); } catch (e) {} }
-const RC = { dance: null, stream: null, audio: null, times: [], at: 0, canvases: [], labels: [], raf: 0, on: false, facing: "user", lock: null, seen: 0, check: 0 };
+const RC = { dance: null, stream: null, audio: null, pending: null, times: [], at: 0, canvases: [], labels: [], tick: 0, on: false, facing: "user", lock: null, check: 0 };
 const say = (t) => { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t)); u.rate = 1.1; speechSynthesis.speak(u); } catch (e) {} };
 function chime(f = 1320){ try { const ctx = RC.ctx || (RC.ctx = new (window.AudioContext || window.webkitAudioContext)()); const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f; g.gain.value = 0.25; o.connect(g); g.connect(ctx.destination); const t = ctx.currentTime; o.start(t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.2); o.stop(t + 0.25); } catch (e) {} }
 function status(html){ $("#rcStatus").innerHTML = html; }
@@ -28,7 +28,8 @@ function big(t){ $("#rcBig").textContent = t; $("#rcBig").hidden = !t; }
 function grab(label){
   const v = $("#rcCam"); if (!v.videoWidth) return; const scale = Math.min(1, FRAME_PX / Math.max(v.videoWidth, v.videoHeight));
   const cv = document.createElement("canvas"); cv.width = Math.round(v.videoWidth * scale); cv.height = Math.round(v.videoHeight * scale);
-  const ctx = cv.getContext("2d"); if (RC.facing === "user") { ctx.translate(cv.width, 0); ctx.scale(-1, 1); } ctx.drawImage(v, 0, 0, cv.width, cv.height);
+  // Only the on-screen preview is mirrored; the coach gets the real left and right.
+  const ctx = cv.getContext("2d"); ctx.drawImage(v, 0, 0, cv.width, cv.height);
   RC.canvases.push(cv); RC.labels.push(label); const strip = $("#rcStrip"); const im = document.createElement("img"); im.src = cv.toDataURL("image/jpeg", 0.5); strip.appendChild(im); strip.scrollLeft = strip.scrollWidth;
   $("#rcCount").textContent = `${RC.canvases.length} / ${RC.times.length}`; const flash = $("#rcFlash"); flash.classList.remove("on"); void flash.offsetWidth; flash.classList.add("on"); chime();
 }
@@ -61,7 +62,7 @@ export async function openRunCheck(danceId){
 }
 async function start(){
   const a = RC.pending; if (!a || !RC.on) return; $("#rcStart").disabled = true; RC.check++; unlock(a);
-  try { RC.lock = await navigator.wakeLock.request("screen"); } catch (e) {}
+  try { const lock = await navigator.wakeLock.request("screen"); if (RC.on) RC.lock = lock; else lock.release(); } catch (e) {}
   for (let n = 5; n >= 1; n--) { if (!RC.on) return; big(String(n)); say(n); chime(n === 1 ? 1760 : 880); await new Promise(r => setTimeout(r, 1000)); }
   big("GO"); setTimeout(() => big(""), 700); RC.audio = a; RC.at = 0; $("#rcActions").innerHTML = `<button class="btn ghost" onclick="rcStop()">■ Stop</button>`;
   a._armed = true; a.currentTime = 0;

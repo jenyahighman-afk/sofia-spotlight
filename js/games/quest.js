@@ -41,7 +41,7 @@ export const shotScore = (mine, gold) => { const d = featureDistance(mine, gold)
 
 // iPhone: a sound can only start inside a tap, so the music element is poked on the tap and really played later.
 function unlock(a){ try { const p = a.play(); if (p && p.then) p.then(() => { if (!a._armed) a.pause(); }).catch(() => {}); } catch (e) {} }
-const Q = { skill: null, dance: null, stations: [], i: 0, bars: null, timer: 0, left: 0, audio: null, stream: null, shot: null, busy: false };
+const Q = { skill: null, dance: null, stations: [], i: 0, bars: null, timer: 0, left: 0, audio: null, stream: null, shot: null, busy: false, worked: 0 };
 function chime(f = 1046){ try { const ctx = Q.ctx || (Q.ctx = new (window.AudioContext || window.webkitAudioContext)()); const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f; g.gain.value = 0.25; o.connect(g); g.connect(ctx.destination); const t = ctx.currentTime; o.start(t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.3); o.stop(t + 0.35); } catch (e) {} }
 const fmt = (s) => Math.floor(s / 60) + ":" + String(Math.max(0, s) % 60).padStart(2, "0");
 const barsHtml = (bars) => `<div class="qs-bars">${BARS.map(k => `<div class="qs-bar"><span>${BAR_ICON[k]}</span><div class="qs-track"><div class="qs-fill" style="width:${bars[k]}%"></div></div><small>${bars[k]}</small></div>`).join("")}</div>`;
@@ -56,7 +56,7 @@ function qsStart(){
   $("#qsArea").innerHTML = `<p class="small muted">Pick a boss. Empty its three bars to win a gem.</p>${st.skills.map(k => { const q = questOf(S.skills[k.id]); const bars = q.bars || seedBars(lastTrickReview(S.reviews, k.n)); return `<button class="qs-boss" onclick="qsPick('${k.id}')"><b>${esc(k.n)}</b> <span class="small">${"💎".repeat(Math.min(5, q.gems.length))}${skillState(S.skills, k.id) === "clean" || skillState(S.skills, k.id) === "checked" ? " ✓" : ""}</span>${barsHtml(bars)}</button>`; }).join("")}`;
 }
 function qsPick(id){
-  const k = findSkill(id); if (!k) return; Q.skill = k; const q = questOf(S.skills[id]); Q.bars = q.bars || seedBars(lastTrickReview(S.reviews, k.n)); Q.stations = buildStations(k, Q.dance, openFor(S.corrections, "solo")); Q.i = 0; station();
+  const k = findSkill(id); if (!k) return; Q.skill = k; Q.worked = 0; const q = questOf(S.skills[id]); Q.bars = q.bars || seedBars(lastTrickReview(S.reviews, k.n)); Q.stations = buildStations(k, Q.dance, openFor(S.corrections, "solo")); Q.i = 0; station();
 }
 // ---- stations ----
 function station(){
@@ -73,7 +73,7 @@ function playLoop(loop){
   a.addEventListener("timeupdate", () => { if (a.currentTime >= loop.b) { pass++; if (pass >= 4) { a.pause(); $("#qsNote").textContent = "Four passes done. Tap ✅ Done."; } else { $("#qsNote").textContent = `Pass ${pass + 1} of 4 · ${pass < 2 ? "slow" : "full speed"}`; go(); } } });
   a.addEventListener("loadedmetadata", go, { once: true }); a.load();
 }
-async function done(){ if (Q.busy) return; Q.busy = true; try { const s = Q.stations[Q.i]; if (s) { Q.bars = hit(Q.bars, s.bar, STATION_HIT); await saveBars(); } Q.i++; station(); } finally { Q.busy = false; } }
+async function done(){ if (Q.busy) return; Q.busy = true; try { const s = Q.stations[Q.i]; if (s) { Q.bars = hit(Q.bars, s.bar, STATION_HIT); Q.worked++; await saveBars(); } Q.i++; station(); } finally { Q.busy = false; } }
 function skip(){ Q.i++; station(); }
 // ---- freeze shot ----
 function shotIntro(){
@@ -90,16 +90,16 @@ async function shot(){
   const box = $("#qsCamBox"), v = $("#qsCam"); box.hidden = false; $("#qsShot").hidden = true; stageActions(`<button class="btn ghost" onclick="qsFinish()">Stop</button>`);
   try { Q.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 960 } }, audio: false }); v.srcObject = Q.stream; await v.play(); } catch (e) { $("#qsNote").textContent = "Camera didn't open: " + (e.message || e); return shotIntro(); }
   const big = (t) => { $("#qsBig").textContent = t; $("#qsBig").hidden = !t; };
-  for (let n = 5; n >= 1; n--) { big(String(n)); chime(n === 1 ? 1760 : 880); await new Promise(r => setTimeout(r, 1000)); } big("");
+  for (let n = 5; n >= 1; n--) { if (!Q.stream) return; big(String(n)); chime(n === 1 ? 1760 : 880); await new Promise(r => setTimeout(r, 1000)); } big(""); if (!Q.stream) return;
   const loop = Q.stations[2] && Q.stations[2].loop; const src = srcFor(Q.dance); let wait = 2500;
   if (loop && src && pre) { const a = pre; Q.audio = a; a._armed = true; a.currentTime = loop.a; try { await a.play(); wait = (loop.at - loop.a) * 1000 + 300; } catch (e) {} }
   await new Promise(r => setTimeout(r, wait)); if (!Q.stream) return;
-  const cv = $("#qsShot"); cv.width = v.videoWidth || 640; cv.height = v.videoHeight || 480; const ctx = cv.getContext("2d"); ctx.translate(cv.width, 0); ctx.scale(-1, 1); ctx.drawImage(v, 0, 0, cv.width, cv.height); ctx.setTransform(1, 0, 0, 1, 0, 0); chime(1320);
+  const cv = $("#qsShot"); cv.width = v.videoWidth || 640; cv.height = v.videoHeight || 480; const ctx = cv.getContext("2d"); ctx.drawImage(v, 0, 0, cv.width, cv.height); chime(1320); // real orientation: the skeleton and the gold shape use the same frame
   let lm = null; try { lm = await detectVideoFrame(v, performance.now()); } catch (e) {}
   stopAll(); box.hidden = true; cv.hidden = false; if (lm) drawSkeleton(ctx, lm, cv.width, cv.height);
-  const mine = lm ? poseFeatures(lm.map(p => ({ ...p, x: 1 - p.x }))) : null; Q.shot = mine; const gold = (S.settings.gold || {})[Q.skill.id];
+  const mine = lm ? poseFeatures(lm) : null; Q.shot = mine; const gold = (S.settings.gold || {})[Q.skill.id];
   if (!mine) { $("#qsNote").textContent = "I couldn't see the whole shape. Step back and try again."; stageActions(`<button class="btn ghost" onclick="qsFinish()">Skip shot</button><button class="btn coral big-btn grow" onclick="qsShot()">📸 Again</button>`); return; }
-  if (gold && gold.f) { const sc = shotScore(mine, gold.f); const good = sc >= 70; $("#qsNote").innerHTML = `<b>${sc}% like your gold shape.</b> ${good ? "Boss hit! 💥" : "Close — hold it longer next time."}`; if (good) { for (const k of BARS) Q.bars = hit(Q.bars, k, SHOT_HIT); await saveBars(); } awardStars("quest", sc, "Freeze shot"); }
+  if (gold && gold.f) { const sc = shotScore(mine, gold.f); const good = sc >= 70; $("#qsNote").innerHTML = `<b>${sc}% like your gold shape.</b> ${good ? "Boss hit! 💥" : "Close — hold it longer next time."}`; if (good) { for (const k of BARS) Q.bars = hit(Q.bars, k, SHOT_HIT); await saveBars(); } Q.worked++; awardStars("quest", sc, "Freeze shot"); }
   else $("#qsNote").innerHTML = `Shape saved. A grown-up can make it the gold shape.`;
   stageActions(`<button class="btn ghost" onclick="qsShot()">📸 Again</button><button class="btn sm ghost" onclick="qsGold()">⭐ Make this gold</button><button class="btn coral big-btn grow" onclick="qsFinish()">Finish</button>`);
 }
@@ -110,7 +110,7 @@ async function finish(){
   if (cleared(Q.bars)) { gem = true; if (!q.gems.includes(todayStr())) q.gems.push(todayStr()); Q.bars = seedBars(lastTrickReview(S.reviews, Q.skill.n)); }
   try { await storeSet("skills", Q.skill.id, { ...rec, quest: { bars: Q.bars, gems: q.gems } }); } catch (e) { console.warn("quest save", e); }
   if (gem && q.gems.length >= GEMS_FOR_CLEAN && skillState(S.skills, Q.skill.id) === "learning") await kidCycle(Q.skill.id);
-  awardStars("quest", gem ? 100 : 40, "Trick Quest");
+  if (gem || Q.worked) awardStars("quest", gem ? 100 : 40, "Trick Quest"); // skipping straight through earns nothing
   $("#qsArea").innerHTML = `<div class="pm-item"><div class="pm-kind">${gem ? "💎" : "⚔️"}</div><div class="pm-text">${gem ? `Gem! ${esc(Q.skill.n)} is on the ropes.` : `${esc(Q.skill.n)}: bars down. Come back tomorrow.`}</div></div>${barsHtml(Q.bars)}<p class="small muted" style="text-align:center">${q.gems.length} gem${q.gems.length === 1 ? "" : "s"} · ${GEMS_FOR_CLEAN} on different days make it clean.</p>`;
   stageActions(`<button class="btn ghost" onclick="closeStage()">Done</button><button class="btn coral big-btn grow" onclick="qsStart()">Another boss</button>`);
 }
