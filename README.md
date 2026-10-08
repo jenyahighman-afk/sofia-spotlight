@@ -269,6 +269,29 @@ No analytics, no accounts, no chat, no third-party requests beyond the pinned CD
 ## Rotating the coach API key
 Create a new key in the Anthropic console → `cd worker && npx wrangler secret put ANTHROPIC_API_KEY` (or replace the secret in the Cloudflare dashboard) → delete the old key. The app doesn't change.
 
+## Session report — 2026-10-04 and 2026-10-07 (1.6.2 → 1.10.0)
+
+### Shipped
+- Coach clips up to 3 minutes; a full run on a dance with a cue sheet samples 8 even frames plus one after each cue.
+- Solo step order (29 steps) from Hannah's talk-through captions (`dances.steps`, schema 12); her donut-roll fix (head back, no chin tuck) replaced the old note everywhere, old note retired automatically; calypso entrance; two new corrections.
+- Coach button on every goal sheet; the clip just checked in goes to the coach with one tap.
+- Dark mode: text on pastel boxes and plain chips readable; the in-app dark toggle gets the same rules.
+- "Mom can see this" lines removed from reviews.
+- Dance links can carry a name (`Name | https://…`).
+- Quick sessions (5-min strength / stretch, `practice.quick`, schema 13), What's Next? game (`settings.nmBest`, schema 14), Trick Quest (`skills.quest`, `settings.gold`, schema 15), Run check (camera + music + auto-snapped frames), learn/comp mode + comp-weekend card + Share with the teacher (schema 16).
+
+### Verified (preview at 390 px, test family space; 102 tests)
+- Every schema step 12–16 round-trips in `tests/migrations.test.js`; smoke test covers every new screen and id.
+- Quick strength session start → 4 items → done → ⚡ chip on Today; What's Next? 10 rounds; Trick Quest boss list with seeded bars → 3 stations → freeze-shot screen → finish, bars saved; Run check countdown → 16 frames → coach preview (fake camera and an 8-second tone); comp mode plan shorter (8 vs 11 items, no trick/aerial); comp card appears the day before an event and steps save; teacher summary renders; dark-mode contrast scan clean.
+- Coach me confirmed working on Jenya's iPhone (front walkover review, 2026-10-04).
+
+### Not verified (needs a phone)
+- Run check and the Trick Quest freeze shot with a real camera; Trick Quest's music station; quick sessions and What's Next? at real size; the comp card on a real comp day.
+
+### Still on Jenya
+- Cue-sheet times for the donut roll and calypso (＋ Cue here during a run) — until then Trick Quest and Run check can't land frames on those two.
+- Lyrics go into the cue sheets on the phone, never into the repo.
+
 ## Session report — 2026-09-30 and 2026-10-01 (sessions 2A, 2B and the feedback round)
 
 Everything below is live at **1.3.7**. Each item was verified in the desktop browser at a 390 px viewport against a throwaway family space unless noted; "on a phone" items are what Jenya and Sofia confirmed.
