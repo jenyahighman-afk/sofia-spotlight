@@ -15,6 +15,7 @@ export function starsFor(game, value){
     case "mirror":  return v >= 250 ? 3 : v >= 120 ? 2 : 1;
     case "along":   return v >= 80 ? 3 : v >= 50 ? 2 : 1; // % in step with the video
     case "practice": return v >= 100 ? 2 : 1; // a finished practice day
+    case "quick": return 1; // a five-minute session
     default: return 1;
   }
 }

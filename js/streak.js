@@ -1,5 +1,5 @@
 // Practice streak rules (pure; tested in Node).
-// A day counts when the checklist is ≥60% done or a "Run it" was logged. Studio days and school breaks pause the streak: they
+// A day counts when the checklist is ≥60% done, a "Run it" was logged, or a quick session was finished. Studio days and school breaks pause the streak: they
 // neither count nor break it. A missed home/rest day breaks it. Today doesn't break it while it's still in progress.
 import { shiftDate } from "./corrections.js";
 
@@ -8,6 +8,7 @@ export const PRACTICE_MIN = 0.6;
 export function dayCounts(rec, totalItems){
   if (!rec) return false;
   if (Array.isArray(rec.runs) && rec.runs.length) return true;
+  if (Array.isArray(rec.quick) && rec.quick.length) return true;
   const done = Array.isArray(rec.done) ? rec.done.length : 0; const total = rec.total > 0 ? rec.total : totalItems;
   return total > 0 && done / total >= PRACTICE_MIN;
 }

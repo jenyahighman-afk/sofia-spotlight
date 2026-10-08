@@ -4,6 +4,7 @@ import { $, $$, esc, fmt, todayStr, toast, expose } from "../util.js";
 import { PRACTICE_ITEMS, PHASES, AERIAL, CLASSES } from "../data.js";
 import { S, storeSet, events } from "../store.js";
 import { computeStreak } from "../streak.js";
+import { renderQuick } from "../quick.js";
 import { planFor } from "../planToday.js";
 import { PRACTICE_POOL } from "../data.js";
 import { poolItems } from "../plan.js";
@@ -17,6 +18,7 @@ const curDate = () => dateSel || todayStr();
 
 function ring(pct){ const r=44, c=2*Math.PI*r; return `<svg viewBox="0 0 100 100" class="ring"><circle cx="50" cy="50" r="${r}" class="ring-bg"/><circle cx="50" cy="50" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-pct/100)}"/><text x="50" y="50" class="ring-txt">${pct}%</text></svg>`; }
 function renderPractice(){
+  renderQuick();
   const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=new Set(rec.done||[]); const plan=planFor(date);
   const pct=plan.length?Math.round(100*[...done].filter(id=>plan.some(i=>i.id===id)).length/plan.length):0;
   const streak=computeStreak({practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today:todayStr()});
