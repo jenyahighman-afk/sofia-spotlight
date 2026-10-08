@@ -1,5 +1,6 @@
 // Settings screen: family code + QR, sync status, backup export/import, updates, leave family space.
 import { $, esc, toast } from "../util.js";
+import { renderModeRow } from "../mode.js";
 import { sync, onStatus, leaveFamily } from "../sync.js";
 import { joinLink, prettyCode, renderQR } from "../family.js";
 import { exportBackup, importBackup } from "../backup.js";
@@ -21,7 +22,7 @@ function renderSettings(){
   $("#setCode").textContent = id ? prettyCode(id) : "—";
   if (id && qrFor !== id) { qrFor = id; renderQR($("#setQR"), joinLink(id)); }
   $("#setVersion").textContent = "v" + (self.APP_VERSION || "?") + " · media: " + (sync.familyId ? "cloud" : "—");
-  renderStatus();
+  renderStatus(); renderModeRow();
 }
 export function initSettings(){
   $("#openSettings").onclick = () => { renderSettings(); openGrownups("settings"); };
