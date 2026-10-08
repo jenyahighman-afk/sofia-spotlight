@@ -301,6 +301,7 @@ body.modal{overflow:hidden}
 .bites .cheer{font-family:Fredoka;font-size:1.15rem;line-height:1.2;margin:10px 0 4px} .bite-tips{font-size:.85rem;color:var(--ink-2);display:grid;gap:4px;margin-top:6px}
 .prompter{text-align:left;margin:8px auto;max-width:520px} .prompter .pl{display:flex;gap:8px;align-items:baseline;padding:3px 0;transition:all .3s} .prompter .pl-t{font-size:.75rem;color:var(--ink-2);min-width:36px}
 .prompter .pl.past{opacity:.4;font-size:.9rem} .prompter .pl.next{opacity:.75;font-size:.95rem} .prompter .pl.now .pl-m{font-family:Fredoka;font-size:1.6rem;line-height:1.15;color:#FF5C93} .prompter .pl-l{font-size:.8rem;color:var(--ink-2)}
+.mind-steps{font-family:Fredoka;font-size:1.25rem;line-height:1.3;padding-left:24px;margin:10px 0} .mind-steps li{margin:6px 0}
 /* Pastel backgrounds stay pastel in dark mode, so their text must stay dark too. */
 .review .rv-loved,.review .rv-loved *,.day .ev,.cal .d .ev,.mapbar .soft,.mapbar .loud,.mapbar .fade,.cover-art.sun,.cover-art.violet,.cover-art.aqua{color:#4A2340}
 .chip{color:var(--ink)} .chip.aqua,.chip.sun,.chip.violet,.chip.mint,.chip[style*="background:#fff"]{color:#4A2340} .chip.coral{color:#fff}

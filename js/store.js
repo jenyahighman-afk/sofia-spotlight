@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 17;
+export const SCHEMA_VERSION = 18;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -109,7 +109,9 @@ export const MIGRATIONS = {
     if (col === "practice") { if (doc.feel !== undefined) { const f = doc.feel && typeof doc.feel === "object" ? doc.feel : {}; const n = (v) => { const x = parseInt(v, 10); return x >= 1 && x <= 3 ? x : undefined; }; doc.feel = { e: n(f.e), m: n(f.m) }; if (doc.feel.e === undefined) delete doc.feel.e; if (doc.feel.m === undefined) delete doc.feel.m; } if (doc.level !== undefined && !["easy", "normal", "big"].includes(doc.level)) delete doc.level; }
     if (col === "settings") { if (doc.palette !== undefined && typeof doc.palette !== "string") delete doc.palette; if (doc.prompter !== undefined) doc.prompter = !!doc.prompter; }
     return doc;
-  }
+  },
+  // 18 (pre-stage routine): settings.ritual = ordered step ids. Normalized when present.
+  18: (col, id, doc) => { if (col === "settings" && doc.ritual !== undefined) doc.ritual = Array.isArray(doc.ritual) ? doc.ritual.filter(x => typeof x === "string") : []; return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

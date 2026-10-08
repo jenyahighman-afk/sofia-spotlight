@@ -1,0 +1,33 @@
+{
+ "_note": "Mind skills (one lesson a week, by week number), the pre-stage routine menu Sofia builds from, and the comp-day fuel plan. Sofia is vegetarian + fish (pescatarian). Kid-facing lines: short, verbs first. Nothing here is medical advice.",
+ "lessons": [
+  { "id": "breath", "n": "The long breath out", "ic": "🌬️", "why": "A slow breath out tells your body it's safe. Nerves drop, legs come back.", "steps": ["Breathe in for 4.", "Breathe out for 6, like fogging a mirror.", "Three times. Shoulders down on the last one."], "try": "Do three long breaths out before every run this week." },
+  { "id": "focal", "n": "The focal point", "ic": "👀", "why": "Eyes that wander look scared. Eyes that pick a spot look like a performer.", "steps": ["Pick one spot above the back row.", "Every time your face turns front, find it.", "Name it: 'the exit sign', 'the clock'."], "try": "Say your focal point out loud before the music starts." },
+  { "id": "reset", "n": "The mistake reset", "ic": "🔁", "why": "Everyone slips. Judges only remember a slip if your face tells them.", "steps": ["Finish the shape you're in, even if it's wrong.", "Breathe out.", "Next count, you're back. No face."], "try": "In practice, make one mistake on purpose and reset without a face." },
+  { "id": "story", "n": "Tell the story", "ic": "📖", "why": "When you think about the story, you stop thinking about the steps.", "steps": ["Say the story in one sentence.", "Pick who you're dancing to.", "Decide what you want from them."], "try": "Before a run, whisper the story once." },
+  { "id": "onething", "n": "One thing", "ic": "1️⃣", "why": "Five fixes at once = none fixed. One fix = done by Friday.", "steps": ["Read this week's fix.", "Say it in five words or less.", "That's the only note today."], "try": "Say your one thing before practice. Only that one." },
+  { "id": "excited", "n": "Nervous = excited", "ic": "⚡", "why": "Butterflies and excitement feel the same inside. You get to pick the name.", "steps": ["Feel the butterflies.", "Say: 'I'm excited.'", "Smile. Your body believes your face."], "try": "Next time your tummy flips, say 'I'm excited' out loud." },
+  { "id": "picture", "n": "See it first", "ic": "🎬", "why": "Dancers who picture the dance before they dance it make fewer mistakes.", "steps": ["Close your eyes.", "Watch yourself do the first 8 counts, perfectly.", "Open your eyes and do them."], "try": "Picture the ending pose before every run." },
+  { "id": "shake", "n": "Shake it out", "ic": "🫨", "why": "Tight muscles make small dancing. Shaking tells them to let go.", "steps": ["Shake hands for 5 seconds.", "Shake each leg.", "Roll shoulders back twice. Big breath."], "try": "Shake out before the warm-up every day." },
+  { "id": "proud", "n": "One true thing", "ic": "⭐", "why": "What you notice grows. Notice the good thing and it gets bigger.", "steps": ["After practice, say one thing you did well.", "It has to be true.", "Say it to a grown-up."], "try": "Tell someone your one true thing tonight." },
+  { "id": "slow", "n": "Slow is fast", "ic": "🐢", "why": "Rushing makes mistakes. Clean and slow becomes clean and fast.", "steps": ["Do the hard part at half speed.", "Make it perfect twice.", "Then speed up a little."], "try": "Run the trick section at 75% before 100% this week." }
+ ],
+ "ritual": [
+  { "id": "shake", "n": "Shake it out", "ic": "🫨", "secs": 15, "say": "Hands, legs, shoulders. Let go." },
+  { "id": "breathe", "n": "Three long breaths", "ic": "🌬️", "secs": 20, "say": "In for 4. Out for 6." },
+  { "id": "story", "n": "Say the story", "ic": "📖", "secs": 15, "say": "One sentence. Who is it for?" },
+  { "id": "focal", "n": "Find your spot", "ic": "👀", "secs": 10, "say": "Above the back row. That's where your eyes live." },
+  { "id": "first8", "n": "Mark the first 8", "ic": "🎵", "secs": 20, "say": "Small, with the arms. Feel the start." },
+  { "id": "power", "n": "Power pose", "ic": "🦸", "secs": 10, "say": "Tall. Chest open. Hands on hips." },
+  { "id": "words", "n": "My words", "ic": "💬", "secs": 10, "say": "Say your three words. Out loud." },
+  { "id": "smile", "n": "Smile first", "ic": "😄", "secs": 5, "say": "The body follows the face." }
+ ],
+ "compFuel": [
+  { "when": "Night before", "eat": "Pasta or rice with veggies and beans, tofu or fish. Water. Bed early." },
+  { "when": "Breakfast (3 h before)", "eat": "Oats or toast with peanut butter and banana, or eggs with toast. A glass of milk or juice." },
+  { "when": "1 hour before", "eat": "Small snack: banana, crackers with cheese, or a granola bar. Sips of water." },
+  { "when": "Between dances", "eat": "Sips of water. Fruit, pretzels or a few crackers. Nothing heavy, nothing new." },
+  { "when": "After the last dance", "eat": "Within an hour: a sandwich (egg, cheese, tuna or hummus), yogurt and fruit, or a smoothie." },
+  { "when": "All day", "eat": "Water bottle always in reach. Pack snacks she's eaten before." }
+ ]
+}
