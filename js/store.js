@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 15;
+export const SCHEMA_VERSION = 16;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -96,6 +96,12 @@ export const MIGRATIONS = {
   15: (col, id, doc) => {
     if (col === "skills" && doc.quest !== undefined) { const q = doc.quest && typeof doc.quest === "object" ? doc.quest : {}; const bars = {}; for (const k of ["feet", "knees", "arms"]) { const n = parseInt((q.bars || {})[k], 10); bars[k] = Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 70; } doc.quest = { bars, gems: Array.isArray(q.gems) ? q.gems.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)) : [] }; }
     if (col === "settings" && doc.gold !== undefined) { const g = doc.gold && typeof doc.gold === "object" ? doc.gold : {}; doc.gold = Object.fromEntries(Object.entries(g).filter(([, v]) => v && Array.isArray(v.f))); }
+    return doc;
+  },
+  // 16 (comp mode): settings.mode auto|learn|comp; practice.compDone = comp-day steps ticked, practice.compFeel 1–3. Normalized when present.
+  16: (col, id, doc) => {
+    if (col === "settings" && doc.mode !== undefined) doc.mode = ["auto", "learn", "comp"].includes(doc.mode) ? doc.mode : "auto";
+    if (col === "practice") { if (doc.compDone !== undefined) doc.compDone = Array.isArray(doc.compDone) ? doc.compDone.filter(x => typeof x === "string") : []; if (doc.compFeel !== undefined) { const n = parseInt(doc.compFeel, 10); if (n >= 1 && n <= 3) doc.compFeel = n; else delete doc.compFeel; } }
     return doc;
   }
 };

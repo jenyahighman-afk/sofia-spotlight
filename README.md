@@ -51,6 +51,15 @@ Every solo trick (`data/skills.json` → `solo`) is a boss with three bars — �
 ### What's Next? (Play)
 A memory game built from a dance's step order (`js/games/nextmove.js`, any dance with 8+ `steps`; today that is the solo): a step comes up, Sofia taps which of three steps comes next, ten rounds spread through the dance. Best score in `settings.nmBest`, stars like Spot the Oops (9+ = 3).
 
+### Learn mode vs comp mode (Settings → Mode)
+`js/mode.js` `modeFor`: **auto** (default) switches to **comp mode** from 7 days before a competition or showcase (any event whose type says competition / showcase / performance, not "convention only") until its last day; a grown-up can pin Learn or Comp in Settings. Comp mode: the daily plan keeps warm-up, one core, one legs, flexibility and technique, drops trick drills and aerial missions, and runs every dance (`buildPlan` `mode`); Today shows "🏆 Comp mode: no new tricks. Clean runs. Sleep."
+
+### Comp weekend (Today)
+From the day before an event to its last day, Today shows a comp card: the event, the venue, six tap-off steps (pack check → opens the packing list, warm-up, hair/makeup/costume, mark each dance, story + focal point, four breaths) saved per day in `practice.compDone`, and after the stage "how did it feel?" (😅 / 🙂 / 🤩, `practice.compFeel`).
+
+### Share with the teacher (Grown-ups → Coach reviews)
+`js/teacher.js` `teacherSummary`: a plain-text summary — per dance the open notes (with tag), up to three fixed ones and the last two coach fixes; the solo tricks with their states and who checked them; goals first → latest. No photos, clips or links. Editable, then Copy or Share… (the phone's share sheet).
+
 ### Practice player
 On any dance, **▶ Practice** opens the player for that dance's music: the uploaded music file (More ▸ Add music file — any audio file, or a video file if that's what the studio sent; only the sound is used) or, failing that, a music link that points straight at an audio file (.mp3/.m4a/.wav…). Streaming links like YouTube/Spotify can't be played; add the file instead.
 - **Speed** 50 · 75 · 100 (and a slider), pitch preserved.
@@ -161,7 +170,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 97 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 102 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -231,8 +240,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 15) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 16) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 16 (1.10.0): `settings.mode` (auto / learn / comp), `practice.compDone[]`, `practice.compFeel`.
 - Schema 15 (1.9.0): `skills.quest` (Trick Quest bars and gems), `settings.gold` (freeze-shot gold shapes).
 - Schema 14 (1.7.1): `settings.nmBest` (What's Next? best score).
 - Schema 13 (1.7.0): `practice.quick[]` — quick sessions finished that day (`"strength"` / `"flex"`); a day with one counts for the streak.

@@ -29,6 +29,7 @@
 <!-- TODAY -->
 <section class="page on" id="p-home">
   <div class="card sun today" id="todayCard"></div>
+  <div class="card coral" id="compCard" hidden></div>
   <div class="card violet" id="weekFix"></div>
   <div class="card aqua" id="goalReminder" hidden></div>
   <div class="card">
@@ -315,6 +316,9 @@
   <h2>Coach reviews</h2>
   <p class="small muted" id="coachStatus"></p>
   <p class="small muted">Every review Sofia gets from 🎬 Coach me. Only small still frames were sent; the video never left the phone.</p>
+  <div class="card aqua"><h3>🧑‍🏫 Share with the teacher</h3><p class="small muted">A text summary: open notes, fixed notes, the last coach fixes, trick states, goals. No photos or clips. Edit it, then copy or share.</p>
+    <textarea id="teacherText" rows="10" style="width:100%;font-size:.85rem"></textarea>
+    <div class="row" style="margin-top:6px"><button class="btn sm ghost" onclick="teacherRefresh()">↻ Refresh</button><span class="grow"></span><button class="btn sm ghost" onclick="teacherCopy()">Copy</button><button class="btn sm coral" onclick="teacherShare()">Share…</button></div></div>
   <div id="reviewList"></div>
 </section>
 
@@ -340,6 +344,7 @@
   <div class="card">
     <h3>Sync</h3>
     <div id="syncStatus" class="small"></div>
+    <div class="field-lab" style="margin-top:10px">Mode</div><div class="row" id="modeRow"></div><p class="small muted">Auto switches to comp mode the week before a competition or showcase: shorter plan, no new tricks, a full run every day. Learn mode is the full plan.</p>
   </div>
   <div class="card sun">
     <h3>Backup</h3>

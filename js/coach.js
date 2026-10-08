@@ -6,6 +6,7 @@ import { S, storeSet, storeDel, dances } from "./store.js";
 import { sync } from "./sync.js";
 import { coachConfig } from "./firebase-config.js";
 import { openFor, addCorrection, TAG_LABEL, TAG_EMOJI } from "./corrections.js";
+import { renderTeacher } from "./teacher.js";
 import { sampleTimes, runTimes, RUN_SEC, loudness, peakTime, MAX_CLIP_SEC } from "./frames.js";
 import { normalizeCues } from "./cues.js";
 import { detectImage, drawSkeleton, poseAvailable } from "./pose.js";
@@ -143,7 +144,7 @@ async function addFix(reviewId){ const r = S.reviews[reviewId]; if (!r || !r.rev
 function retry(){ C.frames = []; C.thumbs = []; C.review = null; step("pick"); }
 
 // ---------- Grown-ups → Coach reviews ----------
-export function renderReviews(){
+export function renderReviews(){ renderTeacher();
   const el = $("#reviewList"); if (!el) return;
   const list = Object.values(S.reviews).filter(r => !r.deleted).sort((a, b) => (b.at || "").localeCompare(a.at || ""));
   el.innerHTML = list.length ? list.map(r => reviewCard(r, { del: true })).join("") : `<p class="small muted">No reviews yet. Tap 🎬 Coach me on a dance.</p>`;

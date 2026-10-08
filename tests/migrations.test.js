@@ -132,6 +132,11 @@ test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio
   const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
 });
 
+test("15 → 16: settings.mode is one of auto/learn/comp; practice.compDone is strings, compFeel 1–3 or gone", () => {
+  assert.equal(migrateDoc("settings", "main", { _v: 15, mode: "comp" }).mode, "comp"); assert.equal(migrateDoc("settings", "main", { _v: 15, mode: "x" }).mode, "auto"); assert.equal("mode" in migrateDoc("settings", "main", { _v: 15 }), false);
+  const p = migrateDoc("practice", "d", { _v: 15, done: [], compDone: ["pack", 4], compFeel: "9" }); assert.deepEqual(p.compDone, ["pack"]); assert.equal("compFeel" in p, false); assert.equal(migrateDoc("practice", "d", { _v: 15, compFeel: 2 }).compFeel, 2); assert.equal(p._v, SCHEMA_VERSION);
+});
+
 test("14 → 15: skills.quest bars are clamped 0–100 with 70 for junk, gems are dates; settings.gold keeps only shapes with features", () => {
   const k = migrateDoc("skills", "s-calypso", { _v: 14, state: "learning", quest: { bars: { feet: "150", knees: -4, arms: "x" }, gems: ["2026-10-07", "nope", 3] } }); assert.deepEqual(k.quest, { bars: { feet: 100, knees: 0, arms: 70 }, gems: ["2026-10-07"] }); assert.equal(k.state, "learning"); assert.equal(k._v, SCHEMA_VERSION);
   assert.equal("quest" in migrateDoc("skills", "s", { _v: 14, state: "clean" }), false);
