@@ -132,6 +132,12 @@ test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio
   const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
 });
 
+test("12 → 13: practice.quick keeps only known session kinds and is never invented", () => {
+  const p = migrateDoc("practice", "2026-10-07", { _v: 12, done: ["planks"], quick: ["strength", "junk", 3, "flex"] }); assert.deepEqual(p.quick, ["strength", "flex"]); assert.deepEqual(p.done, ["planks"]); assert.equal(p._v, SCHEMA_VERSION);
+  assert.deepEqual(migrateDoc("practice", "d", { _v: 12, quick: "x" }).quick, []);
+  assert.equal("quick" in migrateDoc("practice", "d", { _v: 12, done: [] }), false);
+});
+
 test("11 → 12: dances.steps is cleaned when present and never invented", () => {
   const a = migrateDoc("dances", "solo", { _v: 11, name: "Solo", steps: [" Reach ", "", null, 7] }); assert.deepEqual(a.steps, ["Reach", "7"]); assert.equal(a._v, SCHEMA_VERSION); assert.equal(a.name, "Solo");
   assert.deepEqual(migrateDoc("dances", "solo", { _v: 11, steps: "junk" }).steps, []);

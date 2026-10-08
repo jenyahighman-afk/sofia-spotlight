@@ -20,7 +20,7 @@ function renderHome(){
   const streak=computeStreak({practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today});
   $("#todayCard").innerHTML=`${what}
     <div class="today-actions"><button class="btn coral big-btn" onclick="showPage('practice')">${doneToday?"✅ Done today":"▶ "+verb}</button><button class="btn big-btn" onclick="showPage('play')">🎮 Play</button></div>
-    <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span><span id="todayCount"></span></div>`;
+    <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${(rec&&Array.isArray(rec.quick)&&rec.quick.length)?`<span class="chip violet">⚡ ${rec.quick.length} quick</span>`:""}<span id="todayCount"></span></div>`;
   if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(ne.name)}</span>`; }
   // this week's fix
   const fix=currentWeekFix(today); const open=Object.values(S.corrections).some(c=>!c.deleted&&c.status!=="done");

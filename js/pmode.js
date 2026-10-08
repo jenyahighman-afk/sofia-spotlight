@@ -15,6 +15,9 @@ import { awardStars } from "./stars.js";
 const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
 let ITEMS = [];
 const PM = { i: 0, timed: false, left: 0, total: 0, timer: 0, paused: false, ctx: null };
+// A quick session (js/quick.js) runs the same screen but keeps its own done list and is saved as one record at the end.
+const MODE = { quick: "" }; const localDone = new Set();
+const doneIds = () => MODE.quick ? [...localDone] : (rec().done || []);
 
 // Pure: which item to show next — the first unchecked one at or after `from`, else the first unchecked anywhere, else -1.
 export function nextIndex(items, done, from = 0){
@@ -29,7 +32,7 @@ export function progressPose(pct){
   return P({ el: [mix(-26, -22), mix(-16, -70)], er: [mix(26, 22), mix(-16, -70)], hl: [mix(-30, -14), mix(12, -100)], hr: [mix(30, 14), mix(12, -100)], h: [0, mix(-74, -80)], lift: mix(0, 8), fl: [mix(-12, -6), 70], fr: [mix(12, 6), 70] });
 }
 const rec = () => S.practice[todayStr()] || { done: [], note: "", runs: [] };
-const pct = () => Math.round(100 * (rec().done || []).filter(id => ITEMS.some(i => i.id === id)).length / Math.max(1, ITEMS.length));
+const pct = () => Math.round(100 * doneIds().filter(id => ITEMS.some(i => i.id === id)).length / Math.max(1, ITEMS.length));
 // Keyframes for an item's pose: a game move (moves.json) or an exercise (exercises.json, same joint schema).
 export function framesFor(pose){ const mv = MOVES.find(x => x.id === pose); if (mv) return mv.k; const ex = EXERCISES[pose]; if (!ex) return null; return ex.map(kf => { const { arms, ...rest } = kf; return Object.assign({}, BASE, arms && ARMS[arms] ? ARMS[arms] : {}, rest); }); }
 let animRaf = 0, animT0 = 0;
@@ -40,7 +43,7 @@ function animate(frames){ cancelAnimationFrame(animRaf); if (!frames) return;
 
 function ring(p){ const r = 44, c = 2 * Math.PI * r; return `<svg viewBox="0 0 100 100" class="ring pm-ring"><circle cx="50" cy="50" r="${r}" class="ring-bg"/><circle cx="50" cy="50" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p / 100)}"/><text x="50" y="50" class="ring-txt">${p}%</text></svg>`; }
 function render(){
-  const items = ITEMS; const done = rec().done || []; const p = pct(); const n = done.filter(id => items.some(i => i.id === id)).length;
+  const items = ITEMS; const done = doneIds() || []; const p = pct(); const n = done.filter(id => items.some(i => i.id === id)).length;
   const cur = PM.i >= 0 ? items[PM.i] : null; const frames = cur ? framesFor(cur.pose) : null; const demo = cur ? demoFor(cur.id) : null;
   const box = $("#pmDemo"); box.hidden = !demo; box.style.display = demo ? "grid" : "none"; const dancer = $("#pmDancer"); dancer.hidden = !!demo; dancer.style.display = demo ? "none" : ""; if (demo) { cancelAnimationFrame(animRaf); box.innerHTML = demoHtml(demo); }
   const pic = $("#pmPic"); pic.hidden = !cur; if (cur) pic.innerHTML = `<button class="lnk" onclick="openDemoSheet('${cur.id}','${esc(cur.text.split(/[:—(]/)[0].trim())}')">${demo ? "📷 Change picture" : "📷 Use a photo or clip"}</button>`;
@@ -55,28 +58,30 @@ function render(){
   $("#pmMode").innerHTML = `<button class="btn sm ${PM.timed ? "ghost" : "coral"}" onclick="pmSetTimed(false)">Manual</button><button class="btn sm ${PM.timed ? "coral" : "ghost"}" onclick="pmSetTimed(true)">Timed</button>`;
 }
 const fmt = (s) => Math.floor(s / 60) + ":" + String(Math.max(0, s) % 60).padStart(2, "0");
-function startTimer(){ clearInterval(PM.timer); const it = ITEMS[PM.i]; if (!PM.timed || !it || !+it.secs) return; PM.left = +it.secs; PM.paused = false;
+function startTimer(){ clearInterval(PM.timer); const it = ITEMS[PM.i]; if (!PM.timed || !it || !+it.secs) return; PM.left = +it.secs; PM.paused = false; const el0 = $("#pmTimer .pm-clock"); if (el0) el0.textContent = fmt(PM.left);
   PM.timer = setInterval(() => { if (PM.paused) return; PM.left--; const el = $("#pmTimer .pm-clock"); if (el) el.textContent = fmt(PM.left); if (PM.left <= 0) { clearInterval(PM.timer); beep(); done(); } }, 1000); }
 function beep(){ try { if (!PM.ctx) PM.ctx = new (window.AudioContext || window.webkitAudioContext)(); const o = PM.ctx.createOscillator(), g = PM.ctx.createGain(); o.frequency.value = 1046; g.gain.value = 0.3; o.connect(g); g.connect(PM.ctx.destination); const t = PM.ctx.currentTime; o.start(t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35); o.stop(t + 0.4); } catch (e) {} }
 async function done(){
   if (PM.busy) return; PM.busy = true;
   try {
-  const it = ITEMS[PM.i]; if (!it) return; const r = rec(); const doneIds = [...new Set([...(r.done || []), it.id])];
+  const it = ITEMS[PM.i]; if (!it) return; if (MODE.quick) { localDone.add(it.id); advance(); return; } const r = rec(); const doneIds = [...new Set([...(r.done || []), it.id])];
   const date = todayStr(); await storeSet("practice", date, { ...r, done: doneIds, total: ITEMS.length });
   if (it.aerialId) { const ad = new Set(S.settings.aerial || []); if (!ad.has(it.aerialId)) { ad.add(it.aerialId); await storeSet("settings", "main", { ...S.settings, aerial: [...ad] }); } }
   try { localStorage.setItem("spotlight:practice:" + date, JSON.stringify(doneIds)); } catch (e) {}
   advance();
   } finally { PM.busy = false; }
 }
-function advance(){ PM.i = nextIndex(ITEMS, rec().done, PM.i + 1); render(); if (PM.i < 0) { clearInterval(PM.timer); confetti(); checkBadges(); awardStars("practice", 100, "Practice done"); } else startTimer(); }
-function skip(){ PM.i = nextIndex(ITEMS, rec().done, PM.i + 1); if (PM.i < 0) PM.i = nextIndex(ITEMS, rec().done, 0); render(); startTimer(); }
+function advance(){ PM.i = nextIndex(ITEMS, doneIds(), PM.i + 1); render(); if (PM.i < 0) { clearInterval(PM.timer); confetti(); if (MODE.quick) finishQuick(); else { checkBadges(); awardStars("practice", 100, "Practice done"); } } else startTimer(); }
+async function finishQuick(){ const r = rec(); const date = todayStr(); await storeSet("practice", date, { ...r, quick: [...(Array.isArray(r.quick) ? r.quick : []), MODE.quick] }); checkBadges(); awardStars("quick", 100, "Quick session done"); }
+function skip(){ PM.i = nextIndex(ITEMS, doneIds(), PM.i + 1); if (PM.i < 0) PM.i = nextIndex(ITEMS, doneIds(), 0); render(); startTimer(); }
 function setTimed(v){ PM.timed = v; try { localStorage.setItem("spotlight:pmode", v ? "timed" : "manual"); } catch (e) {} render(); startTimer(); }
 function pause(){ PM.paused = !PM.paused; render(); }
-export function openPracticeMode(){
+export function openPracticeMode(items, opts = {}){
   try { PM.timed = localStorage.getItem("spotlight:pmode") === "timed"; } catch (e) {}
-  ITEMS = planFor(todayStr()); PM.i = nextIndex(ITEMS, rec().done, 0); if (PM.i < 0) PM.i = 0;
+  MODE.quick = opts.quick || ""; localDone.clear(); if (MODE.quick) PM.timed = true; $("#pmTitle").textContent = opts.title || "Practice";
+  ITEMS = Array.isArray(items) && items.length ? items : planFor(todayStr()); PM.i = nextIndex(ITEMS, doneIds(), 0); if (PM.i < 0) PM.i = 0;
   $("#pmode").hidden = false; document.body.classList.add("modal"); render(); startTimer();
 }
 export function closePracticeMode(){ clearInterval(PM.timer); cancelAnimationFrame(animRaf); $("#pmode").hidden = true; document.body.classList.remove("modal"); }
-export function initPracticeMode(){ $("#pmClose").onclick = closePracticeMode; $("#startPractice").onclick = openPracticeMode; document.addEventListener("demochanged", () => { if (!$("#pmode").hidden) render(); }); }
+export function initPracticeMode(){ $("#pmClose").onclick = closePracticeMode; $("#startPractice").onclick = () => openPracticeMode(); document.addEventListener("demochanged", () => { if (!$("#pmode").hidden) render(); }); }
 expose({ pmDone: done, pmSkip: skip, pmSetTimed: setTimed, pmPause: pause, pmClose: closePracticeMode, openPracticeMode });

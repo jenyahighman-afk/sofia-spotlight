@@ -39,6 +39,9 @@ Practice is built fresh each day from `data/practice-pool.json` (`js/plan.js`): 
 ### Practice mode (▶ Start practice)
 The checklist one item at a time, full screen: Manual (tap Done) or Timed (each item's own length from `practice-items.json` `secs`, auto-advance with a chime, pause). Every Done is saved to the day's practice record the moment it's tapped, mirrored in localStorage as a safety net. The dancer **performs the move** (game moves from `moves.json`, exercises from `data/exercises.json` — plank, hollow, superman, leg lifts, bridges, squats, lunges, splits, jacks and more) and a ring shows progress. **📷 Use a photo or clip** under the dancer swaps the animation for a photo or short clip of Sofia doing that move (recorded or picked on the phone; stored in the family space with `photos.demo = itemId`, hidden from the photo grid, in backups) or a web link (image/video file links play inline, other links get an Open button). "Back to the dancer" removes it. Stored in `settings.demos` so both phones see the same picture. Skip moves on without checking. Confetti at the end.
 
+### Quick sessions (💪 5-min strength · 🧘 5-min stretch)
+Under Start practice on the Practice tab (`js/quick.js`): a one-minute warm-up plus three timed items from the same pools as the daily plan (strength: core + legs, alternating 2+1 / 1+2 by day; stretch: three flexibility items), each capped at 90 s so the whole thing is about five minutes. Runs in practice mode (timed, with its own done list, so it never touches the day's checklist). Finishing one is saved as `practice.quick` for the day, counts the day for the streak like a run does, shows ⚡ on Today and ✓ on the button, and pays a star. Any number per day.
+
 ### Practice player
 On any dance, **▶ Practice** opens the player for that dance's music: the uploaded music file (More ▸ Add music file — any audio file, or a video file if that's what the studio sent; only the sound is used) or, failing that, a music link that points straight at an audio file (.mp3/.m4a/.wav…). Streaming links like YouTube/Spotify can't be played; add the file instead.
 - **Speed** 50 · 75 · 100 (and a slider), pitch preserved.
@@ -149,7 +152,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 81 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 85 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -219,8 +222,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 12) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 13) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 13 (1.7.0): `practice.quick[]` — quick sessions finished that day (`"strength"` / `"flex"`); a day with one counts for the streak.
 - Schema 12 (1.6.3): `dances.steps[]` — the step order of a dance, one short line per step (the solo's comes from Hannah's talk-through; shown and editable on the dance card under More / Edit).
 - Schema 11 (1.6.0): `reviews.fixId`.
 - Schema 10 (1.5.0): Dance Along routines in `choreo` (`kind`, `url`, `path`, `fps`, `frames`, `best`).
