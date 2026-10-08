@@ -8,6 +8,8 @@ import { runTimes, sampleTimes, RUN_SEC } from "./frames.js";
 import { srcFor } from "./player.js";
 import { poseAvailable, detectVideoFrame, drawSkeleton } from "./pose.js";
 import { openCoachFrames } from "./coach.js";
+import { prompterHtml } from "./prompter.js";
+import { S, setSettings } from "./store.js";
 
 export const FRAME_PX = 768, LATE_SEC = 1.5;
 // Snap times for a run of `duration` seconds: the cue sheet when there is one, else even spacing.
@@ -51,8 +53,8 @@ export async function openRunCheck(danceId){
   const d = dances().find(x => x.id === danceId); const src = d && srcFor(d);
   if (!src) return toast("Add the music to this dance first (More ▸ Add music file).", 3000);
   RC.dance = d; RC.canvases = []; RC.labels = []; RC.audio = null; RC.on = true; RC.check++;
-  $("#runcheck").hidden = false; document.body.classList.add("modal"); $("#rcTitle").textContent = `🎥 Run check · ${d.name.split(" · ")[0]}`; $("#rcStrip").innerHTML = ""; $("#rcCount").textContent = ""; big(""); $("#rcSeen").textContent = ""; $("#rcSeen").className = "chip";
-  $("#rcActions").innerHTML = `<button class="btn ghost" onclick="closeRunCheck()">✕</button><button class="btn sm ghost" onclick="rcFlip()">🔄 Flip</button><button class="btn coral big-btn grow" id="rcStart" onclick="rcStart()" disabled>▶ Start</button>`;
+  $("#runcheck").hidden = false; document.body.classList.add("modal"); $("#rcTitle").textContent = `🎥 Run check · ${d.name.split(" · ")[0]}`; $("#rcStrip").innerHTML = ""; $("#rcCount").textContent = ""; $("#rcPrompt").hidden = true; $("#rcPrompt").innerHTML = ""; big(""); $("#rcSeen").textContent = ""; $("#rcSeen").className = "chip";
+  $("#rcActions").innerHTML = `<button class="btn ghost" onclick="closeRunCheck()">✕</button><button class="btn sm ghost" onclick="rcFlip()">🔄 Flip</button><button class="btn sm ${S.settings.prompter ? "coral" : "ghost"}" id="rcLines" onclick="rcLines()">📜 Lines</button><button class="btn coral big-btn grow" id="rcStart" onclick="rcStart()" disabled>▶ Start</button>`;
   status("Prop the phone up so the whole stage is in the picture. Tap ▶ Start: 5 count-in, then the music.");
   try { await startCamera(); } catch (e) { status(`<span class="bad">Camera didn't open: ${esc(e.message || e)}. Allow the camera for this app and try again.</span>`); return; }
   const a = new Audio(); a.preload = "auto"; a.src = src.url; RC.pending = a;
@@ -69,7 +71,8 @@ async function start(){
   try { await a.play(); } catch (e) { status(`<span class="bad">Couldn't play the music: ${esc(e.message || e)}</span>`); return; }
   status("Dancing… frames snap on their own. Keep going to the end.");
   a.onended = () => finish();
-  const loop = () => { if (!RC.on || !RC.audio) return clearInterval(RC.tick); const t = a.currentTime; const r = dueFrame(RC.times, t, RC.at); if (r.index >= 0) { grab(RC.times[r.index].toFixed(1) + "s"); RC.at = r.index + 1; } else RC.at = r.next; if (RC.at >= RC.times.length && t > (RC.times[RC.times.length - 1] || 0) + 1) return finish(); };
+  const pr = $("#rcPrompt"); pr.hidden = !S.settings.prompter; let lastPr = -1;
+  const loop = () => { if (!RC.on || !RC.audio) return clearInterval(RC.tick); const t = a.currentTime; if (S.settings.prompter) { const sec = Math.floor(t * 2); if (sec !== lastPr) { lastPr = sec; pr.innerHTML = prompterHtml(RC.dance.cues, t); } } const r = dueFrame(RC.times, t, RC.at); if (r.index >= 0) { grab(RC.times[r.index].toFixed(1) + "s"); RC.at = r.index + 1; } else RC.at = r.next; if (RC.at >= RC.times.length && t > (RC.times[RC.times.length - 1] || 0) + 1) return finish(); };
   clearInterval(RC.tick); RC.tick = setInterval(loop, 80); // a timer, not rAF: keeps snapping if the screen dims
 }
 function finish(){
@@ -80,7 +83,8 @@ function finish(){
   $("#rcActions").innerHTML = `<button class="btn ghost" onclick="openRunCheck('${RC.dance.id}')">Again</button><button class="btn coral big-btn grow" onclick="rcSend()">✨ Send to the coach</button>`;
 }
 function stop(){ if (RC.audio) finish(); else closeRunCheck(); }
+async function lines(){ await setSettings({ prompter: !S.settings.prompter }); const b = $("#rcLines"); if (b) b.className = `btn sm ${S.settings.prompter ? "coral" : "ghost"}`; const pr = $("#rcPrompt"); if (pr) pr.hidden = !S.settings.prompter; }
 async function send(){ const d = RC.dance, cvs = RC.canvases, labels = RC.labels; if (cvs.length < 3) return; closeRunCheck(); await openCoachFrames(d.id, cvs, labels); }
 export function closeRunCheck(){ RC.on = false; RC.check++; clearInterval(RC.tick); if (RC.audio) { try { RC.audio.pause(); } catch (e) {} RC.audio = null; } if (RC.pending) { try { RC.pending.pause(); RC.pending.src = ""; } catch (e) {} RC.pending = null; } stopCamera(); if (RC.lock) { try { RC.lock.release(); } catch (e) {} RC.lock = null; } try { speechSynthesis.cancel(); } catch (e) {} $("#runcheck").hidden = true; document.body.classList.remove("modal"); }
 export function initRunCheck(){ $("#rcClose").onclick = closeRunCheck; }
-expose({ openRunCheck, closeRunCheck, rcStart: start, rcStop: stop, rcFlip: flip, rcSend: send });
+expose({ openRunCheck, closeRunCheck, rcStart: start, rcStop: stop, rcFlip: flip, rcSend: send, rcLines: lines });

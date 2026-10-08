@@ -11,7 +11,8 @@ import { lastTrickReview } from "../coachhub.js";
 import { srcFor } from "../player.js";
 import { openStage, stageActions } from "../stage.js";
 import { awardStars } from "../stars.js";
-import { poseAvailable, detectVideoFrame, drawSkeleton } from "../pose.js";
+import { poseAvailable, detectImage, drawSkeleton } from "../pose.js";
+import { demoFor, demoHtml } from "../demos.js";
 import { poseFeatures, featureDistance } from "../posemath.js";
 import { findSkill, kidCycle, skillState } from "../skills.js";
 
@@ -24,17 +25,19 @@ const hit = (bars, k, n) => ({ ...bars, [k]: Math.max(0, (bars[k] || 0) - n) });
 export const cleared = (bars) => BARS.every(k => (bars[k] || 0) <= 0);
 // The music loop for a trick: the cue whose move names it, 6 s before to 8 s after; else null.
 export function trickLoop(dance, name){ const cs = normalizeCues((dance || {}).cues); const key = String(name).toLowerCase().split(/\s|→/)[0]; const c = cs.find(x => x.move.toLowerCase().includes(key)); if (!c) return null; return { a: Math.max(0, c.t - 6), b: c.t + 8, at: c.t }; }
+// No cue for the trick yet: the dance's own "tricks" loop preset (else its second loop), danced twice from memory.
+export function fallbackLoop(dance){ const ls = (dance || {}).loops || []; const l = ls.find(x => /trick/i.test(x.n || "")) || ls[1]; return l && l.b > l.a ? { a: l.a, b: l.b, at: null, fallback: true } : null; }
 // Stations for a trick: [{kind, title, cue, secs, bar}]. `cue` is the one line on screen; the bar each station mainly hits.
 export function buildStations(skill, dance, corrections = []){
   const name = skill.n; const drill = (dance.tricks || []).find(t => t.toLowerCase().startsWith(name.toLowerCase().split(/\s|→/)[0])) || "";
   const prep = drill.split(/(?<=[.!?])\s/).slice(1, 3).join(" ").trim() || drill.slice(0, 120) || `Warm up for the ${name}.`;
   const note = corrections.map(c => c.text).find(t => t.toLowerCase().includes(name.toLowerCase().split(/\s|→/)[0]));
   const cue = note ? note.replace(/^[^:]*:\s*/, "") : skill.tip || "Clean lines. Eyes up.";
-  const loop = trickLoop(dance, name);
+  const loop = trickLoop(dance, name) || fallbackLoop(dance);
   return [
     { kind: "prep", title: "Prep", cue: prep, secs: 90, bar: "knees" },
     { kind: "slow", title: "Slow five", cue: `${name} ×5, slowly. ${cue}`, secs: 90, bar: "feet", reps: 5 },
-    { kind: "music", title: "To the music", cue: loop ? "Twice slow, twice full speed. Hit the shape ON the beat." : "No cue for this trick yet — dance the section from memory, 4 times.", secs: loop ? Math.round((loop.b - loop.a) * 4 / 0.93) : 60, bar: "arms", loop }
+    { kind: "music", title: "To the music", cue: !loop ? "No music yet — dance the section from memory, 4 times." : loop.fallback ? `No cue for the ${name} yet — the tricks section plays twice. Dance it from memory.` : "Twice slow, twice full speed. Hit the shape ON the beat.", secs: !loop ? 60 : loop.fallback ? Math.round((loop.b - loop.a) * 2) : Math.round((loop.b - loop.a) * 4 / 0.93), bar: "arms", loop }
   ];
 }
 export const shotScore = (mine, gold) => { const d = featureDistance(mine, gold); return !Number.isFinite(d) ? 0 : Math.max(0, Math.min(100, Math.round(100 - d * 90))); };
@@ -58,19 +61,22 @@ function qsStart(){
 function qsPick(id){
   const k = findSkill(id); if (!k) return; Q.skill = k; Q.worked = 0; const q = questOf(S.skills[id]); Q.bars = q.bars || seedBars(lastTrickReview(S.reviews, k.n)); Q.stations = buildStations(k, Q.dance, openFor(S.corrections, "solo")); Q.i = 0; station();
 }
+// A clip or photo of the trick (a saved social-media clip, or Sofia doing it right), kept with the move pictures.
+function trickDemo(){ const id = "skill:" + Q.skill.id; const d = demoFor(id); return `${d ? `<div class="pm-demo" style="display:grid">${demoHtml(d)}</div>` : ""}<div class="small" style="text-align:center"><button class="lnk" onclick="openDemoSheet('${id}','${esc(Q.skill.n).replace(/'/g, "&#39;")}')">${d ? "📷 Change the clip" : "📷 Add a clip of this trick"}</button></div>`; }
+document.addEventListener("demochanged", () => { if (Q.skill && Q.stations[Q.i] && Q.stations[Q.i].kind === "prep" && !$("#stage").hidden) { const box = $("#qsArea .pm-demo"); const d = demoFor("skill:" + Q.skill.id); if (box && d) box.innerHTML = demoHtml(d); else station(); } });
 // ---- stations ----
 function station(){
   stopAll(); const s = Q.stations[Q.i]; if (!s) return shotIntro();
   Q.left = s.secs; $("#qsArea").innerHTML = `<div class="row"><span class="chip sun">Station ${Q.i + 1}/3 · ${esc(s.title)}</span><span class="grow"></span><span class="chip">${esc(Q.skill.n)}</span></div>${barsHtml(Q.bars)}
-    <div class="pm-item"><div class="pm-text">${esc(s.cue)}</div></div><div class="pm-timer"><div class="pm-clock" id="qsClock">${fmt(Q.left)}</div></div><div class="small muted" id="qsNote" style="text-align:center">${s.kind === "music" && s.loop ? "Music starts on its own." : s.reps ? "A chime every rep." : ""}</div>`;
+    ${s.kind === "prep" ? trickDemo() : ""}<div class="pm-item"><div class="pm-text">${esc(s.cue)}</div></div><div class="pm-timer"><div class="pm-clock" id="qsClock">${fmt(Q.left)}</div></div><div class="small muted" id="qsNote" style="text-align:center">${s.kind === "music" && s.loop ? "Music starts on its own." : s.reps ? "A chime every rep." : ""}</div>`;
   stageActions(`<button class="btn ghost" onclick="qsSkip()">Skip</button><button class="btn coral big-btn grow" onclick="qsDone()">✅ Done</button>`);
   if (s.kind === "music" && s.loop) playLoop(s.loop);
   Q.timer = setInterval(() => { Q.left--; const el = $("#qsClock"); if (el) el.textContent = fmt(Q.left); if (s.reps && Q.left > 0 && Q.left % Math.round(s.secs / s.reps) === 0) chime(880); if (Q.left <= 0) { chime(1760); done(); } }, 1000);
 }
 function playLoop(loop){
   const src = srcFor(Q.dance); if (!src) { $("#qsNote").textContent = "Add the solo's music to hear the section."; return; }
-  const a = new Audio(src.url); a.preload = "auto"; Q.audio = a; unlock(a); let pass = 0; const go = () => { a._armed = true; a.playbackRate = pass < 2 ? 0.85 : 1; a.currentTime = loop.a; a.play().catch(() => { $("#qsNote").textContent = "Tap Done when the section is danced 4 times."; }); };
-  a.addEventListener("timeupdate", () => { if (a.currentTime >= loop.b) { pass++; if (pass >= 4) { a.pause(); $("#qsNote").textContent = "Four passes done. Tap ✅ Done."; } else { $("#qsNote").textContent = `Pass ${pass + 1} of 4 · ${pass < 2 ? "slow" : "full speed"}`; go(); } } });
+  const passes = loop.fallback ? 2 : 4; const a = new Audio(src.url); a.preload = "auto"; Q.audio = a; unlock(a); let pass = 0; const go = () => { a._armed = true; a.playbackRate = !loop.fallback && pass < 2 ? 0.85 : 1; a.currentTime = loop.a; a.play().catch(() => { $("#qsNote").textContent = "Tap Done when the section is danced 4 times."; }); };
+  a.addEventListener("timeupdate", () => { if (a.currentTime >= loop.b) { pass++; if (pass >= passes) { a.pause(); $("#qsNote").textContent = `${passes === 2 ? "Two" : "Four"} passes done. Tap ✅ Done.`; } else { $("#qsNote").textContent = `Pass ${pass + 1} of ${passes} · ${!loop.fallback && pass < 2 ? "slow" : "full speed"}`; go(); } } });
   a.addEventListener("loadedmetadata", go, { once: true }); a.load();
 }
 async function done(){ if (Q.busy) return; Q.busy = true; try { const s = Q.stations[Q.i]; if (s) { Q.bars = hit(Q.bars, s.bar, STATION_HIT); Q.worked++; await saveBars(); } Q.i++; station(); } finally { Q.busy = false; } }
@@ -92,10 +98,10 @@ async function shot(){
   const big = (t) => { $("#qsBig").textContent = t; $("#qsBig").hidden = !t; };
   for (let n = 5; n >= 1; n--) { if (!Q.stream) return; big(String(n)); chime(n === 1 ? 1760 : 880); await new Promise(r => setTimeout(r, 1000)); } big(""); if (!Q.stream) return;
   const loop = Q.stations[2] && Q.stations[2].loop; const src = srcFor(Q.dance); let wait = 2500;
-  if (loop && src && pre) { const a = pre; Q.audio = a; a._armed = true; a.currentTime = loop.a; try { await a.play(); wait = (loop.at - loop.a) * 1000 + 300; } catch (e) {} }
+  if (loop && loop.at !== null && src && pre) { const a = pre; Q.audio = a; a._armed = true; a.currentTime = loop.a; try { await a.play(); wait = (loop.at - loop.a) * 1000 + 300; } catch (e) {} }
   await new Promise(r => setTimeout(r, wait)); if (!Q.stream) return;
   const cv = $("#qsShot"); cv.width = v.videoWidth || 640; cv.height = v.videoHeight || 480; const ctx = cv.getContext("2d"); ctx.drawImage(v, 0, 0, cv.width, cv.height); chime(1320); // real orientation: the skeleton and the gold shape use the same frame
-  let lm = null; try { lm = await detectVideoFrame(v, performance.now()); } catch (e) {}
+  let lm = null; try { lm = await detectImage(cv); } catch (e) {} // the same frame the photo shows, so the skeleton sits on her
   stopAll(); box.hidden = true; cv.hidden = false; if (lm) drawSkeleton(ctx, lm, cv.width, cv.height);
   const mine = lm ? poseFeatures(lm) : null; Q.shot = mine; const gold = (S.settings.gold || {})[Q.skill.id];
   if (!mine) { $("#qsNote").textContent = "I couldn't see the whole shape. Step back and try again."; stageActions(`<button class="btn ghost" onclick="qsFinish()">Skip shot</button><button class="btn coral big-btn grow" onclick="qsShot()">📸 Again</button>`); return; }

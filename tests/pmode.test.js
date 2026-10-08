@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { installEnv } from "./_env.mjs";
 installEnv();
 const { applyData } = await import("../js/data.js");
-const got = {}; for (const f of ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises"]) got[f] = JSON.parse(readFileSync(new URL("../data/" + f + ".json", import.meta.url), "utf8")); applyData(got);
+const got = {}; for (const f of ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily"]) got[f] = JSON.parse(readFileSync(new URL("../data/" + f + ".json", import.meta.url), "utf8")); applyData(got);
 const { nextIndex, progressPose, framesFor } = await import("../js/pmode.js");
 const items = got["practice-items"];
 
