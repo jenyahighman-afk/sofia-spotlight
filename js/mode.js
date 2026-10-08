@@ -5,6 +5,7 @@ import { $, esc, todayStr, expose } from "./util.js";
 import { S, events, storeSet, setSettings } from "./store.js";
 import { shiftDate } from "./corrections.js";
 import { dayNumber } from "./plan.js";
+import { compFuelHtml } from "./mind.js";
 
 export const MODES = ["auto", "learn", "comp"];
 export const COMP_DAYS_BEFORE = 7;
@@ -37,6 +38,7 @@ export function renderComp(){
   el.hidden = false; el.innerHTML = `<div class="row"><span class="chip sun">🏆 ${before ? "Tomorrow" : "Comp weekend"}</span><span class="grow"></span><span class="small">${done.size}/${COMP_STEPS.length}</span></div>
     <div class="today-what">${esc(ev.name)}</div>${ev.venue ? `<div class="small muted">${esc(ev.venue.split(",")[0])}</div>` : ""}
     ${COMP_STEPS.map(s => `<label class="pitem ${done.has(s.id) ? "done" : ""}"><input type="checkbox" ${done.has(s.id) ? "checked" : ""} onchange="compStep('${s.id}')"><span class="grow">${esc(s.t)}</span>${s.id === "pack" ? `<button type="button" class="lnk" onclick="event.preventDefault();openPack('${esc(ev.pack || "comp")}')">list</button>` : ""}</label>`).join("")}
+    <div class="row" style="margin-top:8px"><button class="btn sm coral" onclick="ritualRun()">✨ Pre-stage routine</button></div>${compFuelHtml()}
     ${before ? "" : `<div class="field-lab">After the stage: how did it feel?</div><div class="row">${FEEL.map(([v, t]) => `<button class="btn sm ${rec.compFeel === v ? "coral" : "ghost"}" onclick="compFeel(${v})">${t}</button>`).join("")}</div>`}`;
 }
 async function step(id){ const date = todayStr(); const rec = S.practice[date] || { done: [], note: "", runs: [] }; const set = new Set(Array.isArray(rec.compDone) ? rec.compDone : []); set.has(id) ? set.delete(id) : set.add(id); await storeSet("practice", date, { ...rec, compDone: [...set] }); renderComp(); }

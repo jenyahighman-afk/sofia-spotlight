@@ -54,6 +54,11 @@ A memory game built from a dance's step order (`js/games/nextmove.js`, any dance
 ### Today in bites (Today)
 The first card on Today (`js/bites.js`). Two taps — energy (😴 / 🙂 / ⚡) and mood (😕 / 🙂 / 😄) — pick the day's size: easy (5-min stretch, one run, a game), normal (5-min strength, practice, one run), big (practice, a Trick Quest boss, a run check or a run). One bite at a time with a Go button; done bites tick themselves off from what's already saved (quick sessions, practice ≥60%, runs, star log, reviews). "All bites done" offers one more bite at the next size; "change" clears the check-in. Under it a cheer, a 🧠 mind tip and a 🍎 fuel tip, one of each per day from `data/daily.json` (general habits for young athletes, no diet advice — edit the lists there). Saved as `practice.feel` and `practice.level`.
 
+### Mind skills, pre-stage routine, comp-day fuel (`data/mind.json`, `js/mind.js`)
+- **This week's mind skill** (Today): one of ten lessons by week number (long breath out, focal point, mistake reset, tell the story, one thing, nervous = excited, see it first, shake it out, one true thing, slow is fast): why in one line, three steps, a "try it this week" line, and ▶ Try it · 1 min — a one-minute timed screen with the steps; one star.
+- **My pre-stage routine** (Me): Sofia picks up to six steps from a menu (shake it out, three long breaths, say the story, find your spot, mark the first 8, power pose, my words, smile first); saved in `settings.ritual` (default: shake, breathe, story, spot). ▶ Run it, also on the comp card, walks her through step by step with a timer, Next to skip ahead, "Ready. Go shine." at the end; one star.
+- **Comp-day fuel** on the comp card: night before → breakfast 3 h before → 1 h before → between dances → after → all day, written for a vegetarian who eats fish. General habits for a young athlete, not medical advice; edit in `data/mind.json`.
+
 ### Scrolling lines (📜 Lines)
 The cue sheet as a moving list during Run it and Run check: two past lines dim, the current one big, three coming small (`js/prompter.js`). Toggle with 📜 Lines in the player's cue toolbar or in Run check before Start; stored in `settings.prompter` so it stays on while she's learning and off once she isn't.
 
@@ -184,7 +189,7 @@ Grown-ups → Events → **Add**, or add to `data/events.json`:
 
 ```bash
 npm run serve        # http://localhost:8080/
-npm test             # 107 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
+npm test             # 109 tests: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke
 ```
 (`node tools/serve.cjs` — no dependencies. The app needs http://, not file://, because of ES modules and the service worker. During development, unregister the service worker and clear caches in the tab to see edits.)
 
@@ -254,8 +259,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 17) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 18) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 18 (1.12.0): `settings.ritual` (pre-stage routine step ids).
 - Schema 17 (1.11.0): `practice.feel` / `practice.level` (Today's check-in and size), `settings.palette`, `settings.prompter`.
 - Schema 16 (1.10.0): `settings.mode` (auto / learn / comp), `practice.compDone[]`, `practice.compFeel`.
 - Schema 15 (1.9.0): `skills.quest` (Trick Quest bars and gems), `settings.gold` (freeze-shot gold shapes).

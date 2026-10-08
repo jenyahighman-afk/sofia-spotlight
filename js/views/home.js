@@ -8,6 +8,7 @@ import { checkBadges } from "../badges.js";
 import { renderGoalReminder } from "../goals.js";
 import { renderComp, todayMode } from "../mode.js";
 import { renderBites } from "../bites.js";
+import { renderMindCard } from "../mind.js";
 import { applyPalette } from "../palette.js";
 
 const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
@@ -24,7 +25,7 @@ function renderHome(){
   $("#todayCard").innerHTML=`${what}
     <div class="today-actions"><button class="btn coral big-btn" onclick="showPage('practice')">${doneToday?"✅ Done today":"▶ "+verb}</button><button class="btn big-btn" onclick="showPage('play')">🎮 Play</button></div>
     <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${(rec&&Array.isArray(rec.quick)&&rec.quick.length)?`<span class="chip violet">⚡ ${rec.quick.length} quick</span>`:""}<span id="todayCount"></span></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
-  renderComp(); renderBites(); applyPalette();
+  renderComp(); renderBites(); renderMindCard(); applyPalette();
   if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(ne.name)}</span>`; }
   // this week's fix
   const fix=currentWeekFix(today); const open=Object.values(S.corrections).some(c=>!c.deleted&&c.status!=="done");

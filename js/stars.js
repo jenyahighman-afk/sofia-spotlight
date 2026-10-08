@@ -10,7 +10,8 @@ export function starsFor(game, value){
     case "sparkle": return v >= 1000 ? 3 : v >= 500 ? 2 : 1;
     case "oops":    return v >= 9 ? 3 : v >= 7 ? 2 : 1;
     case "nextmove": return v >= 9 ? 3 : v >= 7 ? 2 : 1;
-    case "quest":   return v >= 100 ? 3 : v >= 70 ? 2 : 1; // a gem, a good freeze shot, or just showing up
+    case "quest":   return v >= 100 ? 3 : v >= 70 ? 2 : 1;
+    case "mind":    return 1; // a mind-skill minute or the pre-stage routine // a gem, a good freeze shot, or just showing up
     case "compday": return v >= 84 ? 3 : v >= 70 ? 2 : 1;
     case "choreo":  return v >= 84 ? 3 : v >= 74 ? 2 : 1;
     case "trio":    return v >= 84 ? 3 : v >= 74 ? 2 : 1;

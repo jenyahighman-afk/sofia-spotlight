@@ -132,6 +132,10 @@ test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio
   const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
 });
 
+test("17 → 18: settings.ritual keeps only string ids", () => {
+  assert.deepEqual(migrateDoc("settings", "main", { _v: 17, ritual: ["shake", 3, "focal"] }).ritual, ["shake", "focal"]); assert.deepEqual(migrateDoc("settings", "main", { _v: 17, ritual: "x" }).ritual, []); assert.equal("ritual" in migrateDoc("settings", "main", { _v: 17 }), false);
+});
+
 test("16 → 17: practice.feel keeps 1–3 only, level must be a known size; settings.palette is a string and prompter a boolean", () => {
   const p = migrateDoc("practice", "d", { _v: 16, feel: { e: "2", m: 9 }, level: "huge" }); assert.deepEqual(p.feel, { e: 2 }); assert.equal("level" in p, false); assert.equal(p._v, SCHEMA_VERSION);
   assert.equal(migrateDoc("practice", "d", { _v: 16, level: "big" }).level, "big");
