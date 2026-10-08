@@ -132,6 +132,11 @@ test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio
   const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
 });
 
+test("13 → 14: settings.nmBest is a whole number 0–10 when present", () => {
+  assert.equal(migrateDoc("settings", "main", { _v: 13, nmBest: "7" }).nmBest, 7); assert.equal(migrateDoc("settings", "main", { _v: 13, nmBest: 44 }).nmBest, 10); assert.equal(migrateDoc("settings", "main", { _v: 13, nmBest: "x" }).nmBest, 0);
+  assert.equal("nmBest" in migrateDoc("settings", "main", { _v: 13, stars: 1 }), false);
+});
+
 test("12 → 13: practice.quick keeps only known session kinds and is never invented", () => {
   const p = migrateDoc("practice", "2026-10-07", { _v: 12, done: ["planks"], quick: ["strength", "junk", 3, "flex"] }); assert.deepEqual(p.quick, ["strength", "flex"]); assert.deepEqual(p.done, ["planks"]); assert.equal(p._v, SCHEMA_VERSION);
   assert.deepEqual(migrateDoc("practice", "d", { _v: 12, quick: "x" }).quick, []);

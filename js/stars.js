@@ -9,6 +9,7 @@ export function starsFor(game, value){
   switch (game) {
     case "sparkle": return v >= 1000 ? 3 : v >= 500 ? 2 : 1;
     case "oops":    return v >= 9 ? 3 : v >= 7 ? 2 : 1;
+    case "nextmove": return v >= 9 ? 3 : v >= 7 ? 2 : 1;
     case "compday": return v >= 84 ? 3 : v >= 70 ? 2 : 1;
     case "choreo":  return v >= 84 ? 3 : v >= 74 ? 2 : 1;
     case "trio":    return v >= 84 ? 3 : v >= 74 ? 2 : 1;
