@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 16;
+export const SCHEMA_VERSION = 17;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -102,6 +102,12 @@ export const MIGRATIONS = {
   16: (col, id, doc) => {
     if (col === "settings" && doc.mode !== undefined) doc.mode = ["auto", "learn", "comp"].includes(doc.mode) ? doc.mode : "auto";
     if (col === "practice") { if (doc.compDone !== undefined) doc.compDone = Array.isArray(doc.compDone) ? doc.compDone.filter(x => typeof x === "string") : []; if (doc.compFeel !== undefined) { const n = parseInt(doc.compFeel, 10); if (n >= 1 && n <= 3) doc.compFeel = n; else delete doc.compFeel; } }
+    return doc;
+  },
+  // 17 (bites, colors, lines): practice.feel {e, m: 1–3} and practice.level easy|normal|big; settings.palette; settings.prompter boolean. Normalized when present.
+  17: (col, id, doc) => {
+    if (col === "practice") { if (doc.feel !== undefined) { const f = doc.feel && typeof doc.feel === "object" ? doc.feel : {}; const n = (v) => { const x = parseInt(v, 10); return x >= 1 && x <= 3 ? x : undefined; }; doc.feel = { e: n(f.e), m: n(f.m) }; if (doc.feel.e === undefined) delete doc.feel.e; if (doc.feel.m === undefined) delete doc.feel.m; } if (doc.level !== undefined && !["easy", "normal", "big"].includes(doc.level)) delete doc.level; }
+    if (col === "settings") { if (doc.palette !== undefined && typeof doc.palette !== "string") delete doc.palette; if (doc.prompter !== undefined) doc.prompter = !!doc.prompter; }
     return doc;
   }
 };

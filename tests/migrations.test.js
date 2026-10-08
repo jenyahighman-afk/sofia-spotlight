@@ -132,6 +132,12 @@ test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio
   const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
 });
 
+test("16 → 17: practice.feel keeps 1–3 only, level must be a known size; settings.palette is a string and prompter a boolean", () => {
+  const p = migrateDoc("practice", "d", { _v: 16, feel: { e: "2", m: 9 }, level: "huge" }); assert.deepEqual(p.feel, { e: 2 }); assert.equal("level" in p, false); assert.equal(p._v, SCHEMA_VERSION);
+  assert.equal(migrateDoc("practice", "d", { _v: 16, level: "big" }).level, "big");
+  const s = migrateDoc("settings", "main", { _v: 16, palette: 7, prompter: "yes" }); assert.equal("palette" in s, false); assert.equal(s.prompter, true); assert.equal(migrateDoc("settings", "main", { _v: 16, palette: "ocean" }).palette, "ocean");
+});
+
 test("15 → 16: settings.mode is one of auto/learn/comp; practice.compDone is strings, compFeel 1–3 or gone", () => {
   assert.equal(migrateDoc("settings", "main", { _v: 15, mode: "comp" }).mode, "comp"); assert.equal(migrateDoc("settings", "main", { _v: 15, mode: "x" }).mode, "auto"); assert.equal("mode" in migrateDoc("settings", "main", { _v: 15 }), false);
   const p = migrateDoc("practice", "d", { _v: 15, done: [], compDone: ["pack", 4], compFeel: "9" }); assert.deepEqual(p.compDone, ["pack"]); assert.equal("compFeel" in p, false); assert.equal(migrateDoc("practice", "d", { _v: 15, compFeel: 2 }).compFeel, 2); assert.equal(p._v, SCHEMA_VERSION);

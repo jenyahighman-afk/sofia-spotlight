@@ -293,6 +293,14 @@ body.modal{overflow:hidden}
 .qs-bars{display:grid;gap:4px;margin:8px 0} .qs-bar{display:flex;align-items:center;gap:6px;font-size:.9rem} .qs-bar small{width:28px;text-align:right}
 .qs-track{flex:1;height:12px;border-radius:6px;background:var(--line);overflow:hidden} .qs-fill{height:100%;background:linear-gradient(90deg,#FF5C93,#B98BEF);transition:width .4s}
 .qs-boss{display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);padding:10px 12px;margin-top:8px;cursor:pointer;font:inherit}
+:root[data-palette="ocean"]{--paper:#F3F8FF;--ink:#1F3350;--ink-2:#5F7A99;--line:#D8E6F7;--coral:#3D8BFF;--sun:#FFD27A;--aqua:#9AD2F5;--violet:#B9C4FF;--mint:#D6F0FF;--blush:#E3EEFF;--gold:#E0B85A;--shadow:0 6px 0 rgba(31,51,80,.08)}
+:root[data-palette="mint"]{--paper:#F4FBF6;--ink:#1E3B2C;--ink-2:#5E8A6E;--line:#D5EEDD;--coral:#2FB37A;--sun:#FFE08A;--aqua:#A9E6C9;--violet:#C7D9FF;--mint:#DDF6E8;--blush:#E6F7EC;--gold:#D9B26F;--shadow:0 6px 0 rgba(30,59,44,.08)}
+:root[data-palette="sunset"]{--paper:#FFF6F0;--ink:#4A2A1A;--ink-2:#946A55;--line:#F8DCCB;--coral:#FF7A45;--sun:#FFCF5C;--aqua:#FFB89B;--violet:#E9B7E8;--mint:#FFE4D3;--blush:#FFE9DD;--gold:#E0A84A;--shadow:0 6px 0 rgba(74,42,26,.08)}
+:root[data-palette="grape"]{--paper:#F8F4FF;--ink:#2E1F4E;--ink-2:#73629A;--line:#E6DCF8;--coral:#8B5CF6;--sun:#FBD36B;--aqua:#C7B3FF;--violet:#D9CCFF;--mint:#EDE6FF;--blush:#EFE8FF;--gold:#D9B26F;--shadow:0 6px 0 rgba(46,31,78,.08)}
+.bites .bite{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);font-weight:700} .bites .bite.done{opacity:.55;font-weight:500} .bites .bite.now{font-size:1.05rem}
+.bites .cheer{font-family:Fredoka;font-size:1.15rem;line-height:1.2;margin:10px 0 4px} .bite-tips{font-size:.85rem;color:var(--ink-2);display:grid;gap:4px;margin-top:6px}
+.prompter{text-align:left;margin:8px auto;max-width:520px} .prompter .pl{display:flex;gap:8px;align-items:baseline;padding:3px 0;transition:all .3s} .prompter .pl-t{font-size:.75rem;color:var(--ink-2);min-width:36px}
+.prompter .pl.past{opacity:.4;font-size:.9rem} .prompter .pl.next{opacity:.75;font-size:.95rem} .prompter .pl.now .pl-m{font-family:Fredoka;font-size:1.6rem;line-height:1.15;color:#FF5C93} .prompter .pl-l{font-size:.8rem;color:var(--ink-2)}
 /* Pastel backgrounds stay pastel in dark mode, so their text must stay dark too. */
 .review .rv-loved,.review .rv-loved *,.day .ev,.cal .d .ev,.mapbar .soft,.mapbar .loud,.mapbar .fade,.cover-art.sun,.cover-art.violet,.cover-art.aqua{color:#4A2340}
 .chip{color:var(--ink)} .chip.aqua,.chip.sun,.chip.violet,.chip.mint,.chip[style*="background:#fff"]{color:#4A2340} .chip.coral{color:#fff}

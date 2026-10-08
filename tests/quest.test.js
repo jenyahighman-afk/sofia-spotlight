@@ -25,7 +25,7 @@ test("three stations: prep from the drill, slow five with the open note or the t
   const calypso = skills.styles.solo.skills.find(s => s.id === "s-calypso");
   const st = buildStations(calypso, solo, [{ text: "Calypso: front leg straight and turned out, back knee high" }]);
   assert.deepEqual(st.map(s => s.kind), ["prep", "slow", "music"]); assert.ok(st[0].cue.length > 10 && st[0].cue.length <= 200); assert.ok(st[1].cue.includes("Calypso ×5") && st[1].cue.includes("front leg straight"));
-  assert.equal(st[2].loop, null); assert.equal(st[2].secs, 60);
+  assert.equal(st[2].loop.fallback, true); assert.equal(st[2].loop.at, null);
   const cw = buildStations(skills.styles.solo.skills.find(s => s.id === "s-cartwheel"), solo, []); assert.equal(cw[2].loop.at, 50); assert.equal(cw[2].secs, Math.round(14 * 4 / 0.93)); assert.ok(cw[1].cue.includes("Dance the 4 counts in"));
   assert.deepEqual(BARS, ["feet", "knees", "arms"]);
 });

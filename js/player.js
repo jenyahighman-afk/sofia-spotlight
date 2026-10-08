@@ -1,7 +1,7 @@
 // Practice player: the dance's music with speed 50–100% (pitch kept), A–B loop with presets from the music map,
 // an 8-count overlay driven by the dance's BPM + a tapped-in offset, and "Run it" (3-2-1, full track, two questions, logged to practice).
 import { $, esc, toast, expose, todayStr } from "./util.js";
-import { S, storeSet, dances } from "./store.js";
+import { S, storeSet, dances, setSettings } from "./store.js";
 import { checkBadges } from "./badges.js";
 import { normalizeCues, cueAt, fmtTime } from "./cues.js";
 
@@ -71,10 +71,10 @@ function cueHtml(t){
 function renderCue(t){
   const { index, soon } = cueAt(cues(), t); const html = cueHtml(t);
   const box = $("#plCue"); box.hidden = !html; if (html) { box.innerHTML = html; box.classList.toggle("soon", soon); }
-  const run = $("#plRunCue"); if (run) { run.innerHTML = html || `<div class="cue-move">Full run · eyes up</div>`; run.classList.toggle("soon", soon); }
+  const run = $("#plRunCue"); if (run) { run.innerHTML = S.settings.prompter && cues().length ? prompterHtml(cues(), t) : (html || `<div class="cue-move">Full run · eyes up</div>`); run.classList.toggle("soon", soon); }
   if (index !== PL.lastCueIdx) { PL.lastCueIdx = index; }
 }
-function cueSheetUI(){ const list = cues(); $("#plCueCount").textContent = list.length ? `· ${list.length} cue${list.length === 1 ? "" : "s"}` : "· none yet"; $("#plTestMe").classList.toggle("coral", PL.testMe); $("#plCueList").classList.toggle("coral", PL.showList); const el = $("#plCues"); el.hidden = !PL.showList;
+function cueSheetUI(){ const list = cues(); const pl = $("#plLines"); if (pl) pl.classList.toggle("coral", !!S.settings.prompter); $("#plCueCount").textContent = list.length ? `· ${list.length} cue${list.length === 1 ? "" : "s"}` : "· none yet"; $("#plTestMe").classList.toggle("coral", PL.testMe); $("#plCueList").classList.toggle("coral", PL.showList); const el = $("#plCues"); el.hidden = !PL.showList;
   el.innerHTML = list.length ? list.map((c, i) => `<div class="check"><span class="cue-t" onclick="plSeek(${c.t})">${fmtTime(c.t)}</span><span class="grow"><b>${esc(c.move)}</b>${c.lyric ? ` <span class="muted">“${esc(c.lyric)}”</span>` : ""}</span><button class="del" onclick="plCueEdit(${i})" title="Edit">✏️</button><button class="del" onclick="plCueDel(${i})">✕</button></div>`).join("") : `<p class="small muted">Play the track and tap ＋ Cue here at each moment. Type the words being sung and what she does.</p>`; }
 async function saveCues(list){ const d = PL.dance; await storeSet("dances", d.id, { ...(S.dances[d.id] || {}), id: d.id, cues: normalizeCues(list) }); PL.dance = dances().find(x => x.id === d.id) || d; PL.lastCueIdx = -2; cueSheetUI(); }
 async function addCue(){ if (!PL.audio) return; const wasPlaying = !PL.audio.paused; pause(); const t = PL.audio.currentTime;
@@ -144,7 +144,7 @@ export function initPlayer(){
   $("#plA").onclick = markA; $("#plB").onclick = markB; $("#plClear").onclick = clearLoop;
   $("#plCounts").onclick = toggleCounts; ["off", "click", "voice"].forEach(v => { $("#plV_" + v).onclick = () => setVoice(v); }); $("#plTap").onclick = tapOne;
   $("#plRunBtn").onclick = runIt;
-  $("#plAddCue").onclick = addCue; $("#plTestMe").onclick = toggleTestMe; $("#plCueList").onclick = () => { PL.showList = !PL.showList; cueSheetUI(); };
+  $("#plAddCue").onclick = addCue; $("#plLines").onclick = async () => { await setSettings({ prompter: !S.settings.prompter }); cueSheetUI(); }; $("#plTestMe").onclick = toggleTestMe; $("#plCueList").onclick = () => { PL.showList = !PL.showList; cueSheetUI(); };
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#player").hidden) { if (PL.run) runStop(); else closePlayer(); } });
 }
 expose({ openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose, plRunStop: runStop, plReveal: reveal, plSeek, plCueEdit: cueEdit, plCueDel: cueDel });

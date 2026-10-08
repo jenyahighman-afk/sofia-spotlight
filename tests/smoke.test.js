@@ -9,7 +9,7 @@ import { installEnv, resetDom, el } from "./_env.mjs";
 installEnv();
 const read = (rel) => readFileSync(new URL("../" + rel, import.meta.url), "utf8");
 const html = read("index.html");
-const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises"];
+const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily"];
 
 let M = {};
 before(async () => {
@@ -30,7 +30,7 @@ const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["rcStart", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["rcStart", "rcLines", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -93,7 +93,8 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#gameGrid").innerHTML.includes("playOpen('nextmove')"), "What's Next? has a tile on Play");
   assert.ok(el("#gameGrid").innerHTML.includes("playOpen('quest')") && el("#coachTricks").innerHTML.includes("qsStart()"), "Trick Quest on Play and in the Coach corner");
   assert.ok(el("#coachNew").innerHTML.includes("Run check"), "Coach corner offers a run check");
-  assert.ok(el("#modeRow").innerHTML.includes("setMode('comp')"), "Settings has the mode row"); assert.ok(el("#teacherText").value.startsWith("Sofia — practice summary"), "teacher summary renders on Coach reviews"); assert.ok(html.includes('id="compCard"'), "Today has a comp card");
+  assert.ok(el("#modeRow").innerHTML.includes("setMode('comp')"), "Settings has the mode row");
+  assert.ok(el("#bitesCard").innerHTML.includes("How are you today?") && el("#bitesCard").innerHTML.includes("biteFeel('e',1)"), "Today asks how she feels"); assert.ok(el("#paletteRow").innerHTML.includes("setPalette('ocean')"), "Me has the color schemes"); assert.ok(el("#coachNew").innerHTML.length > 0); assert.ok(el("#teacherText").value.startsWith("Sofia — practice summary"), "teacher summary renders on Coach reviews"); assert.ok(html.includes('id="compCard"'), "Today has a comp card");
   S.dances = { solo: { id: "solo", links: ["Original choreo | https://photos.app.goo.gl/abc", "https://example.com/x"] } }; M.dances.danceEdit("solo"); M.dances.danceEdit(null); const dh = el("#danceList").innerHTML; assert.ok(dh.includes(">🔗 Original choreo<") && dh.includes(">🔗 Link 2<") && dh.includes("href=\"https://photos.app.goo.gl/abc\""), "dance links take a name before a |"); S.dances = {};
   assert.ok(el("#quickRow").innerHTML.includes("openQuick('strength')") && el("#quickRow").innerHTML.includes("openQuick('flex')"), "Practice offers the two quick sessions");
   assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");
