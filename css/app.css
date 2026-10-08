@@ -213,6 +213,7 @@ body.modal{overflow:hidden}
 .run-count{font-family:Fredoka;font-size:8rem;line-height:1;color:#FF5C93} .run-count.small-run{font-size:4rem}
 .run-live{font-family:Fredoka;font-size:1.6rem;color:#B98BEF} .run-q{font-family:Fredoka;font-size:1.6rem;line-height:1.2} .run-yn .btn{font-size:1.2rem;padding:14px 22px}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .badge.on{background:#5A4A2E} :root:not([data-theme="light"]) .pattern{background:#5A4A2E;color:var(--ink)} :root:not([data-theme="light"]) .day .ev.done{background:#2E5A45;color:var(--ink)} :root:not([data-theme="light"]) .run-overlay{background:rgba(43,26,38,.96)} }
+:root[data-theme="dark"] .badge.on{background:#5A4A2E} :root[data-theme="dark"] .pattern{background:#5A4A2E;color:var(--ink)} :root[data-theme="dark"] .day .ev.done{background:#2E5A45;color:var(--ink)} :root[data-theme="dark"] .run-overlay{background:rgba(43,26,38,.96)}
 .run-stop{margin-top:18px;font-size:1.05rem;padding:12px 26px}
 .cue{background:var(--blush);border-radius:14px;padding:10px 12px;margin:6px 0;text-align:center;min-height:64px}
 .cue .cue-move{font-family:Fredoka;font-size:1.5rem;line-height:1.15}
