@@ -52,7 +52,7 @@ function renderDances(){
     let more;
     if(!editing){
       const links=(d.links||[]).filter(Boolean);
-      more=`${mapbar}<div class="row" style="margin-top:6px">${d.musicUrl?`<a class="btn sm aqua" href="${esc(d.musicUrl)}" target="_blank" rel="noopener">▶ Music link</a>`:""}${links.map((u,i)=>`<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">🔗 Link ${i+1}</a>`).join("")}${musicButton(d)}<span class="grow"></span><button class="btn sm coral" onclick="danceEdit('${d.id}')">✏️ Edit</button></div>${musicPlayer(d)}
+      more=`${mapbar}<div class="row" style="margin-top:6px">${d.musicUrl?`<a class="btn sm aqua" href="${esc(d.musicUrl)}" target="_blank" rel="noopener">▶ Music link</a>`:""}${links.map((u,i)=>{ const m=String(u).match(/^(.*?)\s*\|\s*(https?:\S+)$/); const url=m?m[2]:u, label=m?m[1].trim():"Link "+(i+1); return `<a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">🔗 ${esc(label)}</a>`; }).join("")}${musicButton(d)}<span class="grow"></span><button class="btn sm coral" onclick="danceEdit('${d.id}')">✏️ Edit</button></div>${musicPlayer(d)}
         ${roText("Song",d.song)}${roText("Style",d.style)}${roText("BPM",d.bpm)}${roText("Choreographer",d.choreo)}${roText("Teacher / class",d.teacher)}${roText("Rehearsal & class schedule",d.rehearsal)}
         ${roText("Costume",d.costume)}${roText("Shoes",d.shoes)}${roText("Hair",d.hair)}
         ${roText("Music map",d.music)}${roText("Where the big moments land",d.map)}<div class="field-lab">Cue sheet (shown in the player)</div><div class="ro">${normalizeCues(d.cues).length?`<ul>${normalizeCues(d.cues).map(c=>`<li><b>${fmtTime(c.t)}</b> ${esc(c.move)}${c.lyric?` <span class="muted">“${esc(c.lyric)}”</span>`:""}</li>`).join("")}</ul>`:""}</div>
@@ -61,7 +61,7 @@ function renderDances(){
     } else {
       more=`<p class="small muted">Editing. Nothing is saved until you tap Save.</p>
       ${edText("song","Song",d.song,"Title — artist")}${edText("style","Style",d.style)}${edText("bpm","BPM (beats per minute, for the count overlay)",d.bpm,"e.g. 76")}${edText("choreo","Choreographer",d.choreo)}${edText("teacher","Teacher / class",d.teacher)}${edText("rehearsal","Rehearsal & class schedule",d.rehearsal)}
-      ${edText("musicUrl","Music link",d.musicUrl,"Paste a link to the track")}${edList("links","Video / other links",d.links)}
+      ${edText("musicUrl","Music link",d.musicUrl,"Paste a link to the track")}${edList("links","Video / other links (one per line: Name | https://…)",d.links)}
       ${edText("costume","Costume",d.costume)}${edText("shoes","Shoes",d.shoes)}${edText("hair","Hair",d.hair)}
       ${edText("music","Music map",d.music)}${edText("map","Where the big moments land (m:ss timestamps become loop presets)",d.map)}<label class="f">Cue sheet <span class="muted">(one per line: m:ss | words sung | move)</span></label><textarea data-k="cues" data-cues="1" class="dfield" placeholder="0:50 | words here | Cartwheel on the swell">${esc(formatCueText(d.cues))}</textarea>
       ${edText("story","The story (one or two lines, shown to Sofia on the card)",d.story)}${edList("steps","Step order (one step per line)",d.steps)}${edList("performance","Performance notes (face, musicality, presence)",d.performance)}${edList("strengths","What's already strong",d.strengths)}${edList("corrections","Corrections (older list — new lines become notes)",d.corrections)}${edList("tricks","Trick drills",d.tricks)}${edList("eyes","Where do I look?",d.eyes)}
