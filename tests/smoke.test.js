@@ -91,6 +91,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#coachHub").innerHTML.includes("Solo") && el("#coachHub").innerHTML.includes("Fixes the coach gave") && el("#coachHub").innerHTML.includes("Point your foot"), "Coach corner groups the review under its dance with the fix");
   assert.ok(el("#coachNew").innerHTML.includes("openCoach('solo')"), "Coach corner starts a review for any dance");
   assert.ok(el("#gameGrid").innerHTML.includes("playOpen('nextmove')"), "What's Next? has a tile on Play");
+  S.dances = { solo: { id: "solo", links: ["Original choreo | https://photos.app.goo.gl/abc", "https://example.com/x"] } }; M.dances.danceEdit("solo"); M.dances.danceEdit(null); const dh = el("#danceList").innerHTML; assert.ok(dh.includes(">🔗 Original choreo<") && dh.includes(">🔗 Link 2<") && dh.includes("href=\"https://photos.app.goo.gl/abc\""), "dance links take a name before a |"); S.dances = {};
   assert.ok(el("#quickRow").innerHTML.includes("openQuick('strength')") && el("#quickRow").innerHTML.includes("openQuick('flex')"), "Practice offers the two quick sessions");
   assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");
   assert.ok(el("#goalRings").innerHTML.includes("Right split") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Me");
