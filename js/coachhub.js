@@ -55,6 +55,7 @@ export function renderCoachHub(){
   const el = $("#coachHub"); if (!el) return;
   const ds = dances(); const groups = groupReviews(S.reviews);
   $("#coachNew").innerHTML = `<div class="field-lab">Get a review for…</div><div class="hub-targets">${ds.slice(0, 8).map(d => `<button class="chip" onclick="openCoach('${d.id}')">🎬 ${esc(d.name.split(" · ").slice(0, 2).join(" · "))}</button>`).join("")}</div>
+    <div class="field-lab" style="margin-top:8px">Run check: phone propped up, the app plays the music and snaps the frames</div><div class="hub-targets">${ds.filter(d => (d.musicFile && d.musicFile.url) || d.musicUrl).map(d => `<button class="chip violet" onclick="openRunCheck('${d.id}')">🎥 ${esc(d.name.split(" · ")[0])}</button>`).join("") || `<span class="small muted">Add music to a dance first.</span>`}</div>
     <div class="row" style="margin-top:8px"><select id="coachSkill" style="max-width:220px">${allSkills().map(s => `<option>${esc(s.n)}</option>`).join("")}<option>Calypso</option><option>Aerial drills</option></select><button class="btn sm coral" onclick="coachSkillGo()">🎬 A skill</button></div>
     ${coachReady() ? "" : `<p class="small bad">The coach isn't connected yet — the skeleton view still works.</p>`}`;
   const chips = [["all", "All"], ...groups.map(g => [g.key, targetName(g.key).replace(/^✨ /, "")])];

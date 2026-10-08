@@ -22,7 +22,7 @@ export function presetsFor(d, duration = 0){
 const PL = { dance: null, audio: null, objUrl: "", a: null, b: null, speed: 100, counts: false, voice: "off", raf: 0, lastCount: 0, run: null, ctx: null, offline: false, testMe: false, revealed: -1, lastCueIdx: -2, showList: false };
 let objectUrlCache = {}; // danceId → object URL for a track already downloaded this session
 
-function srcFor(d){ if (d.musicFile && d.musicFile.url) return { url: d.musicFile.url, kind: "file" }; if (d.musicUrl && AUDIO_RE.test(d.musicUrl)) return { url: d.musicUrl, kind: "link" }; return null; }
+export function srcFor(d){ if (d.musicFile && d.musicFile.url) return { url: d.musicFile.url, kind: "file" }; if (d.musicUrl && AUDIO_RE.test(d.musicUrl)) return { url: d.musicUrl, kind: "link" }; return null; }
 
 function setStatus(html){ $("#plStatus").innerHTML = html; }
 function speedUI(){ [50, 75, 100].forEach(v => $("#plS" + v).classList.toggle("coral", PL.speed === v)); $("#plRange").value = PL.speed; $("#plSpeedLab").textContent = PL.speed + "%"; }
