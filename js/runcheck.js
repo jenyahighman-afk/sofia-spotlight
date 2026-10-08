@@ -18,6 +18,8 @@ export function dueFrame(times, t, from){ let i = from, skipped = 0; while (i < 
 // Whole body in view: both shoulders and both ankles seen with confidence.
 export const fullBody = (lm) => !!lm && [11, 12, 27, 28].every(i => lm[i] && (lm[i].visibility === undefined || lm[i].visibility > 0.5) && lm[i].y > 0.02 && lm[i].y < 0.98);
 
+// iPhone: a sound can only start inside a tap. Start the music for a moment (and an empty utterance) on the tap itself, then the real play after the countdown is allowed.
+function unlock(a){ try { const p = a.play(); if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); } catch (e) {} try { speechSynthesis.speak(new SpeechSynthesisUtterance("")); } catch (e) {} }
 const RC = { dance: null, stream: null, audio: null, times: [], at: 0, canvases: [], labels: [], raf: 0, on: false, facing: "user", lock: null, seen: 0, check: 0 };
 const say = (t) => { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t)); u.rate = 1.1; speechSynthesis.speak(u); } catch (e) {} };
 function chime(f = 1320){ try { const ctx = RC.ctx || (RC.ctx = new (window.AudioContext || window.webkitAudioContext)()); const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f; g.gain.value = 0.25; o.connect(g); g.connect(ctx.destination); const t = ctx.currentTime; o.start(t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.2); o.stop(t + 0.25); } catch (e) {} }
@@ -58,7 +60,7 @@ export async function openRunCheck(danceId){
   a.load(); bodyCheck();
 }
 async function start(){
-  const a = RC.pending; if (!a || !RC.on) return; $("#rcStart").disabled = true; RC.check++;
+  const a = RC.pending; if (!a || !RC.on) return; $("#rcStart").disabled = true; RC.check++; unlock(a);
   try { RC.lock = await navigator.wakeLock.request("screen"); } catch (e) {}
   for (let n = 5; n >= 1; n--) { if (!RC.on) return; big(String(n)); say(n); chime(n === 1 ? 1760 : 880); await new Promise(r => setTimeout(r, 1000)); }
   big("GO"); setTimeout(() => big(""), 700); RC.audio = a; RC.at = 0; $("#rcActions").innerHTML = `<button class="btn ghost" onclick="rcStop()">■ Stop</button>`;

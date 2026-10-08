@@ -27,6 +27,7 @@ test("nothing is earned from a blank slate; streaks, closed fixes, aerial, games
   assert.deepEqual(evalBadges(ctx({ settings: { gameBest: 1350, jeBest: 9, cdBest: 84, tfBest: 92 } })), ["sparkle", "oops", "compday", "trio"]);
   assert.deepEqual(evalBadges(ctx({ weekFixPicked: true })), ["review1"]);
   assert.deepEqual(evalBadges(ctx({ fullRun: true })), ["run100"]);
+  assert.deepEqual(evalBadges(ctx({ quickCount: 5 })), ["quick5"]); assert.deepEqual(evalBadges(ctx({ settings: { nmBest: 10 } })), ["nextmove"]); assert.deepEqual(evalBadges(ctx({ gems: 5 })), ["gem1", "gem5"]);
 });
 
 test("skills.json: the solo's tricks first, then five styles; 8–12 skills each, unique ids, states listed", () => {

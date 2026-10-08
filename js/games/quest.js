@@ -39,6 +39,8 @@ export function buildStations(skill, dance, corrections = []){
 }
 export const shotScore = (mine, gold) => { const d = featureDistance(mine, gold); return !Number.isFinite(d) ? 0 : Math.max(0, Math.min(100, Math.round(100 - d * 90))); };
 
+// iPhone: a sound can only start inside a tap, so the music element is poked on the tap and really played later.
+function unlock(a){ try { const p = a.play(); if (p && p.then) p.then(() => { a.pause(); }).catch(() => {}); } catch (e) {} }
 const Q = { skill: null, dance: null, stations: [], i: 0, bars: null, timer: 0, left: 0, audio: null, stream: null, shot: null, busy: false };
 function chime(f = 1046){ try { const ctx = Q.ctx || (Q.ctx = new (window.AudioContext || window.webkitAudioContext)()); const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f; g.gain.value = 0.25; o.connect(g); g.connect(ctx.destination); const t = ctx.currentTime; o.start(t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.3); o.stop(t + 0.35); } catch (e) {} }
 const fmt = (s) => Math.floor(s / 60) + ":" + String(Math.max(0, s) % 60).padStart(2, "0");
@@ -67,7 +69,7 @@ function station(){
 }
 function playLoop(loop){
   const src = srcFor(Q.dance); if (!src) { $("#qsNote").textContent = "Add the solo's music to hear the section."; return; }
-  const a = new Audio(src.url); a.preload = "auto"; Q.audio = a; let pass = 0; const go = () => { a.playbackRate = pass < 2 ? 0.85 : 1; a.currentTime = loop.a; a.play().catch(() => { $("#qsNote").textContent = "Tap Done when the section is danced 4 times."; }); };
+  const a = new Audio(src.url); a.preload = "auto"; Q.audio = a; unlock(a); let pass = 0; const go = () => { a.playbackRate = pass < 2 ? 0.85 : 1; a.currentTime = loop.a; a.play().catch(() => { $("#qsNote").textContent = "Tap Done when the section is danced 4 times."; }); };
   a.addEventListener("timeupdate", () => { if (a.currentTime >= loop.b) { pass++; if (pass >= 4) { a.pause(); $("#qsNote").textContent = "Four passes done. Tap ✅ Done."; } else { $("#qsNote").textContent = `Pass ${pass + 1} of 4 · ${pass < 2 ? "slow" : "full speed"}`; go(); } } });
   a.addEventListener("loadedmetadata", go, { once: true }); a.load();
 }
@@ -84,12 +86,13 @@ function shotIntro(){
 }
 async function shot(){
   if (!poseAvailable() || !navigator.mediaDevices) return toast("No camera on this device");
+  const src0 = srcFor(Q.dance); const pre = src0 ? new Audio(src0.url) : null; if (pre) { pre.preload = "auto"; unlock(pre); }
   const box = $("#qsCamBox"), v = $("#qsCam"); box.hidden = false; $("#qsShot").hidden = true; stageActions(`<button class="btn ghost" onclick="qsFinish()">Stop</button>`);
   try { Q.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 960 } }, audio: false }); v.srcObject = Q.stream; await v.play(); } catch (e) { $("#qsNote").textContent = "Camera didn't open: " + (e.message || e); return shotIntro(); }
   const big = (t) => { $("#qsBig").textContent = t; $("#qsBig").hidden = !t; };
   for (let n = 5; n >= 1; n--) { big(String(n)); chime(n === 1 ? 1760 : 880); await new Promise(r => setTimeout(r, 1000)); } big("");
   const loop = Q.stations[2] && Q.stations[2].loop; const src = srcFor(Q.dance); let wait = 2500;
-  if (loop && src) { const a = new Audio(src.url); Q.audio = a; a.currentTime = loop.a; try { await a.play(); wait = (loop.at - loop.a) * 1000 + 300; } catch (e) {} }
+  if (loop && src && pre) { const a = pre; Q.audio = a; a.currentTime = loop.a; try { await a.play(); wait = (loop.at - loop.a) * 1000 + 300; } catch (e) {} }
   await new Promise(r => setTimeout(r, wait)); if (!Q.stream) return;
   const cv = $("#qsShot"); cv.width = v.videoWidth || 640; cv.height = v.videoHeight || 480; const ctx = cv.getContext("2d"); ctx.translate(cv.width, 0); ctx.scale(-1, 1); ctx.drawImage(v, 0, 0, cv.width, cv.height); ctx.setTransform(1, 0, 0, 1, 0, 0); chime(1320);
   let lm = null; try { lm = await detectVideoFrame(v, performance.now()); } catch (e) {}

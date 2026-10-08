@@ -23,6 +23,10 @@ export const AUTO_BADGES = [
   { key: "trio",      emoji: "👯", label: "Trio Platinum",         test: c => (c.settings.tfBest || 0) >= 92 },
   { key: "review1",   emoji: "🎬", label: "First film review",     test: c => !!c.weekFixPicked },
   { key: "run100",    emoji: "▶️", label: "First full run at 100%", test: c => c.fullRun },
+  { key: "quick5",    emoji: "⚡", label: "5 quick sessions",      test: c => (c.quickCount || 0) >= 5 },
+  { key: "nextmove",  emoji: "🧠", label: "Knows it by heart (10/10)", test: c => (c.settings.nmBest || 0) >= 10 },
+  { key: "gem1",      emoji: "💎", label: "First Trick Quest gem",  test: c => (c.gems || 0) >= 1 },
+  { key: "gem5",      emoji: "👑", label: "5 Trick Quest gems",     test: c => (c.gems || 0) >= 5 },
 ];
 // Parent-awarded badges are stored with keys "nocues-<danceId>" and "clean5-<skillId or trick>".
 export const PARENT_BADGES = [
@@ -40,10 +44,12 @@ export function evalBadges(ctx){ return AUTO_BADGES.filter(b => { try { return !
 export function context(today = todayStr()){
   const aerialDone = (S.settings.aerial || []).filter(id => AERIAL.some(a => a.id === id)).length;
   const fullRun = Object.values(S.practice).some(p => (p.runs || []).some(r => r.speed >= 100 && r.full));
+  const quickCount = Object.values(S.practice).reduce((a, p) => a + (Array.isArray(p.quick) ? p.quick.length : 0), 0);
+  const gems = Object.values(S.skills).reduce((a, k) => a + ((k.quest && Array.isArray(k.quest.gems)) ? k.quest.gems.length : 0), 0);
   return {
     streak: computeStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today }),
     closed: closedCount(S.corrections), aerialPct: AERIAL.length ? Math.round(100 * aerialDone / AERIAL.length) : 0,
-    settings: S.settings, practice: S.practice, weekFixPicked: !!(S.settings.weekFix && S.settings.weekFix.id), fullRun,
+    settings: S.settings, practice: S.practice, weekFixPicked: !!(S.settings.weekFix && S.settings.weekFix.id), fullRun, quickCount, gems,
   };
 }
 
