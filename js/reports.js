@@ -34,7 +34,7 @@ export async function sendReport(page){
   const id = uid();
   try {
     await storeSet("reports", id, { page: page || currentPage(), note: String(note || "").slice(0, 300), error: last.error, errorAt: last.at || 0, version: self.APP_VERSION || "", ua: navigator.userAgent.slice(0, 200), online: navigator.onLine, width: window.innerWidth, at: new Date().toISOString() });
-    toast("Sent. Mom can see it in Grown-ups → Reports", 2500);
+    toast("Sent ✓", 2000);
   } catch (e) { console.warn(e); toast("Couldn't send it — try again when you're online", 2500); }
 }
 export function renderReports(){

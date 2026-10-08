@@ -32,6 +32,8 @@ export async function openCoachFrames(danceId, canvases, labels){
   openCoach(danceId); C.kind = "video"; C.frames = canvases.map(cv => b64(jpeg(cv, 0.72))); step("busy", "Drawing the skeleton…");
   try { await finishFrames(canvases, labels); } catch (e) { console.warn(e); errState(e.message || String(e)); }
 }
+// A clip or photo already picked elsewhere (a goal check-in): no second pick needed.
+export function openCoachFile(danceId, trick, file){ openCoach(danceId, trick); if (!file) return; if (file.type.startsWith("video/")) fromVideo(file); else fromPhotos([file]); }
 export function closeCoach(){ $("#coach").hidden = true; document.body.classList.remove("modal"); }
 function step(name, html){
   const el = $("#coachBody");

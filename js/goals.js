@@ -1,6 +1,7 @@
 // Progress goals (flexibility, strength, balance): presets + custom, a check-in every two weeks (photo or clip, optional
 // number), a line chart, and a first-vs-latest slider compare. Photos live in the family space and are only shown here.
 import { $, esc, toast, uid, expose, todayStr } from "./util.js";
+import { openCoachFile } from "./coach.js";
 import { S, storeSet, storeDel, setSettings } from "./store.js";
 import { media, friendlyError } from "./sync.js";
 import { resizeImage, VIDEO_MAX_BYTES } from "./media.js";
@@ -95,7 +96,7 @@ export function openGoal(id){
     ${fp && lp && fp !== lp && fp.kind !== "video" && lp.kind !== "video" ? `<div class="field-lab">First vs latest — slide</div><div class="compare" id="goalCompare"><img src="${esc(fp.url)}" alt=""><img src="${esc(lp.url)}" alt="" id="goalCompareTop" style="clip-path:inset(0 0 0 50%)"><div class="compare-lab"><span>${esc(f.date)}</span><span>${esc(l.date)}</span></div></div><input type="range" id="goalSlider" min="0" max="100" value="50" oninput="document.getElementById('goalCompareTop').style.clipPath='inset(0 0 0 '+this.value+'%)'">` : ""}
     <div class="field-lab">Check in</div>
     <div class="row"><label class="btn coral" for="goalPhoto">📷 Photo / clip</label><input type="file" id="goalPhoto" accept="image/*,video/*" capture="environment" hidden>${g.unit ? `<input type="number" id="goalValue" placeholder="${esc(UNIT_LABEL[g.unit])}" style="max-width:150px" inputmode="decimal">` : ""}<button class="btn sm ghost" onclick="goalCheckIn('${g.id}')">Save</button></div>
-    <div class="row" style="margin-top:8px"><button class="btn sm coral" onclick="closeGoal();openCoach('','${esc(g.name).replace(/'/g, "&#39;")}')">🎬 Coach me on this</button><span class="small muted">Pick the same clip.</span></div>
+    <div class="row" style="margin-top:8px">${lastFile && lastFileGoal === g.id ? `<button class="btn sm coral" onclick="goalCoachLast('${g.id}')">🎬 Coach this ${lastFile.type.startsWith("video/") ? "clip" : "photo"}</button><span class="small muted">The one you just saved.</span>` : `<button class="btn sm coral" onclick="closeGoal();openCoach('','${esc(g.name).replace(/'/g, "&#39;")}')">🎬 Coach me on this</button><span class="small muted">Pick the same clip.</span>`}</div>
     ${g.measure ? `<p class="small muted">Pick a photo and the pose tool fills in the ${g.measure === "knee" ? "knee angle" : "split angle"} for you (you can change it).</p>` : ""}
     <div class="field-lab">Timeline</div><div class="timeline-goal">${timeline}</div>
     <div class="row" style="margin-top:10px"><button class="btn ghost" onclick="closeGoal()">Close</button><span class="grow"></span><button class="btn sm ghost" onclick="goalRemove('${g.id}')">Remove goal</button></div>
@@ -104,10 +105,12 @@ export function openGoal(id){
 }
 let pendingFile = null;
 export function closeGoal(){ $("#goal").hidden = true; document.body.classList.remove("modal"); open = null; pendingFile = null; }
-async function doCheckIn(id){ const v = ($("#goalValue") || {}).value; if (!pendingFile && (v === undefined || v === "")) return toast("Add a photo or a number first"); try { toast("Saving…", 4000); await checkIn(id, pendingFile, v); pendingFile = null; toast("Checked in ✓"); openGoal(id); } catch (e) { console.warn(e); toast("Couldn't save: " + friendlyError(e), 3500); } }
+let lastFile = null, lastFileGoal = ""; // the clip just checked in, so the coach can use it without a second pick
+async function doCheckIn(id){ const v = ($("#goalValue") || {}).value; if (!pendingFile && (v === undefined || v === "")) return toast("Add a photo or a number first"); try { toast("Saving…", 4000); await checkIn(id, pendingFile, v); if (pendingFile) { lastFile = pendingFile; lastFileGoal = id; } pendingFile = null; toast("Checked in ✓"); openGoal(id); } catch (e) { console.warn(e); toast("Couldn't save: " + friendlyError(e), 3500); } }
 async function add(key){ const g = await addGoal(key); openGoal(g.id); }
 async function addCustom(){ const name = ($("#goalCustomName").value || "").trim(); if (!name) return toast("Name the goal"); const unit = $("#goalCustomUnit").value; const t = unit ? prompt(unit === "sec" ? "Target seconds" : "Target degrees", unit === "sec" ? "10" : "180") : "0"; if (t === null) return; const g = await addGoal("custom", { name, unit, target: +t || 0 }); openGoal(g.id); }
 async function target(id){ const g = S.goals[id]; const t = prompt("Target" + (g.unit === "sec" ? " (seconds)" : g.unit === "deg" ? " (degrees)" : ""), String(g.target || "")); if (t === null) return; await setTarget(id, t); openGoal(id); }
 async function remove(id){ if (!confirm("Remove this goal? The photos stay in the family space.")) return; await removeGoal(id); closeGoal(); }
 export function initGoals(){ $("#goalClose").onclick = closeGoal; $("#goal").addEventListener("click", e => { if (e.target === $("#goal")) closeGoal(); }); }
-expose({ openGoal, closeGoal, goalPicker: picker, goalAdd: add, goalAddCustom: addCustom, goalCheckIn: doCheckIn, goalTarget: target, goalRemove: remove, goalSnooze: snooze });
+function coachLast(id){ const g = S.goals[id]; if (!g || !lastFile || lastFileGoal !== id) return; closeGoal(); openCoachFile("", g.name, lastFile); }
+expose({ goalCoachLast: coachLast, openGoal, closeGoal, goalPicker: picker, goalAdd: add, goalAddCustom: addCustom, goalCheckIn: doCheckIn, goalTarget: target, goalRemove: remove, goalSnooze: snooze });
