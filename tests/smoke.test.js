@@ -56,7 +56,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
   assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
-  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 7, "seven game tiles on Play");
+  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 8, "eight game tiles on Play");
   assert.ok(el("#alongList").innerHTML.includes("No routines yet"), "Dance Along empty state");
   assert.ok(el("#meStars").innerHTML.includes("⭐ 0") && el("#meStars").innerHTML.includes("Gold leotard"), "stars card shows the next unlock");
   assert.ok(el("#skillRings").innerHTML.includes("Acro"), "skill rings per style");
@@ -90,6 +90,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#reviewList").innerHTML.includes("Great reach") && !el("#reviewList").innerHTML.includes("Mom can see"), "review card renders for Grown-ups");
   assert.ok(el("#coachHub").innerHTML.includes("Solo") && el("#coachHub").innerHTML.includes("Fixes the coach gave") && el("#coachHub").innerHTML.includes("Point your foot"), "Coach corner groups the review under its dance with the fix");
   assert.ok(el("#coachNew").innerHTML.includes("openCoach('solo')"), "Coach corner starts a review for any dance");
+  assert.ok(el("#gameGrid").innerHTML.includes("playOpen('nextmove')"), "What's Next? has a tile on Play");
   assert.ok(el("#quickRow").innerHTML.includes("openQuick('strength')") && el("#quickRow").innerHTML.includes("openQuick('flex')"), "Practice offers the two quick sessions");
   assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");
   assert.ok(el("#goalRings").innerHTML.includes("Right split") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Me");

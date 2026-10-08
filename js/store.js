@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -89,7 +89,9 @@ export const MIGRATIONS = {
   // 12: dances.steps — the step order, one short line per step. Normalized when present; never invented.
   12: (col, id, doc) => { if (col === "dances" && doc.steps !== undefined) doc.steps = Array.isArray(doc.steps) ? doc.steps.map(x => String(x == null ? "" : x).trim()).filter(Boolean) : []; return doc; },
   // 13: practice.quick — the quick sessions finished that day, e.g. ["strength", "flex"]. Normalized when present.
-  13: (col, id, doc) => { if (col === "practice" && doc.quick !== undefined) doc.quick = Array.isArray(doc.quick) ? doc.quick.filter(k => k === "strength" || k === "flex") : []; return doc; }
+  13: (col, id, doc) => { if (col === "practice" && doc.quick !== undefined) doc.quick = Array.isArray(doc.quick) ? doc.quick.filter(k => k === "strength" || k === "flex") : []; return doc; },
+  // 14: settings.nmBest — best What's Next? score (0–10). Normalized when present.
+  14: (col, id, doc) => { if (col === "settings" && doc.nmBest !== undefined) { const n = parseInt(doc.nmBest, 10); doc.nmBest = Number.isFinite(n) && n > 0 ? Math.min(10, n) : 0; } return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

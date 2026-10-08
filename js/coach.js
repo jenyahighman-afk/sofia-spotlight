@@ -6,7 +6,8 @@ import { S, storeSet, storeDel, dances } from "./store.js";
 import { sync } from "./sync.js";
 import { coachConfig } from "./firebase-config.js";
 import { openFor, addCorrection, TAG_LABEL, TAG_EMOJI } from "./corrections.js";
-import { sampleTimes, loudness, peakTime, MAX_CLIP_SEC } from "./frames.js";
+import { sampleTimes, runTimes, RUN_SEC, loudness, peakTime, MAX_CLIP_SEC } from "./frames.js";
+import { normalizeCues } from "./cues.js";
 import { detectImage, drawSkeleton, poseAvailable } from "./pose.js";
 import { readouts } from "./posemath.js";
 import { checkBadges } from "./badges.js";
@@ -29,6 +30,7 @@ export function closeCoach(){ $("#coach").hidden = true; document.body.classList
 function step(name, html){
   const el = $("#coachBody");
   if (name === "pick") el.innerHTML = `<p class="coach-line">Film or pick a clip (a full run is fine, up to 3 min), or use photos.</p>
+    <p class="small muted">Full run? Start the music right after you tap record.</p>
     <div class="coach-pick"><label class="btn coral big-btn" for="coachVideo">🎥 Film now</label><input type="file" id="coachVideo" accept="video/*" capture="environment" hidden>
     <label class="btn sun big-btn" for="coachPickClip">🎞️ Pick a clip from Photos</label><input type="file" id="coachPickClip" accept="video/*" hidden>
     <label class="btn big-btn" for="coachPhotos">📷 Photos</label><input type="file" id="coachPhotos" accept="image/*" multiple hidden></div>
@@ -54,7 +56,8 @@ async function fromVideo(file){
     busy("Listening for the loudest moment…"); let peak = null;
     // Optional: skipped on big files and whenever the phone is slow or can't decode the sound.
     if (file.size <= 40 * 1024 * 1024) { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const buf = await withTimeout(ctx.decodeAudioData(await file.arrayBuffer()), 8000, "audio timeout"); const ch = buf.getChannelData(0); peak = peakTime(loudness(ch, buf.sampleRate)); ctx.close && ctx.close(); } catch (e) { console.warn("no audio peak", e); } }
-    const times = sampleTimes(duration, peak); C.frames = []; C.thumbs = []; const canvases = [], labels = []; let skipped = 0;
+    const cues = normalizeCues((dances().find(x => x.id === C.danceId) || {}).cues);
+    const times = duration > RUN_SEC && cues.length >= 6 ? runTimes(duration, cues, peak) : sampleTimes(duration, peak); C.frames = []; C.thumbs = []; const canvases = [], labels = []; let skipped = 0;
     for (let i = 0; i < times.length; i++) {
       busy(`Grabbing frame ${i + 1} of ${times.length}…`);
       const ok = await seekTo(video, times[i]); if (!ok || !video.videoWidth) { skipped++; continue; }

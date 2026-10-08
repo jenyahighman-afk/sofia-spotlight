@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validateRequest, buildUserContent, parseReview, checkAndCount, memoryStore, corsHeaders, parseOrigins, SYSTEM_PROMPT, MAX_FRAMES, DAILY_LIMIT } from "../worker/src/core.js";
-import { evenTimes, sampleTimes, loudness, peakTime, aroundPeak } from "../js/frames.js";
+import { evenTimes, sampleTimes, runTimes, loudness, peakTime, aroundPeak } from "../js/frames.js";
 import { angleAt, readouts, onReleve, armPose, LM, poseFeatures, featureDistance } from "../js/posemath.js";
 
 const FID = "ABCDEFGHJKLMNPQRSTUVWXYZ".slice(0, 24);
@@ -60,6 +60,11 @@ test("frames: 16 even times plus 4 around the loudest moment, max 20, inside the
   assert.deepEqual(aroundPeak(6.1, 10), [5.5, 5.9, 6.3, 6.7]);
   const all = sampleTimes(10, 6.1); assert.ok(all.length <= 20 && all.every((t, i) => i === 0 || t > all[i - 1]) && all.some(t => Math.abs(t - 6.3) < 0.01));
   assert.deepEqual(sampleTimes(10, null).length, 16); assert.deepEqual(evenTimes(0), []);
+  // a full run with a cue sheet: 8 even frames plus one just after each cue, at most 20, sorted, inside the clip
+  const cues = [0, 12, 18, 34, 48, 50, 68, 102, 110, 113].map(t => ({ t }));
+  const rt = runTimes(124, cues, null); assert.ok(rt.length <= 20 && rt.length >= 16, "run frames " + rt.length); assert.ok(rt.every((t, i) => i === 0 && t >= 0 || t > rt[i - 1])); assert.ok(rt.includes(50.8) && rt.includes(102.8)); assert.ok(rt.every(t => t < 124));
+  const many = runTimes(150, Array.from({ length: 30 }, (_, i) => ({ t: i * 4 })), null); assert.equal(many.length, 20);
+  assert.deepEqual(runTimes(124, cues.slice(0, 3), null), sampleTimes(124, null), "too few cues: plain sampling");
 });
 
 test("pose math: knee angle, working leg, arms vs shoulders, relevé, arm poses", () => {
