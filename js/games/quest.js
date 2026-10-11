@@ -32,7 +32,7 @@ export function buildStations(skill, dance, corrections = []){
   const name = skill.n; const drill = (dance.tricks || []).find(t => t.toLowerCase().startsWith(name.toLowerCase().split(/\s|→/)[0])) || "";
   const prep = drill.split(/(?<=[.!?])\s/).slice(1, 3).join(" ").trim() || drill.slice(0, 120) || `Warm up for the ${name}.`;
   const note = corrections.map(c => c.text).find(t => t.toLowerCase().includes(name.toLowerCase().split(/\s|→/)[0]));
-  const cue = note ? note.replace(/^[^:]*:\s*/, "") : skill.tip || "Clean lines. Eyes up.";
+  const cue = note ? note.replace(/^[^:]*:\s+/, "") : skill.tip || "Clean lines. Eyes up.";
   const loop = trickLoop(dance, name) || fallbackLoop(dance);
   return [
     { kind: "prep", title: "Prep", cue: prep, secs: 90, bar: "knees" },
