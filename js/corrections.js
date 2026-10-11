@@ -68,7 +68,7 @@ export function chooseWeekFix(corrections, today = todayStr()){
 let migrating = false;
 // Copy each dance's "Corrections to work on" lines into the collection, once the cloud has told us what's already there.
 // Card lines the teacher has since corrected. Their notes are removed (and never re-created from an edited card) so the old advice stops showing.
-export const RETIRED_LINES = { solo: ["Donut roll: chin tucked, roll over the shoulder, chest leads"] };
+export const RETIRED_LINES = { solo: ["Donut roll: chin tucked, roll over the shoulder, chest leads", "Point the foot and straighten the knee on the tailbone balance and every floor extension"] };
 export const retiredIds = () => new Set(Object.entries(RETIRED_LINES).flatMap(([danceId, lines]) => lines.map(t => migratedId(danceId, t))));
 export async function migrateDanceCorrections(){
   if (migrating || !settled("corrections") || !settled("dances")) return 0;

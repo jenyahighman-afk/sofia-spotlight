@@ -19,7 +19,13 @@ test("bars: no review = 70 each; a ticked check starts low, a flagged one full",
 });
 test("the music loop wraps the trick's cue; a trick without a cue has none", () => {
   const l = trickLoop(solo, "Cartwheel on the swell"); assert.deepEqual(l, { a: 44, b: 58, at: 50 });
-  assert.equal(trickLoop(solo, "Tailbone balance").at, 12); assert.equal(trickLoop(solo, "Nope"), null);
+  assert.equal(trickLoop(solo, "Side-sit leg reach").at, 15); assert.equal(trickLoop(solo, "Nope"), null);
+});
+test("side-sit leg reach: drill, note and music come from the solo card; the (~0:15) in the note isn't read as a label", () => {
+  const sk = skills.styles.solo.skills.find(s => s.id === "s-side-sit"); assert.equal(sk.n, "Side-sit leg reach");
+  const note = solo.corrections[0]; const st = buildStations(sk, solo, [{ text: note }]);
+  assert.ok(st[0].cue.startsWith("Arm slides up the leg"), st[0].cue); assert.equal(st[1].cue, "Side-sit leg reach ×5, slowly. " + note); assert.equal(st[2].loop.at, 15);
+  assert.ok(buildStations(sk, solo, [{ text: "Side-sit: knee straight" }])[1].cue.endsWith("slowly. knee straight"), "a real 'Name: ' label is still dropped");
 });
 test("three stations: prep from the drill, slow five with the open note or the tip, music timed to four passes", () => {
   const calypso = skills.styles.solo.skills.find(s => s.id === "s-calypso");

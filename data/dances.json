@@ -12,7 +12,7 @@
   "hair": "Per Hannah",
   "color": "coral",
   "music": "Track is 2:04. Soft verse 0:00–0:48. Big swell at 0:48, full volume to 1:52. Fade 1:52–2:00, silent by 2:00. In the loud section a strong beat lands about every 2.3 seconds: finish every shape ON it.",
-  "map": "~0:12 floor work & tailbone balance · ~0:18 lunge reach · ~0:34 attitude with arms up · ~0:50 cartwheel (right on the swell) · ~1:08 walkover/handstand · ~1:42 floor kick (donut roll comes after the walkover, calypso just before the scorpion and the ending — tap ＋ Cue here at the right moments) · ~1:50 passé turns · 1:53–2:03 floor ending — hold until the music is gone",
+  "map": "~0:11 drop to the floor & seated fold · ~0:15 side-sit leg reach (leg to the ceiling, arm traces it) · ~0:17 leg fans down, slide out long · ~0:34 attitude with arms up · ~0:50 cartwheel (right on the swell) · ~1:08 walkover/handstand · ~1:42 floor kick (donut roll comes after the walkover, calypso just before the scorpion and the ending — tap ＋ Cue here at the right moments) · ~1:50 passé turns · 1:53–2:03 floor ending — hold until the music is gone",
   "strengths": [
    "Floor work is smooth, no crashing in or out",
    "Full-body reach on the lunge (arms past the body)",
@@ -20,7 +20,7 @@
    "Straight standing leg in attitude and passé"
   ],
   "corrections": [
-   "Point the foot and straighten the knee on the tailbone balance and every floor extension",
+   "Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down.",
    "Side extension: commit to a clean attitude or straighten it — no halfway",
    "Eyes up: plan a focal point for every section, stop checking the mirror/Hannah",
    "Long arms overhead, shoulders down",
@@ -38,7 +38,7 @@
    "https://kellecompany.com/products/blossom-within-draped-skirt-1"
   ],
   "tricks": [
-   "Tailbone balance: seated leg extension with pointed foot, hold 5s ×5 each leg; boat pose 3×15s. Cue: lock the knee before the foot leaves the floor.",
+   "Side-sit leg reach (~0:15): sit on one hip, hand on the floor, leg straight up to the ceiling: 4 counts up, hold 2, 4 down, 6 each side. Arm slides up the leg, fingers past the toes. Cue: push the floor, reach the toe; knee stays straight as the leg fans down.",
    "Side extension: développé side in 4 counts up, hold 2, 4 down, at a counter — 6 each side. Side-lying leg lifts 2×12. Decide with Ms. Brittany: clean attitude or straight leg.",
    "Cartwheel on the swell: drill the 4 counts before it as dancing — reach, look, place. Head stays up until the hands go down. Legs pass through vertical along a floor line. Land with the arm finish on the beat.",
    "Walkover/handstand line: belly-to-wall handstand 3×10–15s, kick-ups to vertical with straight legs, split shape at the top. Wrists warmed up first. Kick-overs only with a spotter until cleared.",
@@ -84,9 +84,19 @@
     "move": "Opening walk — eyes to the back row"
    },
    {
-    "t": 12,
+    "t": 11,
     "lyric": "",
-    "move": "Floor work & tailbone balance"
+    "move": "Drop to the floor & seated fold"
+   },
+   {
+    "t": 15,
+    "lyric": "",
+    "move": "Side-sit leg reach — leg to the ceiling, arm traces it"
+   },
+   {
+    "t": 17,
+    "lyric": "",
+    "move": "Leg fans down, slide out long"
    },
    {
     "t": 18,
