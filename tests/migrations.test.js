@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime } from "../js/store.js";
+import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime, SOLO_V19, soloHasTailbone, receive, saveSoloFix, setBackend, S } from "../js/store.js";
 import { applyData } from "../js/data.js";
 import { PRACTICE_ITEMS, AERIAL } from "../js/data.js";
 
@@ -130,6 +130,46 @@ test("9 → 10: Dance Along routines in choreo get their defaults; Choreo Studio
   const r = migrateDoc("choreo", "r", { _v: 9, kind: "along", name: "Tutorial", url: "https://x/v.mp4" });
   assert.deepEqual(r.frames, []); assert.equal(r.fps, 8); assert.equal(r.best, 0); assert.deepEqual(r.seq, []); assert.equal(r._v, SCHEMA_VERSION);
   const c = migrateDoc("choreo", "c", { _v: 9, name: "My dance", style: "lyrical", seq: ["pose", "hold"] }); assert.equal("frames" in c, false); assert.deepEqual(c.seq, ["pose", "hold"]);
+});
+
+// The family's solo as it was stored before the floor section was re-set: the old lines plus things edited in-app.
+const OLD_MAP = "~0:12 floor work & tailbone balance · ~0:18 lunge reach · ~0:34 attitude with arms up · ~0:50 cartwheel (right on the swell) · 1:53–2:03 floor ending — hold until the music is gone";
+const oldSolo = () => ({ _v: 18, _at: 1, name: "Solo", notes: "my notes", map: OLD_MAP,
+  corrections: ["Point the foot and straighten the knee on the tailbone balance and every floor extension", "Long arms overhead, shoulders down", "My own line"],
+  tricks: ["Tailbone balance: seated leg extension with pointed foot, hold 5s ×5 each leg; boat pose 3×15s. Cue: lock the knee before the foot leaves the floor.", "Floor kick: kick from the hip"],
+  cues: [{ t: 0, lyric: "", move: "Opening walk" }, { t: 12, lyric: "words here", move: "Floor work & tailbone balance" }, { t: 18, lyric: "", move: "Lunge reach — pull the thread" }, { t: 50, lyric: "", move: "Cartwheel on the swell" }] });
+
+test("18 → 19: a stored solo with the tailbone balance gets the side-sit leg reach lines; everything else is kept", () => {
+  const d = migrateDoc("dances", "solo", oldSolo());
+  assert.equal(d.map, SOLO_V19.mapHead + " ~0:34 attitude with arms up · ~0:50 cartwheel (right on the swell) · 1:53–2:03 floor ending — hold until the music is gone");
+  assert.ok(d.map.startsWith("~0:11 drop to the floor & seated fold · ~0:15 side-sit leg reach (leg to the ceiling, arm traces it) · ~0:17 leg fans down, slide out long · ~0:34 attitude"));
+  assert.deepEqual(d.corrections, [SOLO_V19.correction, "Long arms overhead, shoulders down", "My own line"]);
+  assert.deepEqual(d.tricks, [SOLO_V19.trick, "Floor kick: kick from the hip"]);
+  assert.deepEqual(d.cues.map(c => c.t), [0, 11, 15, 17, 18, 50]); assert.equal(d.cues[1].lyric, "words here"); assert.equal(d.cues[2].move, "Side-sit leg reach — leg to the ceiling, arm traces it");
+  assert.equal(soloHasTailbone(d), false); assert.equal(d.notes, "my notes"); assert.equal(d.name, "Solo"); assert.equal(d._v, SCHEMA_VERSION);
+  // A solo override with none of the old lines, another dance, or a solo already at 19 is left alone.
+  assert.deepEqual(migrateDoc("dances", "solo", { _v: 18, musicUrl: "x" }), { _v: SCHEMA_VERSION, musicUrl: "x" });
+  assert.equal(migrateDoc("dances", "trio", { _v: 18, map: "tailbone" }).map, "tailbone");
+  assert.equal(migrateDoc("dances", "solo", { _v: 19, map: "tailbone" }).map, "tailbone");
+  // No "~0:34" to cut at: only the tailbone part of the map is swapped.
+  assert.equal(migrateDoc("dances", "solo", { _v: 18, map: "~0:05 walk · ~0:12 tailbone balance · ~0:40 turn" }).map, "~0:05 walk · " + SOLO_V19.mapHead.replace(/ ·$/, "") + " · ~0:40 turn");
+  // The step must not touch the stored object it was given.
+  const raw = oldSolo(); migrateDoc("dances", "solo", raw); assert.deepEqual(raw, oldSolo());
+});
+
+test("18 → 19 reaches the cloud: once the server confirms the dances, the old solo is written back once in its new form", async () => {
+  const writes = []; setBackend({ set: async (col, id, rec) => { writes.push({ col, id, rec }); }, del: async () => {} });
+  try {
+    receive("dances", { solo: oldSolo() }, { fromCache: true }); assert.equal(await saveSoloFix(), false, "waits for the server");
+    receive("dances", { solo: oldSolo() }, { fromCache: false }); assert.equal(S.dances.solo.corrections[0], SOLO_V19.correction);
+    assert.equal(await saveSoloFix(), true); assert.equal(await saveSoloFix(), false, "only once");
+    assert.equal(writes.length, 1); const w = writes[0]; assert.equal(w.col, "dances"); assert.equal(w.id, "solo"); assert.equal(w.rec._v, SCHEMA_VERSION);
+    assert.equal(soloHasTailbone(w.rec), false); assert.equal(w.rec.notes, "my notes"); assert.deepEqual(w.rec.corrections.slice(1), ["Long arms overhead, shoulders down", "My own line"]);
+    // The cloud echoes the new copy back: nothing more to do. A solo that never had the old lines is never written.
+    receive("dances", { solo: w.rec }, { fromCache: false }); assert.equal(await saveSoloFix(), false);
+    receive("dances", { solo: { _v: 18, musicUrl: "x" } }, { fromCache: false }); assert.equal(await saveSoloFix(), false);
+    receive("dances", {}, { fromCache: false }); assert.equal(await saveSoloFix(), false); assert.equal(writes.length, 1);
+  } finally { setBackend(null); }
 });
 
 test("17 → 18: settings.ritual keeps only string ids", () => {
