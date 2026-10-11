@@ -78,6 +78,11 @@ test("an explicit #tag prefix on a card line wins and is stripped from the text;
   assert.equal(donut.tag, "feet"); assert.ok(!donut.text.startsWith("#"));
 });
 
+test("the tailbone-balance line is retired and the card carries the side-sit leg reach note instead (still a feet note)", () => {
+  const ids = retiredIds(); assert.ok(ids.has(migratedId("solo", "Point the foot and straighten the knee on the tailbone balance and every floor extension")));
+  const now = recordsFromDance(dances.find(d => d.id === "solo"), "2026-10-11"); assert.ok(now.every(r => !ids.has(r.id) && !/tailbone/i.test(r.text)));
+  const first = now[0]; assert.match(first.text, /^Point the foot and keep the knee straight on the side-sit leg reach \(~0:15\)/); assert.equal(first.tag, "feet");
+});
 test("the corrected donut-roll line is retired: its old note id is on the retired list and the card no longer carries it", () => {
   const ids = retiredIds(); assert.ok(ids.has(migratedId("solo", "Donut roll: chin tucked, roll over the shoulder, chest leads")));
   const now = recordsFromDance(dances.find(d => d.id === "solo"), "2026-10-04"); assert.ok(now.every(r => !ids.has(r.id))); assert.ok(now.some(r => /head ALL the way back/.test(r.text) && r.tag === "feet"));
