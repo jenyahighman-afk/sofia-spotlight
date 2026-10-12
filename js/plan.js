@@ -31,7 +31,7 @@ export function buildPlan(opts){
   if (nAerial && !comp) { const done = new Set(opts.aerialDone || []); const open = (opts.aerial || []).filter(a => !done.has(a.id) && a.section !== "In class only");
     const want = wd === 4 ? (a) => a.section === "Strength" : (a) => a.section.startsWith("Drills");
     const picks = rotate(open.filter(want), nAerial, day); if (picks.length < nAerial) picks.push(...rotate(open.filter(a => !want(a) && !picks.includes(a)), nAerial - picks.length, day));
-    for (const a of picks) items.push({ id: "aerial-" + a.id, text: "Aerial mission: " + a.text, secs: 90, kind: "aerial", pose: (pool.aerialPoses || {})[a.section] || "cartwheel", aerialId: a.id }); }
+    for (const a of picks) items.push({ id: "aerial-" + a.id, text: "Aerial mission: " + a.text, secs: 90, kind: "aerial", pose: (pool.aerialPoses || {})[a.section] || "cartwheel", aerialId: a.id, ...(a.how ? { how: a.how } : {}) }); }
   // Runs: only dances that exist (built-in or added) and aren't deleted.
   const have = new Set((opts.dances || []).map(d => d.id));
   for (const r of pool.runs || []) if (!r.dance || have.has(r.dance)) items.push({ ...r, kind: "run" });

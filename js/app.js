@@ -33,6 +33,7 @@ import { settled } from "./store.js";
 import { installErrorCapture, installReportLinks, guard, renderReports } from "./reports.js";
 import { migrateDanceCorrections } from "./corrections.js";
 import { checkBadges } from "./badges.js";
+import { refreshSeedFiles } from "./seed.js";
 
 const VERSION_KEY = "spotlight:version";
 
@@ -69,7 +70,7 @@ function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.class
     // Locked Grown-ups pages bounce to the PIN pad (which remembers where to go next).
     setGuard(p => { if (GROWNUP_PAGES.includes(p) && !isUnlocked()) { $("#pinTarget").value = p; $("#pinIn").value = ""; $("#pinMsg").textContent = ""; return "pin"; } return p; });
     let restored = false;
-    onChange(() => { renderAll(); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); checkBadges().catch(console.warn); });
+    onChange(() => { renderAll(); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); refreshSeedFiles().then(names => { if (names.length) toast("New version in My files: " + names.join(", "), 3500); }).catch(console.warn); checkBadges().catch(console.warn); });
     renderAll();
   } catch (e) { console.error(e); return fatal("The app couldn't load its content: " + (e.message || e)); }
 

@@ -142,7 +142,7 @@ js/games/*.js         one file per game: choreo, oops, trio, compday, sparkle
 js/views/*.js         one file per screen: home (Today), dances, practice, play, me, skillcheck, events, schedule, notes, lists, settings
 data/*.json           ALL season content — edit these, not the code
 seed-data/            what Sofia saved in the Claude-hosted version; imported on first "Create family space"
-files/                printable documents added to "My files" on first create
+files/                printable documents added to "My files" on first create; a replaced one is swapped into "My files" on the next open (run tools/seed-manifest.cjs after replacing)
 firestore.rules, storage.rules, firebase.json, .firebaserc
 sw.js, manifest.json, icons/    PWA
 tests/                node --test: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke (every screen renders in Node)
@@ -163,7 +163,7 @@ Everything the app shows out of the box lives in `data/`. Edit the JSON, run `np
 | `practice-pool.json`, `exercises.json` | The practice pools (warm-up, core, legs, flexibility, technique, runs; each item has a stable `id`, `secs`, `pose`, `tags`) and the exercise animations for practice mode. Add items freely; don't reuse or rename ids. `practice-items.json` is the old fixed list, kept for the schema-1 migration. |
 | `phases.json` | The 15-week plan. |
 | `packs.json` | Packing lists (`comp`, `convention`, `rehearsal`). |
-| `aerial.json` | Aerial progression steps (stable `id`, `section`, `text`). |
+| `aerial.json` | Aerial progression steps (stable `id`, `section`, `text`) and the "How to do it" fold under each: `how`, `right`, `wrong`. The printable `files/Sofia-Aerial-Mission-Print.pdf` uses the same words. |
 | `skills.json` | Skill ladders per style (stable `id`, `n`). States are stored against the id. |
 | `season.json` | Season dates, studio address, timezone (used by the calendar export). |
 | `styles.json`, `moves.json` | Choreo Studio styles and moves. A move's keyframes are `{ "arms": "up"\|"second"\|"low"\|"first", ...joint overrides }` on top of `base`. |
@@ -261,7 +261,7 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ## Data safety
 - Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 19) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
-- Schema 19 (1.12.1): content fix, no new fields. The solo's floor section was re-set (side-sit leg reach replaces the tailbone balance); a stored `dances/solo` that still has the old map, correction, trick or cue lines gets the new ones on read, and `saveSoloFix()` writes that copy back to the family's Firestore doc once. The old tailbone note is retired from the corrections tracker. The new skill is `s-side-sit` (fresh bars and gold shape); old `s-tailbone` records are left as they are.
+- Schema 19 (1.12.1): content fix, no new fields. The solo's floor section was re-set (side-sit leg reach replaces the tailbone balance); a stored `dances/solo` that still has the old map, correction, trick or cue lines gets the new ones on read, and `saveSoloFix()` writes that copy back to the family's Firestore doc once. The lunge reach cue and strengths line are dropped the same way. The old tailbone note is retired from the corrections tracker. The new skill is `s-side-sit` (fresh bars and gold shape); old `s-tailbone` records are left as they are. Also `files.seedRev`: which version of a built-in printable a "My files" copy is (the `rev` in `seed-data/manifest.json`); `refreshSeedFiles()` in `js/seed.js` replaces a copy whose name matches a changed built-in file, once, after checking the download against the rev. Files the family deleted are never added back.
 - Schema 18 (1.12.0): `settings.ritual` (pre-stage routine step ids).
 - Schema 17 (1.11.0): `practice.feel` / `practice.level` (Today's check-in and size), `settings.palette`, `settings.prompter`.
 - Schema 16 (1.10.0): `settings.mode` (auto / learn / comp), `practice.compDone[]`, `practice.compFeel`.
