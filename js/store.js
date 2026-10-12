@@ -5,7 +5,7 @@ import { daysUntil } from "./util.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 19;
+export const SCHEMA_VERSION = 20;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -16,8 +16,8 @@ const V1_AERIAL_IDS = ["cartwheel-clean","one-hand-far","one-hand-near","dive-ca
 
 export const DEFAULT_PIN = "2027";
 
-// Schema 19: the solo's floor section was re-set; a side-sit leg reach replaces the tailbone balance and the lunge reach is
-// gone. These are the new lines, frozen here like the V1 lists so the step keeps working after data/dances.json is edited again.
+// Schema 19: the solo's floor section was re-set; a side-sit leg reach replaces the tailbone balance and the 0:18 lunge reach
+// cue is gone. These are the new lines, frozen here like the V1 lists so the step keeps working after data/dances.json is edited again.
 export const SOLO_V19 = {
   mapHead: "~0:11 drop to the floor & seated fold · ~0:15 side-sit leg reach (leg to the ceiling, arm traces it) · ~0:17 leg fans down, slide out long ·",
   correction: "Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down.",
@@ -26,9 +26,13 @@ export const SOLO_V19 = {
 };
 const TAILBONE = /tailbone/i, LUNGE_CUE = /^lunge reach\b/i, LUNGE_STRENGTH = /reach on the lunge/i;
 const isLungeCue = (c) => LUNGE_CUE.test(String((c && c.move) || ""));
-// True when a stored solo still has old lines step 19 rewrites: the tailbone balance (map, corrections, tricks, cues) or the lunge reach (cue, strengths).
+// True when a stored solo still has old lines step 19 rewrites: the tailbone balance (map, corrections, tricks, cues) or the lunge reach cue.
 export const soloHasOldFloor = (doc) => !!doc && ([doc.map, doc.corrections, doc.tricks, doc.cues].some(f => f !== undefined && TAILBONE.test(JSON.stringify(f)))
-  || (Array.isArray(doc.cues) && doc.cues.some(isLungeCue)) || (Array.isArray(doc.strengths) && doc.strengths.some(l => LUNGE_STRENGTH.test(String(l)))));
+  || (Array.isArray(doc.cues) && doc.cues.some(isLungeCue)));
+// Schema 20: the lunge-reach strength stays on the card. The 1.12.1 build of step 19 dropped it from a stored solo's
+// strengths (and saved that back), so step 20 puts it back in its old place when it is missing.
+export const SOLO_LUNGE_STRENGTH = "Full-body reach on the lunge (arms past the body)";
+export const soloMissingLungeStrength = (doc) => !!doc && Array.isArray(doc.strengths) && doc.strengths.length > 0 && !doc.strengths.some(l => LUNGE_STRENGTH.test(String(l)));
 // Swap only the old lines; whatever else the family edited into the stored solo stays as it is.
 function fixSoloFloor(doc){
   if (typeof doc.map === "string" && TAILBONE.test(doc.map)) { const i = doc.map.indexOf("~0:34"); doc.map = i >= 0 ? SOLO_V19.mapHead + " " + doc.map.slice(i) : doc.map.split(" · ").map(s => TAILBONE.test(s) ? SOLO_V19.mapHead.replace(/ ·$/, "") : s).join(" · "); }
@@ -38,7 +42,6 @@ function fixSoloFloor(doc){
     doc.cues = doc.cues.flatMap(c => TAILBONE.test(String((c && c.move) || "")) ? SOLO_V19.cues.map((n, i) => ({ t: n.t, lyric: i ? "" : String(c.lyric || ""), move: n.move })) : [c]).sort((a, b) => a.t - b.t);
   }
   if (Array.isArray(doc.cues) && doc.cues.some(isLungeCue)) doc.cues = doc.cues.filter(c => !isLungeCue(c));
-  if (Array.isArray(doc.strengths)) doc.strengths = doc.strengths.filter(l => !LUNGE_STRENGTH.test(String(l)));
   return doc;
 }
 
@@ -139,10 +142,12 @@ export const MIGRATIONS = {
   // 18 (pre-stage routine): settings.ritual = ordered step ids. Normalized when present.
   18: (col, id, doc) => { if (col === "settings" && doc.ritual !== undefined) doc.ritual = Array.isArray(doc.ritual) ? doc.ritual.filter(x => typeof x === "string") : []; return doc; },
   // 19 (solo floor re-set): a stored solo that still has the tailbone balance gets the side-sit leg reach lines (SOLO_V19);
-  // the lunge reach cue and strengths line are dropped.
+  // the lunge reach cue is dropped.
   // This one changes content, not just shape, so saveSoloFix() also writes it back to the family's cloud copy once.
   // files.seedRev: which version of a built-in printable this copy is (seed-data/manifest.json rev). Kept when a string.
-  19: (col, id, doc) => { if (col === "dances" && id === "solo") fixSoloFloor(doc); if (col === "files" && doc.seedRev !== undefined && typeof doc.seedRev !== "string") delete doc.seedRev; return doc; }
+  19: (col, id, doc) => { if (col === "dances" && id === "solo") fixSoloFloor(doc); if (col === "files" && doc.seedRev !== undefined && typeof doc.seedRev !== "string") delete doc.seedRev; return doc; },
+  // 20 (lunge strength stays): a stored solo whose strengths lost the lunge-reach line gets it back as the second line. Written back like 19.
+  20: (col, id, doc) => { if (col === "dances" && id === "solo" && soloMissingLungeStrength(doc)) { doc.strengths = [...doc.strengths]; doc.strengths.splice(1, 0, SOLO_LUNGE_STRENGTH); } return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
@@ -172,7 +177,7 @@ function notify(){ clearTimeout(renderTimer); renderTimer = setTimeout(() => cha
 
 // Called by the backend with the full current contents of one collection ({id: doc}). meta.fromCache tells whether the server has confirmed it.
 export function receive(col, docs, meta = {}){
-  if (col === "dances") soloStale = !!(docs && docs.solo) && docVersion(docs.solo) < 19 && soloHasOldFloor(docs.solo);
+  if (col === "dances") { const raw = docs && docs.solo, v = docVersion(raw); soloStale = !!raw && ((v < 19 && soloHasOldFloor(raw)) || (v < 20 && soloMissingLungeStrength(raw))); }
   const migrated = migrateCollection(col, docs);
   if (col === "settings") S.settings = migrated.main || {}; else S[col] = migrated;
   received.any.add(col); if (meta.fromCache === false) received.server.add(col);
@@ -194,9 +199,9 @@ export async function storeDel(col, id){
   notify();
   if (backend) await backend.del(col, id);
 }
-// The cloud half of step 19. receive() flags a stored solo that is still below schema 19 with old lines; once the server
-// has confirmed the dances, the migrated copy is saved back, so the Firestore doc itself changes. After that save its _v is 19
-// and it is never flagged again. Two phones doing it at once write the same thing.
+// The cloud half of steps 19 and 20. receive() flags a stored solo below schema 19 with old lines, or below 20 without the
+// lunge strength; once the server has confirmed the dances, the migrated copy is saved back, so the Firestore doc itself
+// changes. After that save its _v is current and it is never flagged again. Two phones doing it at once write the same thing.
 let soloStale = false;
 export async function saveSoloFix(){
   if (!soloStale || !settled("dances") || !S.dances.solo) return false;
