@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime, SOLO_V19, soloHasOldFloor, receive, saveSoloFix, setBackend, S } from "../js/store.js";
+import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime, SOLO_V19, SOLO_LUNGE_STRENGTH, soloHasOldFloor, receive, saveSoloFix, setBackend, S } from "../js/store.js";
 import { applyData } from "../js/data.js";
 import { PRACTICE_ITEMS, AERIAL } from "../js/data.js";
 
@@ -139,13 +139,13 @@ const oldSolo = () => ({ _v: 18, _at: 1, name: "Solo", notes: "my notes", map: O
   tricks: ["Tailbone balance: seated leg extension with pointed foot, hold 5s ×5 each leg; boat pose 3×15s. Cue: lock the knee before the foot leaves the floor.", "Floor kick: kick from the hip"],
   cues: [{ t: 0, lyric: "", move: "Opening walk" }, { t: 12, lyric: "words here", move: "Floor work & tailbone balance" }, { t: 18, lyric: "", move: "Lunge reach — pull the thread" }, { t: 50, lyric: "", move: "Cartwheel on the swell" }] });
 
-test("18 → 19: a stored solo with the tailbone balance gets the side-sit leg reach lines, the lunge reach goes; everything else is kept", () => {
+test("18 → 19: a stored solo with the tailbone balance gets the side-sit leg reach lines, the lunge reach cue goes; everything else (the lunge strength too) is kept", () => {
   const d = migrateDoc("dances", "solo", oldSolo());
   assert.equal(d.map, SOLO_V19.mapHead + " ~0:34 attitude with arms up · ~0:50 cartwheel (right on the swell) · 1:53–2:03 floor ending — hold until the music is gone");
   assert.ok(d.map.startsWith("~0:11 drop to the floor & seated fold · ~0:15 side-sit leg reach (leg to the ceiling, arm traces it) · ~0:17 leg fans down, slide out long · ~0:34 attitude"));
   assert.deepEqual(d.corrections, [SOLO_V19.correction, "Long arms overhead, shoulders down", "My own line"]);
   assert.deepEqual(d.tricks, [SOLO_V19.trick, "Floor kick: kick from the hip"]);
-  assert.deepEqual(d.cues.map(c => c.t), [0, 11, 15, 17, 50]); assert.deepEqual(d.strengths, ["Floor work is smooth"]); assert.equal(d.cues[1].lyric, "words here"); assert.equal(d.cues[2].move, "Side-sit leg reach — leg to the ceiling, arm traces it");
+  assert.deepEqual(d.cues.map(c => c.t), [0, 11, 15, 17, 50]); assert.deepEqual(d.strengths, ["Floor work is smooth", "Full-body reach on the lunge (arms past the body)"]); assert.equal(d.cues[1].lyric, "words here"); assert.equal(d.cues[2].move, "Side-sit leg reach — leg to the ceiling, arm traces it");
   assert.equal(soloHasOldFloor(d), false); assert.equal(d.notes, "my notes"); assert.equal(d.name, "Solo"); assert.equal(d._v, SCHEMA_VERSION);
   // A solo override with none of the old lines, another dance, or a solo already at 19 is left alone.
   assert.deepEqual(migrateDoc("dances", "solo", { _v: 18, musicUrl: "x" }), { _v: SCHEMA_VERSION, musicUrl: "x" });
@@ -163,6 +163,17 @@ test("18 → 19: files.seedRev is kept when a string and dropped otherwise", () 
   assert.equal("seedRev" in migrateDoc("files", "f", { _v: 18, name: "a.pdf" }), false);
 });
 
+test("19 → 20: a stored solo whose strengths lost the lunge-reach line gets it back as the second line; nothing else changes", () => {
+  const d = migrateDoc("dances", "solo", { _v: 19, name: "Solo", strengths: ["Floor work is smooth", "Committed acro"] });
+  assert.deepEqual(d.strengths, ["Floor work is smooth", SOLO_LUNGE_STRENGTH, "Committed acro"]); assert.equal(d.name, "Solo"); assert.equal(d._v, SCHEMA_VERSION);
+  const kept = ["A", "Big full-body reach on the lunge", "B"]; assert.deepEqual(migrateDoc("dances", "solo", { _v: 19, strengths: kept }).strengths, kept, "already there in other words");
+  assert.deepEqual(migrateDoc("dances", "solo", { _v: 19, strengths: [] }).strengths, [], "an emptied list stays empty");
+  assert.equal("strengths" in migrateDoc("dances", "solo", { _v: 19, musicUrl: "x" }), false, "never invented");
+  assert.deepEqual(migrateDoc("dances", "solo", { _v: 20, strengths: ["A"] }).strengths, ["A"], "a doc already at 20 is left alone");
+  assert.deepEqual(migrateDoc("dances", "trio", { _v: 19, strengths: ["A"] }).strengths, ["A"], "other dances are left alone");
+  const raw = { _v: 19, strengths: ["A", "B"] }; migrateDoc("dances", "solo", raw); assert.deepEqual(raw.strengths, ["A", "B"], "the stored object is not mutated");
+});
+
 test("18 → 19 reaches the cloud: once the server confirms the dances, the old solo is written back once in its new form", async () => {
   const writes = []; setBackend({ set: async (col, id, rec) => { writes.push({ col, id, rec }); }, del: async () => {} });
   try {
@@ -175,9 +186,14 @@ test("18 → 19 reaches the cloud: once the server confirms the dances, the old 
     receive("dances", { solo: w.rec }, { fromCache: false }); assert.equal(await saveSoloFix(), false);
     receive("dances", { solo: { _v: 18, musicUrl: "x" } }, { fromCache: false }); assert.equal(await saveSoloFix(), false);
     receive("dances", {}, { fromCache: false }); assert.equal(await saveSoloFix(), false); assert.equal(writes.length, 1);
-    // Only the lunge reach left (no tailbone): still fixed and written back once.
+    // Only the lunge reach cue left (no tailbone): still fixed and written back once.
     receive("dances", { solo: { _v: 18, cues: [{ t: 18, lyric: "", move: "Lunge reach — pull the thread" }, { t: 50, lyric: "", move: "Cartwheel" }] } }, { fromCache: false });
     assert.deepEqual(S.dances.solo.cues.map(c => c.t), [50]); assert.equal(await saveSoloFix(), true); assert.equal(writes.length, 2);
+    // A solo already saved by 1.12.1 (schema 19) without the lunge strength gets it back, written once.
+    receive("dances", { solo: { _v: 19, strengths: ["Floor work is smooth", "Committed acro"] } }, { fromCache: false });
+    assert.equal(S.dances.solo.strengths[1], SOLO_LUNGE_STRENGTH); assert.equal(await saveSoloFix(), true); assert.equal(writes.length, 3);
+    assert.deepEqual(writes[2].rec.strengths, ["Floor work is smooth", SOLO_LUNGE_STRENGTH, "Committed acro"]); assert.equal(writes[2].rec._v, SCHEMA_VERSION);
+    receive("dances", { solo: writes[2].rec }, { fromCache: false }); assert.equal(await saveSoloFix(), false, "the saved copy is current");
   } finally { setBackend(null); }
 });
 
