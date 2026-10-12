@@ -29,7 +29,7 @@ function renderPractice(){
   if($("#practiceNote")!==document.activeElement) $("#practiceNote").value=rec.note||"";
   $("#practiceDate").value=date;
   const ad=new Set(S.settings.aerial||[]); let lastSec="";
-  $("#aerialList").innerHTML=AERIAL.map(it=>{ const h=(it.section!==lastSec)?`<div class="chip sun" style="margin-top:8px">${esc(it.section)}</div>`:""; lastSec=it.section; return h+`<label class="pitem ${ad.has(it.id)?"done":""}"><input type="checkbox" ${ad.has(it.id)?"checked":""} onchange="toggleAerial('${it.id}')"><span class="grow">${esc(it.text)}</span>${it.section.startsWith("Drills")||it.section==="Prerequisites"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}</label>`; }).join("");
+  $("#aerialList").innerHTML=AERIAL.map(it=>{ const h=(it.section!==lastSec)?`<div class="chip sun" style="margin-top:8px">${esc(it.section)}</div>`:""; lastSec=it.section; return h+`<label class="pitem ${ad.has(it.id)?"done":""}"><input type="checkbox" ${ad.has(it.id)?"checked":""} onchange="toggleAerial('${it.id}')"><span class="grow">${esc(it.text)}</span>${it.section.startsWith("Drills")||it.section==="Prerequisites"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}</label>${aerialHow(it)}`; }).join("");
   const apct=Math.round(100*[...ad].filter(id=>AERIAL.some(a=>a.id===id)).length/AERIAL.length); $("#aerialPct").textContent=apct+"%";
   $("#phases").innerHTML=PHASES.map(p=>`<div class="check"><span class="chip violet">${esc(p.d)}</span><span><b>${esc(p.n)}</b><br><span class="small">${esc(p.g)}</span></span></div>`).join("");
   const hist=Object.entries(S.practice).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30);
@@ -55,6 +55,8 @@ async function onCheck(e){
 }
 async function saveNote(){ const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; await storeSet("practice",date,{...rec,note:$("#practiceNote").value}); toast("Saved"); }
 async function toggleAerial(id){ const ad=new Set(S.settings.aerial||[]); ad.has(id)?ad.delete(id):ad.add(id); await storeSet("settings","main",{...S.settings,aerial:[...ad]}); if(AERIAL.every(a=>ad.has(a.id))){ toast("AERIAL UNLOCKED 🎉"); confetti(); } checkBadges(); }
+// The "How to do it" fold under an aerial step: what to do, what right looks like, what to watch for (data/aerial.json).
+export const aerialHow=(it)=>it&&it.how?`<details class="more ahow"><summary>How to do it</summary><p class="small">${esc(it.how)}</p>${it.right?`<p class="small"><b>✓ Right:</b> ${esc(it.right)}</p>`:""}${it.wrong?`<p class="small"><b>⚠ Watch for:</b> ${esc(it.wrong)}</p>`:""}</details>`:"";
 export function confetti(){
   const box=document.createElement("div"); box.className="confetti"; const colors=["#FF5C93","#F4C86A","#C9A7F5","#F7A8C6","#2ED3C8","#fff"];
   for(let i=0;i<70;i++){ const s=document.createElement("i"); s.style.left=Math.random()*100+"%"; s.style.background=colors[i%colors.length]; s.style.animationDelay=(Math.random()*0.6)+"s"; s.style.animationDuration=(1.6+Math.random()*1.2)+"s"; s.style.transform=`rotate(${Math.random()*360}deg)`; box.appendChild(s); }

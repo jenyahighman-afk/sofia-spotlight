@@ -164,6 +164,7 @@ details.more>summary{font-size:.9rem;color:var(--ink-2)} details.more[open]>summ
 .pitem{display:flex;gap:10px;align-items:center;padding:11px 8px;border-bottom:1px dashed var(--line);font-size:1rem;line-height:1.3;cursor:pointer;border-radius:10px}
 .pitem input{width:26px;height:26px;accent-color:#FF5C93;flex:none}
 .pitem .pk{font-size:1.2rem;flex:none} .pitem.done{color:var(--ink-2);text-decoration:line-through;background:var(--blush)}
+.ahow{border-top:0;margin:0 0 4px 44px;padding:2px 0 6px} .ahow p{margin:4px 0;line-height:1.4}
 details.acc{padding:10px 14px} details.acc>summary{list-style:none;display:flex;align-items:center;gap:8px;font-family:Fredoka;font-size:1.1rem;cursor:pointer}
 details.acc>summary::-webkit-details-marker{display:none} details.acc>summary:after{content:"\25B8";margin-left:auto;color:var(--ink-2);transition:transform .15s} details.acc[open]>summary:after{transform:rotate(90deg)}
 details.acc[open]>summary{margin-bottom:8px}
@@ -233,7 +234,7 @@ body.modal{overflow:hidden}
 .pm-top{display:flex;align-items:center;justify-content:center;gap:14px;width:100%}
 .pm-dancer{width:120px;height:170px;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:14px;max-height:none!important;margin:0!important}
 .pm-ring{width:110px;height:110px}
-.pm-item{text-align:center;padding:6px 10px} .pm-kind{font-size:2.2rem;line-height:1} .pm-text{font-family:Fredoka;font-size:1.5rem;line-height:1.2;margin-top:4px}
+.pm-item{text-align:center;padding:6px 10px} .pm-kind{font-size:2.2rem;line-height:1} .pm-text{font-family:Fredoka;font-size:1.5rem;line-height:1.2;margin-top:4px} .pm-how{margin:8px auto 0;max-width:34rem;color:var(--ink-2);line-height:1.4}
 .pm-timer{text-align:center} .pm-clock{font-family:Fredoka;font-size:3.4rem;line-height:1;color:#FF5C93} .pm-clock.paused{color:var(--ink-2)}
 .pm-mode{justify-content:center}
 .coach-line{font-family:Fredoka;font-size:1.2rem;margin:4px 0 10px}
