@@ -2,86 +2,129 @@
  {
   "id": "cartwheel-clean",
   "section": "Prerequisites",
-  "text": "Cartwheel: straight arms and legs, fast, lands facing the start"
+  "text": "Cartwheel: straight arms and legs, fast, lands facing the start",
+  "how": "Lunge, then hand, hand, foot, foot along one straight line on the floor. The legs go straight over the top, wide like a star. Finish in a lunge facing where you started.",
+  "right": "Arms and legs stay straight the whole way, it's quick, and hands and feet all land on the line.",
+  "wrong": "Bent knees or elbows, legs swinging round the side instead of over the top, or the head dropping before the hands go down."
  },
  {
   "id": "one-hand-far",
   "section": "Prerequisites",
-  "text": "One-hand cartwheel on the FAR hand, 10 clean in a row"
+  "text": "One-hand cartwheel on the FAR hand, 10 clean in a row",
+  "how": "A normal cartwheel, but only the FAR hand goes down: the second hand, the one farther along the line. The other arm stays up by the ear. Kick the legs over fast so the one hand only has to help.",
+  "right": "10 in a row with straight legs, landing in a lunge, and the free hand never reaching for the floor.",
+  "wrong": "The free hand sneaking down, the arm bending, or the legs slowing and dropping. (Near and far: check with the Acro teacher that she uses the words the same way.)"
  },
  {
   "id": "one-hand-near",
   "section": "Prerequisites",
-  "text": "One-hand cartwheel on the NEAR hand, 10 clean in a row"
+  "text": "One-hand cartwheel on the NEAR hand, 10 clean in a row",
+  "how": "Same as the far-hand one, but only the NEAR hand goes down: the first hand, the one closest to where you started. The other arm stays up by the ear.",
+  "right": "10 in a row with straight legs, landing in a lunge, and the free hand never reaching for the floor.",
+  "wrong": "The free hand sneaking down, the arm bending, or the legs slowing and dropping."
  },
  {
   "id": "dive-cartwheel",
   "section": "Prerequisites",
-  "text": "Dive cartwheel (small hop before the hands) on the mat"
+  "text": "Dive cartwheel (small hop before the hands) on the mat",
+  "how": "From the hurdle, push off the front leg so both feet leave the floor for a moment before the hands land. Then it's a normal cartwheel: hand, hand, foot, foot. Start with a tiny hop; it grows with practice. On the mat.",
+  "right": "A small moment in the air, straight arms reaching long, a soft landing in a lunge.",
+  "wrong": "Diving head-first at the floor, bent arms catching the weight, or going big before a small one is clean."
  },
  {
   "id": "roundoff",
   "section": "Prerequisites",
-  "text": "Round-off landing feet together, chest up"
+  "text": "Round-off landing feet together, chest up",
+  "how": "Hurdle and lunge like a cartwheel, but as the legs pass over the top, snap them together and turn so both feet land at the same moment, facing back the way you came.",
+  "right": "Both feet land together, chest up, arms up by the ears.",
+  "wrong": "Feet landing one after the other, or the chest still down at the floor on the landing."
  },
  {
   "id": "single-leg-squats",
   "section": "Strength",
-  "text": "10 single-leg squats per leg"
+  "text": "10 single-leg squats per leg",
+  "how": "Stand on one leg with the other foot just off the floor in front. Bend the standing knee slowly, sitting back as if onto a chair, then stand up tall. A hand on a counter for balance is fine.",
+  "right": "The knee points over the toes, slow down and slow up, hips stay level.",
+  "wrong": "The knee falling inward, dropping down fast, or bouncing up."
  },
  {
   "id": "hollow-hold",
   "section": "Strength",
-  "text": "30-second hollow hold"
+  "text": "30-second hollow hold",
+  "how": "Lie on your back. Press the lower back into the floor, arms by the ears, legs straight and together. Lift the shoulders and legs a little off the floor, like a banana, and hold.",
+  "right": "The lower back stays glued to the floor for the whole 30 seconds.",
+  "wrong": "The lower back lifting. If it does, bend the knees or lift the legs higher until it stays down."
  },
  {
   "id": "jump-lunges",
   "section": "Strength",
-  "text": "20 jump lunges without stopping"
+  "text": "20 jump lunges without stopping",
+  "how": "Start in a lunge. Jump up, switch legs in the air, and land softly in a lunge with the other leg in front. Keep going.",
+  "right": "Soft, quiet landings, the front knee over the ankle, chest tall.",
+  "wrong": "Loud, stiff landings, or the front knee falling inward."
  },
  {
   "id": "long-jump",
   "section": "Strength",
-  "text": "Standing long jump past my own height"
+  "text": "Standing long jump past my own height",
+  "how": "Both feet behind a line. Swing the arms back and bend, then swing them forward and jump as far as you can. Land on both feet and freeze.",
+  "right": "Two-foot take-off and a soft landing with bent knees. Measure from the line to the back of the nearer heel and compare with her height.",
+  "wrong": "Stepping or falling backward on the landing: that jump doesn't count."
  },
  {
   "id": "hurdle-drill",
   "section": "Drills (mat only)",
-  "text": "Hurdle drill: step-hurdle-lunge, arms swing up, chest tall ×10"
+  "text": "Hurdle drill: step-hurdle-lunge, arms swing up, chest tall ×10",
+  "how": "This is the wind-up. Stand tall, arms up. It works like a skip: step onto the back foot and hop on it while the front knee lifts, land, then reach the front leg forward into a lunge. The arms swing up by the ears as you land. Hold the lunge 2 seconds.",
+  "right": "A small, low, forward hop (not a high jump). In the lunge: front knee bent over the toes, back leg straight, shoulders over the hips, arms straight by the ears, eyes forward.",
+  "wrong": "The chest tipping forward in the lunge, looking at the floor, arms reaching forward instead of up, or the front knee falling inward."
  },
  {
   "id": "front-leg-drive",
   "section": "Drills (mat only)",
-  "text": "Front-leg drive: lunge → tall jump, back leg kicks up ×10"
+  "text": "Front-leg drive: lunge → tall jump, back leg kicks up ×10",
+  "how": "The engine, and the most important drill on the page. From the hurdle lunge, push the floor away HARD with the front leg and jump straight up. The back leg kicks up behind you, fast, straight and pointed. Land softly on the push leg with a bent knee. Reset between each one.",
+  "right": "Real air, a fast kick (not a slow lift), and the chest stays up the whole time.",
+  "wrong": "The chest dropping to get the leg higher (that's the #1 reason aerials don't work), a bent back leg, a tiny push, or a stiff landing."
  },
  {
   "id": "fingertip-cartwheels",
   "section": "Drills (mat only)",
-  "text": "Fingertip cartwheels: near hand barely brushes the floor ×5"
+  "text": "Fingertip cartwheels: near hand barely brushes the floor ×5",
+  "how": "Only after the one-hand cartwheels are clean on both hands. Hurdle, then cartwheel with only the near hand, and only the fingertips touch, as if the floor were a hot stove. Kick the legs fast and straight, look forward (not at the hand), land in a lunge.",
+  "right": "Almost no weight on the hand: the arm stays straight and there's no slap.",
+  "wrong": "A flat palm, a bending elbow or a slap means the hand is still holding her up and the legs aren't fast enough yet. Go back to the front-leg drive and one-hand cartwheels for a while. That's normal."
  },
  {
   "id": "wedge-cartwheel",
   "section": "Drills (mat only)",
-  "text": "Cartwheel down a wedge: two hands → one hand → a brush"
+  "text": "Cartwheel down a wedge: two hands → one hand → a brush",
+  "how": "A wedge (\"cheese\") mat on a non-slip floor, a mat at the bottom, clear space around it. The high end goes where she starts. Cartwheel DOWN the slope: the slope gives the legs extra time. Two hands until 5 in a row are clean, then one hand, then just a brush. A folded mat works too: start on top and cartwheel down.",
+  "right": "Each stage clean 5 in a row before the next one. The no-hands feeling starts showing up here.",
+  "wrong": "Rushing the stages. If it gets messy, go back one stage. Check with the Acro teacher before doing the brush stage at home: it's the closest thing on the list to a real aerial."
  },
  {
   "id": "teacher-set-order",
   "section": "In class only",
-  "text": "Acro teacher has seen the drills and set the order"
+  "text": "Acro teacher has seen the drills and set the order",
+  "how": "Film each drill from the side at normal speed and show the Acro teacher on Monday. Ask: which drills at home and which only in class? What order do you teach the aerial in? What is Sofia ready for right now? The teacher's answers beat this sheet."
  },
  {
   "id": "spotted-attempts",
   "section": "In class only",
-  "text": "First spotted aerial attempts (coach spotting, never a parent)"
+  "text": "First spotted aerial attempts (coach spotting, never a parent)",
+  "how": "Only in class, only with the coach spotting. At home, grown-ups film, cheer and hold the mat steady. They never spot aerials: spotting is a coach skill."
  },
  {
   "id": "unspotted-mat",
   "section": "In class only",
-  "text": "Unspotted aerial on the mat"
+  "text": "Unspotted aerial on the mat",
+  "how": "When the teacher says Sofia is ready: an aerial on the mat with no spot, in class."
  },
  {
   "id": "twenty-in-a-row",
   "section": "In class only",
-  "text": "20 in a row on the floor → allowed in a dance"
+  "text": "20 in a row on the floor → allowed in a dance",
+  "how": "20 clean aerials in a row on the floor in class. Then it can go into a dance. Until then, a clean cartwheel stays in the solo: it beats a wobbly aerial every time."
  }
 ]
