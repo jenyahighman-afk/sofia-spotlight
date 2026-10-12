@@ -25,22 +25,30 @@
   {
    "name": "Sofia-Aerial-Mission-Print.pdf",
    "path": "files/Sofia-Aerial-Mission-Print.pdf",
-   "type": "application/pdf"
+   "type": "application/pdf",
+   "size": 629805,
+   "rev": "c29d586e1dcd"
   },
   {
    "name": "Sofia-Solo-Playbook-Print-BW.pdf",
    "path": "files/Sofia-Solo-Playbook-Print-BW.pdf",
-   "type": "application/pdf"
+   "type": "application/pdf",
+   "size": 111354,
+   "rev": "7bff53cf74a7"
   },
   {
    "name": "Sofia-Solo-Playbook.pdf",
    "path": "files/Sofia-Solo-Playbook.pdf",
-   "type": "application/pdf"
+   "type": "application/pdf",
+   "size": 122539,
+   "rev": "85afdf8fbf8f"
   },
   {
    "name": "Sofia_2026-27_Competition_Guide.xlsx",
    "path": "files/Sofia_2026-27_Competition_Guide.xlsx",
-   "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+   "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+   "size": 39702,
+   "rev": "af4d8e437c12"
   }
  ]
 }

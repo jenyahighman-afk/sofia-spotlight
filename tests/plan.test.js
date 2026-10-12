@@ -53,6 +53,7 @@ test("aerial mission steps join the plan on home days only: two strength steps T
   assert.equal(buildPlan({ ...base, date: "2026-10-05" }).filter(i => i.kind === "aerial").length, 0, "Monday is a studio day");
   const allDone = buildPlan({ ...base, date: "2026-10-01", aerialDone: aerial.map(a => a.id) }); assert.equal(allDone.filter(i => i.kind === "aerial").length, 0, "checked steps drop out");
   assert.ok(!thu.some(i => i.kind === "aerial" && /20 in a row|spotted|unspotted|teacher/i.test(i.text)), "in-class-only steps never appear at home");
+  assert.ok([...ae, ...af].every(i => i.how && i.how === aerial.find(a => a.id === i.aerialId).how), "aerial plan items carry the step's how-to");
 });
 
 test("rotate: deterministic window over the pool, preferred tags first, no duplicates", () => {
@@ -83,4 +84,11 @@ test("the solo's new trick drills are in the rotation with a matching picture", 
   const seen = new Map(); for (let i = 1; i <= 28; i++) { const tr = buildPlan({ ...base, tricks, date: "2026-10-" + String(i).padStart(2, "0") }).find(x => x.kind === "trick"); seen.set(tr.text.slice(13, 30), tr.pose); }
   assert.equal([...seen.keys()].some(k => k.startsWith("Calypso")), true); assert.equal(seen.get([...seen.keys()].find(k => k.startsWith("Calypso"))), "calypso");
   assert.equal(seen.get([...seen.keys()].find(k => k.startsWith("Scorpion"))), "arab");
+});
+test("every aerial step says how to do it; the home steps also say what right looks like and what to watch for", () => {
+  for (const a of aerial) {
+    assert.ok(typeof a.how === "string" && a.how.length > 20, a.id + " has a how");
+    if (a.section !== "In class only") assert.ok(a.right && a.wrong, a.id + " has right and wrong");
+  }
+  assert.match(aerial.find(a => a.id === "wedge-cartwheel").wrong, /teacher/i, "the wedge brush stage is checked with the teacher first");
 });

@@ -51,7 +51,7 @@ function render(){
   $("#pmRing").innerHTML = ring(p); $("#pmCount").textContent = `${n} / ${items.length}`;
   if (PM.i < 0) { $("#pmItem").innerHTML = `<div class="pm-text">All done! 🎉</div><div class="small muted">Today counts. Go you.</div>`; $("#pmActions").innerHTML = `<button class="btn coral big-btn" onclick="pmClose()">Done</button>`; $("#pmTimer").hidden = true; return; }
   const it = items[PM.i];
-  $("#pmItem").innerHTML = `<div class="pm-kind">${KIND[it.kind] || "✨"}</div><div class="pm-text">${esc(it.text)}</div>`;
+  $("#pmItem").innerHTML = `<div class="pm-kind">${KIND[it.kind] || "✨"}</div><div class="pm-text">${esc(it.text)}</div>${it.how ? `<div class="pm-how small">${esc(it.how)}</div>` : ""}`;
   const secs = +it.secs || 0;
   $("#pmTimer").hidden = !PM.timed; if (PM.timed) $("#pmTimer").innerHTML = secs ? `<div class="pm-clock ${PM.paused ? "paused" : ""}">${fmt(PM.left)}</div><button class="btn sm ghost" onclick="pmPause()">${PM.paused ? "▶ Go" : "❚❚ Pause"}</button>` : `<div class="small muted">No timer for this one — tap Done when finished.</div>`;
   $("#pmActions").innerHTML = `<button class="btn ghost" onclick="pmSkip()">Skip</button><button class="btn coral big-btn grow" onclick="pmDone()">✅ Done</button>`;
