@@ -15,6 +15,7 @@ import { poseAvailable, detectImage, drawSkeleton } from "../pose.js";
 import { demoFor, demoHtml } from "../demos.js";
 import { poseFeatures, featureDistance } from "../posemath.js";
 import { findSkill, kidCycle, skillState } from "../skills.js";
+import { drillStrip } from "../drills.js";
 
 export const BARS = ["feet", "knees", "arms"], BAR_ICON = { feet: "🦶", knees: "🦵", arms: "💪" }, FULL = 100, STATION_HIT = 15, SHOT_HIT = 25, GEMS_FOR_CLEAN = 3;
 const ok = (v) => !v || /^\s*✓/.test(String(v));
@@ -62,7 +63,8 @@ function qsPick(id){
   const k = findSkill(id); if (!k) return; Q.skill = k; Q.worked = 0; const q = questOf(S.skills[id]); Q.bars = q.bars || seedBars(lastTrickReview(S.reviews, k.n)); Q.stations = buildStations(k, Q.dance, openFor(S.corrections, "solo")); Q.i = 0; station();
 }
 // A clip or photo of the trick (a saved social-media clip, or Sofia doing it right), kept with the move pictures.
-function trickDemo(){ const id = "skill:" + Q.skill.id; const d = demoFor(id); return `${d ? `<div class="pm-demo" style="display:grid">${demoHtml(d)}</div>` : ""}<div class="small" style="text-align:center"><button class="lnk" onclick="openDemoSheet('${id}','${esc(Q.skill.n).replace(/'/g, "&#39;")}')">${d ? "📷 Change the clip" : "📷 Add a clip of this trick"}</button></div>`; }
+// Under it, the drill box's saved posts for this trick (js/drills.js), when there are any.
+function trickDemo(){ const id = "skill:" + Q.skill.id; const d = demoFor(id); return `${d ? `<div class="pm-demo" style="display:grid">${demoHtml(d)}</div>` : ""}<div class="small" style="text-align:center"><button class="lnk" onclick="openDemoSheet('${id}','${esc(Q.skill.n).replace(/'/g, "&#39;")}')">${d ? "📷 Change the clip" : "📷 Add a clip of this trick"}</button></div>${drillStrip(Q.skill.id)}`; }
 document.addEventListener("demochanged", () => { if (Q.skill && Q.stations[Q.i] && Q.stations[Q.i].kind === "prep" && !$("#stage").hidden) { const box = $("#qsArea .pm-demo"); const d = demoFor("skill:" + Q.skill.id); if (box && d) box.innerHTML = demoHtml(d); else station(); } });
 // ---- stations ----
 function station(){

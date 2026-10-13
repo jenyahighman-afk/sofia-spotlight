@@ -5,8 +5,9 @@ import { S, dances } from "./store.js";
 import { SKILLS } from "./data.js";
 import { forDance, isOpen, TAG_LABEL } from "./corrections.js";
 import { skillState, STATE_LABEL } from "./skills.js";
+import { askedPosts, skillName } from "./drills.js";
 
-export function teacherSummary({ dances: ds = [], corrections = {}, skills = {}, reviews = {}, goals = {}, ladder = SKILLS, today = todayStr() } = {}){
+export function teacherSummary({ dances: ds = [], corrections = {}, skills = {}, reviews = {}, goals = {}, drills = {}, ladder = SKILLS, today = todayStr() } = {}){
   const lines = [`Sofia — practice summary, ${today}`, ""];
   for (const d of ds) {
     const open = forDance(corrections, d.id).filter(isOpen); const done = forDance(corrections, d.id).filter(c => c.status === "done");
@@ -22,10 +23,13 @@ export function teacherSummary({ dances: ds = [], corrections = {}, skills = {},
   if (solo) { lines.push("Solo tricks"); for (const k of solo.skills) { const st = skillState(skills, k.id); const rec = skills[k.id] || {}; lines.push(`  ${st === "checked" ? "★" : st === "clean" ? "◉" : st === "learning" ? "◔" : "○"} ${k.n} — ${STATE_LABEL[st]}${st === "checked" && rec.teacher ? " (" + rec.teacher + ")" : ""}`); } lines.push(""); }
   const gs = Object.values(goals).filter(g => g && !g.deleted && Array.isArray(g.checkins) && g.checkins.length);
   if (gs.length) { lines.push("Goals"); for (const g of gs) { const c = g.checkins.filter(x => typeof x.value === "number"); lines.push(`  ${g.emoji || "🎯"} ${g.name}: ${c.length ? `${c[0].value} → ${c[c.length - 1].value}${g.unit ? " " + g.unit : ""}` : `${g.checkins.length} check-in${g.checkins.length === 1 ? "" : "s"}`}`); } lines.push(""); }
+  // Drill-box posts flagged "Ask Ms. Brittany if this is right for me" — public links, with the note that went with them.
+  const asked = askedPosts(drills);
+  if (asked.length) { lines.push("Posts from the internet — is this right for her?"); for (const p of asked) lines.push(`  📎 ${skillName(p.skill, ladder) || "a drill"}${p.note ? ": " + p.note : ""} — ${p.url}`); lines.push(""); }
   lines.push("Questions for you: what should she fix first, and is anything above wrong?");
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
-export function renderTeacher(){ const el = $("#teacherText"); if (!el) return; el.value = teacherSummary({ dances: dances(), corrections: S.corrections, skills: S.skills, reviews: S.reviews, goals: S.goals }); }
+export function renderTeacher(){ const el = $("#teacherText"); if (!el) return; el.value = teacherSummary({ dances: dances(), corrections: S.corrections, skills: S.skills, reviews: S.reviews, goals: S.goals, drills: S.settings.drills }); }
 async function copy(){ const t = ($("#teacherText") || {}).value || ""; try { await navigator.clipboard.writeText(t); toast("Copied ✓"); } catch (e) { const el = $("#teacherText"); el.focus(); el.select(); toast("Select all and copy"); } }
 async function share(){ const t = ($("#teacherText") || {}).value || ""; if (navigator.share) { try { await navigator.share({ title: "Sofia — practice summary", text: t }); } catch (e) {} } else copy(); }
 expose({ teacherCopy: copy, teacherShare: share, teacherRefresh: renderTeacher });
