@@ -51,6 +51,9 @@ Every solo trick (`data/skills.json` → `solo`) is a boss with three bars — �
 ### What's Next? (Play)
 A memory game built from a dance's step order (`js/games/nextmove.js`, any dance with 8+ `steps`; today that is the solo): a step comes up, Sofia taps which of three steps comes next, ten rounds spread through the dance. Best score in `settings.nmBest`, stars like Spot the Oops (9+ = 3).
 
+### Daily reminder (Me → ⏰ My dance time)
+`js/remind.js`, `sw.js` (push / notificationclick), `worker/src/remind*.js`. One push notification a day at her time, sent by the Cloudflare worker from a cron (`*/15 * * * *`) to the phone's own web-push subscription, held in the worker's `REMIND` KV namespace. iPhone needs the app opened from its Home Screen icon (web push only works for installed apps); the card explains that when it can't turn on. The worker stays quiet on a day a bite was already done: `markBite` pings `/remind/done`. Setup (one time, worker/README.md): create the `REMIND` namespace, set the `VAPID_PRIVATE_KEY` secret, deploy. The public key is in `js/push-config.js` and `wrangler.toml`.
+
 ### Moments (Today → 📸 Moment, Me → Moments)
 `js/moments.js`. A photo (or two side by side, then vs now) becomes a 1080-px card (9:16 story or 4:5 post) with a sticker, the date, the streak and her avatar, drawn on a canvas. Stickers suggest themselves from the day (`stickersFor`: a streak milestone, a gem, a badge earned today, full practice, a rest day, the countdown); she can type her own. **Save to Photos** hands the JPEG to the share sheet (Save Image on iPhone) so it can go into CapCut or to family; **Keep in the app** uploads it as a photo with `moment: true` (✨ in the Photos grid). Then-vs-now can pull the first and latest photo check-ins of a goal (needs the Storage CORS setup; otherwise pick the two photos from the phone). A big moment (milestone, gem, badge) shows a one-line nudge on Today once a day.
 
@@ -265,8 +268,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 23) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 24) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 24 (1.15.0): `settings.reminder` `{ on, h, m }`, the family's daily reminder time.
 - Schema 23 (1.14.0): `photos.moment` (a card made in Moments) and `settings.momentNudge` (the nudge dismissed today).
 - Schema 22 (1.13.0): `practice.bites[]` (which of Today's bites were done: `trick`, `game`, `move`, `tired`) and `practice.tired` (`stretch` / `picture`). One bite keeps the streak; two missed home days a week are free (`FREE_SKIPS` in `js/streak.js`).
 - Schema 21 (1.12.4): `choreo` Dance Along routines store `frames` flat (`fdim` = 10 numbers per frame, a missing frame as 10 nulls). Firestore refuses an array inside an array, so before this every clip Sofia added was uploaded but its routine never saved and vanished on the next sync. `routineFrames()` in `js/posemath.js` unpacks for play.

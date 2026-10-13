@@ -6,7 +6,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 23;
+export const SCHEMA_VERSION = 24;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -158,7 +158,9 @@ export const MIGRATIONS = {
   // 22 (daily habit): practice.bites = the bites done that day (one keeps the streak); practice.tired = which tired-day option. Normalized when present.
   22: (col, id, doc) => { if (col === "practice") { if (doc.bites !== undefined) doc.bites = Array.isArray(doc.bites) ? doc.bites.filter(b => BITE_IDS.includes(b)) : []; if (doc.tired !== undefined && !TIRED_KINDS.includes(doc.tired)) delete doc.tired; } return doc; },
   // 23 (moments): photos.moment = a card made in Moments (shown with ✨); settings.momentNudge = "date|kind" of the nudge dismissed today. Normalized when present.
-  23: (col, id, doc) => { if (col === "photos" && doc.moment !== undefined) doc.moment = !!doc.moment; if (col === "settings" && doc.momentNudge !== undefined && typeof doc.momentNudge !== "string") delete doc.momentNudge; return doc; }
+  23: (col, id, doc) => { if (col === "photos" && doc.moment !== undefined) doc.moment = !!doc.moment; if (col === "settings" && doc.momentNudge !== undefined && typeof doc.momentNudge !== "string") delete doc.momentNudge; return doc; },
+  // 24 (daily reminder): settings.reminder = { on, h (0–23), m (0–59) }, the family's reminder time. Normalized when present.
+  24: (col, id, doc) => { if (col === "settings" && doc.reminder !== undefined) { const r = doc.reminder && typeof doc.reminder === "object" ? doc.reminder : {}; const h = parseInt(r.h, 10), m = parseInt(r.m, 10); doc.reminder = { on: !!r.on, h: h >= 0 && h <= 23 ? h : 16, m: m >= 0 && m <= 59 ? m : 30 }; } return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
