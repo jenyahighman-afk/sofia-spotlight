@@ -7,7 +7,7 @@ import { S, storeSet, storeDel, setSettings } from "../store.js";
 import { media, friendlyError } from "../sync.js";
 import { VIDEO_MAX_BYTES } from "../media.js";
 import { imageDetector, videoDetector, detectVideoFrame, drawSkeleton, poseAvailable } from "../pose.js";
-import { poseFeatures, featureDistance } from "../posemath.js";
+import { poseFeatures, featureDistance, packFrames, routineFrames, FDIM } from "../posemath.js";
 import { awardStars } from "../stars.js";
 import { openClip, seekTo, isBlank } from "../videoframes.js";
 
@@ -44,7 +44,7 @@ async function addRoutine(file){
     if (found < n * 0.4) throw new Error("I couldn't see a dancer clearly in most of the clip. Try one where the whole body is in view.");
     status("Saving the clip…"); const id = uid(); const up = await media.upload("videos", id, file, { contentType: file.type || "video/mp4", name: file.name });
     const name = prompt("Name this dance", file.name.replace(/\.[a-z0-9]+$/i, "").slice(0, 40)) || "My dance";
-    await storeSet("choreo", id, { kind: "along", name, path: up.path, url: up.url, size: file.size, duration, fps: FPS, frames, at: new Date().toISOString(), best: 0, style: "along", seq: [] });
+    await storeSet("choreo", id, { kind: "along", name, path: up.path, url: up.url, size: file.size, duration, fps: FPS, frames: packFrames(frames), fdim: FDIM, at: new Date().toISOString(), best: 0, style: "along", seq: [] });
     toast("Ready to dance! 🕺"); renderAlong();
   } catch (e) { console.warn(e); status(""); toast(e.message && !e.code ? e.message : "Couldn't add it: " + friendlyError(e), 4000); }
   finally { if (clip) clip.close(); }
@@ -55,7 +55,7 @@ async function delRoutine(id){ const r = S.choreo[id]; if (!r || !confirm(`Remov
 export async function playAlong(id){
   const r = S.choreo[id]; if (!r || r.kind !== "along") return toast("That dance isn't here");
   if (!poseAvailable() || !navigator.mediaDevices) return toast("Dance Along needs a camera and a newer phone");
-  A.routine = r; A.score = 0; A.hits = { perfect: 0, good: 0, miss: 0 }; A.lastJudged = -1; A.speak = localStorage.getItem("spotlight:alongVoice") !== "off";
+  A.routine = { ...r, frames: routineFrames(r) }; A.score = 0; A.hits = { perfect: 0, good: 0, miss: 0 }; A.lastJudged = -1; A.speak = localStorage.getItem("spotlight:alongVoice") !== "off";
   $("#along").hidden = false; document.body.classList.add("modal"); $("#alScore").textContent = "0"; $("#alTitle").textContent = r.name; $("#alJudge").textContent = ""; $("#alVoice").textContent = A.speak ? "🔊" : "🔇";
   $("#alActions").innerHTML = `<button class="btn ghost" onclick="stopAlong()">✕ Stop</button>`;
   const v = $("#alVideo"); v.src = r.url; v.muted = false; v.currentTime = 0;
