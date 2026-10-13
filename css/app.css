@@ -204,7 +204,7 @@ details.acc[open]>summary{margin-bottom:8px}
 .hub-btn.sun{border-color:var(--sun)} .hub-btn.violet{border-color:var(--violet)} .hub-btn.aqua{border-color:var(--aqua)} .hub-btn.coral{border-color:var(--coral)}
 .report-link{text-align:center;margin:26px 0 0} .report-link a{color:var(--ink-2)}
 .err-state{border-color:#FF5C93} .err-pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--blush);border-radius:8px;padding:6px;font-size:.7rem;max-height:120px;overflow:auto}
-.modal{position:fixed;inset:0;background:rgba(74,35,64,.45);z-index:55;display:flex;align-items:flex-end;justify-content:center;padding:env(safe-area-inset-top,0px) 0 0}
+.modal{position:fixed;inset:0;background:rgba(74,35,64,.45);z-index:57;display:flex;align-items:flex-end;justify-content:center;padding:env(safe-area-inset-top,0px) 0 0}
 .modal-card{background:var(--paper);border-radius:22px 22px 0 0;width:100%;max-width:720px;max-height:92vh;overflow:auto;padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px))}
 body.modal{overflow:hidden}
 .showme-stage{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
@@ -327,8 +327,8 @@ body.modal{overflow:hidden}
 .drill-generic{display:grid;place-items:center;align-content:center;gap:0;background:linear-gradient(135deg,#FFC2D6,#D9B3FF);color:#4A2340} .drill-generic span{font-size:1.6rem;line-height:1.1} .drill-generic small{font-size:.62rem;font-weight:800}
 .drill-dd{display:grid;gap:4px;font-size:.9rem;line-height:1.3} .dd-do{background:#E6F7EC;border-radius:10px;padding:6px 9px} .dd-dont{background:#FFE3E8;border-radius:10px;padding:6px 9px}
 .drill-strip{margin:0 0 6px 44px;padding:4px 0 6px} .drill-thumbs{display:flex;gap:6px;overflow-x:auto;padding:4px 0} .drill-thumbs .drill-thumb{width:84px;height:63px}
-.pm-demo .drill-strip,.qs-boss .drill-strip{margin-left:0}
+.pm-demo .drill-strip,#qsArea .drill-strip{margin-left:0}
 .drill-player{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000} .drill-player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .drill-big{display:grid;place-items:center;gap:4px;padding:26px 10px;border-radius:14px;background:linear-gradient(135deg,#FFC2D6,#D9B3FF);color:#4A2340;text-decoration:none;font-family:Fredoka} .drill-big span{font-size:2.2rem}
-.drill-ask{border-bottom:0;margin-top:6px} #drillTitle a{color:var(--ink);text-decoration:none}
+.drill-ask{border-bottom:0;margin-top:6px} .drill-for{flex:1 1 160px;min-width:0} #drillTitle a{color:var(--ink);text-decoration:none}
 .drill-card.book .drill-dd{font-size:1rem}
