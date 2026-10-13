@@ -105,7 +105,7 @@ let drawTimer = 0;
 export async function openMoments(stickerKey){
   const st = todayStickers(); M.sticker = st.find(s => s.key === stickerKey) || st[0]; M.mode = "one"; M.imgs = []; M.labels = null; M.custom = "";
   // Who danced goes on the card (js/who.js): the current pick to start with, toggled on the stage.
-  const c = todayContext(); M.streak = c.streak; M.names = pickedNames(); M.sub = momentSub(M.names, M.streak);
+  const c = todayContext(); M.streak = c.streak; M.names = pickedNames(); M.sub = momentSub(M.names, M.streak, dancers()[0].n);
   openStage("📸 Moments", [$("#momentsArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); render();
   try { await document.fonts.load("700 48px Fredoka"); } catch (e) {}
   if (!M.avatar) M.avatar = await avatarImage(); preview();
@@ -130,7 +130,7 @@ function preview(){ clearTimeout(drawTimer); drawTimer = setTimeout(() => { cons
 function setSticker(text){ const st = todayStickers(); M.sticker = st.find(s => s.text === text) || { key: "own", emoji: "✏️", text }; render(); }
 function own(){ const t = prompt("Your words for the card", M.custom || ""); if (t === null) return; M.custom = String(t).trim().slice(0, 60); if (M.custom) M.sticker = { key: "own", emoji: "✨", text: M.custom }; render(); }
 function setMode(m){ M.mode = m; M.imgs = []; M.labels = null; render(); }
-function setWho(name){ const order = dancers().map(d => d.n); M.names = M.names.includes(name) ? M.names.filter(n => n !== name) : order.filter(n => n === name || M.names.includes(n)); M.sub = momentSub(M.names, M.streak); render(); }
+function setWho(name){ const order = dancers().map(d => d.n); M.names = M.names.includes(name) ? M.names.filter(n => n !== name) : order.filter(n => n === name || M.names.includes(n)); M.sub = momentSub(M.names, M.streak, dancers()[0].n); render(); }
 function setSize(s){ M.size = s; render(); }
 async function toBlob(){ const cv = $("#mmCanvas"); return new Promise((res, rej) => { try { cv.toBlob(b => b ? res(b) : rej(new Error("Couldn't make the picture")), "image/jpeg", 0.92); } catch (e) { rej(e); } }); }
 async function save(){ try { const b = await toBlob(); await saveBlob(b, `sofia-moment-${todayStr()}.jpg`); status("Saved. Look in Photos (or Files)."); } catch (e) { console.warn(e); toast(/tainted|security/i.test(String(e)) ? "That photo came from the cloud and can't be saved here. Pick it from Photos instead." : "Couldn't save: " + e.message, 4000); } }
