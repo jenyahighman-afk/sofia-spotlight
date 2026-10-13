@@ -30,7 +30,7 @@ const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["mmPair", "mmStatus", "mmCanvas", "mmPhoto", "mmThen", "mmNow", "rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -42,7 +42,7 @@ test("the five kid tabs and every Grown-ups page exist; nothing text-heavy was d
   for (const p of []) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
   const tabs = [...html.matchAll(/<button data-p="([a-z]+)"/g)].map(m => m[1]);
   assert.deepEqual(tabs, ["home","dances","practice","play","me"]);
-  for (const id of ["eventList","calGrid","packList","todoList","noteList","fileList","photoGrid","setExport","setImportFile","setLeave","aerialList","phases"]) assert.ok(html.includes(`id="${id}"`), id + " still present");
+  for (const id of ["eventList","calGrid","packList","todoList","noteList","fileList","photoGrid","setExport","setImportFile","setLeave","aerialList","phases","momentsArea","meMoments"]) assert.ok(html.includes(`id="${id}"`), id + " still present");
   assert.ok(html.includes('id="showme"') && html.includes('id="player"'));
 });
 
@@ -51,6 +51,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   for (const init of inits()) init();
   for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
   const tc = el("#todayCard").innerHTML; assert.equal((tc.match(/class="choice-card/g) || []).length, 3, "Today has three choice cards"); assert.ok(tc.includes("habitTired('stretch')") && tc.includes("free skip"), "Today has the tired-day row and the skips left");
+  assert.ok(tc.includes("openMoments()"), "Today has the Moment button"); assert.ok(el("#meMoments").innerHTML.includes("openMoments()"), "Me has the Moments card");
   assert.ok(el("#danceList").innerHTML.includes("openPlayer('solo')"), "solo cover has ▶ Practice");
   assert.ok(el("#danceList").innerHTML.includes("More ▸"), "More ▸ is collapsed by default");
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
