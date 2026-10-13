@@ -5,6 +5,7 @@
 // - 20 reviews per family per day (KV namespace RATE; falls back to per-isolate memory if the binding is missing).
 import Anthropic from "@anthropic-ai/sdk";
 import { validateRequest, buildUserContent, parseReview, checkAndCount, memoryStore, corsHeaders, parseOrigins, SYSTEM_PROMPT, REVIEW_SCHEMA } from "./core.js";
+import { handleRemind, sendDue } from "./remind.js";
 
 const DEFAULT_ORIGINS = "https://jenyahighman-afk.github.io";
 const DEFAULT_MODEL = "claude-opus-5-5";
@@ -39,6 +40,8 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (request.method !== "POST") return json({ error: "POST only." }, 405, cors);
     if (!allowed.includes(origin)) return json({ error: "This origin isn't allowed." }, 403, cors);
+    const path = new URL(request.url).pathname;
+    if (path.startsWith("/remind/")) { let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON." }, 400, cors); } return handleRemind(path, b, env, cors); }
     if (!env.ANTHROPIC_API_KEY) return json({ error: "The coach isn't set up yet (no API key on the worker)." }, 503, cors);
     let body; try { body = await request.json(); } catch (e) { return json({ error: "Send JSON." }, 400, cors); }
     const v = validateRequest(body); if (!v.ok) return json({ error: v.error }, v.status, cors);
@@ -55,4 +58,6 @@ export default {
       return json({ error: msg }, status && status >= 400 && status < 600 ? status : 502, cors);
     }
   },
+  // The reminder cron ([triggers] in wrangler.toml): every 15 minutes, send to whoever is due.
+  async scheduled(event, env, ctx){ ctx.waitUntil(sendDue(env).then(r => console.log("reminders", JSON.stringify(r)))); },
 };

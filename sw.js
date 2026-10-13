@@ -9,7 +9,7 @@ const MEDIA_CACHE = "spotlight-media"; // photos, files, music, videos from the 
 const APP_FILES = [
   "./", "./index.html", "./manifest.json", "./css/app.css",
   "./js/version.js", "./js/app.js", "./js/util.js", "./js/data.js", "./js/store.js", "./js/nav.js", "./js/sync.js", "./js/firebase-config.js",
-  "./js/media.js", "./js/ics.js", "./js/seed.js", "./js/backup.js", "./js/family.js", "./js/avatar.js",
+  "./js/media.js", "./js/push-config.js", "./js/remind.js", "./js/ics.js", "./js/seed.js", "./js/backup.js", "./js/family.js", "./js/avatar.js",
   "./js/corrections.js", "./js/streak.js", "./js/badges.js", "./js/skills.js", "./js/reports.js", "./js/grownups.js", "./js/showme.js", "./js/player.js", "./js/cues.js", "./js/stage.js", "./js/pmode.js", "./js/quick.js", "./js/plan.js", "./js/planToday.js", "./js/demos.js", "./js/stars.js", "./js/coach.js", "./js/mode.js", "./js/teacher.js", "./js/bites.js", "./js/mind.js", "./js/prompter.js", "./js/palette.js", "./js/runcheck.js", "./js/coachhub.js", "./js/goals.js", "./js/frames.js", "./js/videoframes.js", "./js/pose.js", "./js/posemath.js", "./js/games/mirror.js", "./js/games/along.js",
   "./js/games/choreo.js", "./js/games/oops.js", "./js/games/nextmove.js", "./js/games/quest.js", "./js/games/trio.js", "./js/games/compday.js", "./js/games/sparkle.js",
   "./js/views/home.js", "./js/views/dances.js", "./js/views/events.js", "./js/views/schedule.js", "./js/views/practice.js", "./js/views/notes.js", "./js/views/play.js", "./js/views/lists.js", "./js/views/settings.js", "./js/views/me.js", "./js/views/skillcheck.js",
@@ -33,6 +33,16 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("message", (e) => { if (e.data && e.data.type === "SKIP_WAITING") self.skipWaiting(); });
+
+// Daily reminder (web push from the worker): show it; tapping it opens or focuses the app.
+self.addEventListener("push", (e) => {
+  let d = {}; try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.title || "Sofia's Spotlight", { body: d.body || "Dance bite time ✨", icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: d.tag || "dance-bite", data: { url: d.url || "./" } }));
+});
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close(); const target = new URL((e.notification.data && e.notification.data.url) || "./", self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(cs => { const c = cs.find(x => x.url.startsWith(self.registration.scope)); return c ? c.focus() : self.clients.openWindow(target); }));
+});
 
 self.addEventListener("fetch", (e) => {
   const req = e.request;
