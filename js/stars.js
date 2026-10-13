@@ -2,6 +2,10 @@
 // Pure parts (starsFor, unlocks, nextUnlock) are tested in Node. settings.stars = total, settings.starLog = {date: {game: plays}}.
 import { S, setSettings } from "./store.js";
 import { toast, todayStr } from "./util.js";
+import { markBite } from "./habit.js";
+
+// Which bite a finished game earns on Today's choice cards.
+const GAME_BITE = new Set(["sparkle", "oops", "nextmove", "compday", "choreo", "trio", "mirror", "along"]);
 
 // How many stars a result earns. Kept generous at the bottom: finishing anything earns one.
 export function starsFor(game, value){
@@ -39,6 +43,7 @@ export async function awardStars(game, value, label){
   for (const k of Object.keys(log)) if (k < date && Object.keys(log).length > 14) delete log[k]; // keep the log small
   const bonus = first ? 1 : 0; const before = totalStars(); const after = before + earned + bonus;
   await setSettings({ stars: after, starLog: log });
+  const bite = game === "quest" ? "trick" : GAME_BITE.has(game) ? "game" : ""; if (bite) markBite(bite).catch(e => console.warn("bite", e));
   const u = UNLOCKS.find(x => x[2] > before && x[2] <= after);
   try { toast(`⭐ +${earned + bonus} star${earned + bonus === 1 ? "" : "s"}${first ? " (first play today!)" : ""}${label ? " · " + label : ""}${u ? ` · 🎁 ${u[3]} unlocked!` : ""}`, u ? 4000 : 2600); } catch (e) {}
   return { earned, bonus, total: after, unlocked: u ? u[3] : null };
