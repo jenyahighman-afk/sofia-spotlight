@@ -27,8 +27,12 @@ export function parseLink(raw){
     const v = u.searchParams.get("v") || ""; if (YT_ID.test(v)) return yt(v);
     const m = /^\/(?:shorts|embed|live|v|e)\/([A-Za-z0-9_-]{11})(?:[/?]|$)/.exec(path); return m ? yt(m[1]) : null;
   }
-  if (host === "instagram.com" || host === "instagr.am") { const m = /^\/(?:[A-Za-z0-9_.]+\/)?(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/.exec(path); return m ? { host: "instagram", vid: "", url: `https://www.instagram.com/${m[1] === "reels" ? "reel" : m[1]}/${m[2]}/` } : null; }
-  if (/(^|\.)pinterest\.[a-z.]+$/.test(host) || host === "pin.it") { if (host !== "pin.it" && !/^\/pin\/[^/]+/.test(path)) return null; return { host: "pinterest", vid: "", url: u.origin + u.pathname.replace(/\/?$/, "/") }; }
+  if (host === "instagram.com" || host === "instagr.am") {
+    if (/^\/share\/.+/.test(path)) return { host: "instagram", vid: "", url: "https://www.instagram.com" + path }; // the app's Copy link: a share code, not a post code, kept as is
+    const m = /^\/(?:[A-Za-z0-9_.]+\/)?(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/.exec(path); return m ? { host: "instagram", vid: "", url: `https://www.instagram.com/${m[1] === "reels" ? "reel" : m[1]}/${m[2]}/` } : null;
+  }
+  if (host === "pin.it") return path.length > 1 ? { host: "pinterest", vid: "", url: u.origin + path } : null; // a short link: kept exactly as pasted (minus the query)
+  if (/(^|\.)pinterest\.[a-z.]+$/.test(host)) { if (!/^\/pin\/[^/]+/.test(path)) return null; return { host: "pinterest", vid: "", url: u.origin + path.replace(/\/?$/, "/") }; }
   return { host: "other", vid: "", url: u.href };
 }
 export const thumbFor = (post) => post && post.host === "youtube" && post.vid ? `https://i.ytimg.com/vi/${post.vid}/hqdefault.jpg` : "";
@@ -58,34 +62,37 @@ export function tryItem(post){
 
 // ---------- the shelf (Practice → 📎 Drill box) ----------
 const drills = () => S.settings.drills || {};
+// The <option>s of a skill select, grouped by style / aerial section, `sel` selected.
+export function skillSelectOptions(sel = ""){ const opts = skillOptions(); const groups = [...new Set(opts.map(o => o.group))]; return `<option value="">Which skill?</option>` + groups.map(g => `<optgroup label="${esc(g)}">${opts.filter(o => o.group === g).map(o => `<option value="${o.id}" ${o.id === sel ? "selected" : ""}>${esc(o.n)}</option>`).join("")}</optgroup>`).join(""); }
 const post = (id) => { const p = drills()[id]; return p ? { ...p, id } : null; };
 async function save(id, patch){ const cur = drills()[id]; if (!cur) return; await setSettings({ drills: { ...drills(), [id]: { ...cur, ...patch } } }); }
 const skillChip = (p) => { const n = skillName(p.skill); return n ? `<span class="chip violet">${esc(n)}</span>` : `<span class="chip">Any skill</span>`; };
+const thumbLabel = (p) => esc("Open: " + (p.note || skillName(p.skill) || hostInfo(p).n));
 const thumbHtml = (p) => { const t = thumbFor(p); return t ? `<img class="drill-thumb" src="${esc(t)}" alt="" loading="lazy">` : `<div class="drill-thumb drill-generic"><span>${hostInfo(p).ic}</span><small>${esc(hostInfo(p).n)}</small></div>`; };
 const dodont = (p) => (p.do || p.dont) ? `<div class="drill-dd">${p.do ? `<div class="dd-do">✅ ${esc(p.do)}</div>` : ""}${p.dont ? `<div class="dd-dont">❌ ${esc(p.dont)}</div>` : ""}</div>` : "";
 function card(p){
   const tried = triedDays(p.id, S.practice);
-  return `<div class="drill-card"><button class="drill-open" onclick="drillOpen('${p.id}')">${thumbHtml(p)}</button><div class="grow drill-main">
+  return `<div class="drill-card"><button class="drill-open" aria-label="${thumbLabel(p)}" onclick="drillOpen('${p.id}')">${thumbHtml(p)}</button><div class="grow drill-main">
     <div class="row">${skillChip(p)}<span class="small muted">${hostInfo(p).ic} ${esc(hostInfo(p).n)}</span>${p.ask ? `<span class="chip sun">🙋 Ask Ms. Brittany</span>` : ""}${tried ? `<span class="chip mint">tried ${tried}×</span>` : ""}</div>
     ${p.note ? `<div class="drill-note">${esc(p.note)}</div>` : ""}${dodont(p)}
-    <div class="row"><button class="btn sm coral" onclick="drillTry('${p.id}')">⏱ Try this</button><button class="btn sm ghost" onclick="drillOpen('${p.id}')">▶ Open</button><button class="lnk" onclick="drillEdit('${p.id}')">✏️</button></div></div></div>`;
+    <div class="row"><button class="btn sm coral" onclick="drillTry('${p.id}')">⏱ Try this</button><button class="btn sm ghost" onclick="drillOpen('${p.id}')">▶ Open</button></div></div></div>`;
 }
 // The shelf re-renders on every store change (a sync from the other phone included); the add form is only rebuilt while
 // nobody is typing in it, so a pasted link doesn't vanish under Jenya's thumb.
 export function renderDrillBox(){
   const form = $("#drillForm"), listEl = $("#drillList"); if (!form || !listEl) return; const list = allDrills(drills());
-  const cnt = $("#drillCount"); if (cnt) cnt.textContent = list.length ? `${list.length} saved` : "";
-  const fields = [$("#drillUrl"), $("#drillNote")]; const typing = !!form.innerHTML && fields.some(e => e && (e === document.activeElement || String(e.value || "").trim()));
-  if (!typing) { const opts = skillOptions(); const groups = [...new Set(opts.map(o => o.group))];
+  const cnt = $("#drillCount"); if (cnt) { cnt.textContent = list.length ? `${list.length} saved` : ""; cnt.hidden = !list.length; }
+  const fields = [$("#drillUrl"), $("#drillNote"), $("#drillSkill")]; const typing = !!form.innerHTML && fields.some(e => e && (e === document.activeElement || String(e.value || "").trim()));
+  if (!typing) {
     form.innerHTML = `<p class="small muted">Paste a public YouTube, Instagram or Pinterest post, say which skill it is for, and one line of what to look at. Just the link is kept — nothing is copied.</p>
-    <div class="coach-pick drill-add"><input type="url" id="drillUrl" placeholder="Paste the link" inputmode="url"><select id="drillSkill"><option value="">Which skill?</option>${groups.map(g => `<optgroup label="${esc(g)}">${opts.filter(o => o.group === g).map(o => `<option value="${o.id}">${esc(o.n)}</option>`).join("")}</optgroup>`).join("")}</select>
+    <div class="coach-pick drill-add"><input type="url" id="drillUrl" placeholder="Paste the link" inputmode="url"><select id="drillSkill">${skillSelectOptions()}</select>
     <input type="text" id="drillNote" maxlength="${NOTE_MAX}" placeholder="One line: what to watch for (e.g. the part at 0:40)"><div class="row"><button class="btn sm coral" onclick="drillAdd()">📎 Save to the box</button><span class="grow"></span><button class="btn sm ghost" onclick="openTechniqueBook()">📖 My technique book</button></div></div>`; }
   listEl.innerHTML = list.length ? list.map(card).join("") : `<p class="small muted" style="margin-top:8px">Nothing saved yet. The first one takes ten seconds.</p>`;
 }
 async function add(){
   const url = ($("#drillUrl") || {}).value, skill = ($("#drillSkill") || {}).value || "", note = String(($("#drillNote") || {}).value || "").trim().slice(0, NOTE_MAX);
   const p = parseLink(url); if (!p) return toast("That doesn't look like a post link. Copy it from the Share button.", 3500);
-  const id = uid(); await setSettings({ drills: { ...drills(), [id]: { ...p, skill, note, do: "", dont: "", ask: false, at: todayStr() } } });
+  const id = uid(); await setSettings({ drills: { ...drills(), [id]: { ...p, url: p.url.slice(0, 500), skill, note, do: "", dont: "", ask: false, at: todayStr() } } });
   for (const f of [$("#drillUrl"), $("#drillNote")]) if (f) f.value = ""; const sel = $("#drillSkill"); if (sel) sel.value = "";
   toast(p.host === "youtube" ? "Saved. It'll play right here ▶️" : `Saved. It opens in ${hostInfo(p).n} 📲`, 2500); renderDrillBox();
 }
@@ -100,7 +107,8 @@ function open(id){
     <div class="row" style="margin-top:8px"><button class="btn coral big-btn grow" onclick="drillTry('${p.id}')">⏱ Try this (2 min)</button></div>
     <div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="drillDo('${p.id}')">✅ ${p.do ? "Change the do" : "Add a do"}</button><button class="btn sm ghost" onclick="drillDont('${p.id}')">❌ ${p.dont ? "Change the don't" : "Add a don't"}</button></div>
     <label class="check drill-ask"><input type="checkbox" ${p.ask ? "checked" : ""} onchange="drillAsk('${p.id}',this.checked)"><span>🙋 Ask Ms. Brittany if this is right for me <span class="small muted">(goes on the teacher summary)</span></span></label>
-    <div class="row" style="margin-top:8px"><button class="lnk" onclick="drillEdit('${p.id}')">✏️ Note or skill</button><span class="grow"></span><button class="lnk" onclick="drillRemove('${p.id}')">🗑 Remove</button></div>`;
+    <div class="row" style="margin-top:8px"><span class="small muted">For:</span><select class="drill-for" onchange="drillSkill('${p.id}',this.value)">${skillSelectOptions(p.skill)}</select></div>
+    <div class="row" style="margin-top:8px"><button class="lnk" onclick="drillNote('${p.id}')">✏️ ${p.note ? "Change the note" : "Add a note"}</button><span class="grow"></span><button class="lnk" onclick="drillRemove('${p.id}')">🗑 Remove</button></div>`;
   $("#drill").hidden = false; document.body.classList.add("modal");
 }
 export function closeDrill(){ const el = $("#drill"); if (!el) return; el.hidden = true; const body = $("#drillBody"); if (body) body.innerHTML = ""; document.body.classList.remove("modal"); }
@@ -108,23 +116,19 @@ function tryIt(id){ const p = post(id); if (!p) return; closeDrill(); openPracti
 async function setDo(id){ const p = post(id); if (!p) return; const t = prompt("✅ Do — one line", p.do || ""); if (t === null) return; await save(id, { do: String(t).trim().slice(0, NOTE_MAX) }); open(id); renderDrillBox(); }
 async function setDont(id){ const p = post(id); if (!p) return; const t = prompt("❌ Don't — one line", p.dont || ""); if (t === null) return; await save(id, { dont: String(t).trim().slice(0, NOTE_MAX) }); open(id); renderDrillBox(); }
 async function setAsk(id, on){ await save(id, { ask: !!on }); toast(on ? "On the teacher summary 🙋" : "Off the teacher summary"); renderDrillBox(); }
-async function edit(id){
-  const p = post(id); if (!p) return; const note = prompt("Your note (one line)", p.note || ""); if (note === null) return;
-  const opts = skillOptions(); const cur = opts.findIndex(o => o.id === p.skill); const pick = prompt("Which skill? Type a number:\n" + opts.map((o, i) => `${i + 1}. ${o.n}`).join("\n"), cur >= 0 ? String(cur + 1) : "");
-  const n = parseInt(pick, 10); const skill = pick === null || pick === "" ? p.skill : (n >= 1 && n <= opts.length ? opts[n - 1].id : p.skill);
-  await save(id, { note: String(note).trim().slice(0, NOTE_MAX), skill }); if (!$("#drill").hidden) open(id); renderDrillBox();
-}
+async function setNote(id){ const p = post(id); if (!p) return; const t = prompt("Your note (one line)", p.note || ""); if (t === null) return; await save(id, { note: String(t).trim().slice(0, NOTE_MAX) }); open(id); renderDrillBox(); }
+async function setSkill(id, skill){ const p = post(id); if (!p) return; const ok = skillOptions().some(o => o.id === skill); await save(id, { skill: ok ? skill : "" }); toast(ok ? "Filed under " + skillName(skill) + " ✓" : "Filed under any skill"); renderDrillBox(); }
 async function remove(id){ if (!confirm("Take this post out of the box?")) return; const d = { ...drills() }; delete d[id]; await setSettings({ drills: d }); closeDrill(); toast("Removed"); renderDrillBox(); }
 // "📎 From the drill box: N saved" with thumbnails, for a skill page (Trick Quest prep, an aerial drill card). "" when none.
 export function drillStrip(skill){
   const list = drillsFor(skill, drills()); if (!list.length) return "";
-  return `<div class="drill-strip"><div class="small"><b>📎 From the drill box:</b> ${list.length} saved</div><div class="drill-thumbs">${list.slice(0, 6).map(p => `<button class="drill-open" onclick="event.preventDefault();drillOpen('${p.id}')" title="${esc(p.note || hostInfo(p).n)}">${thumbHtml(p)}</button>`).join("")}</div></div>`;
+  return `<div class="drill-strip"><div class="small"><b>📎 From the drill box:</b> ${list.length} saved</div><div class="drill-thumbs">${list.slice(0, 6).map(p => `<button class="drill-open" aria-label="${thumbLabel(p)}" onclick="event.preventDefault();drillOpen('${p.id}')" title="${esc(p.note || hostInfo(p).n)}">${thumbHtml(p)}</button>`).join("")}</div></div>`;
 }
 // ---------- My technique book ----------
 function openTechniqueBook(){
   const cards = techniqueCards(drills());
-  $("#drillArea").innerHTML = `<p class="small muted">Every ✅ and ❌ from the drill box, in one place.</p>${cards.length ? cards.map(p => `<div class="drill-card book"><button class="drill-open" onclick="drillOpen('${p.id}')">${thumbHtml(p)}</button><div class="grow drill-main"><div class="row">${skillChip(p)}</div>${dodont(p)}</div></div>`).join("") : `<p class="small muted">No pages yet. Open a saved post and add a ✅ do or a ❌ don't.</p>`}`;
+  $("#drillArea").innerHTML = `<p class="small muted">Every ✅ and ❌ from the drill box, in one place.</p>${cards.length ? cards.map(p => `<div class="drill-card book"><button class="drill-open" aria-label="${thumbLabel(p)}" onclick="drillOpen('${p.id}')">${thumbHtml(p)}</button><div class="grow drill-main"><div class="row">${skillChip(p)}</div>${dodont(p)}</div></div>`).join("") : `<p class="small muted">No pages yet. Open a saved post and add a ✅ do or a ❌ don't.</p>`}`;
   openStage("📖 My technique book", [$("#drillArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`);
 }
-export function initDrills(){ const c = $("#drillClose"); if (c) c.onclick = closeDrill; const m = $("#drill"); if (m) m.addEventListener("click", e => { if (e.target === m) closeDrill(); }); }
-expose({ drillAdd: add, drillOpen: open, drillTry: tryIt, drillDo: setDo, drillDont: setDont, drillAsk: setAsk, drillEdit: edit, drillRemove: remove, openTechniqueBook, closeDrill });
+export function initDrills(){ document.addEventListener("stageclosed", () => { const a = $("#drillArea"); if (a) a.style.display = "none"; }); const c = $("#drillClose"); if (c) c.onclick = closeDrill; const m = $("#drill"); if (m) m.addEventListener("click", e => { if (e.target === m) closeDrill(); }); }
+expose({ drillAdd: add, drillOpen: open, drillTry: tryIt, drillDo: setDo, drillDont: setDont, drillAsk: setAsk, drillNote: setNote, drillSkill: setSkill, drillRemove: remove, openTechniqueBook, closeDrill });
