@@ -30,7 +30,7 @@ function renderHome(){
     <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span><span class="chip">${skips} free skip${skips===1?"":"s"} left</span><span id="todayCount"></span></div>
     <div class="pick">${bites.length?"Pick another? ✨":"Pick one 👇"}</div>
     <div class="choice">${cards.map(c=>`<button class="choice-card ${c.done?"done":""}" onclick="${c.go}"><span class="ic">${c.done?"✅":c.ic}</span><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></button>`).join("")}</div>
-    <div class="tired">${tired?`<span>😴 Rest counted. Streak safe ✓</span>`:`<span class="grow">😴 Tired today?</span><button class="btn sm ghost" onclick="habitTired('stretch')">2-min stretch</button><button class="btn sm ghost" onclick="habitTired('picture')">Picture the dance</button>`}</div>
+    <div class="tired">${tired?`<span>😴 Rest counted. Streak safe ✓</span>`:`<span>😴 Tired today? That's allowed.</span><div class="row"><button class="btn sm ghost" onclick="habitTired('stretch')">🧘 2-min stretch</button><button class="btn sm ghost" onclick="habitTired('picture')">🎧 Picture the dance</button></div>`}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="showPage('practice')">${fullDone?"✅ Full practice done":(hp?"▶ Full practice":"Practice list")}</button><button class="btn sm ghost" onclick="showPage('play')">🎮 All games</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
   renderComp(); renderBites(); renderMindCard(); applyPalette();
   if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(ne.name)}</span>`; }
