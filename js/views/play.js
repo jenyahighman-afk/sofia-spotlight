@@ -11,6 +11,7 @@ import "../games/compday.js";
 import "../games/sparkle.js";
 import "../games/mirror.js";
 import { renderAlong } from "../games/along.js";
+import { renderWho } from "../who.js";
 
 export const GAMES = [
   { id: "choreo",  emoji: "💃", name: "Choreo Studio",  blurb: "Build a dance, face the judges", best: (s) => s.csBest ? s.csBest : null },
@@ -27,7 +28,7 @@ let openGame = "";
 export function playOpen(id){ openGame = id; renderPlay(); if (id) { const c = document.querySelector(`.game-card[data-game="${id}"]`); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: "smooth", block: "start" }); } else window.scrollTo({ top: 0 }); }
 export function initPlay(){ initChoreo(); }
 export function renderPlay(){
-  const s = S.settings;
+  const s = S.settings; renderWho();
   $("#gameGrid").innerHTML = GAMES.map(g => { const b = g.best(s); return `<button class="game-tile" onclick="playOpen('${g.id}')"><span class="gt-emoji">${g.emoji}</span><span class="gt-name">${esc(g.name)}</span><small>${esc(g.blurb)}</small>${b !== null ? `<small class="gt-best">Best ${esc(String(b))}</small>` : ""}</button>`; }).join("");
   $("#gameGrid").hidden = !!openGame; $("#gameBack").hidden = !openGame;
   $$(".game-card").forEach(c => { c.hidden = c.dataset.game !== openGame; });

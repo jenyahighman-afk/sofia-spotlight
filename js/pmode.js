@@ -12,14 +12,17 @@ import { confetti } from "./views/practice.js";
 import { demoFor, demoHtml } from "./demos.js";
 import { awardStars } from "./stars.js";
 import { markBite, markDrillTried } from "./habit.js";
+import { sofiaDancing, whoSuffix, pickedNames, namesLine } from "./who.js";
 
 const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
 let ITEMS = [];
 const PM = { i: 0, timed: false, left: 0, total: 0, timer: 0, paused: false, ctx: null };
 // A quick session (js/quick.js) runs the same screen but keeps its own done list and is saved as one record at the end.
 // A "Try this" from the drill box (js/drills.js) is a bite session that also remembers which post was tried.
-const MODE = { quick: "", bite: "", drill: "" }; const localDone = new Set();
-const doneIds = () => (MODE.quick || MODE.bite) ? [...localDone] : (rec().done || []);
+// `guest`: friends are dancing without Sofia (js/who.js), so nothing is saved to her day — the list just runs.
+const MODE = { quick: "", bite: "", drill: "", guest: false }; const localDone = new Set();
+const local = () => !!(MODE.quick || MODE.bite || MODE.guest);
+const doneIds = () => local() ? [...localDone] : (rec().done || []);
 
 // Pure: which item to show next — the first unchecked one at or after `from`, else the first unchecked anywhere, else -1.
 export function nextIndex(items, done, from = 0){
@@ -67,14 +70,14 @@ function beep(){ try { if (!PM.ctx) PM.ctx = new (window.AudioContext || window.
 async function done(){
   if (PM.busy) return; PM.busy = true;
   try {
-  const it = ITEMS[PM.i]; if (!it) return; if (MODE.quick || MODE.bite) { localDone.add(it.id); advance(); return; } const r = rec(); const doneIds = [...new Set([...(r.done || []), it.id])];
+  const it = ITEMS[PM.i]; if (!it) return; if (local()) { localDone.add(it.id); advance(); return; } const r = rec(); const doneIds = [...new Set([...(r.done || []), it.id])];
   const date = todayStr(); await storeSet("practice", date, { ...r, done: doneIds, total: ITEMS.length });
   if (it.aerialId) { const ad = new Set(S.settings.aerial || []); if (!ad.has(it.aerialId)) { ad.add(it.aerialId); await storeSet("settings", "main", { ...S.settings, aerial: [...ad] }); } }
   try { localStorage.setItem("spotlight:practice:" + date, JSON.stringify(doneIds)); } catch (e) {}
   advance();
   } finally { PM.busy = false; }
 }
-function advance(){ PM.i = nextIndex(ITEMS, doneIds(), PM.i + 1); render(); if (PM.i < 0) { clearInterval(PM.timer); confetti(); if (MODE.quick) finishQuick(); else if (MODE.bite) finishBite(); else { checkBadges(); awardStars("practice", 100, "Practice done"); } } else startTimer(); }
+function advance(){ PM.i = nextIndex(ITEMS, doneIds(), PM.i + 1); render(); if (PM.i < 0) { clearInterval(PM.timer); confetti(); if (MODE.guest) toast(`Nice one, ${namesLine(pickedNames())}! 🎉`, 2500); else if (MODE.quick) finishQuick(); else if (MODE.bite) finishBite(); else { checkBadges(); awardStars("practice", 100, "Practice done"); } } else startTimer(); }
 // A bite session (Today's move of the day, a tired-day option): the bite is what counts; a star for showing up.
 async function finishBite(){ const b = MODE.bite; if (MODE.drill) await markDrillTried(MODE.drill); else await markBite(b); checkBadges(); awardStars("quick", 100, MODE.drill ? "Tried it ✓ That's today's trick" : b === "tired" ? "Rest counts. Streak safe" : "Move done"); }
 async function finishQuick(){ const r = rec(); const date = todayStr(); await storeSet("practice", date, { ...r, quick: [...(Array.isArray(r.quick) ? r.quick : []), MODE.quick] }); checkBadges(); awardStars("quick", 100, "Quick session done"); }
@@ -83,7 +86,7 @@ function setTimed(v){ PM.timed = v; try { localStorage.setItem("spotlight:pmode"
 function pause(){ PM.paused = !PM.paused; render(); }
 export function openPracticeMode(items, opts = {}){
   try { PM.timed = localStorage.getItem("spotlight:pmode") === "timed"; } catch (e) {}
-  MODE.quick = opts.quick || ""; MODE.bite = opts.bite || ""; MODE.drill = opts.drill || ""; localDone.clear(); if (MODE.quick || MODE.bite) PM.timed = true; $("#pmTitle").textContent = opts.title || "Practice";
+  MODE.quick = opts.quick || ""; MODE.bite = opts.bite || ""; MODE.drill = opts.drill || ""; MODE.guest = !sofiaDancing(); localDone.clear(); if (MODE.quick || MODE.bite) PM.timed = true; $("#pmTitle").textContent = (opts.title || "Practice") + whoSuffix();
   ITEMS = Array.isArray(items) && items.length ? items : planFor(todayStr()); PM.i = nextIndex(ITEMS, doneIds(), 0); if (PM.i < 0) PM.i = 0;
   $("#pmode").hidden = false; document.body.classList.add("modal"); render(); startTimer();
 }
