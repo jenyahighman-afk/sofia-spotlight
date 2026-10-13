@@ -2,21 +2,23 @@
   --paper:#FFF7FA; --ink:#4A2340; --ink-2:#8A6A80; --line:#F6DDE7;
   --coral:#FF5C93; --sun:#F4C86A; --aqua:#F7A8C6; --violet:#C9A7F5; --mint:#FBD7E4; --blush:#FFE6EF; --gold:#D9B26F;
   --card:#FFFFFF; --shadow:0 6px 0 rgba(74,35,64,.07);
-  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#2B1A26; --ink:#FFF0F5; --ink-2:#E2BFD0; --line:#5A3A4E; --card:#3A2434; --blush:#5A2E45; --shadow:0 6px 0 rgba(0,0,0,.25);} }
 :root[data-theme="dark"]{ --paper:#2B1A26; --ink:#FFF0F5; --ink-2:#E2BFD0; --line:#5A3A4E; --card:#3A2434; --blush:#5A2E45; --shadow:0 6px 0 rgba(0,0,0,.25);}
 *{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-html,body{height:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:Nunito,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
+/* App shell: the page itself never scrolls. body is a fixed-height column (content scroller + tab bar), so the tab bar
+   is an ordinary last row, not a position:fixed element — iOS moves fixed elements while rubber-banding and after the
+   keyboard closes, which is how the bar used to drift up over the content. */
+html{height:100%;overflow:hidden}
+body{margin:0;height:100dvh;display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top,0px);background:var(--paper);color:var(--ink);font-family:Nunito,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
 h1,h2,h3,.disp{font-family:Fredoka,Nunito,system-ui,sans-serif;font-weight:600;letter-spacing:.01em;margin:0}
 h1{font-size:2rem;line-height:1.05} h2{font-size:1.5rem;margin-bottom:.5rem} h3{font-size:1.15rem}
 p{margin:.35rem 0}
 a{color:var(--violet)}
 button,input,select,textarea{font:inherit;color:inherit}
 img{max-width:100%}
-.wrap{max-width:720px;margin:0 auto;padding:14px 14px 96px}
+.wrap{flex:1 1 auto;min-height:0;width:100%;max-width:720px;margin:0 auto;padding:14px 14px 28px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
 header.hero{position:relative;overflow:hidden;border-radius:22px;padding:22px 18px 18px;color:#4A2340;
   background:linear-gradient(135deg,#FFC2D6 0%,#FF7FAE 55%,#D9B3FF 100%);}
 header.hero:after{content:"✿ ✧ ✿";position:absolute;left:18px;bottom:8px;color:rgba(255,255,255,.55);font-size:.8rem;letter-spacing:.4em}
@@ -48,7 +50,7 @@ ul.clean{list-style:none;padding:0;margin:0} ul.clean li{padding:6px 0;border-bo
 .check input{width:22px;height:22px;accent-color:#FF5C93;margin-top:2px;flex:none}
 .check.done span{text-decoration:line-through;color:var(--ink-2)}
 .del{background:none;border:0;color:var(--ink-2);font-size:1.1rem;cursor:pointer;padding:0 4px}
-nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
+nav.tabs{flex:none;background:var(--card);border-top:2px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
 nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:.62rem;font-weight:800;color:var(--ink-2);padding:4px 3px;border-radius:12px;min-width:40px}
 nav.tabs button span.ic{font-size:1.25rem}
 nav.tabs button.on{color:#FF5C93;background:var(--blush)}
@@ -103,8 +105,8 @@ canvas#gameCv{flex:1;width:100%;display:block;background:linear-gradient(#FFF7FA
 .lanes button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(74,35,64,.15)}
 .game-msg{position:absolute;left:0;right:0;top:40%;text-align:center;font-family:Fredoka;font-size:2rem;color:#FF5C93;pointer-events:none}
 @media print{
-  body{background:#fff;color:#000} nav.tabs,header.hero,.noprint{display:none!important}
-  .wrap{padding:0;max-width:none} section.page{display:none} section.page.print-target{display:block!important}
+  html,body{height:auto;overflow:visible;display:block} body{background:#fff;color:#000} nav.tabs,header.hero,.noprint{display:none!important}
+  .wrap{padding:0;max-width:none;overflow:visible} section.page{display:none} section.page.print-target{display:block!important}
   .card{box-shadow:none;border:1px solid #999;break-inside:avoid} .cal .d{min-height:90px}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
