@@ -3,7 +3,7 @@
 // names live in settings.friends (editable on Me) and their best scores in settings.friendBests (schema 26). Sofia's own
 // stats, stars, bites and the streak stay hers: a game without Sofia dancing saves only the friends' scores. The pick
 // itself is per phone (localStorage), not synced. Pure parts up top (tested in Node).
-import { $, esc, expose } from "./util.js";
+import { $, esc, expose, todayStr } from "./util.js";
 import { S, setSettings } from "./store.js";
 
 export const SLOTS = ["f1", "f2"], DEFAULT_FRIENDS = { f1: "Hannah", f2: "Lauren" }, NAME_MAX = 20;
@@ -12,7 +12,7 @@ const KEY = "spotlight:who";
 // Who can dance: [{ id: "sofia" | "f1" | "f2", n }], Sofia first (her name from the avatar), friends from settings.friends.
 export function dancers(settings = S.settings){ const st = settings || {}; const f = st.friends || {}; const sofia = String((st.avatar || {}).name || "").trim() || "Sofia"; return [{ id: "sofia", n: sofia }, ...SLOTS.map(id => ({ id, n: String(f[id] || "").trim() || DEFAULT_FRIENDS[id] }))]; }
 // A pick, normalized: known ids only, no repeats, Sofia when nothing is left.
-export function normalizePick(ids){ const ok = new Set(["sofia", ...SLOTS]); const out = [...new Set((Array.isArray(ids) ? ids : []).filter(x => ok.has(x)))]; return out.length ? out : ["sofia"]; }
+export function normalizePick(ids){ const order = ["sofia", ...SLOTS]; const have = new Set(Array.isArray(ids) ? ids : []); const out = order.filter(x => have.has(x)); return out.length ? out : ["sofia"]; }
 export function togglePick(ids, id){ const cur = normalizePick(ids); if (id === "all") return ["sofia", ...SLOTS]; return normalizePick(cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]); }
 export const includesSofia = (ids) => normalizePick(ids).includes("sofia");
 export const friendSlots = (ids) => normalizePick(ids).filter(id => id !== "sofia");
@@ -20,18 +20,23 @@ export const friendSlots = (ids) => normalizePick(ids).filter(id => id !== "sofi
 export function namesLine(names){ const n = (names || []).map(x => String(x || "").trim()).filter(Boolean); return n.length <= 1 ? n.join("") : n.slice(0, -1).join(", ") + " & " + n[n.length - 1]; }
 // The friends' bests after a game: the max per friend per game, only for the friends in the pick. Sofia's bests are not here.
 export function bestsAfter(bests, pick, game, score){ const out = { ...(bests || {}) }; const v = Math.round(+score || 0); for (const id of friendSlots(pick)) { const b = { ...(out[id] || {}) }; if (v > (+b[game] || 0)) b[game] = v; out[id] = b; } return out; }
-// The line under a Moment's sticker: who danced (when it's more than Sofia) and the streak.
-export function momentSub(names, streak){ const who = (names || []).filter(Boolean); return [who.length > 1 ? "💃 " + namesLine(who) : "", streak > 0 ? `🔥 ${streak}-day streak` : ""].filter(Boolean).join("  ·  "); }
+// The line under a Moment's sticker: who danced (unless it's Sofia alone, which reads as before) and the streak, which is
+// Sofia's, so it only shows when she is on the card.
+export function momentSub(names, streak, sofia = "Sofia"){ const who = (names || []).filter(Boolean); const alone = who.length === 1 && who[0] === sofia; return [who.length && !alone ? "💃 " + namesLine(who) : "", (!who.length || who.includes(sofia)) && streak > 0 ? `🔥 ${streak}-day streak` : ""].filter(Boolean).join("  ·  "); }
 
 // ---------- the pick on this phone ----------
-let pick = null;
-export function currentPick(){ if (!pick) { try { pick = normalizePick(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) { pick = ["sofia"]; } } return pick; }
-export function setPick(ids){ pick = normalizePick(ids); try { localStorage.setItem(KEY, JSON.stringify(pick)); } catch (e) {} renderWho(); return pick; }
+// Kept for the day only: tomorrow the app is Sofia's again, so a playdate's pick can't quietly stop her bites counting.
+let pick = null, pickDay = "";
+export function currentPick(){ const today = todayStr(); if (!pick || pickDay !== today) { pick = ["sofia"]; pickDay = today; try { const saved = JSON.parse(localStorage.getItem(KEY) || "{}"); if (saved && saved.d === today) pick = normalizePick(saved.ids); } catch (e) {} } return pick; }
+export function resetPickCache(){ pick = null; pickDay = ""; } // tests: re-read the stored pick
+export function setPick(ids){ pick = normalizePick(ids); pickDay = todayStr(); try { localStorage.setItem(KEY, JSON.stringify({ ids: pick, d: pickDay })); } catch (e) {} renderWho(); return pick; }
 export function pickedNames(){ const d = dancers(); return currentPick().map(id => (d.find(x => x.id === id) || {}).n).filter(Boolean); }
 export const sofiaDancing = () => includesSofia(currentPick());
 export const withFriends = () => friendSlots(currentPick()).length > 0;
 // " · Sofia & Hannah" for a title; "" when Sofia dances alone.
 export const whoSuffix = () => withFriends() ? " · " + namesLine(pickedNames()) : "";
+// The best of the friends in the pick for a game (0 when none), so "NEW BEST!" in a game can mean theirs, not Sofia's.
+export const friendBest = (game) => Math.max(0, ...friendSlots(currentPick()).map(id => +(((S.settings.friendBests || {})[id] || {})[game]) || 0));
 // A game's end: saves the friends' bests for the friends in the pick. Returns true when friends were dancing.
 export async function recordFriendScore(game, score){ if (!withFriends()) return false; await setSettings({ friendBests: bestsAfter(S.settings.friendBests, currentPick(), game, score) }); return true; }
 export function renderWho(){
