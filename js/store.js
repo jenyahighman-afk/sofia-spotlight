@@ -6,7 +6,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 21;
+export const SCHEMA_VERSION = 22;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -16,6 +16,8 @@ const V1_PRACTICE_IDS = ["warmup","hollow-superman","planks","releves-balance","
 const V1_AERIAL_IDS = ["cartwheel-clean","one-hand-far","one-hand-near","dive-cartwheel","roundoff","single-leg-squats","hollow-hold","jump-lunges","long-jump","hurdle-drill","front-leg-drive","fingertip-cartwheels","wedge-cartwheel","teacher-set-order","spotted-attempts","unspotted-mat","twenty-in-a-row"];
 
 export const DEFAULT_PIN = "2027";
+// The daily habit "bites" a practice day can hold (js/habit.js) and the tired-day kinds. Frozen here for the migration.
+export const BITE_IDS = ["trick", "game", "move", "tired"]; const TIRED_KINDS = ["stretch", "picture"];
 
 // Schema 19: the solo's floor section was re-set; a side-sit leg reach replaces the tailbone balance and the 0:18 lunge reach
 // cue is gone. These are the new lines, frozen here like the V1 lists so the step keeps working after data/dances.json is edited again.
@@ -152,7 +154,9 @@ export const MIGRATIONS = {
   // 21 (Dance Along saves): a routine's frames are stored flat (choreo.frames = numbers, choreo.fdim = numbers per frame),
   // because Firestore rejects an array inside an array — which is why every Dance Along clip "disappeared" before 1.12.4.
   // A nested frames list (local cache / backups only) is packed here.
-  21: (col, id, doc) => { if (col === "choreo" && doc.kind === "along" && Array.isArray(doc.frames) && !doc.fdim) { doc.frames = packFrames(doc.frames); doc.fdim = FDIM; } return doc; }
+  21: (col, id, doc) => { if (col === "choreo" && doc.kind === "along" && Array.isArray(doc.frames) && !doc.fdim) { doc.frames = packFrames(doc.frames); doc.fdim = FDIM; } return doc; },
+  // 22 (daily habit): practice.bites = the bites done that day (one keeps the streak); practice.tired = which tired-day option. Normalized when present.
+  22: (col, id, doc) => { if (col === "practice") { if (doc.bites !== undefined) doc.bites = Array.isArray(doc.bites) ? doc.bites.filter(b => BITE_IDS.includes(b)) : []; if (doc.tired !== undefined && !TIRED_KINDS.includes(doc.tired)) delete doc.tired; } return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

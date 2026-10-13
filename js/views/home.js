@@ -1,8 +1,10 @@
 // Today tab: one big card (what's on, Start, countdown, streak, Play), this week's fix, then the week strip.
 import { $, esc, fmt, todayStr, daysUntil, expose, toast } from "../util.js";
 import { CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "../data.js";
-import { S, events, nextEvent } from "../store.js";
-import { computeStreak, dayCounts } from "../streak.js";
+import { S, events, nextEvent, storeSet } from "../store.js";
+import { computeStreak, dayCounts, skipsLeft } from "../streak.js";
+import { cardsFor, moveOfDay, TIRED } from "../habit.js";
+import { openPracticeMode } from "../pmode.js";
 import { currentWeekFix, pickWeekFix, TAG_EMOJI } from "../corrections.js";
 import { checkBadges } from "../badges.js";
 import { renderGoalReminder } from "../goals.js";
@@ -21,10 +23,15 @@ function renderHome(){
   if(cls.length){ what=`<div class="today-what">🏫 Studio day</div><div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}`).join("<br>")}</div>`; verb="Stretch"; }
   else if(hp){ what=`<div class="today-what">🏠 Home practice</div><div class="today-sub">${esc(hp)}</div>`; verb="Start"; }
   else { what=`<div class="today-what">🌙 Rest day</div><div class="today-sub">Stretch a little if you want.</div>`; verb="Stretch"; }
-  const streak=computeStreak({practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today});
+  const ctx={practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today}; const streak=computeStreak(ctx); const skips=skipsLeft(ctx);
+  const bites=(rec&&Array.isArray(rec.bites))?rec.bites:[]; const cards=cardsFor(today,{skills:S.skills,bites}); const tired=bites.includes("tired");
+  const fullDone=!!rec&&dayCounts({done:rec.done,total:rec.total},PRACTICE_ITEMS.length);
   $("#todayCard").innerHTML=`${what}
-    <div class="today-actions"><button class="btn coral big-btn" onclick="showPage('practice')">${doneToday?"✅ Done today":"▶ "+verb}</button><button class="btn big-btn" onclick="showPage('play')">🎮 Play</button></div>
-    <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${(rec&&Array.isArray(rec.quick)&&rec.quick.length)?`<span class="chip violet">⚡ ${rec.quick.length} quick</span>`:""}<span id="todayCount"></span></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
+    <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span><span class="chip">${skips} free skip${skips===1?"":"s"} left</span><span id="todayCount"></span></div>
+    <div class="pick">${bites.length?"Pick another? ✨":"Pick one 👇"}</div>
+    <div class="choice">${cards.map(c=>`<button class="choice-card ${c.done?"done":""}" onclick="${c.go}"><span class="ic">${c.done?"✅":c.ic}</span><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></button>`).join("")}</div>
+    <div class="tired">${tired?`<span>😴 Rest counted. Streak safe ✓</span>`:`<span class="grow">😴 Tired today?</span><button class="btn sm ghost" onclick="habitTired('stretch')">2-min stretch</button><button class="btn sm ghost" onclick="habitTired('picture')">Picture the dance</button>`}</div>
+    <div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="showPage('practice')">${fullDone?"✅ Full practice done":(hp?"▶ Full practice":"Practice list")}</button><button class="btn sm ghost" onclick="showPage('play')">🎮 All games</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
   renderComp(); renderBites(); renderMindCard(); applyPalette();
   if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(ne.name)}</span>`; }
   // this week's fix
@@ -44,6 +51,10 @@ function renderHome(){
     h+=`<div class="day ${ds===today?"today":""}"><b>${names[i]} ${d.getDate()}</b>${evs}</div>`; }
   $("#homeWeek").innerHTML=h; const td=$("#homeWeek .day.today"); if(td) $("#homeWeek").scrollLeft=Math.max(0,td.offsetLeft-8);
 }
+// Today's "Show me a move": one technique item with its animated dancer, timed, as a bite.
+function habitMove(){ const m=moveOfDay(todayStr()); if(!m) return toast("No move today"); openPracticeMode([{...m,kind:"tech"}],{title:"✨ Move of the day",bite:"move"}); }
+// Tired day: a short lying-down option that still counts. Never a lecture.
+async function habitTired(kind){ const t=TIRED[kind]; if(!t) return; const date=todayStr(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; await storeSet("practice",date,{...rec,tired:kind}); openPracticeMode(t.items,{title:t.title,bite:"tired"}); }
 async function pickFix(){ const c=await pickWeekFix(); if(!c) return toast("Nothing open to pick"); toast("This week: "+c.text.slice(0,40)); renderHome(); checkBadges(); }
 export { renderHome, pickFix };
-expose({ pickFix });
+expose({ pickFix, habitMove, habitTired });
