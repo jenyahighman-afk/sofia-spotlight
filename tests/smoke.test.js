@@ -161,3 +161,11 @@ test("Coach corner: grouping by dance or skill, check trends, fix status", () =>
   assert.equal(H.fixStatus({ ...reviews.a, fixAdded: true, fixId: "gone" }, {}), "noted");
   assert.equal(H.lastTrickReview(reviews, "Calypso").id, "c"); assert.equal(H.lastTrickReview(reviews, "Donut roll"), null);
 });
+
+test("the tab bar is a row of the app shell, never position:fixed (iOS drifts fixed bars while scrolling)", () => {
+  const css = readFileSync(new URL("../css/app.css", import.meta.url), "utf8");
+  const nav = /nav\.tabs\{([^}]*)\}/.exec(css)[1]; assert.ok(!/position\s*:\s*fixed/.test(nav), "nav.tabs is not fixed"); assert.match(nav, /flex:none/);
+  const body = /\nbody\{([^}]*)\}/.exec(css)[1]; assert.match(body, /display:flex/); assert.match(body, /flex-direction:column/); assert.match(body, /100dvh/);
+  const wrap = /\.wrap\{([^}]*)\}/.exec(css)[1]; assert.match(wrap, /overflow-y:auto/); assert.match(wrap, /min-height:0/);
+  assert.match(css, /@media print\{[^@]*html,body\{height:auto;overflow:visible/, "printing still flows across pages");
+});

@@ -56,6 +56,13 @@ export function poseFeatures(lm){
   const lk = angleAt(g(LM.lHip), g(LM.lKnee), g(LM.lAnkle)) ?? 180, rk = angleAt(g(LM.rHip), g(LM.rKnee), g(LM.rAnkle)) ?? 180;
   return [...rel(g(LM.lWrist)), ...rel(g(LM.rWrist)), ...rel(g(LM.lElbow)), ...rel(g(LM.rElbow)), +(lk / 180).toFixed(2), +(rk / 180).toFixed(2)];
 }
+// Firestore can't store an array inside an array, so a routine's frames (one 10-number feature list per frame, or null
+// when no dancer was seen) are stored flat: FDIM numbers per frame, a missing frame as FDIM nulls. Unpacked at play time.
+export const FDIM = 10;
+export function packFrames(frames){ const out = []; for (const f of frames || []) { if (Array.isArray(f) && f.length === FDIM) out.push(...f.map(Number)); else out.push(...Array(FDIM).fill(null)); } return out; }
+export function unpackFrames(flat, dim = FDIM){ const out = []; if (!Array.isArray(flat)) return out; for (let i = 0; i + dim <= flat.length; i += dim) { const f = flat.slice(i, i + dim); out.push(f.every(x => typeof x === "number" && Number.isFinite(x)) ? f : null); } return out; }
+// The frames of a stored routine, nested (packed docs carry fdim; older in-memory ones are already nested).
+export const routineFrames = (r) => !r ? [] : r.fdim ? unpackFrames(r.frames, r.fdim) : (Array.isArray(r.frames) ? r.frames : []);
 const flipF = (f) => [-f[2], f[3], -f[0], f[1], -f[6], f[7], -f[4], f[5], f[9], f[8]]; // swap left/right and mirror x
 export function featureDistance(a, b){
   if (!a || !b) return Infinity; const dist = (p, q) => { let s = 0; for (let i = 0; i < 10; i++) { const wgt = i < 4 ? 1 : i < 8 ? 0.6 : 1.5; s += wgt * (p[i] - q[i]) * (p[i] - q[i]); } return Math.sqrt(s / 10); };
