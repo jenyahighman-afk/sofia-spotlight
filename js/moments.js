@@ -96,6 +96,9 @@ export const todayStickers = () => stickersFor(todayContext());
 // The nudge Today shows for a big moment, once per day per kind.
 export function todayNudge(){ const n = nudgeFor(todayStickers()); if (!n) return null; return S.settings.momentNudge === todayStr() + "|" + n.key ? null : n; }
 
+// The "Who danced" chips on the stage: every dancer, the ones on the card lit. The name goes through esc() inside the
+// onclick too, because JSON's own quotes would end the attribute.
+export const whoChips = (names, picked) => names.map(n => `<button class="btn sm ${picked.includes(n) ? "coral" : "ghost"}" onclick="mmWho(${esc(JSON.stringify(n))})">${esc(n)}</button>`).join("");
 // ---------- the stage UI ----------
 const M = { mode: "one", size: "story", sticker: null, imgs: [], labels: null, sub: "", avatar: null, custom: "", names: [], streak: 0 };
 let drawTimer = 0;
@@ -110,8 +113,8 @@ export async function openMoments(stickerKey){
 function render(){
   const st = todayStickers(); if (M.custom) st.unshift({ key: "own", emoji: "✏️", text: M.custom }); const pairs = thenNowPairs(S.goals, S.photos);
   $("#momentsArea").innerHTML = `<p class="small muted">Pick a sticker, add a photo, save it to your phone. Then it's yours: CapCut, grandparents, anyone.</p>
-    <div class="row mm-stickers">${st.map(s => `<button class="btn sm ${M.sticker && M.sticker.text === s.text ? "coral" : "ghost"}" onclick="mmSticker(${JSON.stringify(s.text)})">${s.emoji} ${esc(s.text)}</button>`).join("")}<button class="btn sm ghost" onclick="mmOwn()">✏️ My own words</button></div>
-    <div class="row" style="margin-top:8px"><span class="small muted">Who danced:</span>${dancers().map(d => `<button class="btn sm ${M.names.includes(d.n) ? "coral" : "ghost"}" onclick="mmWho(${JSON.stringify(d.n)})">${esc(d.n)}</button>`).join("")}</div>
+    <div class="row mm-stickers">${st.map(s => `<button class="btn sm ${M.sticker && M.sticker.text === s.text ? "coral" : "ghost"}" onclick="mmSticker(${esc(JSON.stringify(s.text))})">${s.emoji} ${esc(s.text)}</button>`).join("")}<button class="btn sm ghost" onclick="mmOwn()">✏️ My own words</button></div>
+    <div class="row" style="margin-top:8px"><span class="small muted">Who danced:</span>${whoChips(dancers().map(d => d.n), M.names)}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm ${M.mode === "one" ? "coral" : "ghost"}" onclick="mmMode('one')">One photo</button><button class="btn sm ${M.mode === "two" ? "coral" : "ghost"}" onclick="mmMode('two')">Then vs now</button><span class="grow"></span>${Object.entries(SIZES).map(([k, v]) => `<button class="btn sm ${M.size === k ? "coral" : "ghost"}" onclick="mmSize('${k}')">${v.label}</button>`).join("")}</div>
     ${M.mode === "one" ? `<div class="row" style="margin-top:8px"><label class="btn sm aqua" for="mmPhoto">📷 Add a photo</label><input type="file" id="mmPhoto" accept="image/*" hidden><span class="small muted">No photo? The card works with just the sticker.</span></div>`
       : `<div class="row" style="margin-top:8px"><label class="btn sm aqua" for="mmThen">📷 Then</label><input type="file" id="mmThen" accept="image/*" hidden><label class="btn sm aqua" for="mmNow">📷 Now</label><input type="file" id="mmNow" accept="image/*" hidden>${pairs.length ? `<select id="mmPair" style="max-width:220px"><option value="">From my goal check-ins…</option>${pairs.map((p, i) => `<option value="${i}">${esc(p.label)} · ${esc(fmt(p.then.date))} → ${esc(fmt(p.now.date))}</option>`).join("")}</select>` : ""}</div>`}
