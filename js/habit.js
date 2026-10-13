@@ -6,6 +6,7 @@ import { S, storeSet, BITE_IDS } from "./store.js";
 import { SKILLS, PRACTICE_POOL } from "./data.js";
 import { dayNumber } from "./plan.js";
 import { skillState } from "./skills.js";
+import { pingDone } from "./remind.js";
 
 export const BITES = BITE_IDS;
 // Games that make sense as a quick daily pick (no camera clip needed, finished in a few minutes).
@@ -33,5 +34,5 @@ export const TIRED = {
 // Add a bite to today's record (once). Returns true when it was new.
 export async function markBite(id, date = todayStr()){
   if (!BITES.includes(id)) return false; const rec = S.practice[date] || { done: [], note: "", runs: [] }; const have = Array.isArray(rec.bites) ? rec.bites : [];
-  if (have.includes(id)) return false; await storeSet("practice", date, { ...rec, bites: [...have, id] }); return true;
+  if (have.includes(id)) return false; await storeSet("practice", date, { ...rec, bites: [...have, id] }); try { pingDone(); } catch (e) {} return true;
 }
