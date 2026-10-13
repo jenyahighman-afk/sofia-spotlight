@@ -2,10 +2,11 @@
 // The cloud backend (sync.js) is plugged in with setBackend(); this file stays importable in Node for the tests.
 import { DEFAULT_DANCES, DEFAULT_EVENTS } from "./data.js";
 import { daysUntil } from "./util.js";
+import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 20;
+export const SCHEMA_VERSION = 21;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -147,7 +148,11 @@ export const MIGRATIONS = {
   // files.seedRev: which version of a built-in printable this copy is (seed-data/manifest.json rev). Kept when a string.
   19: (col, id, doc) => { if (col === "dances" && id === "solo") fixSoloFloor(doc); if (col === "files" && doc.seedRev !== undefined && typeof doc.seedRev !== "string") delete doc.seedRev; return doc; },
   // 20 (lunge strength stays): a stored solo whose strengths lost the lunge-reach line gets it back as the second line. Written back like 19.
-  20: (col, id, doc) => { if (col === "dances" && id === "solo" && soloMissingLungeStrength(doc)) { doc.strengths = [...doc.strengths]; doc.strengths.splice(1, 0, SOLO_LUNGE_STRENGTH); } return doc; }
+  20: (col, id, doc) => { if (col === "dances" && id === "solo" && soloMissingLungeStrength(doc)) { doc.strengths = [...doc.strengths]; doc.strengths.splice(1, 0, SOLO_LUNGE_STRENGTH); } return doc; },
+  // 21 (Dance Along saves): a routine's frames are stored flat (choreo.frames = numbers, choreo.fdim = numbers per frame),
+  // because Firestore rejects an array inside an array — which is why every Dance Along clip "disappeared" before 1.12.4.
+  // A nested frames list (local cache / backups only) is packed here.
+  21: (col, id, doc) => { if (col === "choreo" && doc.kind === "along" && Array.isArray(doc.frames) && !doc.fdim) { doc.frames = packFrames(doc.frames); doc.fdim = FDIM; } return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
