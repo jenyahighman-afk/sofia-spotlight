@@ -24,6 +24,22 @@ Then put that URL in the app: `js/firebase-config.js` → `coachConfig.url`, bum
 
 No terminal? The secret can also be set in the Cloudflare dashboard: Workers & Pages → sofia-spotlight-coach → Settings → Variables and Secrets → Add → type Secret, name `ANTHROPIC_API_KEY`.
 
+## Daily reminder (web push) — one-time setup
+
+The app can send Sofia one notification a day at her chosen time (Me → ⏰ My dance time). The worker stores each phone's push subscription in a KV namespace and a cron sends the due ones every 15 minutes, skipping families that already did a bite that day.
+
+```bash
+cd worker
+npm install
+npx wrangler kv namespace create REMIND      # prints an id → paste it into wrangler.toml and un-comment the REMIND block
+npx wrangler secret put VAPID_PRIVATE_KEY    # paste the private key (kept with the person who set this up, never in the repo)
+npx wrangler deploy
+```
+
+The public key is already in `wrangler.toml` (`VAPID_PUBLIC_KEY`) and in the app (`js/push-config.js`); the two must match. To rotate: generate a new pair (`node -e` with WebCrypto, ECDSA P-256; public = base64url raw point, private = the JWK `d`), put the public half in both places, set the new secret, deploy, and everyone taps "Remind me on this phone" again.
+
+Routes (POST, JSON, same CORS as the coach): `/remind/subscribe` `{familyId, endpoint, keys, h, m, tz}`, `/remind/unsubscribe` `{endpoint}`, `/remind/done` `{familyId, tz}`. Logs show one `reminders {...}` line per cron run.
+
 ## Rotating the key
 Create a new key in the Anthropic console, run `npx wrangler secret put ANTHROPIC_API_KEY` again (or replace it in the dashboard), then delete the old key in the console. No app change needed.
 
