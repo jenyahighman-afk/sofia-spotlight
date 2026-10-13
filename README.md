@@ -51,6 +51,9 @@ Every solo trick (`data/skills.json` → `solo`) is a boss with three bars — �
 ### What's Next? (Play)
 A memory game built from a dance's step order (`js/games/nextmove.js`, any dance with 8+ `steps`; today that is the solo): a step comes up, Sofia taps which of three steps comes next, ten rounds spread through the dance. Best score in `settings.nmBest`, stars like Spot the Oops (9+ = 3).
 
+### Moments (Today → 📸 Moment, Me → Moments)
+`js/moments.js`. A photo (or two side by side, then vs now) becomes a 1080-px card (9:16 story or 4:5 post) with a sticker, the date, the streak and her avatar, drawn on a canvas. Stickers suggest themselves from the day (`stickersFor`: a streak milestone, a gem, a badge earned today, full practice, a rest day, the countdown); she can type her own. **Save to Photos** hands the JPEG to the share sheet (Save Image on iPhone) so it can go into CapCut or to family; **Keep in the app** uploads it as a photo with `moment: true` (✨ in the Photos grid). Then-vs-now can pull the first and latest photo check-ins of a goal (needs the Storage CORS setup; otherwise pick the two photos from the phone). A big moment (milestone, gem, badge) shows a one-line nudge on Today once a day.
+
 ### The daily habit (Today)
 Today opens with three choice cards that rotate by date (`js/habit.js`): **Learn a trick** (the next solo trick still being learned → Trick Quest with that boss), **Dance game** (one of six quick games), **Show me a move** (one technique item from the pool, timed, with its animated dancer). Under them, **Tired today?** offers a 2-minute lying-down stretch or "picture the dance" (90 s mental rehearsal) that still counts. Finishing any of these is a *bite* (`practice.bites`); **one bite keeps the streak** (`dayCounts` in `js/streak.js`), the full practice list is a bonus. Missed home days are **skips**: the first two in a Sun–Sat week are free, the third breaks the streak; Today shows "N free skips left". Games and Trick Quest mark their bite from `awardStars`; practice-mode sessions opened with `{ bite }` mark it on finish. The check-in bites, this week's fix, the mind lesson and goal reminders now sit under **✨ More for today**.
 
@@ -262,8 +265,9 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ```
 
 ## Data safety
-- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 22) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
+- Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 23) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 23 (1.14.0): `photos.moment` (a card made in Moments) and `settings.momentNudge` (the nudge dismissed today).
 - Schema 22 (1.13.0): `practice.bites[]` (which of Today's bites were done: `trick`, `game`, `move`, `tired`) and `practice.tired` (`stretch` / `picture`). One bite keeps the streak; two missed home days a week are free (`FREE_SKIPS` in `js/streak.js`).
 - Schema 21 (1.12.4): `choreo` Dance Along routines store `frames` flat (`fdim` = 10 numbers per frame, a missing frame as 10 nulls). Firestore refuses an array inside an array, so before this every clip Sofia added was uploaded but its routine never saved and vanished on the next sync. `routineFrames()` in `js/posemath.js` unpacks for play.
 - Schema 20 (1.12.4): content fix, no new fields. The "Full-body reach on the lunge" strength stays on the solo card; the 1.12.1 build of step 19 had dropped it from a stored solo's `strengths`, so step 20 puts it back as the second line and `saveSoloFix()` writes that back once.
