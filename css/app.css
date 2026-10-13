@@ -140,6 +140,12 @@ body.gated{overflow:hidden}
 .today-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 8px}
 .big-btn{font-size:1.15rem;padding:14px 12px;border-radius:16px}
 .today-meta{margin-top:4px}
+.choice{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 4px}
+.choice-card{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);min-height:96px}
+.choice-card .ic{font-size:1.9rem;line-height:1.1} .choice-card b{font-family:Fredoka;font-size:.95rem;line-height:1.1} .choice-card small{font-size:.68rem;color:var(--ink-2);line-height:1.15;overflow-wrap:anywhere}
+.choice-card.done{border-color:var(--sun);background:var(--blush)}
+.tired{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:.9rem;font-weight:700}
+.today .pick{font-family:Fredoka;font-size:1.2rem;margin-top:10px}
 .day .ev.done{background:#DDF5E6}
 .fix-text{font-family:Fredoka;font-size:1.15rem;line-height:1.25;margin:8px 0 0}
 .cover-top{display:flex;gap:12px;align-items:center}

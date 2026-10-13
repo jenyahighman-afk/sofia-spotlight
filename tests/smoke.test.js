@@ -50,7 +50,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   resetDom(); for (const k of Object.keys(M.store.S)) M.store.S[k] = {};
   for (const init of inits()) init();
   for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
-  assert.ok(el("#todayCard").innerHTML.includes("Play"), "Today card has the Play button");
+  const tc = el("#todayCard").innerHTML; assert.equal((tc.match(/class="choice-card/g) || []).length, 3, "Today has three choice cards"); assert.ok(tc.includes("habitTired('stretch')") && tc.includes("free skip"), "Today has the tired-day row and the skips left");
   assert.ok(el("#danceList").innerHTML.includes("openPlayer('solo')"), "solo cover has ▶ Practice");
   assert.ok(el("#danceList").innerHTML.includes("More ▸"), "More ▸ is collapsed by default");
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
