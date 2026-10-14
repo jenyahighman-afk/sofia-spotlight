@@ -10,7 +10,7 @@ const { applyData } = await import("../js/data.js");
 const got = {}; for (const f of ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind"]) got[f] = read("data/" + f + ".json");
 applyData(got);
 const { parseLink, thumbFor, embedFor, hostInfo, skillOptions, skillName, allDrills, drillsFor, techniqueCards, askedPosts, triedDays, tryItem, drillStrip, renderDrillBox, TRY_SECS, HOSTS } = await import("../js/drills.js");
-const { S, setBackend, migrateDoc, SCHEMA_VERSION, receive, DRILL_HOSTS } = await import("../js/store.js");
+const { S, setBackend, migrateDoc, SCHEMA_VERSION, receive, DRILL_HOSTS, normalizeDrill, saveDrillsMove, COLLECTIONS } = await import("../js/store.js");
 const { markDrillTried, BITES } = await import("../js/habit.js");
 const { teacherSummary } = await import("../js/teacher.js");
 const { stickersFor } = await import("../js/moments.js");
@@ -84,7 +84,7 @@ test("the shelf renders the add form, the cards and the strips; skill pages get 
   resetDom(); for (const k of Object.keys(S)) S[k] = {};
   renderDrillBox(); assert.equal(el("#drillCount").hidden, true, "no empty pill"); let h = el("#drillForm").innerHTML + el("#drillList").innerHTML; assert.ok(h.includes('id="drillUrl"') && h.includes('id="drillSkill"') && h.includes('id="drillNote"') && h.includes("drillAdd()"), "add form"); assert.ok(h.includes("Nothing saved yet") && h.includes("openTechniqueBook()")); assert.ok(h.includes('<optgroup label="Solo tricks">') && h.includes('value="cartwheel-clean"'), "skills and aerial items to pick from");
   assert.equal(drillStrip("s-calypso"), "");
-  S.settings = { drills: { a: { url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", host: "youtube", vid: "dQw4w9WgXcQ", skill: "s-calypso", note: "0:40 is the thing <script>x</script>\"onmouseover=\"1", do: "Land soft", dont: "No sickle", ask: true, at: "2026-10-10" }, b: { url: "https://www.instagram.com/reel/C8abc/", host: "instagram", vid: "", skill: "cartwheel-clean", note: "", do: "", dont: "", ask: false, at: "2026-10-12" } } };
+  S.drills = { a: { url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", host: "youtube", vid: "dQw4w9WgXcQ", skill: "s-calypso", note: "0:40 is the thing <script>x</script>\"onmouseover=\"1", do: "Land soft", dont: "No sickle", ask: true, at: "2026-10-10" }, b: { url: "https://www.instagram.com/reel/C8abc/", host: "instagram", vid: "", skill: "cartwheel-clean", note: "", do: "", dont: "", ask: false, at: "2026-10-12" }, z: { deleted: true } };
   S.practice = { "2026-10-12": { drills: ["a"] } };
   el("#drillUrl").value = "https://youtu.be/pasted"; renderDrillBox(); h = el("#drillList").innerHTML; assert.equal(el("#drillCount").textContent, "2 saved"); assert.equal(el("#drillCount").hidden, false); assert.equal(el("#drillUrl").value, "https://youtu.be/pasted", "a re-render while a link is being pasted keeps the form"); el("#drillUrl").value = "";
   el("#drillSkill").value = "s-calypso"; renderDrillBox(); assert.equal(el("#drillSkill").value, "s-calypso", "a skill picked before the link is pasted survives a re-render too"); el("#drillSkill").value = "";
@@ -98,4 +98,25 @@ test("the shelf renders the add form, the cards and the strips; skill pages get 
   const css = src("css/app.css"); const z = (sel) => +(new RegExp(sel.replace(".", "\\.") + "\\{[^}]*z-index:(\\d+)").exec(css) || [])[1]; assert.ok(z(".modal") > z(".stage") && z(".modal") < z(".gate"), "the post sheet opens above Trick Quest's stage: modal " + z(".modal") + " vs stage " + z(".stage"));
   assert.match(src("js/moments.js"), /mmSticker\(\$\{esc\(JSON\.stringify/, "sticker buttons: the quotes are escaped inside the onclick attribute");
   resetDom(); for (const k of Object.keys(S)) S[k] = {};
+});
+
+test("schema 27: a post is its own document; one without a link is emptied; settings-held posts move once, then leave settings", async () => {
+  assert.ok(COLLECTIONS.includes("drills")); assert.match(readFileSync(new URL("../firestore.rules", import.meta.url), "utf8"), /'goals', 'drills'\]/, "the rules know the collection (republish them)");
+  const d = migrateDoc("drills", "a", { _v: 26, url: "https://youtu.be/dQw4w9WgXcQ", host: "youtube", vid: "dQw4w9WgXcQ", skill: "s-calypso", note: "  0:40 ", ask: 1 }); assert.equal(d._v, SCHEMA_VERSION); assert.equal(d.note, "0:40"); assert.equal(d.ask, true); assert.equal(d.host, "youtube");
+  const bad = migrateDoc("drills", "b", { _v: 26, url: "nope", note: "x" }); assert.equal(bad.deleted, true); assert.equal("url" in bad, false); assert.deepEqual(allDrills({ a: d, b: bad }).map(p => p.id), ["a"], "an emptied document never shows");
+  assert.equal(normalizeDrill(null), null); assert.equal(normalizeDrill({ url: "https://x.y/z", host: "tiktok" }).host, "other");
+  assert.equal(migrateDoc("settings", "main", { _v: 26, drills: { a: { url: "https://x.y/" } } }).drills.a.url, "https://x.y/", "an old settings-held post still normalizes so the move can read it");
+  const writes = []; setBackend({ set: async (col, id, rec) => { writes.push({ col, id, rec }); }, del: async () => {} });
+  try {
+    for (const k of Object.keys(S)) S[k] = {};
+    receive("settings", { main: { _v: 26, pin: "2027", drills: { a: { url: "https://youtu.be/dQw4w9WgXcQ", host: "youtube", vid: "dQw4w9WgXcQ", skill: "s-calypso", note: "0:40", ask: true }, junk: { url: "nope" } } } }, { fromCache: true });
+    assert.equal(await saveDrillsMove(), 0, "nothing moves until the server has confirmed both collections"); assert.equal(writes.length, 0);
+    receive("settings", { main: { _v: 26, pin: "2027", drills: { a: { url: "https://youtu.be/dQw4w9WgXcQ", host: "youtube", vid: "dQw4w9WgXcQ", skill: "s-calypso", note: "0:40", ask: true }, junk: { url: "nope" } } } }, { fromCache: false });
+    receive("drills", {}, { fromCache: false });
+    assert.equal(await saveDrillsMove(), 1); assert.equal(S.drills.a.note, "0:40"); assert.equal(S.drills.a._v, SCHEMA_VERSION); assert.equal("drills" in S.settings, false, "the field leaves settings"); assert.equal(S.settings.pin, "2027", "the rest of settings is kept");
+    assert.deepEqual(writes.map(w => w.col + "/" + w.id), ["drills/a", "settings/main"]); assert.equal(writes[1].rec.drills, undefined);
+    assert.equal(await saveDrillsMove(), 0, "only once"); assert.equal(writes.length, 2);
+    receive("settings", { main: { _v: 26, drills: { a: { url: "https://youtu.be/dQw4w9WgXcQ", host: "youtube" } } } }, { fromCache: false }); receive("drills", { a: { _v: 27, url: "https://youtu.be/dQw4w9WgXcQ", host: "youtube", note: "already here" } }, { fromCache: false });
+    assert.equal(await saveDrillsMove(), 0, "a post the other phone already moved is not written again"); assert.equal(S.drills.a.note, "already here"); assert.equal(writes.length, 3, "but the field still leaves settings"); assert.equal(writes[2].col, "settings");
+  } finally { setBackend(null); for (const k of Object.keys(S)) S[k] = {}; }
 });

@@ -1,11 +1,12 @@
 // Drill box: public social-media posts (YouTube, Instagram, Pinterest) Jenya saves as Sofia's drills, each tied to a skill
 // with one line of her own note. Link only — the app never downloads or copies a video. YouTube plays in the app (its own
 // embed player); Instagram and Pinterest open in their own app or Safari, and the UI says so.
-// settings.drills[id] = { url, host, vid, skill, note, do, dont, ask, at } (schema 25). A "Try this" is a 2-minute
+// drills/{id} = { url, host, vid, skill, note, do, dont, ask, at }, one document per post (schema 27; 25 held them in
+// settings.drills and store.js moves those once). A "Try this" is a 2-minute
 // practice-mode timer with the post's picture on screen; finishing is the day's trick bite (habit.js markDrillTried).
 // Pure parts up top (tested in Node); the shelf, the post sheet and the technique book below.
 import { $, esc, toast, todayStr, uid, expose } from "./util.js";
-import { S, setSettings } from "./store.js";
+import { S, storeSet, storeDel } from "./store.js";
 import { SKILLS, AERIAL } from "./data.js";
 import { openPracticeMode } from "./pmode.js";
 import { openStage } from "./stage.js";
@@ -48,7 +49,8 @@ export function skillOptions(ladder = SKILLS, aerial = AERIAL){
 }
 export function skillName(id, ladder = SKILLS, aerial = AERIAL){ const o = skillOptions(ladder, aerial).find(x => x.id === id); return o ? o.n : ""; }
 const byNewest = (a, b) => (b.at || "").localeCompare(a.at || "") || a.id.localeCompare(b.id);
-export const allDrills = (drills) => Object.entries(drills || {}).map(([id, p]) => ({ ...p, id })).sort(byNewest);
+// The posts of a drills map, newest first; documents the migration emptied (no link) are skipped.
+export const allDrills = (drills) => Object.entries(drills || {}).filter(([, p]) => p && !p.deleted && p.url).map(([id, p]) => ({ ...p, id })).sort(byNewest);
 export const drillsFor = (skill, drills) => allDrills(drills).filter(p => p.skill === skill);
 export const techniqueCards = (drills) => allDrills(drills).filter(p => p.do || p.dont);
 export const askedPosts = (drills) => allDrills(drills).filter(p => p.ask);
@@ -61,11 +63,12 @@ export function tryItem(post){
 }
 
 // ---------- the shelf (Practice → 📎 Drill box) ----------
-const drills = () => S.settings.drills || {};
+// The collection. Posts still in settings.drills (saved by 1.16 / 1.17) are moved into it once by store.js.
+const drills = () => S.drills || {};
 // The <option>s of a skill select, grouped by style / aerial section, `sel` selected.
 export function skillSelectOptions(sel = ""){ const opts = skillOptions(); const groups = [...new Set(opts.map(o => o.group))]; return `<option value="">Which skill?</option>` + groups.map(g => `<optgroup label="${esc(g)}">${opts.filter(o => o.group === g).map(o => `<option value="${o.id}" ${o.id === sel ? "selected" : ""}>${esc(o.n)}</option>`).join("")}</optgroup>`).join(""); }
-const post = (id) => { const p = drills()[id]; return p ? { ...p, id } : null; };
-async function save(id, patch){ const cur = drills()[id]; if (!cur) return; await setSettings({ drills: { ...drills(), [id]: { ...cur, ...patch } } }); }
+const post = (id) => { const p = drills()[id]; return p && !p.deleted && p.url ? { ...p, id } : null; };
+async function save(id, patch){ const cur = drills()[id]; if (!cur) return; await storeSet("drills", id, { ...cur, ...patch }); }
 const skillChip = (p) => { const n = skillName(p.skill); return n ? `<span class="chip violet">${esc(n)}</span>` : `<span class="chip">Any skill</span>`; };
 const thumbLabel = (p) => esc("Open: " + (p.note || skillName(p.skill) || hostInfo(p).n));
 const thumbHtml = (p) => { const t = thumbFor(p); return t ? `<img class="drill-thumb" src="${esc(t)}" alt="" loading="lazy">` : `<div class="drill-thumb drill-generic"><span>${hostInfo(p).ic}</span><small>${esc(hostInfo(p).n)}</small></div>`; };
@@ -92,7 +95,7 @@ export function renderDrillBox(){
 async function add(){
   const url = ($("#drillUrl") || {}).value, skill = ($("#drillSkill") || {}).value || "", note = String(($("#drillNote") || {}).value || "").trim().slice(0, NOTE_MAX);
   const p = parseLink(url); if (!p) return toast("That doesn't look like a post link. Copy it from the Share button.", 3500);
-  const id = uid(); await setSettings({ drills: { ...drills(), [id]: { ...p, url: p.url.slice(0, 500), skill, note, do: "", dont: "", ask: false, at: todayStr() } } });
+  const id = uid(); await storeSet("drills", id, { ...p, url: p.url.slice(0, 500), skill, note, do: "", dont: "", ask: false, at: todayStr() });
   for (const f of [$("#drillUrl"), $("#drillNote")]) if (f) f.value = ""; const sel = $("#drillSkill"); if (sel) sel.value = "";
   toast(p.host === "youtube" ? "Saved. It'll play right here ▶️" : `Saved. It opens in ${hostInfo(p).n} 📲`, 2500); renderDrillBox();
 }
@@ -118,7 +121,7 @@ async function setDont(id){ const p = post(id); if (!p) return; const t = prompt
 async function setAsk(id, on){ await save(id, { ask: !!on }); toast(on ? "On the teacher summary 🙋" : "Off the teacher summary"); renderDrillBox(); }
 async function setNote(id){ const p = post(id); if (!p) return; const t = prompt("Your note (one line)", p.note || ""); if (t === null) return; await save(id, { note: String(t).trim().slice(0, NOTE_MAX) }); open(id); renderDrillBox(); }
 async function setSkill(id, skill){ const p = post(id); if (!p) return; const ok = skillOptions().some(o => o.id === skill); await save(id, { skill: ok ? skill : "" }); toast(ok ? "Filed under " + skillName(skill) + " ✓" : "Filed under any skill"); renderDrillBox(); }
-async function remove(id){ if (!confirm("Take this post out of the box?")) return; const d = { ...drills() }; delete d[id]; await setSettings({ drills: d }); closeDrill(); toast("Removed"); renderDrillBox(); }
+async function remove(id){ if (!confirm("Take this post out of the box?")) return; await storeDel("drills", id); closeDrill(); toast("Removed"); renderDrillBox(); }
 // "📎 From the drill box: N saved" with thumbnails, for a skill page (Trick Quest prep, an aerial drill card). "" when none.
 export function drillStrip(skill){
   const list = drillsFor(skill, drills()); if (!list.length) return "";
