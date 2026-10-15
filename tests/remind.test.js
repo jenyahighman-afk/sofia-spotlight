@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { LINES, lineFor, localClock, isDue, validateSubscribe, payloadFor, subKey, doneKey, WINDOW_MIN } from "../worker/src/remind-core.js";
 import { installEnv } from "./_env.mjs";
 installEnv();
-const { timeParts, timeValue, timeLabel, reminderOf, urlB64ToBytes, pushBlocker, DEFAULT_TIME } = await import("../js/remind.js");
+const { timeParts, timeValue, timeLabel, reminderOf, urlB64ToBytes, pushBlocker, postError, OLD_WORKER_MSG, DEFAULT_TIME } = await import("../js/remind.js");
 const { migrateDoc, SCHEMA_VERSION } = await import("../js/store.js");
 const { pushConfig } = await import("../js/push-config.js");
 import { readFileSync } from "node:fs";
@@ -48,6 +48,11 @@ test("app side: time helpers, settings shape, key decoding, and why reminders ca
   assert.equal(pushBlocker({ standalone: true, hasPush: true, hasSw: true, workerUrl: "https://w" }), "");
   assert.match(pushBlocker({ standalone: false, hasPush: true, hasSw: true, workerUrl: "https://w" }), /Home Screen/); assert.match(pushBlocker({ standalone: true, hasPush: false, hasSw: true, workerUrl: "https://w" }), /Add to Home Screen/);
   assert.match(pushBlocker({ standalone: true, hasPush: true, hasSw: true, workerUrl: "" }), /worker/);
+  // A worker deployed before the reminder routes answers the subscribe POST as if it were a coach request.
+  assert.equal(postError(400, { ok: false, status: 400, error: "No frames. Film or pick a clip or a photo first." }), OLD_WORKER_MSG); assert.match(OLD_WORKER_MSG, /wrangler deploy/);
+  assert.equal(postError(404, { error: "Not found" }), OLD_WORKER_MSG);
+  assert.equal(postError(503, { error: "Reminders aren't set up on the worker yet (REMIND namespace and VAPID keys)." }), "Reminders aren't set up on the worker yet (REMIND namespace and VAPID keys).");
+  assert.equal(postError(400, { error: "A valid familyId is required." }), "A valid familyId is required."); assert.equal(postError(502, {}), "HTTP 502");
   const s = migrateDoc("settings", "main", { _v: 23, reminder: { on: "yes", h: "17", m: 99 } }); assert.deepEqual(s.reminder, { on: true, h: 17, m: 30 }); assert.equal(s._v, SCHEMA_VERSION);
   assert.equal("reminder" in migrateDoc("settings", "main", { _v: 23 }), false);
 });
