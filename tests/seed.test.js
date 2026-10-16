@@ -24,13 +24,17 @@ test("refresh plan: same rev → nothing; first seeded copy (same size, no rev) 
     x4: { name: "C.pdf", size: 98, seedRev: "old" },   // and another old one with the same name
     x5: { name: "Mine.pdf", size: 1 },                 // the family's own file
   };
-  const { stamp, replace } = planFileRefresh(files, fam);
-  assert.deepEqual(stamp, [{ id: "x2", rev: "bbb" }]);
+  const { stamp, replace, add } = planFileRefresh(files, fam);
+  assert.deepEqual(stamp, [{ id: "x2", rev: "bbb" }]); assert.deepEqual(add, []);
   assert.deepEqual(replace, [{ file: files[2], old: ["x3", "x4"] }]);
-  assert.deepEqual(planFileRefresh(files, {}), { stamp: [], replace: [] }, "nothing the family doesn't have is added");
-  assert.deepEqual(planFileRefresh([{ name: "A.pdf", size: 10 }], { y: { name: "A.pdf", size: 3 } }), { stamp: [], replace: [] }, "an old manifest without revs changes nothing");
+  assert.deepEqual(planFileRefresh(files, {}), { stamp: [], replace: [], add: [] }, "nothing without `since` is added");
+  assert.deepEqual(planFileRefresh([{ name: "A.pdf", size: 10 }], { y: { name: "A.pdf", size: 3 } }), { stamp: [], replace: [], add: [] }, "an old manifest without revs changes nothing");
   // After a replace the new record has the rev, so the next run does nothing.
-  assert.deepEqual(planFileRefresh(files.slice(2, 3), { [seedFileId("ccc")]: { name: "C.pdf", size: 30, seedRev: "ccc" } }), { stamp: [], replace: [] });
+  assert.deepEqual(planFileRefresh(files.slice(2, 3), { [seedFileId("ccc")]: { name: "C.pdf", size: 30, seedRev: "ccc" } }), { stamp: [], replace: [], add: [] });
+  // A printable added later (`since`) is added once to a family that doesn't have it, and never again once its name is in seedSeen.
+  const later = { name: "New.pdf", rev: "ddd", size: 40, since: "1.19.0" };
+  assert.deepEqual(planFileRefresh([later], {}).add, [later]); assert.deepEqual(planFileRefresh([later], {}, ["New.pdf"]).add, [], "deleted by the family → not added back");
+  assert.deepEqual(planFileRefresh([later], { z: { name: "New.pdf", size: 40, seedRev: "ddd" } }).add, [], "already there");
 });
 
 test("the new Aerial Mission sheet replaces the family's first copy; the unchanged printables are only stamped", () => {
