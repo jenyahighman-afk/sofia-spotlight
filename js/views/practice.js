@@ -26,6 +26,7 @@ function renderPractice(){
   $("#practiceHead").innerHTML=`${ring(pct)}<div class="grow"><div class="today-what">${date===todayStr()?"Today":fmt(date)}</div><div class="row"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${(rec.runs||[]).length?`<span class="chip sun">▶ ${rec.runs.length} run${rec.runs.length>1?"s":""}</span>`:""}</div><div class="small muted" style="margin-top:4px">${pct>=100?"All done. Go you! 🎉":pct>=60?"That counts as a practice day ✓":"Get to 60% and today counts."}</div></div>`;
   let lastKind=""; $("#practiceChecklist").innerHTML=plan.map(it=>{ const head=it.kind!==lastKind?`<div class="row pgroup"><span class="grow">${KIND[it.kind]||"✨"} ${GROUP[it.kind]||it.kind}</span>${SWAPPABLE.has(it.kind)?`<button type="button" class="lnk" onclick="swapOpen('${it.kind}','')">＋ one more</button>`:""}</div>`:""; lastKind=it.kind;
     return head+`<label class="pitem ${done.has(it.id)?"done":""}"><input type="checkbox" ${done.has(it.id)?"checked":""} data-id="${it.id}" class="pchk"><span class="pk">${KIND[it.kind]||"✨"}</span><span class="grow">${esc(it.text)}</span>${it.kind==="tech"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}${SWAPPABLE.has(it.kind)?`<button type="button" class="lnk" onclick="event.preventDefault();swapOpen('${it.kind}','${it.id}')" title="Swap">🔁</button>`:""}</label>`; }).join("");
+  const nDone=[...done].filter(id=>plan.some(i=>i.id===id)).length; $("#planCount").textContent=`${nDone} of ${plan.length} done`; $("#planCount").className="chip "+(nDone>=plan.length&&plan.length?"mint":nDone?"coral":"");
   $$(".pchk").forEach(c=>c.addEventListener("change",onCheck));
   if($("#practiceNote")!==document.activeElement) $("#practiceNote").value=rec.note||"";
   $("#practiceDate").value=date;
@@ -47,6 +48,7 @@ export function restoreTodayChecks(){
   if(missing.length) storeSet("practice",date,{...r,done:[...(r.done||[]),...missing]});
 }
 async function onCheck(e){
+  { const n=$$(".pchk").filter(x=>x.checked).length, t=$$(".pchk").length; const c=$("#planCount"); if(c){ c.textContent=`${n} of ${t} done`; c.className="chip "+(n>=t&&t?"mint":n?"coral":""); } }
   const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=$$(".pchk").filter(x=>x.checked).map(x=>x.dataset.id);
   e.target.closest(".pitem").classList.toggle("done",e.target.checked);
   const plan=planFor(date); const pct=Math.round(100*done.length/Math.max(1,plan.length));

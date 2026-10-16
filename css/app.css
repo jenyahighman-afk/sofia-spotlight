@@ -172,6 +172,15 @@ details.more>summary{font-size:.9rem;color:var(--ink-2)} details.more[open]>summ
 .ring-fg{fill:none;stroke:#FF5C93;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .4s}
 .ring-txt{transform:rotate(90deg);transform-origin:50% 50%;font-family:Fredoka;font-weight:700;font-size:22px;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
 .plist{margin-top:10px}
+.plan-fold{margin-top:10px;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.45)} .plan-fold>summary{display:flex;align-items:center;gap:8px;font-family:Fredoka;font-size:1rem;color:var(--ink)} .plan-fold>summary .chip{margin-left:auto} .plan-fold[open]>summary{margin-bottom:0}
+/* The big banner belongs to Today. Every other tab gets a one-line version: name, days-to chip, gear. */
+body:not(.pg-home) header.hero{display:flex;align-items:center;gap:10px;padding:10px 52px 10px 16px;border-radius:16px;min-height:44px}
+body:not(.pg-home) header.hero:after,body:not(.pg-home) header.hero .sub,body:not(.pg-home) .sticker .st-to,body:not(.pg-home) .sticker #stickerWhat{display:none}
+body:not(.pg-home) .sticker:before{position:static;transform:none;font-size:.9rem;margin-right:4px}
+body:not(.pg-home) header.hero h1{order:0;flex:none;font-size:1.15rem;text-shadow:0 2px 0 rgba(74,35,64,.18);white-space:nowrap}
+body:not(.pg-home) .sticker{order:1;margin-left:auto;flex:none;position:static;width:auto;height:auto;transform:none;border-radius:999px;padding:3px 10px;font-size:.78rem;line-height:1.3;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 0 rgba(74,35,64,.12)}
+body:not(.pg-home) .sticker b{display:inline;font-size:.95rem} body:not(.pg-home) .sticker b:after{content:" days"}
+body:not(.pg-home) header.hero .gear{top:50%;bottom:auto;transform:translateY(-50%);right:10px}
 .pitem{display:flex;gap:10px;align-items:center;padding:11px 8px;border-bottom:1px dashed var(--line);font-size:1rem;line-height:1.3;cursor:pointer;border-radius:10px}
 .pitem input{width:26px;height:26px;accent-color:#FF5C93;flex:none}
 .pitem .pk{font-size:1.2rem;flex:none} .pitem.done{color:var(--ink-2);text-decoration:line-through;background:var(--blush)}
