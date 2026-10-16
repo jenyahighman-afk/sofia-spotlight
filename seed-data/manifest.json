@@ -34,7 +34,8 @@
    "path": "files/Sofia-Memorize-Plan.pdf",
    "type": "application/pdf",
    "size": 239482,
-   "rev": "8e2b94e16327"
+   "rev": "8e2b94e16327",
+   "since": "1.19.0"
   },
   {
    "name": "Sofia-Season-Workbook-2026-27.pdf",
