@@ -9,6 +9,7 @@ import { VIDEO_MAX_BYTES } from "../media.js";
 import { imageDetector, videoDetector, detectVideoFrame, drawSkeleton, poseAvailable } from "../pose.js";
 import { poseFeatures, featureDistance, packFrames, routineFrames, FDIM } from "../posemath.js";
 import { awardStars } from "../stars.js";
+import { sofiaDancing, recordFriendScore, withFriends, pickedNames, namesLine } from "../who.js";
 import { openClip, seekTo, isBlank } from "../videoframes.js";
 
 export const FPS = 8, MAX_SEC = 120;
@@ -95,9 +96,11 @@ async function finishAlong(){
   A.on = false; cancelAnimationFrame(A.raf); if (A.stream) { A.stream.getTracks().forEach(t => t.stop()); A.stream = null; }
   const total = A.hits.perfect + A.hits.good + A.hits.miss || 1; const pct = Math.round(100 * (A.hits.perfect + A.hits.good * 0.5) / total);
   say(`${pct}% with the video! ${pct >= 80 ? "Amazing!" : pct >= 50 ? "Nice!" : "Keep practicing!"}`, true); $("#alJudge").textContent = "";
-  const r = A.routine; if (A.score > (r.best || 0)) await storeSet("choreo", r.id, { ...S.choreo[r.id], best: A.score });
-  const st = await awardStars("along", pct, r.name);
-  $("#alActions").innerHTML = `<span class="chip sun">⭐ +${st.earned + st.bonus} · Perfect ${A.hits.perfect} · Good ${A.hits.good}</span><button class="btn coral" onclick="alongPlay('${r.id}')">▶ Again</button><button class="btn ghost" onclick="stopAlong()">Done</button>`;
+  // Who's dancing (js/who.js): the routine's best and the stars are Sofia's; friends' bests save for the friends in the pick.
+  const r = A.routine; let chip = `Perfect ${A.hits.perfect} · Good ${A.hits.good}`;
+  if (sofiaDancing()) { if (A.score > (r.best || 0)) await storeSet("choreo", r.id, { ...S.choreo[r.id], best: A.score }); const st = await awardStars("along", pct, r.name); chip = `⭐ +${st.earned + st.bonus} · ` + chip; }
+  await recordFriendScore("along", pct); if (withFriends()) chip = `💃 ${esc(namesLine(pickedNames()))} · ` + chip;
+  $("#alActions").innerHTML = `<span class="chip sun">${chip}</span><button class="btn coral" onclick="alongPlay('${r.id}')">▶ Again</button><button class="btn ghost" onclick="stopAlong()">Done</button>`;
 }
 export function initAlong(){ $("#alClose").onclick = stopAlong; $("#alVoice").onclick = toggleVoice; $("#alongFile").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) addRoutine(f); }; }
 expose({ alongPlay: playAlong, stopAlong, alongDel: delRoutine });
