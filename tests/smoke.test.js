@@ -50,10 +50,13 @@ test("every screen initialises and renders with an empty family space (no throw,
   resetDom(); for (const k of Object.keys(M.store.S)) M.store.S[k] = {};
   for (const init of inits()) init();
   for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
-  const tc = el("#todayCard").innerHTML; assert.equal((tc.match(/class="choice-card/g) || []).length, 3, "Today has three choice cards"); assert.ok(tc.includes("habitTired('stretch')") && tc.includes("free skip"), "Today has the tired-day row and the skips left");
+  const tc = el("#todayCard").innerHTML; assert.equal((tc.match(/class="choice-card/g) || []).length, 4, "Today has four choice cards (the fourth is Memorize it)"); assert.ok(tc.includes("memoFocus("), "the Memorize card points at the dance"); assert.ok(tc.includes("habitTired('stretch')") && tc.includes("free skip"), "Today has the tired-day row and the skips left");
   assert.ok(tc.includes("openMoments()"), "Today has the Moment button"); assert.ok(el("#meMoments").innerHTML.includes("openMoments()"), "Me has the Moments card");
   assert.ok(el("#danceList").innerHTML.includes("openPlayer('solo')"), "solo cover has ▶ Practice");
   assert.ok(el("#danceList").innerHTML.includes("More ▸"), "More ▸ is collapsed by default");
+  assert.ok(el("#danceList").innerHTML.includes('data-memo="solo"') && el("#danceList").innerHTML.includes('data-memo="trio"'), "the solo and the trio get a Memorize card");
+  assert.ok(el("#danceList").innerHTML.includes("Today's chunk:") && el("#danceList").innerHTML.includes("memoPlay('trio','test')"), "the card names today's chunk and opens Test me");
+  assert.ok(!el("#danceList").innerHTML.includes('data-memo="wf-tap"'), "a dance without chunks gets none");
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
   assert.ok(html.includes('<details class="more plan-fold" id="planFold">') && html.indexOf('id="planFold"') < html.indexOf('id="practiceChecklist"'), "the exercise list sits inside a closed fold on Practice");

@@ -18,13 +18,15 @@ export function moveOfDay(date, pool = PRACTICE_POOL){ const slot = (pool.slots 
 export const gameOfDay = (date) => GAME_ROTATION[dayNumber(date) % GAME_ROTATION.length];
 const short = (t) => String(t || "").split(/[:,(—]/)[0].trim();
 // The three cards: [{id, ic, title, sub, go (onclick), done}]. `bites` = what today's practice record already has.
-export function cardsFor(date, { skills = {}, bites = [], ladder, pool } = {}){
+// `memo` (optional, from memo.js todayPick): { danceId, label } adds a fourth card, Memorize it.
+export function cardsFor(date, { skills = {}, bites = [], ladder, pool, memo = null } = {}){
   const t = trickOfDay(date, skills, ladder), m = moveOfDay(date, pool), g = gameOfDay(date); const done = new Set(Array.isArray(bites) ? bites : []);
-  return [
+  const extra = memo && memo.danceId ? [{ id: "memo", ic: "🧠", title: "Memorize it", sub: memo.label || "A chunk", go: `showPage('dances');memoFocus('${memo.danceId}')`, done: done.has("memo") }] : [];
+  return [...[
     { id: "trick", ic: "⚔️", title: "Learn a trick", sub: t ? t.n : "Trick Quest", go: t ? `showPage('play');playOpen('quest');qsStart();qsPick('${t.id}')` : "showPage('play');playOpen('quest')", done: done.has("trick") },
     { id: "game", ic: g[2], title: "Dance game", sub: g[1], go: `showPage('play');playOpen('${g[0]}')`, done: done.has("game") },
     { id: "move", ic: "✨", title: "Show me a move", sub: m ? short(m.text) : "Technique", go: "habitMove()", done: done.has("move") },
-  ];
+  ], ...extra];
 }
 // Tired-day options: short, lying down, and they count. "Picture the dance" is mental rehearsal (see Mind skills).
 export const TIRED = {

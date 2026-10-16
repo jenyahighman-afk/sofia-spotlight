@@ -38,7 +38,7 @@ test("the trick of the day skips tricks already clean, and falls back to all of 
 test("tired-day options are short, lying down, with real poses; done cards show as done", () => {
   for (const k of ["stretch", "picture"]) { const t = TIRED[k]; assert.ok(t.title); const secs = t.items.reduce((a, i) => a + i.secs, 0); assert.ok(secs >= 60 && secs <= 150, k + " lasts " + secs + "s"); for (const it of t.items) assert.ok(exercises[it.pose], it.id + " pose " + it.pose); }
   const c = cardsFor("2026-10-13", { bites: ["game", "tired"] }); assert.deepEqual(c.map(x => x.done), [false, true, false]);
-  assert.deepEqual(BITES, ["trick", "game", "move", "tired"]);
+  assert.deepEqual(BITES, ["trick", "game", "move", "tired", "memo"]);
 });
 
 test("markBite adds a bite to today's record once; schema 22 keeps only known bites and tired kinds", async () => {
