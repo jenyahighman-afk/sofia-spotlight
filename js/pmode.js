@@ -11,13 +11,14 @@ import { checkBadges } from "./badges.js";
 import { confetti } from "./views/practice.js";
 import { demoFor, demoHtml } from "./demos.js";
 import { awardStars } from "./stars.js";
-import { markBite } from "./habit.js";
+import { markBite, markDrillTried } from "./habit.js";
 
 const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
 let ITEMS = [];
 const PM = { i: 0, timed: false, left: 0, total: 0, timer: 0, paused: false, ctx: null };
 // A quick session (js/quick.js) runs the same screen but keeps its own done list and is saved as one record at the end.
-const MODE = { quick: "", bite: "" }; const localDone = new Set();
+// A "Try this" from the drill box (js/drills.js) is a bite session that also remembers which post was tried.
+const MODE = { quick: "", bite: "", drill: "" }; const localDone = new Set();
 const doneIds = () => (MODE.quick || MODE.bite) ? [...localDone] : (rec().done || []);
 
 // Pure: which item to show next — the first unchecked one at or after `from`, else the first unchecked anywhere, else -1.
@@ -45,12 +46,13 @@ function animate(frames){ cancelAnimationFrame(animRaf); if (!frames) return;
 function ring(p){ const r = 44, c = 2 * Math.PI * r; return `<svg viewBox="0 0 100 100" class="ring pm-ring"><circle cx="50" cy="50" r="${r}" class="ring-bg"/><circle cx="50" cy="50" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p / 100)}"/><text x="50" y="50" class="ring-txt">${p}%</text></svg>`; }
 function render(){
   const items = ITEMS; const done = doneIds() || []; const p = pct(); const n = done.filter(id => items.some(i => i.id === id)).length;
-  const cur = PM.i >= 0 ? items[PM.i] : null; const frames = cur ? framesFor(cur.pose) : null; const demo = cur ? demoFor(cur.id) : null;
+  // An item can bring its own picture (a drill-box post's thumbnail); otherwise the move's demo picture, else the dancer.
+  const cur = PM.i >= 0 ? items[PM.i] : null; const frames = cur ? framesFor(cur.pose) : null; const demo = cur ? (cur.demo || demoFor(cur.id)) : null;
   const box = $("#pmDemo"); box.hidden = !demo; box.style.display = demo ? "grid" : "none"; const dancer = $("#pmDancer"); dancer.hidden = !!demo; dancer.style.display = demo ? "none" : ""; if (demo) { cancelAnimationFrame(animRaf); box.innerHTML = demoHtml(demo); }
-  const pic = $("#pmPic"); pic.hidden = !cur; if (cur) pic.innerHTML = `<button class="lnk" onclick="openDemoSheet('${cur.id}','${esc(cur.text.split(/[:—(]/)[0].trim())}')">${demo ? "📷 Change picture" : "📷 Use a photo or clip"}</button>`;
+  const pic = $("#pmPic"); pic.hidden = !cur || !!(cur && cur.demo); if (cur && !cur.demo) pic.innerHTML = `<button class="lnk" onclick="openDemoSheet('${cur.id}','${esc(cur.text.split(/[:—(]/)[0].trim())}')">${demo ? "📷 Change picture" : "📷 Use a photo or clip"}</button>`;
   if (demo) {} else if (frames) animate(frames); else { cancelAnimationFrame(animRaf); $("#pmDancer").setAttribute("viewBox", "70 30 160 230"); $("#pmDancer").innerHTML = `<rect x="70" y="240" width="160" height="20" fill="#F7A8C6" opacity=".35"/>${avatarSVG(progressPose(p))}`; }
   $("#pmRing").innerHTML = ring(p); $("#pmCount").textContent = `${n} / ${items.length}`;
-  if (PM.i < 0) { $("#pmItem").innerHTML = `<div class="pm-text">All done! 🎉</div><div class="small muted">Today counts. Go you.</div>`; $("#pmActions").innerHTML = `<button class="btn coral big-btn" onclick="pmClose()">Done</button>`; $("#pmTimer").hidden = true; return; }
+  if (PM.i < 0) { $("#pmItem").innerHTML = `<div class="pm-text">All done! 🎉</div><div class="small muted">${MODE.drill ? "That's today's trick. Want a picture of it?" : "Today counts. Go you."}</div>`; $("#pmActions").innerHTML = `${MODE.drill ? `<button class="btn ghost" onclick="pmClose();openMoments('drill')">📸 Moment</button>` : ""}<button class="btn coral big-btn" onclick="pmClose()">Done</button>`; $("#pmTimer").hidden = true; return; }
   const it = items[PM.i];
   $("#pmItem").innerHTML = `<div class="pm-kind">${KIND[it.kind] || "✨"}</div><div class="pm-text">${esc(it.text)}</div>${it.how ? `<div class="pm-how small">${esc(it.how)}</div>` : ""}`;
   const secs = +it.secs || 0;
@@ -74,14 +76,14 @@ async function done(){
 }
 function advance(){ PM.i = nextIndex(ITEMS, doneIds(), PM.i + 1); render(); if (PM.i < 0) { clearInterval(PM.timer); confetti(); if (MODE.quick) finishQuick(); else if (MODE.bite) finishBite(); else { checkBadges(); awardStars("practice", 100, "Practice done"); } } else startTimer(); }
 // A bite session (Today's move of the day, a tired-day option): the bite is what counts; a star for showing up.
-async function finishBite(){ const b = MODE.bite; await markBite(b); checkBadges(); awardStars("quick", 100, b === "tired" ? "Rest counts. Streak safe" : "Move done"); }
+async function finishBite(){ const b = MODE.bite; if (MODE.drill) await markDrillTried(MODE.drill); else await markBite(b); checkBadges(); awardStars("quick", 100, MODE.drill ? "Tried it ✓ That's today's trick" : b === "tired" ? "Rest counts. Streak safe" : "Move done"); }
 async function finishQuick(){ const r = rec(); const date = todayStr(); await storeSet("practice", date, { ...r, quick: [...(Array.isArray(r.quick) ? r.quick : []), MODE.quick] }); checkBadges(); awardStars("quick", 100, "Quick session done"); }
 function skip(){ PM.i = nextIndex(ITEMS, doneIds(), PM.i + 1); if (PM.i < 0) PM.i = nextIndex(ITEMS, doneIds(), 0); render(); startTimer(); }
 function setTimed(v){ PM.timed = v; try { localStorage.setItem("spotlight:pmode", v ? "timed" : "manual"); } catch (e) {} render(); startTimer(); }
 function pause(){ PM.paused = !PM.paused; render(); }
 export function openPracticeMode(items, opts = {}){
   try { PM.timed = localStorage.getItem("spotlight:pmode") === "timed"; } catch (e) {}
-  MODE.quick = opts.quick || ""; MODE.bite = opts.bite || ""; localDone.clear(); if (MODE.quick || MODE.bite) PM.timed = true; $("#pmTitle").textContent = opts.title || "Practice";
+  MODE.quick = opts.quick || ""; MODE.bite = opts.bite || ""; MODE.drill = opts.drill || ""; localDone.clear(); if (MODE.quick || MODE.bite) PM.timed = true; $("#pmTitle").textContent = opts.title || "Practice";
   ITEMS = Array.isArray(items) && items.length ? items : planFor(todayStr()); PM.i = nextIndex(ITEMS, doneIds(), 0); if (PM.i < 0) PM.i = 0;
   $("#pmode").hidden = false; document.body.classList.add("modal"); render(); startTimer();
 }

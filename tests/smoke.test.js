@@ -30,7 +30,7 @@ const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["rmTime", "mmPair", "mmStatus", "mmCanvas", "mmPhoto", "mmThen", "mmNow", "rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["rmTime", "mmPair", "mmStatus", "mmCanvas", "mmPhoto", "mmThen", "mmNow", "rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount", "drillUrl", "drillSkill", "drillNote"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -56,6 +56,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(el("#danceList").innerHTML.includes("More ▸"), "More ▸ is collapsed by default");
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
+  assert.ok(el("#drillForm").innerHTML.includes("drillAdd()") && el("#drillList").innerHTML.includes("Nothing saved yet"), "the drill box shelf on Practice");
   assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
   assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 9, "nine game tiles on Play");
   assert.ok(el("#alongList").innerHTML.includes("No routines yet"), "Dance Along empty state");

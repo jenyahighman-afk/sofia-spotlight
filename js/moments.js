@@ -15,7 +15,7 @@ import { media } from "./sync.js";
 export const SIZES = { story: { w: 1080, h: 1920, label: "9:16" }, post: { w: 1080, h: 1350, label: "4:5" } };
 export const MILESTONES = [7, 14, 30, 50, 100];
 // Sticker ideas for a day, best first. `big` ones are worth a nudge on Today.
-// ctx: { streak, bites, gemTrick, badges (labels earned today), fullPractice, eventName, eventDays }
+// ctx: { streak, bites, gemTrick, badges (labels earned today), fullPractice, drillTried, eventName, eventDays }
 export function stickersFor(ctx = {}){
   const out = []; const s = +ctx.streak || 0; const bites = Array.isArray(ctx.bites) ? ctx.bites : [];
   if (MILESTONES.includes(s)) out.push({ key: "milestone", emoji: "🔥", text: `${s}-day streak!`, big: true });
@@ -24,7 +24,8 @@ export function stickersFor(ctx = {}){
   if (ctx.fullPractice) out.push({ key: "practice", emoji: "✅", text: "Full practice done" });
   if (s > 0 && !MILESTONES.includes(s)) out.push({ key: "streak", emoji: "🔥", text: `Day ${s}` });
   if (bites.includes("tired")) out.push({ key: "rest", emoji: "😴", text: "Rest day. Still here." });
-  if (bites.includes("trick")) out.push({ key: "trick", emoji: "⚔️", text: "Trick Quest day" });
+  if (ctx.drillTried) out.push({ key: "drill", emoji: "📎", text: "Tried it from a clip" });
+  if (bites.includes("trick") && !ctx.drillTried) out.push({ key: "trick", emoji: "⚔️", text: "Trick Quest day" });
   const ev = String(ctx.eventName || "").replace(/\s*\([^)]*\)/g, "").trim(); // "Winter Showcase (Winter Formal)" → "Winter Showcase"
   if (ev && ctx.eventDays >= 0) out.push({ key: "event", emoji: "🎀", text: ctx.eventDays === 0 ? `${ev} day!` : `${ctx.eventDays} days to ${ev}` });
   out.push({ key: "dance", emoji: "💃", text: "Dance day" });
@@ -88,7 +89,7 @@ export function todayContext(){
   const gem = Object.values(S.skills || {}).find(k => k && k.quest && Array.isArray(k.quest.gems) && k.quest.gems.includes(today)); const gemTrick = gem ? ((findSkill(gem.id) || {}).n || "a trick") : "";
   const badges = Object.values(S.badges || {}).filter(b => b && !b.deleted && b.at === today).map(b => b.label);
   const ne = nextEvent();
-  return { streak, bites: Array.isArray(rec.bites) ? rec.bites : [], gemTrick, badges, fullPractice: dayCounts({ done: rec.done, total: rec.total }, PRACTICE_ITEMS.length), eventName: ne ? ne.name : "", eventDays: ne ? daysUntil(ne.start) : -1 };
+  return { streak, bites: Array.isArray(rec.bites) ? rec.bites : [], gemTrick, badges, fullPractice: dayCounts({ done: rec.done, total: rec.total }, PRACTICE_ITEMS.length), drillTried: Array.isArray(rec.drills) && rec.drills.length > 0, eventName: ne ? ne.name : "", eventDays: ne ? daysUntil(ne.start) : -1 };
 }
 export const todayStickers = () => stickersFor(todayContext());
 // The nudge Today shows for a big moment, once per day per kind.
@@ -107,7 +108,7 @@ export async function openMoments(stickerKey){
 function render(){
   const st = todayStickers(); if (M.custom) st.unshift({ key: "own", emoji: "✏️", text: M.custom }); const pairs = thenNowPairs(S.goals, S.photos);
   $("#momentsArea").innerHTML = `<p class="small muted">Pick a sticker, add a photo, save it to your phone. Then it's yours: CapCut, grandparents, anyone.</p>
-    <div class="row mm-stickers">${st.map(s => `<button class="btn sm ${M.sticker && M.sticker.text === s.text ? "coral" : "ghost"}" onclick="mmSticker(${JSON.stringify(s.text)})">${s.emoji} ${esc(s.text)}</button>`).join("")}<button class="btn sm ghost" onclick="mmOwn()">✏️ My own words</button></div>
+    <div class="row mm-stickers">${st.map(s => `<button class="btn sm ${M.sticker && M.sticker.text === s.text ? "coral" : "ghost"}" onclick="mmSticker(${esc(JSON.stringify(s.text))})">${s.emoji} ${esc(s.text)}</button>`).join("")}<button class="btn sm ghost" onclick="mmOwn()">✏️ My own words</button></div>
     <div class="row" style="margin-top:8px"><button class="btn sm ${M.mode === "one" ? "coral" : "ghost"}" onclick="mmMode('one')">One photo</button><button class="btn sm ${M.mode === "two" ? "coral" : "ghost"}" onclick="mmMode('two')">Then vs now</button><span class="grow"></span>${Object.entries(SIZES).map(([k, v]) => `<button class="btn sm ${M.size === k ? "coral" : "ghost"}" onclick="mmSize('${k}')">${v.label}</button>`).join("")}</div>
     ${M.mode === "one" ? `<div class="row" style="margin-top:8px"><label class="btn sm aqua" for="mmPhoto">📷 Add a photo</label><input type="file" id="mmPhoto" accept="image/*" hidden><span class="small muted">No photo? The card works with just the sticker.</span></div>`
       : `<div class="row" style="margin-top:8px"><label class="btn sm aqua" for="mmThen">📷 Then</label><input type="file" id="mmThen" accept="image/*" hidden><label class="btn sm aqua" for="mmNow">📷 Now</label><input type="file" id="mmNow" accept="image/*" hidden>${pairs.length ? `<select id="mmPair" style="max-width:220px"><option value="">From my goal check-ins…</option>${pairs.map((p, i) => `<option value="${i}">${esc(p.label)} · ${esc(fmt(p.then.date))} → ${esc(fmt(p.now.date))}</option>`).join("")}</select>` : ""}</div>`}

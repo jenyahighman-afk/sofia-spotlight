@@ -36,3 +36,10 @@ export async function markBite(id, date = todayStr()){
   if (!BITES.includes(id)) return false; const rec = S.practice[date] || { done: [], note: "", runs: [] }; const have = Array.isArray(rec.bites) ? rec.bites : [];
   if (have.includes(id)) return false; await storeSet("practice", date, { ...rec, bites: [...have, id] }); try { pingDone(); } catch (e) {} return true;
 }
+// A drill-box post tried for two minutes (js/drills.js): remembered on the day (practice.drills, once per post) and it is
+// the day's trick bite. Returns what markBite returned (true when the bite was new).
+export async function markDrillTried(postId, date = todayStr()){
+  const id = String(postId || ""); if (!id) return false; const rec = S.practice[date] || { done: [], note: "", runs: [] }; const have = Array.isArray(rec.drills) ? rec.drills : [];
+  if (!have.includes(id)) await storeSet("practice", date, { ...rec, drills: [...have, id] });
+  return markBite("trick", date);
+}
