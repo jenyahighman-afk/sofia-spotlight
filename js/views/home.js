@@ -1,7 +1,8 @@
 // Today tab: one big card (what's on, Start, countdown, streak, Play), this week's fix, then the week strip.
 import { $, esc, fmt, todayStr, daysUntil, expose, toast } from "../util.js";
 import { CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "../data.js";
-import { S, events, nextEvent, storeSet } from "../store.js";
+import { S, events, nextEvent, storeSet, dances } from "../store.js";
+import { todayPick, chunkLabel, shortName } from "../memo.js";
 import { computeStreak, dayCounts, skipsLeft } from "../streak.js";
 import { cardsFor, moveOfDay, TIRED } from "../habit.js";
 import { openPracticeMode } from "../pmode.js";
@@ -25,12 +26,12 @@ function renderHome(){
   else if(hp){ what=`<div class="today-what">🏠 Home practice</div><div class="today-sub">${esc(hp)}</div>`; verb="Start"; }
   else { what=`<div class="today-what">🌙 Rest day</div><div class="today-sub">Stretch a little if you want.</div>`; verb="Stretch"; }
   const ctx={practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today}; const streak=computeStreak(ctx); const skips=skipsLeft(ctx);
-  const bites=(rec&&Array.isArray(rec.bites))?rec.bites:[]; const cards=cardsFor(today,{skills:S.skills,bites}); const tired=bites.includes("tired");
+  const bites=(rec&&Array.isArray(rec.bites))?rec.bites:[]; const mp=todayPick(dances(),S.settings,today); const memo=mp?{danceId:mp.dance.id,label:mp.run?`${shortName(mp.dance)} · full run`:`${shortName(mp.dance)} · ${mp.chunk.n}`}:null; const cards=cardsFor(today,{skills:S.skills,bites,memo}); const tired=bites.includes("tired");
   const fullDone=!!rec&&dayCounts({done:rec.done,total:rec.total},PRACTICE_ITEMS.length);
   $("#todayCard").innerHTML=`${what}
     <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span><span class="chip">${skips} free skip${skips===1?"":"s"} left</span><span id="todayCount"></span></div>
     <div class="pick">${bites.length?"Pick another? ✨":"Pick one 👇"}</div>
-    <div class="choice">${cards.map(c=>`<button class="choice-card ${c.done?"done":""}" onclick="${c.go}"><span class="ic">${c.done?"✅":c.ic}</span><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></button>`).join("")}</div>
+    <div class="choice ${cards.length>3?"four":""}">${cards.map(c=>`<button class="choice-card ${c.done?"done":""}" onclick="${c.go}"><span class="ic">${c.done?"✅":c.ic}</span><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></button>`).join("")}</div>
     <div class="tired">${tired?`<span>😴 Rest counted. Streak safe ✓</span>`:`<span>😴 Tired today? That's allowed.</span><div class="row"><button class="btn sm ghost" onclick="habitTired('stretch')">🧘 2-min stretch</button><button class="btn sm ghost" onclick="habitTired('picture')">🎧 Picture the dance</button></div>`}</div>
     ${(()=>{ const n=todayNudge(); return n?`<div class="nudge"><span class="grow">${n.emoji} <b>${esc(n.text)}</b> Make it a moment?</span><button class="btn sm coral" onclick="openMoments('${n.key}')">📸 Yes</button><button class="lnk" onclick="mmLater().then(()=>this.closest('.nudge').remove())">later</button></div>`:""; })()}
     <div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="showPage('practice')">${fullDone?"✅ Full practice done":(hp?"▶ Full practice":"Practice list")}</button><button class="btn sm ghost" onclick="showPage('play')">🎮 All games</button><button class="btn sm ghost" onclick="openMoments()">📸 Moment</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
