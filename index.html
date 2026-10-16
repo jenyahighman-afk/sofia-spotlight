@@ -17,11 +17,11 @@
 <link rel="stylesheet" href="css/app.css">
 <script src="js/version.js"></script>
 </head>
-<body>
+<body class="pg-home">
 <div class="wrap">
 <header class="hero">
   <button class="gear noprint" id="openSettings" aria-label="Settings" title="Settings">⚙️</button>
-  <div class="sticker"><b id="stickerDays">–</b>days to<br><span id="stickerWhat">next event</span></div>
+  <div class="sticker"><b id="stickerDays">–</b><span class="st-to">days to</span><span id="stickerWhat">next event</span></div>
   <div class="sub">season 2026–27 · Glass House Dance</div>
   <h1>Sofia's Spotlight</h1>
   <p class="sub" id="heroLine">lyrical solo ✿ trio ✿ team PITCH</p>
@@ -55,7 +55,7 @@
     <div class="row practice-head" id="practiceHead"></div>
     <div class="today-actions" style="margin-bottom:0"><button class="btn coral big-btn" id="startPractice">▶ Start practice</button><button class="btn big-btn" onclick="openCoachHub()">🎬 Coach corner</button></div>
     <div id="quickRow"></div>
-    <div id="practiceChecklist" class="plist"></div>
+    <details class="more plan-fold" id="planFold"><summary>📋 Today's exercises <span class="chip" id="planCount"></span></summary><div id="practiceChecklist" class="plist"></div></details>
   </div>
   <details class="card acc"><summary>💬 How did it feel?</summary>
     <textarea id="practiceNote" placeholder="One line."></textarea>
