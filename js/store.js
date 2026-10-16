@@ -6,7 +6,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 24;
+export const SCHEMA_VERSION = 25;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -18,6 +18,8 @@ const V1_AERIAL_IDS = ["cartwheel-clean","one-hand-far","one-hand-near","dive-ca
 export const DEFAULT_PIN = "2027";
 // The daily habit "bites" a practice day can hold (js/habit.js) and the tired-day kinds. Frozen here for the migration.
 export const BITE_IDS = ["trick", "game", "move", "tired"]; const TIRED_KINDS = ["stretch", "picture"];
+// Schema 25: the drill box (js/drills.js). settings.drills[id] = a saved public post, link only. Hosts frozen here for the migration.
+export const DRILL_HOSTS = ["youtube", "instagram", "pinterest", "other"];
 
 // Schema 19: the solo's floor section was re-set; a side-sit leg reach replaces the tailbone balance and the 0:18 lunge reach
 // cue is gone. These are the new lines, frozen here like the V1 lists so the step keeps working after data/dances.json is edited again.
@@ -160,7 +162,18 @@ export const MIGRATIONS = {
   // 23 (moments): photos.moment = a card made in Moments (shown with ✨); settings.momentNudge = "date|kind" of the nudge dismissed today. Normalized when present.
   23: (col, id, doc) => { if (col === "photos" && doc.moment !== undefined) doc.moment = !!doc.moment; if (col === "settings" && doc.momentNudge !== undefined && typeof doc.momentNudge !== "string") delete doc.momentNudge; return doc; },
   // 24 (daily reminder): settings.reminder = { on, h (0–23), m (0–59) }, the family's reminder time. Normalized when present.
-  24: (col, id, doc) => { if (col === "settings" && doc.reminder !== undefined) { const r = doc.reminder && typeof doc.reminder === "object" ? doc.reminder : {}; const h = parseInt(r.h, 10), m = parseInt(r.m, 10); doc.reminder = { on: !!r.on, h: h >= 0 && h <= 23 ? h : 16, m: m >= 0 && m <= 59 ? m : 30 }; } return doc; }
+  24: (col, id, doc) => { if (col === "settings" && doc.reminder !== undefined) { const r = doc.reminder && typeof doc.reminder === "object" ? doc.reminder : {}; const h = parseInt(r.h, 10), m = parseInt(r.m, 10); doc.reminder = { on: !!r.on, h: h >= 0 && h <= 23 ? h : 16, m: m >= 0 && m <= 59 ? m : 30 }; } return doc; },
+  // 25 (drill box): settings.drills = { id: { url, host, vid (YouTube video id), skill (skill or aerial item id), note, do, dont, ask, at } },
+  // saved public posts, link only; practice.drills = the posts tried that day (ids). Normalized when present; a post without an http link is dropped.
+  25: (col, id, doc) => {
+    if (col === "settings" && doc.drills !== undefined) {
+      const out = {}; const str = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
+      for (const [k, v] of Object.entries(doc.drills && typeof doc.drills === "object" ? doc.drills : {})) { if (!v || typeof v !== "object" || !/^https?:\/\//i.test(String(v.url || ""))) continue; out[k] = { url: str(v.url, 500), host: DRILL_HOSTS.includes(v.host) ? v.host : "other", vid: str(v.vid, 20), skill: str(v.skill, 40), note: str(v.note, 140), do: str(v.do, 140), dont: str(v.dont, 140), ask: !!v.ask, at: str(v.at, 10) }; }
+      doc.drills = out;
+    }
+    if (col === "practice" && doc.drills !== undefined) doc.drills = Array.isArray(doc.drills) ? doc.drills.filter(x => typeof x === "string" && x) : [];
+    return doc;
+  }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

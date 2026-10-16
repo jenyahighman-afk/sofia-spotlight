@@ -9,6 +9,7 @@ import { planFor } from "../planToday.js";
 import { PRACTICE_POOL } from "../data.js";
 import { poolItems } from "../plan.js";
 import { checkBadges } from "../badges.js";
+import { renderDrillBox, drillStrip } from "../drills.js";
 
 const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
 const GROUP = { warm:"Warm-up", core:"Core", legs:"Legs", flex:"Flex", tech:"Technique", fix:"This week's fix", trick:"Trick", aerial:"Aerial mission", run:"Runs" };
@@ -29,8 +30,9 @@ function renderPractice(){
   if($("#practiceNote")!==document.activeElement) $("#practiceNote").value=rec.note||"";
   $("#practiceDate").value=date;
   const ad=new Set(S.settings.aerial||[]); let lastSec="";
-  $("#aerialList").innerHTML=AERIAL.map(it=>{ const h=(it.section!==lastSec)?`<div class="chip sun" style="margin-top:8px">${esc(it.section)}</div>`:""; lastSec=it.section; return h+`<label class="pitem ${ad.has(it.id)?"done":""}"><input type="checkbox" ${ad.has(it.id)?"checked":""} onchange="toggleAerial('${it.id}')"><span class="grow">${esc(it.text)}</span>${it.section.startsWith("Drills")||it.section==="Prerequisites"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}</label>${aerialHow(it)}`; }).join("");
+  $("#aerialList").innerHTML=AERIAL.map(it=>{ const h=(it.section!==lastSec)?`<div class="chip sun" style="margin-top:8px">${esc(it.section)}</div>`:""; lastSec=it.section; return h+`<label class="pitem ${ad.has(it.id)?"done":""}"><input type="checkbox" ${ad.has(it.id)?"checked":""} onchange="toggleAerial('${it.id}')"><span class="grow">${esc(it.text)}</span>${it.section.startsWith("Drills")||it.section==="Prerequisites"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}</label>${aerialHow(it)}${drillStrip(it.id)}`; }).join("");
   const apct=Math.round(100*[...ad].filter(id=>AERIAL.some(a=>a.id===id)).length/AERIAL.length); $("#aerialPct").textContent=apct+"%";
+  renderDrillBox();
   $("#phases").innerHTML=PHASES.map(p=>`<div class="check"><span class="chip violet">${esc(p.d)}</span><span><b>${esc(p.n)}</b><br><span class="small">${esc(p.g)}</span></span></div>`).join("");
   const hist=Object.entries(S.practice).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30);
   $("#practiceHistory").innerHTML=hist.length?hist.map(([d,r])=>`<div class="check"><span class="chip mint">${fmt(d)}</span><span>${(r.done||[]).length}/${r.total||PRACTICE_ITEMS.length}${(r.runs||[]).length?` · ▶ ${r.runs.length}`:""}${r.note?" · "+esc(r.note):""}</span></div>`).join(""):`<p class="muted small">Nothing yet. Today is a good day.</p>`;
