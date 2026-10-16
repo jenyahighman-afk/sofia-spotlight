@@ -51,10 +51,13 @@ ul.clean{list-style:none;padding:0;margin:0} ul.clean li{padding:6px 0;border-bo
 .check.done span{text-decoration:line-through;color:var(--ink-2)}
 .del{background:none;border:0;color:var(--ink-2);font-size:1.1rem;cursor:pointer;padding:0 4px}
 nav.tabs{flex:none;background:var(--card);border-top:2px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
-nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:.62rem;font-weight:800;color:var(--ink-2);padding:4px 3px;border-radius:12px;min-width:40px}
+nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.66rem;font-weight:800;color:var(--ink-2);padding:4px 5px 5px;border-radius:14px;min-width:52px;-webkit-tap-highlight-color:transparent}
 nav.tabs button span.ic{font-size:1.25rem}
 nav.tabs button.on{color:#FF5C93;background:var(--blush)}
-nav.tabs svg{width:26px;height:26px}
+/* Puffy icons: gradient fills live in the hidden <defs> svg before the nav; the shadow and the lift come from here. */
+nav.tabs svg{width:36px;height:36px;overflow:visible;filter:drop-shadow(0 2.5px 0 rgba(74,35,64,.16)) drop-shadow(0 5px 7px rgba(255,92,147,.22));transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
+nav.tabs button.on svg{transform:translateY(-3px) scale(1.12)}
+nav.tabs button:active svg{transform:scale(.92)}
 section.page{display:none} section.page.on{display:block}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .timeline{position:relative;padding-left:22px}
