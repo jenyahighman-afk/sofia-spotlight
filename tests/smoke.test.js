@@ -56,6 +56,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(el("#danceList").innerHTML.includes("More ▸"), "More ▸ is collapsed by default");
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
+  assert.ok(el("#whoRow").innerHTML.includes("whoPick('all')") && el("#whoRow").innerHTML.includes("💃 Sofia") && el("#meFriends").innerHTML.includes("Hannah") && el("#meFriends").innerHTML.includes("Lauren"), "the who's-dancing picker on Play and the friends card on Me");
   assert.ok(el("#drillForm").innerHTML.includes("drillAdd()") && el("#drillList").innerHTML.includes("Nothing saved yet"), "the drill box shelf on Practice");
   assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
   assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 9, "nine game tiles on Play");

@@ -11,6 +11,7 @@ import { findSkill } from "./skills.js";
 import { avatarSVG } from "./avatar.js";
 import { openStage } from "./stage.js";
 import { media } from "./sync.js";
+import { dancers, pickedNames, momentSub } from "./who.js";
 
 export const SIZES = { story: { w: 1080, h: 1920, label: "9:16" }, post: { w: 1080, h: 1350, label: "4:5" } };
 export const MILESTONES = [7, 14, 30, 50, 100];
@@ -95,12 +96,16 @@ export const todayStickers = () => stickersFor(todayContext());
 // The nudge Today shows for a big moment, once per day per kind.
 export function todayNudge(){ const n = nudgeFor(todayStickers()); if (!n) return null; return S.settings.momentNudge === todayStr() + "|" + n.key ? null : n; }
 
+// The "Who danced" chips on the stage: every dancer, the ones on the card lit. The name goes through esc() inside the
+// onclick too, because JSON's own quotes would end the attribute.
+export const whoChips = (names, picked) => names.map(n => `<button class="btn sm ${picked.includes(n) ? "coral" : "ghost"}" onclick="mmWho(${esc(JSON.stringify(n))})">${esc(n)}</button>`).join("");
 // ---------- the stage UI ----------
-const M = { mode: "one", size: "story", sticker: null, imgs: [], labels: null, sub: "", avatar: null, custom: "" };
+const M = { mode: "one", size: "story", sticker: null, imgs: [], labels: null, sub: "", avatar: null, custom: "", names: [], streak: 0 };
 let drawTimer = 0;
 export async function openMoments(stickerKey){
   const st = todayStickers(); M.sticker = st.find(s => s.key === stickerKey) || st[0]; M.mode = "one"; M.imgs = []; M.labels = null; M.custom = "";
-  const c = todayContext(); M.sub = c.streak > 0 ? `🔥 ${c.streak}-day streak` : "";
+  // Who danced goes on the card (js/who.js): the current pick to start with, toggled on the stage.
+  const c = todayContext(); M.streak = c.streak; M.names = pickedNames(); M.sub = momentSub(M.names, M.streak, dancers()[0].n);
   openStage("📸 Moments", [$("#momentsArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); render();
   try { await document.fonts.load("700 48px Fredoka"); } catch (e) {}
   if (!M.avatar) M.avatar = await avatarImage(); preview();
@@ -109,6 +114,7 @@ function render(){
   const st = todayStickers(); if (M.custom) st.unshift({ key: "own", emoji: "✏️", text: M.custom }); const pairs = thenNowPairs(S.goals, S.photos);
   $("#momentsArea").innerHTML = `<p class="small muted">Pick a sticker, add a photo, save it to your phone. Then it's yours: CapCut, grandparents, anyone.</p>
     <div class="row mm-stickers">${st.map(s => `<button class="btn sm ${M.sticker && M.sticker.text === s.text ? "coral" : "ghost"}" onclick="mmSticker(${esc(JSON.stringify(s.text))})">${s.emoji} ${esc(s.text)}</button>`).join("")}<button class="btn sm ghost" onclick="mmOwn()">✏️ My own words</button></div>
+    <div class="row" style="margin-top:8px"><span class="small muted">Who danced:</span>${whoChips(dancers().map(d => d.n), M.names)}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm ${M.mode === "one" ? "coral" : "ghost"}" onclick="mmMode('one')">One photo</button><button class="btn sm ${M.mode === "two" ? "coral" : "ghost"}" onclick="mmMode('two')">Then vs now</button><span class="grow"></span>${Object.entries(SIZES).map(([k, v]) => `<button class="btn sm ${M.size === k ? "coral" : "ghost"}" onclick="mmSize('${k}')">${v.label}</button>`).join("")}</div>
     ${M.mode === "one" ? `<div class="row" style="margin-top:8px"><label class="btn sm aqua" for="mmPhoto">📷 Add a photo</label><input type="file" id="mmPhoto" accept="image/*" hidden><span class="small muted">No photo? The card works with just the sticker.</span></div>`
       : `<div class="row" style="margin-top:8px"><label class="btn sm aqua" for="mmThen">📷 Then</label><input type="file" id="mmThen" accept="image/*" hidden><label class="btn sm aqua" for="mmNow">📷 Now</label><input type="file" id="mmNow" accept="image/*" hidden>${pairs.length ? `<select id="mmPair" style="max-width:220px"><option value="">From my goal check-ins…</option>${pairs.map((p, i) => `<option value="${i}">${esc(p.label)} · ${esc(fmt(p.then.date))} → ${esc(fmt(p.now.date))}</option>`).join("")}</select>` : ""}</div>`}
@@ -124,6 +130,7 @@ function preview(){ clearTimeout(drawTimer); drawTimer = setTimeout(() => { cons
 function setSticker(text){ const st = todayStickers(); M.sticker = st.find(s => s.text === text) || { key: "own", emoji: "✏️", text }; render(); }
 function own(){ const t = prompt("Your words for the card", M.custom || ""); if (t === null) return; M.custom = String(t).trim().slice(0, 60); if (M.custom) M.sticker = { key: "own", emoji: "✨", text: M.custom }; render(); }
 function setMode(m){ M.mode = m; M.imgs = []; M.labels = null; render(); }
+function setWho(name){ const order = dancers().map(d => d.n); M.names = M.names.includes(name) ? M.names.filter(n => n !== name) : order.filter(n => n === name || M.names.includes(n)); M.sub = momentSub(M.names, M.streak, dancers()[0].n); render(); }
 function setSize(s){ M.size = s; render(); }
 async function toBlob(){ const cv = $("#mmCanvas"); return new Promise((res, rej) => { try { cv.toBlob(b => b ? res(b) : rej(new Error("Couldn't make the picture")), "image/jpeg", 0.92); } catch (e) { rej(e); } }); }
 async function save(){ try { const b = await toBlob(); await saveBlob(b, `sofia-moment-${todayStr()}.jpg`); status("Saved. Look in Photos (or Files)."); } catch (e) { console.warn(e); toast(/tainted|security/i.test(String(e)) ? "That photo came from the cloud and can't be saved here. Pick it from Photos instead." : "Couldn't save: " + e.message, 4000); } }
@@ -134,4 +141,4 @@ async function keep(){
 }
 async function later(){ const n = nudgeFor(todayStickers()); if (n) await setSettings({ momentNudge: todayStr() + "|" + n.key }); }
 export const momentCount = () => Object.values(S.photos || {}).filter(p => p && p.moment && !p.deleted).length;
-expose({ openMoments, mmSticker: setSticker, mmOwn: own, mmMode: setMode, mmSize: setSize, mmSave: save, mmKeep: keep, mmLater: later });
+expose({ openMoments, mmSticker: setSticker, mmOwn: own, mmMode: setMode, mmWho: setWho, mmSize: setSize, mmSave: save, mmKeep: keep, mmLater: later });

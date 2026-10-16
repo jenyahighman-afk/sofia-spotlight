@@ -318,6 +318,10 @@ body.modal{overflow:hidden}
 .review .rv-loved,.review .rv-loved *,.day .ev,.cal .d .ev,.mapbar .soft,.mapbar .loud,.mapbar .fade,.cover-art.sun,.cover-art.violet,.cover-art.aqua{color:#4A2340}
 .chip{color:var(--ink)} .chip.aqua,.chip.sun,.chip.violet,.chip.mint,.chip[style*="background:#fff"]{color:#4A2340} .chip.coral{color:#fff}
 
+/* Who's dancing (js/who.js): the picker on Play, the friends card on Me */
+.who-row{margin-top:8px} .who-chips{margin-top:6px}
+.who-friend{margin-top:8px} .who-friend input{flex:1 1 120px;min-width:0}
+
 /* Drill box (js/drills.js): saved posts as cards, thumbnails on skill pages, the post sheet, the technique book */
 .drill-add{margin-bottom:8px} .drill-add input,.drill-add select{width:100%}
 .drill-card{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line)} .drill-card:last-child{border-bottom:0}

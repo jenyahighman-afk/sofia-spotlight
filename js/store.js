@@ -6,7 +6,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 25;
+export const SCHEMA_VERSION = 26;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
 
@@ -20,6 +20,8 @@ export const DEFAULT_PIN = "2027";
 export const BITE_IDS = ["trick", "game", "move", "tired"]; const TIRED_KINDS = ["stretch", "picture"];
 // Schema 25: the drill box (js/drills.js). settings.drills[id] = a saved public post, link only. Hosts frozen here for the migration.
 export const DRILL_HOSTS = ["youtube", "instagram", "pinterest", "other"];
+// Schema 26: the two friend slots (js/who.js), frozen here for the migration.
+export const FRIEND_SLOTS = ["f1", "f2"];
 
 // Schema 19: the solo's floor section was re-set; a side-sit leg reach replaces the tailbone balance and the 0:18 lunge reach
 // cue is gone. These are the new lines, frozen here like the V1 lists so the step keeps working after data/dances.json is edited again.
@@ -172,6 +174,13 @@ export const MIGRATIONS = {
       doc.drills = out;
     }
     if (col === "practice" && doc.drills !== undefined) doc.drills = Array.isArray(doc.drills) ? doc.drills.filter(x => typeof x === "string" && x) : [];
+    return doc;
+  },
+  // 26 (dance with a friend, js/who.js): settings.friends = { f1, f2: name } and settings.friendBests = { f1 | f2: { game: best } }.
+  // Normalized when present (names ≤ 20 chars, bests whole numbers ≥ 1); Sofia's own bests stay where they were.
+  26: (col, id, doc) => {
+    if (col === "settings" && doc.friends !== undefined) { const f = doc.friends && typeof doc.friends === "object" ? doc.friends : {}; const out = {}; for (const k of FRIEND_SLOTS) { const n = String(f[k] == null ? "" : f[k]).trim().slice(0, 20); if (n) out[k] = n; } doc.friends = out; }
+    if (col === "settings" && doc.friendBests !== undefined) { const fb = doc.friendBests && typeof doc.friendBests === "object" ? doc.friendBests : {}; const out = {}; for (const k of FRIEND_SLOTS) { const b = fb[k] && typeof fb[k] === "object" ? fb[k] : {}; const o = {}; for (const [g, v] of Object.entries(b)) { const n = parseInt(v, 10); if (Number.isFinite(n) && n > 0) o[g] = n; } if (Object.keys(o).length) out[k] = o; } doc.friendBests = out; }
     return doc;
   }
 };
