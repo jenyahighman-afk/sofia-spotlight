@@ -113,9 +113,12 @@ async function runEnded(){
 function runClose(){ $("#plRun").hidden = true; $("#plRun").innerHTML = ""; }
 
 // ---- open / close ----
-export async function openPlayer(danceId){
+// opts (the Memorize card): { speed: 50|75|100, loop: {a, b} seconds, counts: "voice"|"click"|"off" (turns the 8-count on), testMe: true|false }.
+export async function openPlayer(danceId, opts = {}){
   const d = dances().find(x => x.id === danceId); if (!d) return toast("That dance isn't here");
   closePlayer(true); PL.dance = d; PL.a = null; PL.b = null; PL.speed = 100; PL.lastCount = -1; PL.run = null; PL.revealed = -1; PL.lastCueIdx = -2; PL.showList = false;
+  if (opts.speed) PL.speed = Math.max(50, Math.min(100, Math.round(+opts.speed))); if (opts.loop && Number.isFinite(+opts.loop.a) && Number.isFinite(+opts.loop.b)) { PL.a = +opts.loop.a; PL.b = +opts.loop.b; }
+  if (opts.counts) { PL.counts = true; PL.voice = opts.counts; if (opts.counts === "click") ensureCtx(); } if (typeof opts.testMe === "boolean") PL.testMe = opts.testMe;
   $("#player").hidden = false; document.body.classList.add("modal");
   $("#plTitle").textContent = d.name; $("#plSong").textContent = d.song || ""; $("#plTime").textContent = "0:00"; $("#plBar").style.width = "0"; $("#plPlay").textContent = "▶"; $("#plCount").textContent = "…"; runClose();
   speedUI(); loopUI(); countsUI(); renderPresets(); cueSheetUI(); $("#plCue").hidden = true; renderCue(0);
