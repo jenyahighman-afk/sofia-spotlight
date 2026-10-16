@@ -6,9 +6,9 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 26;
+export const SCHEMA_VERSION = 27;
 
-export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals"];
+export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills"];
 
 // Schema 1 stored practice.done and settings.aerial as positions in the built-in lists.
 // These are those lists' orders at schema 1, frozen here so the migration keeps working after data/*.json is edited.
@@ -19,7 +19,13 @@ export const DEFAULT_PIN = "2027";
 // The daily habit "bites" a practice day can hold (js/habit.js) and the tired-day kinds. Frozen here for the migration.
 export const BITE_IDS = ["trick", "game", "move", "tired"]; const TIRED_KINDS = ["stretch", "picture"];
 // Schema 25: the drill box (js/drills.js). settings.drills[id] = a saved public post, link only. Hosts frozen here for the migration.
+// Schema 27 moves the posts to their own collection (drills/{id}, one document each), so a post Jenya saves can't be
+// overwritten by the other phone's next whole-document settings write. normalizeDrill is shared by both steps.
 export const DRILL_HOSTS = ["youtube", "instagram", "pinterest", "other"];
+export function normalizeDrill(v){
+  if (!v || typeof v !== "object" || !/^https?:\/\//i.test(String(v.url || ""))) return null; const str = (x, n) => String(x == null ? "" : x).trim().slice(0, n);
+  return { url: str(v.url, 500), host: DRILL_HOSTS.includes(v.host) ? v.host : "other", vid: str(v.vid, 20), skill: str(v.skill, 40), note: str(v.note, 140), do: str(v.do, 140), dont: str(v.dont, 140), ask: !!v.ask, at: str(v.at, 10) };
+}
 // Schema 26: the two friend slots (js/who.js), frozen here for the migration.
 export const FRIEND_SLOTS = ["f1", "f2"];
 
@@ -169,8 +175,7 @@ export const MIGRATIONS = {
   // saved public posts, link only; practice.drills = the posts tried that day (ids). Normalized when present; a post without an http link is dropped.
   25: (col, id, doc) => {
     if (col === "settings" && doc.drills !== undefined) {
-      const out = {}; const str = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
-      for (const [k, v] of Object.entries(doc.drills && typeof doc.drills === "object" ? doc.drills : {})) { if (!v || typeof v !== "object" || !/^https?:\/\//i.test(String(v.url || ""))) continue; out[k] = { url: str(v.url, 500), host: DRILL_HOSTS.includes(v.host) ? v.host : "other", vid: str(v.vid, 20), skill: str(v.skill, 40), note: str(v.note, 140), do: str(v.do, 140), dont: str(v.dont, 140), ask: !!v.ask, at: str(v.at, 10) }; }
+      const out = {}; for (const [k, v] of Object.entries(doc.drills && typeof doc.drills === "object" ? doc.drills : {})) { const p = normalizeDrill(v); if (p) out[k] = p; }
       doc.drills = out;
     }
     if (col === "practice" && doc.drills !== undefined) doc.drills = Array.isArray(doc.drills) ? doc.drills.filter(x => typeof x === "string" && x) : [];
@@ -182,7 +187,10 @@ export const MIGRATIONS = {
     if (col === "settings" && doc.friends !== undefined) { const f = doc.friends && typeof doc.friends === "object" ? doc.friends : {}; const out = {}; for (const k of FRIEND_SLOTS) { const n = String(f[k] == null ? "" : f[k]).trim().slice(0, 20); if (n) out[k] = n; } doc.friends = out; }
     if (col === "settings" && doc.friendBests !== undefined) { const fb = doc.friendBests && typeof doc.friendBests === "object" ? doc.friendBests : {}; const out = {}; for (const k of FRIEND_SLOTS) { const b = fb[k] && typeof fb[k] === "object" ? fb[k] : {}; const o = {}; for (const [g, v] of Object.entries(b)) { const n = parseInt(v, 10); if (Number.isFinite(n) && n > 0) o[g] = n; } if (Object.keys(o).length) out[k] = o; } doc.friendBests = out; }
     return doc;
-  }
+  },
+  // 27 (drill box collection): drills/{id} = one saved post, the same shape settings.drills held. A document without an
+  // http link is emptied of its fields (the view skips it). The settings-held posts are moved by saveDrillsMove(), not here.
+  27: (col, id, doc) => { if (col === "drills") { const p = normalizeDrill(doc); return p ? { ...p, _v: doc._v, _at: doc._at } : { _v: doc._v, _at: doc._at, deleted: true }; } return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
@@ -196,7 +204,7 @@ export function migrateDoc(col, id, doc){
 export function migrateCollection(col, docs){ const out = {}; for (const [id, doc] of Object.entries(docs || {})) out[id] = migrateDoc(col, id, doc); return out; }
 
 // ---------- STATE ----------
-export const S = { dances:{}, events:{}, notes:{}, todos:{}, packs:{}, practice:{}, photos:{}, files:{}, choreo:{}, settings:{}, corrections:{}, skills:{}, badges:{}, reports:{}, reviews:{}, goals:{} };
+export const S = { dances:{}, events:{}, notes:{}, todos:{}, packs:{}, practice:{}, photos:{}, files:{}, choreo:{}, settings:{}, corrections:{}, skills:{}, badges:{}, reports:{}, reviews:{}, goals:{}, drills:{} };
 // Which collections the backend has delivered at least once, and whether that delivery was confirmed by the server (not just the local cache).
 export const received = { any: new Set(), server: new Set() };
 
@@ -241,6 +249,14 @@ let soloStale = false;
 export async function saveSoloFix(){
   if (!soloStale || !settled("dances") || !S.dances.solo) return false;
   soloStale = false; await storeSet("dances", "solo", S.dances.solo); return true;
+}
+// The cloud half of schema 27: posts still held in settings.drills (saved by 1.16 / 1.17) become drills/{id} documents once
+// both collections are server-confirmed, and the field is dropped from settings. Each post is written only if the
+// collection doesn't already have it, so two phones doing it at once write the same thing. Returns how many moved.
+export async function saveDrillsMove(){
+  const held = S.settings.drills; if (!held || typeof held !== "object" || !settled("settings") || !settled("drills")) return 0;
+  let n = 0; for (const [id, p] of Object.entries(held)) { if (S.drills[id]) continue; const post = normalizeDrill(p); if (!post) continue; await storeSet("drills", id, post); n++; }
+  const rest = { ...S.settings }; delete rest.drills; await storeSet("settings", "main", rest); return n;
 }
 // Settings is one document; this merges a few keys into it.
 export function setSettings(patch){ return storeSet("settings", "main", { ...S.settings, ...patch }); }
