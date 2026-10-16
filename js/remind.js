@@ -24,7 +24,11 @@ export function pushBlocker({ standalone, hasPush, hasSw, workerUrl }){
 const LS = "spotlight:push"; // this phone's subscription endpoint
 const base = () => String(coachConfig.url || "").replace(/\/$/, "");
 const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Los_Angeles"; } catch (e) { return "America/Los_Angeles"; } };
-async function post(path, body){ const r = await fetch(base() + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || ("HTTP " + r.status)); return j; }
+// What to tell the family when the worker says no. A worker deployed before the reminder routes existed treats every
+// POST as a coach request and answers with the coach's "No frames" error, so that case gets a message about deploying.
+export const OLD_WORKER_MSG = "The server-side worker is older than the app, so it doesn't know about reminders yet. In worker/, run: npx wrangler deploy (see worker/README.md), then tap again.";
+export function postError(status, j){ const e = String((j || {}).error || ""); if (!e) return "HTTP " + status; if (status === 400 && /frames/i.test(e)) return OLD_WORKER_MSG; if (status === 404) return OLD_WORKER_MSG; return e; }
+async function post(path, body){ const r = await fetch(base() + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(postError(r.status, j)); return j; }
 const env = () => ({ standalone: !!(navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches)), hasPush: "PushManager" in window && "Notification" in window, hasSw: "serviceWorker" in navigator, workerUrl: base() });
 const subscribedHere = () => { try { return localStorage.getItem(LS) || ""; } catch (e) { return ""; } };
 
