@@ -25,8 +25,8 @@ id = "8c6b0df54fe14e9d9ada3027db61f7a3"
 
 # Reminder subscriptions. Create once with:  npx wrangler kv namespace create REMIND
 # then paste the id it prints here and remove the leading "# " on the next three lines. Without it, reminders answer 503.
-# [[kv_namespaces]]
-# binding = "REMIND"
-# id = "paste-the-id-here"
+[[kv_namespaces]]
+binding = "REMIND"
+id = "719769abf1674abba8e4933bd3593b28"
 
 # The API key is a secret, never a var:  npx wrangler secret put ANTHROPIC_API_KEY
