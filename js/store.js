@@ -6,7 +6,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 27;
+export const SCHEMA_VERSION = 28;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills"];
 
@@ -17,7 +17,7 @@ const V1_AERIAL_IDS = ["cartwheel-clean","one-hand-far","one-hand-near","dive-ca
 
 export const DEFAULT_PIN = "2027";
 // The daily habit "bites" a practice day can hold (js/habit.js) and the tired-day kinds. Frozen here for the migration.
-export const BITE_IDS = ["trick", "game", "move", "tired"]; const TIRED_KINDS = ["stretch", "picture"];
+export const BITE_IDS = ["trick", "game", "move", "tired", "memo"]; const TIRED_KINDS = ["stretch", "picture"];
 // Schema 25: the drill box (js/drills.js). settings.drills[id] = a saved public post, link only. Hosts frozen here for the migration.
 // Schema 27 moves the posts to their own collection (drills/{id}, one document each), so a post Jenya saves can't be
 // overwritten by the other phone's next whole-document settings write. normalizeDrill is shared by both steps.
@@ -190,7 +190,15 @@ export const MIGRATIONS = {
   },
   // 27 (drill box collection): drills/{id} = one saved post, the same shape settings.drills held. A document without an
   // http link is emptied of its fields (the view skips it). The settings-held posts are moved by saveDrillsMove(), not here.
-  27: (col, id, doc) => { if (col === "drills") { const p = normalizeDrill(doc); return p ? { ...p, _v: doc._v, _at: doc._at } : { _v: doc._v, _at: doc._at, deleted: true }; } return doc; }
+  27: (col, id, doc) => { if (col === "drills") { const p = normalizeDrill(doc); return p ? { ...p, _v: doc._v, _at: doc._at } : { _v: doc._v, _at: doc._at, deleted: true }; } return doc; },
+  // 28 (1.19.0): Memorize it. settings.memo[danceId] = { known: [chunk names], tested: { [chunk]: [dates] } };
+  // practice.memo = { [danceId]: [step ids] }; "memo" joins the bite kinds. Normalized when present, never invented.
+  28: (col, id, doc) => {
+    const strs = (a, max) => Array.isArray(a) ? [...new Set(a.filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 60)))].slice(0, max) : [];
+    if (col === "settings" && doc.memo !== undefined) { const out = {}; for (const [k, v] of Object.entries(doc.memo && typeof doc.memo === "object" ? doc.memo : {})) { if (!v || typeof v !== "object") continue; const tested = {}; for (const [n, days] of Object.entries(v.tested && typeof v.tested === "object" ? v.tested : {})) { const ds = strs(days, 10).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x)).sort(); if (ds.length) tested[n.slice(0, 60)] = ds; } out[k] = { known: strs(v.known, 20), tested }; } doc.memo = out; }
+    if (col === "practice" && doc.memo !== undefined) { const out = {}; for (const [k, v] of Object.entries(doc.memo && typeof doc.memo === "object" ? doc.memo : {})) { const st = strs(v, 8).filter(x => ["story", "mark", "count", "test", "picture"].includes(x)); if (st.length) out[k] = st; } doc.memo = out; }
+    return doc;
+  }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

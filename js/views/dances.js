@@ -6,6 +6,7 @@ import { photoTile, uploadMusic } from "./notes.js";
 import { TAGS, TAG_LABEL, TAG_EMOJI, topFixes, forDance, patterns, addCorrection, closeCorrection, reopenCorrection, removeCorrection, inferTag } from "../corrections.js";
 import { checkBadges } from "../badges.js";
 import { normalizeCues, parseCueText, formatCueText, fmtTime } from "../cues.js";
+import { memoDances, memoCard, bindMemo } from "../memo.js";
 
 const STYLE_EMOJI = { lyrical:"🌸", jazz:"⚡", contemporary:"🌊", "hip hop":"🎧", hiphop:"🎧", ballet:"🩰", acro:"🤸", ballroom:"💃", tap:"👟" };
 export const danceEmoji = (d) => STYLE_EMOJI[String(d.style || "").toLowerCase().trim()] || "🎵";
@@ -14,6 +15,7 @@ const musicPlayer=(d)=>d.musicFile&&d.musicFile.url?`<div class="field-lab">Musi
 async function addMusic(file,danceId){ if(!file) return; await uploadMusic(file,danceId); }
 export function danceEdit(id){ editDance=id; if(id) moreOpen.add(id); renderDances(); }
 export function initDances(){
+  document.addEventListener("memochanged",()=>renderDances());
   $("#addDance").onclick=async()=>{ const n=$("#newDanceName").value.trim(); if(!n) return; const id="d"+uid(); await storeSet("dances",id,{id,name:n,song:"",style:"",choreo:"",costume:"",shoes:"",hair:"",color:"coral",music:"",map:"",strengths:[],corrections:[],notes:"",links:[],teacher:"",rehearsal:"",musicUrl:"",bpm:""}); $("#newDanceName").value=""; editDance=id; moreOpen.add(id); };
 }
 let editDance=null, noteFor=null, noteTag="other"; const moreOpen=new Set();
@@ -44,7 +46,7 @@ function renderDances(){
   $("#danceList").innerHTML=list.map(d=>{
     const editing=editDance===d.id; const open=moreOpen.has(d.id);
     const cover=`<div class="cover-top"><div class="cover-art ${d.color||""}">${coverArt(d)}</div><div class="grow"><h3>${esc(d.name)}</h3><div class="small muted">${esc(d.song||"song TBD")}</div>${d.story?`<div class="story">🎭 ${esc(d.story)}</div>`:""}</div></div>
-      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}')">▶ Practice</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>
+      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}')">▶ Practice</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>${memoDances([d]).length?memoCard(d):""}
       ${noteFor===d.id?noteForm(d):""}${chips(d)}${patternLine(d)}`;
     const mapbar=d.id==="solo"?`<div class="mapbar" style="margin:8px 0"><div class="soft">soft 0:00–0:48</div><div class="loud">full 0:48–1:52</div><div class="fade">fade</div></div>`:"";
     const photos=`<div class="field-lab">Photos for this dance</div><div class="photos" style="margin-top:6px">${Object.entries(S.photos).filter(([,p])=>p.dance===d.id).map(([pid,p])=>`<div class="ph">${photoTile(p)}${p.cap?`<div class="cap">${esc(p.cap)}</div>`:""}<button class="del" onclick="delPhoto('${pid}')">✕</button></div>`).join("")}</div>
@@ -70,6 +72,7 @@ function renderDances(){
     }
     return `<div class="card cover ${d.color||""}" data-id="${d.id}">${cover}<details class="more" ${open?"open":""} data-more="${d.id}"><summary>More ▸</summary>${more}</details></div>`;
   }).join("");
+  bindMemo($("#danceList"));
   $("#danceList").querySelectorAll("details.more").forEach(el=>el.addEventListener("toggle",()=>{ el.open?moreOpen.add(el.dataset.more):moreOpen.delete(el.dataset.more); }));
   growAll($("#danceList"));
 }
