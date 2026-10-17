@@ -397,3 +397,20 @@ body.modal{overflow:hidden}
 @keyframes pet-stretch{0%,100%{transform:scale(1)}40%{transform:scale(.94,1.1)}}
 @keyframes pet-z{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
 @media (prefers-reduced-motion:reduce){.pet-stage .pet-svg,.pet-z,[class*="move-"] .pet-svg{animation:none!important}}
+
+/* Show countdown (js/advent.js): the Today row, the door grid, the reveal and the sticker book */
+.advent-card{padding:10px 12px} .advent-ic{font-size:1.8rem;line-height:1}
+.advent-reveal{background:linear-gradient(135deg,#FFE3EE,#EBDDFF);border-radius:16px;padding:14px;margin-bottom:10px;text-align:center}
+.advent-reveal.pop{animation:advent-pop .6s cubic-bezier(.2,1.4,.4,1)} .advent-text{font-family:Fredoka;font-size:1.15rem;line-height:1.35;margin-top:4px}
+.advent-book{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:8px 10px;margin-bottom:10px}
+.advent-stickers{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;font-size:1.5rem;line-height:1.2}
+.advent-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding-bottom:10px}
+.door{aspect-ratio:1;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;align-content:center;gap:0;padding:2px;cursor:pointer;font:inherit;position:relative}
+.door-n{font-family:Fredoka;font-weight:700;font-size:.95rem;line-height:1} .door-ic{font-size:1.1rem;line-height:1.1}
+.door.ready{background:linear-gradient(135deg,#FF8DB5,#C9A7F5);color:#fff;border-color:transparent;box-shadow:0 3px 0 rgba(74,35,64,.15)}
+.door.ready.today{animation:advent-glow 1.8s ease-in-out infinite}
+.door.open{background:var(--blush);opacity:.85} .door.locked{opacity:.45} .door.show{border-color:var(--gold)}
+.door.today{outline:3px solid var(--coral);outline-offset:1px}
+@keyframes advent-pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes advent-glow{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.advent-reveal.pop,.door.ready.today{animation:none}}
