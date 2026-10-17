@@ -182,3 +182,11 @@ test("the tab bar is a row of the app shell, never position:fixed (iOS drifts fi
   const wrap = /\.wrap\{([^}]*)\}/.exec(css)[1]; assert.match(wrap, /overflow-y:auto/); assert.match(wrap, /min-height:0/);
   assert.match(css, /@media print\{[^@]*html,body\{height:auto;overflow:visible/, "printing still flows across pages");
 });
+
+test("the service worker's file list: no repeats, and every listed file exists", async () => {
+  const { readFileSync, existsSync } = await import("node:fs");
+  const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8"); const list = sw.slice(sw.indexOf("const APP_FILES"), sw.indexOf("];", sw.indexOf("const APP_FILES")));
+  const files = list.match(/"\.\/[^"]*"/g).map(x => x.slice(1, -1));
+  assert.equal(new Set(files).size, files.length, "repeated: " + files.filter((f, i) => files.indexOf(f) !== i).join(", "));
+  for (const f of files) if (f !== "./") assert.ok(existsSync(new URL("../" + f.slice(2), import.meta.url)), "missing " + f);
+});
