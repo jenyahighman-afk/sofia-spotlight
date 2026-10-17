@@ -9,7 +9,7 @@ import { installEnv, resetDom, el } from "./_env.mjs";
 installEnv();
 const read = (rel) => readFileSync(new URL("../" + rel, import.meta.url), "utf8");
 const html = read("index.html");
-const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind","plan10","workout-presets","pet","advent","costumes"];
+const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind","plan10","workout-presets","pet","advent","dares","costumes"];
 
 let M = {};
 before(async () => {
