@@ -101,7 +101,7 @@ test("the shelf renders the add form, the cards and the strips; skill pages get 
 });
 
 test("schema 27: a post is its own document; one without a link is emptied; settings-held posts move once, then leave settings", async () => {
-  assert.ok(COLLECTIONS.includes("drills")); assert.match(readFileSync(new URL("../firestore.rules", import.meta.url), "utf8"), /'goals', 'drills'\]/, "the rules know the collection (republish them)");
+  assert.ok(COLLECTIONS.includes("drills")); assert.match(readFileSync(new URL("../firestore.rules", import.meta.url), "utf8"), /'goals', 'drills'(, '\w+')*\]/, "the rules know the collection (republish them)");
   const d = migrateDoc("drills", "a", { _v: 26, url: "https://youtu.be/dQw4w9WgXcQ", host: "youtube", vid: "dQw4w9WgXcQ", skill: "s-calypso", note: "  0:40 ", ask: 1 }); assert.equal(d._v, SCHEMA_VERSION); assert.equal(d.note, "0:40"); assert.equal(d.ask, true); assert.equal(d.host, "youtube");
   const bad = migrateDoc("drills", "b", { _v: 26, url: "nope", note: "x" }); assert.equal(bad.deleted, true); assert.equal("url" in bad, false); assert.deepEqual(allDrills({ a: d, b: bad }).map(p => p.id), ["a"], "an emptied document never shows");
   assert.equal(normalizeDrill(null), null); assert.equal(normalizeDrill({ url: "https://x.y/z", host: "tiktok" }).host, "other");
