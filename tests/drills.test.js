@@ -120,3 +120,11 @@ test("schema 27: a post is its own document; one without a link is emptied; sett
     assert.equal(await saveDrillsMove(), 0, "a post the other phone already moved is not written again"); assert.equal(S.drills.a.note, "already here"); assert.equal(writes.length, 3, "but the field still leaves settings"); assert.equal(writes[2].col, "settings");
   } finally { setBackend(null); for (const k of Object.keys(S)) S[k] = {}; }
 });
+
+test("the service worker installs past the browser and edge caches: versioned, cache-busting fetches stored under the plain URL", () => {
+  const sw = src("sw.js");
+  assert.match(sw, /"\?v=" \+ encodeURIComponent\(VERSION\), \{ cache: "reload" \}/, "each app file is fetched with ?v=<version> and cache: reload");
+  assert.match(sw, /await c\.put\(u, res\)/, "stored under the plain URL, so runtime matches need no ignoreSearch");
+  assert.match(sw, /if \(!res\.ok\) throw/, "a missing file fails the install (like addAll did)");
+  assert.doesNotMatch(sw, /addAll\(APP_FILES\)/);
+});
