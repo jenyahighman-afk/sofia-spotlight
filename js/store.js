@@ -7,9 +7,11 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 33;
+export const SCHEMA_VERSION = 37;
 // Schema 32: the dance pet's fur colours (data/pet.json), frozen here for the migration.
 export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
+// Schema 37: the Glow-Up Flipbook poses (js/glow.js GLOW_POSES), frozen here for the migration.
+export const GLOW_POSE_IDS = ["arabesque", "passe", "first-position", "releve", "split"];
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills","workouts"];
 
@@ -218,7 +220,12 @@ export const MIGRATIONS = {
   // read from the practice records, so nothing else is stored.
   32: (col, id, doc) => { if (col === "settings" && doc.pet !== undefined) { const p = doc.pet && typeof doc.pet === "object" ? doc.pet : {}; const out = {}; const n = String(p.name == null ? "" : p.name).trim().slice(0, 16); if (n) out.name = n; if (PET_FURS.includes(p.fur)) out.fur = p.fur; doc.pet = out; } return doc; },
   // 33 (show countdown, js/advent.js): settings.advent = { open: [dates of opened doors] }. Normalized when present: real dates only, once each, sorted.
-  33: (col, id, doc) => { if (col === "settings" && doc.advent !== undefined) { const a = doc.advent && typeof doc.advent === "object" ? doc.advent : {}; doc.advent = { open: [...new Set((Array.isArray(a.open) ? a.open : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort() }; } return doc; }
+  33: (col, id, doc) => { if (col === "settings" && doc.advent !== undefined) { const a = doc.advent && typeof doc.advent === "object" ? doc.advent : {}; doc.advent = { open: [...new Set((Array.isArray(a.open) ? a.open : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort() }; } return doc; },
+  // 34–36: reserved for features built alongside the flipbook (no-ops on this branch; replaced when those branches land).
+  34: (col, id, doc) => doc, 35: (col, id, doc) => doc, 36: (col, id, doc) => doc,
+  // 37 (glow-up flipbook, js/glow.js): photos.glow = "YYYY-MM" (that month's flipbook photo), kept only when it is a month key;
+  // settings.glowPose = one of GLOW_POSE_IDS, dropped when it is anything else.
+  37: (col, id, doc) => { if (col === "photos" && doc.glow !== undefined && !(typeof doc.glow === "string" && /^\d{4}-\d{2}$/.test(doc.glow))) delete doc.glow; if (col === "settings" && doc.glowPose !== undefined && !GLOW_POSE_IDS.includes(doc.glowPose)) delete doc.glowPose; return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
