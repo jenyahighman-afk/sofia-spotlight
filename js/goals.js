@@ -66,7 +66,7 @@ export async function measurePhoto(file, measure){
 }
 
 // ---- UI: Me card + goal modal + Today reminder ----
-const ring = (pct, emoji) => { const r = 26, c = 2 * Math.PI * r; return `<svg viewBox="0 0 64 64" class="mini-ring goal-ring"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/><text x="32" y="32" class="ring-ic">${emoji}</text></svg>`; };
+const ring = (pct, emoji) => { const r = 26, c = 2 * Math.PI * r; return `<svg viewBox="0 0 64 64" class="mini-ring goal-ring"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" transform="rotate(-90 32 32)" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/><text x="32" y="32" class="ring-ic">${emoji}</text></svg>`; };
 const photoOf = (c) => c && c.photoId && S.photos[c.photoId] ? S.photos[c.photoId] : null;
 export function renderGoalsCard(){
   const el = $("#goalRings"); if (!el) return; const list = Object.values(S.goals).filter(g => !g.deleted).sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));

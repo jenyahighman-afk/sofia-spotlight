@@ -18,7 +18,7 @@ const SWAPPABLE = new Set(["warm","core","legs","flex","tech"]);
 let lastPct = -1, dateSel = null;
 const curDate = () => dateSel || todayStr();
 
-function ring(pct){ const r=44, c=2*Math.PI*r; return `<svg viewBox="0 0 100 100" class="ring"><circle cx="50" cy="50" r="${r}" class="ring-bg"/><circle cx="50" cy="50" r="${r}" class="ring-fg" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-pct/100)}"/><text x="50" y="50" class="ring-txt">${pct}%</text></svg>`; }
+function ring(pct){ const r=44, c=2*Math.PI*r; return `<svg viewBox="0 0 100 100" class="ring"><circle cx="50" cy="50" r="${r}" class="ring-bg"/><circle cx="50" cy="50" r="${r}" class="ring-fg" transform="rotate(-90 50 50)" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-pct/100)}"/><text x="50" y="50" class="ring-txt">${pct}%</text></svg>`; }
 function renderPractice(){
   renderQuick(); renderWorkouts();
   const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=new Set(rec.done||[]); const plan=planFor(date);
