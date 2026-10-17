@@ -414,3 +414,9 @@ body.modal{overflow:hidden}
 @keyframes advent-pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 @keyframes advent-glow{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.advent-reveal.pop,.door.ready.today{animation:none}}
+/* Costume designer (js/costume.js) */
+.cos-top{display:flex;gap:12px;align-items:flex-start} .cos-preview{flex:none;width:118px;height:226px;border-radius:16px;background:linear-gradient(#EBDDFF,#FFD6E5);overflow:hidden} .cos-preview svg{width:100%;height:100%;display:block}
+.cos-side{flex:1 1 auto;min-width:0}
+.cos-saved{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;margin-top:4px}
+.cos-thumb{flex:none;width:64px;border:2px solid var(--line);border-radius:12px;background:var(--card);padding:2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;color:var(--ink);font:inherit} .cos-thumb svg{width:56px;height:107px;display:block} .cos-thumb small{font-size:.68rem;line-height:1.15;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700} .cos-thumb.on{border-color:var(--coral);box-shadow:0 0 0 2px var(--coral)} .cos-thumb.add{justify-content:center;font-size:1.6rem;min-height:111px;border-style:dashed}
+.cos-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px} .cos-sw{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);cursor:pointer;font-size:.75rem;padding:0} .cos-sw.on{border-color:var(--coral);box-shadow:0 0 0 2px var(--coral)} .cos-sw.locked{opacity:.55}
