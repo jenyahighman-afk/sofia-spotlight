@@ -9,7 +9,7 @@ import { installEnv, resetDom, el } from "./_env.mjs";
 installEnv();
 const read = (rel) => readFileSync(new URL("../" + rel, import.meta.url), "utf8");
 const html = read("index.html");
-const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind"];
+const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind","plan10"];
 
 let M = {};
 before(async () => {
@@ -46,7 +46,7 @@ test("the five kid tabs and every Grown-ups page exist; nothing text-heavy was d
   assert.ok(html.includes('id="showme"') && html.includes('id="player"'));
 });
 
-test("every screen initialises and renders with an empty family space (no throw, content produced)", () => {
+test("every screen initialises and renders with an empty family space (no throw, content produced)", async () => {
   resetDom(); for (const k of Object.keys(M.store.S)) M.store.S[k] = {};
   for (const init of inits()) init();
   for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
@@ -62,6 +62,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(html.includes('<details class="more plan-fold" id="planFold">') && html.indexOf('id="planFold"') < html.indexOf('id="practiceChecklist"'), "the exercise list sits inside a closed fold on Practice");
   assert.match(el("#planCount").textContent, /^\d+ of \d+ done$/, "the fold's summary counts today's exercises");
   assert.ok(html.includes('<body class="pg-home">'), "the body starts on Today");
+  { const { dayPlan, renderDayPlan } = await import("../js/dayplan.js"); assert.ok(dayPlan("2026-10-17"), "the dated plan loaded from data/plan10.json"); renderDayPlan("2026-10-22"); const dp = el("#dayPlan"); assert.equal(dp.hidden, false); assert.ok(dp.innerHTML.includes("dpTick('warm')") && dp.innerHTML.includes("if there's time") && dp.innerHTML.includes("memoFocus('trio')"), "Today's plan lists the day's boxes with ▶ links"); renderDayPlan("2027-05-01"); assert.equal(el("#dayPlan").hidden, true, "no entry → no card"); }
   M.nav.showPage("practice"); assert.equal(document.body.classList.contains("pg-home"), false, "off Today the banner shrinks");
   M.nav.showPage("home"); assert.equal(document.body.classList.contains("pg-home"), true);
   assert.ok(el("#whoRow").innerHTML.includes("whoPick('all')") && el("#whoRow").innerHTML.includes("💃 Sofia") && el("#meFriends").innerHTML.includes("Hannah") && el("#meFriends").innerHTML.includes("Lauren"), "the who's-dancing picker on Play and the friends card on Me");

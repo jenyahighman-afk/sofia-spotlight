@@ -7,7 +7,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 29;
+export const SCHEMA_VERSION = 30;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills"];
 
@@ -18,7 +18,7 @@ const V1_AERIAL_IDS = ["cartwheel-clean","one-hand-far","one-hand-near","dive-ca
 
 export const DEFAULT_PIN = "2027";
 // The daily habit "bites" a practice day can hold (js/habit.js) and the tired-day kinds. Frozen here for the migration.
-export const BITE_IDS = ["trick", "game", "move", "tired", "memo"]; const TIRED_KINDS = ["stretch", "picture"];
+export const BITE_IDS = ["trick", "game", "move", "tired", "memo", "plan"]; const TIRED_KINDS = ["stretch", "picture"];
 // Schema 25: the drill box (js/drills.js). settings.drills[id] = a saved public post, link only. Hosts frozen here for the migration.
 // Schema 27 moves the posts to their own collection (drills/{id}, one document each), so a post Jenya saves can't be
 // overwritten by the other phone's next whole-document settings write. normalizeDrill is shared by both steps.
@@ -206,7 +206,9 @@ export const MIGRATIONS = {
     if (col === "settings" && doc.workouts !== undefined) doc.workouts = normalizeWorkouts(doc.workouts);
     if (col === "practice" && doc.workouts !== undefined) doc.workouts = Array.isArray(doc.workouts) ? [...new Set(doc.workouts.filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 40)))].slice(0, 20) : [];
     return doc;
-  }
+  },
+  // 30 (1.20.0): Today's plan. practice.plan = [ticked item ids of the dated plan]; "plan" joins the bite kinds.
+  30: (col, id, doc) => { if (col === "practice" && doc.plan !== undefined) doc.plan = Array.isArray(doc.plan) ? [...new Set(doc.plan.filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 40)))].slice(0, 30) : []; return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
