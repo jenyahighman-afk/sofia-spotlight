@@ -22,14 +22,15 @@ export const nextMove = (days, pet = PET) => [...(pet.moves || [])].sort(byAt).f
 export const earnedOutfits = (days, pet = PET) => (pet.outfits || []).filter(o => !o.show && days >= o.at).sort(byAt);
 // What it wears: the show costume in show week, else the newest outfit it earned (leg warmers always stay on).
 export function outfitFor(days, showWeek, pet = PET){ if (showWeek) { const s = (pet.outfits || []).find(o => o.show); if (s) return s; } const e = earnedOutfits(days, pet); return e[e.length - 1] || null; }
-// Mood: "danced" once today counts; "nap" after a day with no practice (until today's first bite); otherwise "ready".
-export function petMood({ todayDone, yesterdayDone }){ return todayDone ? "danced" : yesterdayDone ? "ready" : "nap"; }
+// Mood: "danced" once today counts; "hello" for a brand-new pet (no practice day yet), so it never meets her asleep;
+// "nap" after a day with no practice (until today's first bite); otherwise "ready".
+export function petMood({ todayDone, yesterdayDone, days = 1 }){ return todayDone ? "danced" : !days ? "hello" : yesterdayDone ? "ready" : "nap"; }
 // The move it just learned today (the practice day that reached a move's `at`), else null.
 export function justLearned(days, todayDone, pet = PET){ if (!todayDone) return null; return (pet.moves || []).find(m => m.at > 0 && m.at === days) || null; }
 // The pet's line for a day: show-week lines take over unless it's napping; {move} and {who} are filled in.
-export function petLine(mood, { date = todayStr(), showWeek = false, move = "", who = "Sofia" } = {}, pet = PET){
-  const lines = pet.lines || {}; const set = showWeek && mood !== "nap" ? lines.show : lines[mood];
-  return String(pick(set, daySeed(date)) || "").replace(/\{move\}/g, move || "wiggle").replace(/\{who\}/g, who);
+export function petLine(mood, { date = todayStr(), showWeek = false, move = "", who = "Sofia", name = "" } = {}, pet = PET){
+  const lines = pet.lines || {}; const set = showWeek && mood === "ready" ? lines.show : lines[mood];
+  return String(pick(set, daySeed(date)) || "").replace(/\{move\}/g, move || "wiggle").replace(/\{who\}/g, who).replace(/\{name\}/g, name || pet.defaultName || "Bun-Bun");
 }
 export function furFor(id, pet = PET){ const fs = pet.furs || []; return fs.find(f => f.id === id) || fs[0] || { id: "cream", c: "#FFF3E6", in: "#FFD6E2" }; }
 export function petSettings(settings = S.settings, pet = PET){ const p = (settings || {}).pet || {}; const name = String(p.name || "").trim() || pet.defaultName || "Bun-Bun"; return { name: name.slice(0, NAME_MAX), fur: furFor(p.fur, pet).id }; }
@@ -69,14 +70,14 @@ const yesterday = (date) => { const d = new Date(date + "T00:00:00"); d.setDate(
 export function petState(date = todayStr()){
   const total = PRACTICE_ITEMS.length; const days = practicedDays(S.practice, total);
   const todayDone = dayCounts(S.practice[date], total), yesterdayDone = dayCounts(S.practice[yesterday(date)], total);
-  const showWeek = todayMode().mode === "comp"; const mood = petMood({ todayDone, yesterdayDone });
+  const showWeek = todayMode().mode === "comp"; const mood = petMood({ todayDone, yesterdayDone, days });
   const moves = learnedMoves(days); const move = moves[moves.length - 1] || null; const ps = petSettings();
   return { ...ps, days, todayDone, showWeek, mood, level: petLevel(days), moves, move, next: nextMove(days), outfit: outfitFor(days, showWeek), learned: justLearned(days, todayDone) };
 }
 let dancing = "";
 export function renderPet(){
   const el = $("#petCard"); if (!el) return; const p = petState(); const who = String((S.settings.avatar || {}).name || "").trim() || "Sofia";
-  const line = p.learned ? `I just learned the ${p.learned.n}! 🎉` : petLine(p.mood, { showWeek: p.showWeek, move: p.move ? p.move.n : "", who });
+  const line = p.learned ? `I just learned the ${p.learned.n}! 🎉` : petLine(p.mood, { showWeek: p.showWeek, move: p.move ? p.move.n : "", who, name: p.name });
   const nx = p.next ? `${p.next.at - p.days} more practice day${p.next.at - p.days === 1 ? "" : "s"} to learn the ${p.next.n}` : "It knows every move! 🌟";
   el.innerHTML = `<button class="pet-stage ${p.mood} ${dancing ? "move-" + dancing : ""}" onclick="petDance()" aria-label="Dance with ${esc(p.name)}">${petSVG({ fur: furFor(p.fur), outfit: p.outfit, nap: p.mood === "nap", scale: p.level.scale })}</button>
     <div class="pet-info grow"><div class="row"><b class="pet-name">${esc(p.name)}</b><span class="chip violet">${esc(p.level.n)}</span><span class="grow"></span><button class="lnk" onclick="openPet()" aria-label="Pet settings">✏️</button></div>
