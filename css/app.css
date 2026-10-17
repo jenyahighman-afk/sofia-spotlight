@@ -50,6 +50,7 @@ ul.clean{list-style:none;padding:0;margin:0} ul.clean li{padding:6px 0;border-bo
 .check input{width:22px;height:22px;accent-color:#FF5C93;margin-top:2px;flex:none}
 .check.done span{text-decoration:line-through;color:var(--ink-2)}
 .del{background:none;border:0;color:var(--ink-2);font-size:1.1rem;cursor:pointer;padding:0 4px}
+.update-bar{flex:none;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 14px;background:var(--blush);border-top:2px solid var(--line);font-weight:800;font-family:Fredoka} .update-bar .btn.sm{padding:6px 14px}
 nav.tabs{flex:none;background:var(--card);border-top:2px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
 nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.66rem;font-weight:800;color:var(--ink-2);padding:4px 5px 5px;border-radius:14px;min-width:52px;-webkit-tap-highlight-color:transparent}
 nav.tabs button span.ic{font-size:1.25rem}
