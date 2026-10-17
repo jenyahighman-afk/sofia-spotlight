@@ -14,6 +14,10 @@ export function normalizeWorkouts(list){
   }
   return out;
 }
+// One collection document (workouts/{id}): the same shape, cleaned; null when it isn't a usable link.
+export function normalizeWorkout(doc, id){ const w = normalizeWorkouts([{ ...(doc || {}), id: id || (doc && doc.id) }])[0]; return w || null; }
+// The family's list from the collection, oldest first, deleted ones left out.
+export function workoutList(col){ return Object.entries(col || {}).filter(([, w]) => w && !w.deleted).map(([id, w]) => normalizeWorkout(w, id)).filter(Boolean).sort((a, b) => String(a.at || "").localeCompare(String(b.at || ""))).slice(0, MAX); }
 export const doneToday = (rec, id) => Array.isArray(rec && rec.workouts) && rec.workouts.includes(id);
 // What logging a workout writes: the quick session of its kind (counts like a 5-minute button) and the workout id, once a day.
 export function logWorkout(rec, w){

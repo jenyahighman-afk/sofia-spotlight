@@ -1,15 +1,15 @@
 // In-memory state, schema versioning and migrations, and the read/write API the views use.
 // The cloud backend (sync.js) is plugged in with setBackend(); this file stays importable in Node for the tests.
-import { normalizeWorkouts } from "./workouts-core.js";
+import { normalizeWorkouts, normalizeWorkout } from "./workouts-core.js";
 import { DEFAULT_DANCES, DEFAULT_EVENTS } from "./data.js";
 import { daysUntil } from "./util.js";
 import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 30;
+export const SCHEMA_VERSION = 31;
 
-export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills"];
+export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills","workouts"];
 
 // Schema 1 stored practice.done and settings.aerial as positions in the built-in lists.
 // These are those lists' orders at schema 1, frozen here so the migration keeps working after data/*.json is edited.
@@ -208,7 +208,10 @@ export const MIGRATIONS = {
     return doc;
   },
   // 30 (1.20.0): Today's plan. practice.plan = [ticked item ids of the dated plan]; "plan" joins the bite kinds.
-  30: (col, id, doc) => { if (col === "practice" && doc.plan !== undefined) doc.plan = Array.isArray(doc.plan) ? [...new Set(doc.plan.filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 40)))].slice(0, 30) : []; return doc; }
+  30: (col, id, doc) => { if (col === "practice" && doc.plan !== undefined) doc.plan = Array.isArray(doc.plan) ? [...new Set(doc.plan.filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 40)))].slice(0, 30) : []; return doc; },
+  // 31 (1.21.0): workouts/{id} = one saved video each (the shape settings.workouts held), so a link Jenya adds can't be
+  // overwritten by Sofia's phone's next whole-document settings write. A document without a usable link is emptied.
+  31: (col, id, doc) => { if (col === "workouts") { const w = normalizeWorkout(doc, id); return w ? { ...w, _v: doc._v, _at: doc._at } : { _v: doc._v, _at: doc._at, deleted: true }; } return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
@@ -222,7 +225,7 @@ export function migrateDoc(col, id, doc){
 export function migrateCollection(col, docs){ const out = {}; for (const [id, doc] of Object.entries(docs || {})) out[id] = migrateDoc(col, id, doc); return out; }
 
 // ---------- STATE ----------
-export const S = { dances:{}, events:{}, notes:{}, todos:{}, packs:{}, practice:{}, photos:{}, files:{}, choreo:{}, settings:{}, corrections:{}, skills:{}, badges:{}, reports:{}, reviews:{}, goals:{}, drills:{} };
+export const S = { dances:{}, events:{}, notes:{}, todos:{}, packs:{}, practice:{}, photos:{}, files:{}, choreo:{}, settings:{}, corrections:{}, skills:{}, badges:{}, reports:{}, reviews:{}, goals:{}, drills:{}, workouts:{} };
 // Which collections the backend has delivered at least once, and whether that delivery was confirmed by the server (not just the local cache).
 export const received = { any: new Set(), server: new Set() };
 
@@ -275,6 +278,13 @@ export async function saveDrillsMove(){
   const held = S.settings.drills; if (!held || typeof held !== "object" || !settled("settings") || !settled("drills")) return 0;
   let n = 0; for (const [id, p] of Object.entries(held)) { if (S.drills[id]) continue; const post = normalizeDrill(p); if (!post) continue; await storeSet("drills", id, post); n++; }
   const rest = { ...S.settings }; delete rest.drills; await storeSet("settings", "main", rest); return n;
+}
+// The cloud half of schema 31: videos still held in settings.workouts (saved by 1.20) become workouts/{id} documents once
+// both are server-confirmed, only where the collection doesn't already have the id, and the field leaves settings.
+export async function saveWorkoutsMove(){
+  const held = S.settings.workouts; if (!Array.isArray(held) || !settled("settings") || !settled("workouts")) return 0;
+  let n = 0; for (const w of normalizeWorkouts(held)) { if (S.workouts[w.id]) continue; await storeSet("workouts", w.id, w); n++; }
+  const rest = { ...S.settings }; delete rest.workouts; await storeSet("settings", "main", rest); return n;
 }
 // Settings is one document; this merges a few keys into it.
 export function setSettings(patch){ return storeSet("settings", "main", { ...S.settings, ...patch }); }

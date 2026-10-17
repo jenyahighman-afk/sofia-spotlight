@@ -3,8 +3,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { installEnv } from "./_env.mjs";
 installEnv();
-const { normalizeWorkouts, logWorkout, doneToday, hostName, KINDS, MAX } = await import("../js/workouts-core.js");
-const { migrateDoc, SCHEMA_VERSION } = await import("../js/store.js");
+const { normalizeWorkouts, normalizeWorkout, workoutList, logWorkout, doneToday, hostName, KINDS, MAX } = await import("../js/workouts-core.js");
+const { migrateDoc, SCHEMA_VERSION, COLLECTIONS, receive, setBackend, S, saveWorkoutsMove } = await import("../js/store.js");
+const { workouts } = await import("../js/workouts.js");
+import { readFileSync } from "node:fs";
 
 test("normalize: http links only, short names, a known kind, unique ids, at most MAX", () => {
   const list = normalizeWorkouts([
@@ -38,4 +40,29 @@ test("schema 29 normalizes settings.workouts and practice.workouts, never invent
   const p = migrateDoc("practice", "2026-10-17", { _v: 28, workouts: ["a", "a", 3, " b "], quick: ["strength"] });
   assert.deepEqual(p.workouts, ["a", "b"]); assert.deepEqual(p.quick, ["strength"]);
   assert.deepEqual(migrateDoc("practice", "2026-10-17", { _v: 28, workouts: "x" }).workouts, []);
+});
+
+test("schema 31: a video is its own document; one without a link is emptied; the list comes from the collection", () => {
+  assert.ok(COLLECTIONS.includes("workouts")); assert.match(readFileSync(new URL("../firestore.rules", import.meta.url), "utf8"), /'workouts'\]/, "the rules know the collection (republish them)");
+  const d = migrateDoc("workouts", "a", { _v: 30, name: " Core ", url: "https://www.masterclass.com/x", kind: "flex", at: "2026-10-17T10:00:00Z" }); assert.equal(d._v, SCHEMA_VERSION); assert.equal(d.name, "Core"); assert.equal(d.id, "a"); assert.equal(d.kind, "flex");
+  const bad = migrateDoc("workouts", "b", { _v: 30, url: "nope" }); assert.equal(bad.deleted, true); assert.equal("url" in bad, false);
+  assert.deepEqual(workoutList({ b: bad, a: d, c: { url: "https://y.com", at: "2026-10-16T10:00:00Z" } }).map(w => w.id), ["c", "a"], "oldest first, emptied ones left out, the key is the id");
+  assert.equal(normalizeWorkout(null), null); assert.equal(normalizeWorkout({ url: "https://z.com" }, "zz").id, "zz");
+  assert.deepEqual(workouts({ workouts: { a: d }, settings: { workouts: [{ id: "a", url: "https://old.com" }, { id: "s", url: "https://still-in-settings.com", kind: "flex" }] } }).map(w => w.id + ":" + hostName(w.url)), ["a:Masterclass", "s:Still-in-settings"], "the collection wins; a settings-held one shows until it moves");
+});
+
+test("settings-held videos move once into the collection, then leave settings", async () => {
+  const writes = []; setBackend({ set: async (col, id, rec) => { writes.push({ col, id, rec }); }, del: async () => {} });
+  try {
+    for (const k of Object.keys(S)) S[k] = {};
+    receive("settings", { main: { _v: 30, pin: "2027", workouts: [{ id: "a", name: "Core", url: "https://www.masterclass.com/x", kind: "strength" }, { id: "x", url: "nope" }] } }, { fromCache: true });
+    assert.equal(await saveWorkoutsMove(), 0, "nothing moves until the server has confirmed both collections"); assert.equal(writes.length, 0);
+    receive("settings", { main: { _v: 30, pin: "2027", workouts: [{ id: "a", name: "Core", url: "https://www.masterclass.com/x", kind: "strength" }, { id: "x", url: "nope" }] } }, { fromCache: false });
+    receive("workouts", {}, { fromCache: false });
+    assert.equal(await saveWorkoutsMove(), 1); assert.equal(S.workouts.a.name, "Core"); assert.equal(S.workouts.a._v, SCHEMA_VERSION); assert.equal("workouts" in S.settings, false, "the field leaves settings"); assert.equal(S.settings.pin, "2027");
+    assert.deepEqual(writes.map(w => w.col + "/" + w.id), ["workouts/a", "settings/main"]);
+    assert.equal(await saveWorkoutsMove(), 0, "only once"); assert.equal(writes.length, 2);
+    receive("settings", { main: { _v: 30, workouts: [{ id: "a", url: "https://old.com" }] } }, { fromCache: false }); receive("workouts", { a: { _v: 31, name: "Already", url: "https://www.masterclass.com/x", kind: "flex" } }, { fromCache: false });
+    assert.equal(await saveWorkoutsMove(), 0, "a video the other phone already moved is not written again"); assert.equal(S.workouts.a.name, "Already"); assert.equal(writes.length, 3); assert.equal(writes[2].col, "settings");
+  } finally { setBackend(null); for (const k of Object.keys(S)) S[k] = {}; }
 });
