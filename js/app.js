@@ -1,7 +1,7 @@
 // Boot: load content, wire the views, connect to Firebase, gate on a family space, then stream everything live.
 import { $, toast } from "./util.js";
 import { loadData } from "./data.js";
-import { onChange, saveSoloFix, saveDrillsMove } from "./store.js";
+import { onChange, saveSoloFix, saveDrillsMove, saveWorkoutsMove } from "./store.js";
 import { initNav, setGuard } from "./nav.js";
 import { initFirebase, getFamilyId, joinFamily, isValidFamilyId, normalizeFamilyId, startWatching, friendlyError, sync } from "./sync.js";
 import { showGate } from "./family.js";
@@ -71,7 +71,7 @@ function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.class
     // Locked Grown-ups pages bounce to the PIN pad (which remembers where to go next).
     setGuard(p => { if (GROWNUP_PAGES.includes(p) && !isUnlocked()) { $("#pinTarget").value = p; $("#pinIn").value = ""; $("#pinMsg").textContent = ""; return "pin"; } return p; });
     let restored = false;
-    onChange(() => { renderAll(); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); saveDrillsMove().then(n => { if (n) toast("Your drill box moved to its own shelf ✓"); }).catch(console.warn); refreshSeedFiles().then(names => { if (names.length) toast("New version in My files: " + names.join(", "), 3500); }).catch(console.warn); checkBadges().catch(console.warn); });
+    onChange(() => { renderAll(); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); saveDrillsMove().then(n => { if (n) toast("Your drill box moved to its own shelf ✓"); }).catch(console.warn); saveWorkoutsMove().then(n => { if (n) toast("Your workouts moved to their own shelf ✓"); }).catch(console.warn); refreshSeedFiles().then(names => { if (names.length) toast("New version in My files: " + names.join(", "), 3500); }).catch(console.warn); checkBadges().catch(console.warn); });
     renderAll();
   } catch (e) { console.error(e); return fatal("The app couldn't load its content: " + (e.message || e)); }
 
