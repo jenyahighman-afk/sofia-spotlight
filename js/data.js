@@ -11,6 +11,7 @@ export let SKILLS={states:[],styles:{}};
 export let PRACTICE_POOL={slots:[],runs:[]}, EXERCISES={};
 export let DAILY={cheers:[],mind:[],fuel:[]}, MIND={lessons:[],ritual:[],compFuel:[]};
 export let PLAN10={days:{}}; export let WORKOUT_PRESETS={programs:[]};
+export let PET={levels:[],moves:[],outfits:[],furs:[],lines:{}};
 
 // A pose = every joint from BASE, overridden by the keyframe. Same helper the games always used.
 export const P=(o={})=>Object.assign({},BASE,o);
@@ -22,7 +23,7 @@ export function expandMoves(json){
   return json.moves.map(m=>({ ...m, k:m.k.map(kf=>{ const {arms:a,...rest}=kf; if(a&&!arms[a]) throw new Error(`Unknown arm preset "${a}" in move ${m.id}`); return Object.assign({},base,a?arms[a]:{},rest); }) }));
 }
 
-export const DATA_FILES=["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind","plan10","workout-presets"];
+export const DATA_FILES=["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind","plan10","workout-presets","pet"];
 
 export async function loadData(base="./data/"){
   const got={};
@@ -39,7 +40,7 @@ export function applyData(got){
   JE_FLAWS=got.oops.flaws; JE_MOVES=got.oops.moves;
   TF_FORMS=got.trio.forms; TF_PATS=got.trio.patterns; TF_MOVES=got.trio.moves; TF_DANCERS=got.trio.dancers;
   CD_SCENES=got.compday;
-  SPARKLE=got.sparkle; DAILY=got.daily||DAILY; MIND=got.mind||MIND; PLAN10=got.plan10||PLAN10; WORKOUT_PRESETS=got["workout-presets"]||WORKOUT_PRESETS;
+  SPARKLE=got.sparkle; DAILY=got.daily||DAILY; MIND=got.mind||MIND; PLAN10=got.plan10||PLAN10; WORKOUT_PRESETS=got["workout-presets"]||WORKOUT_PRESETS; PET=got.pet||PET;
   SKILLS=got.skills||{states:[],styles:{}};
   PRACTICE_POOL=got["practice-pool"]||{slots:[],runs:[]}; EXERCISES=got.exercises||{};
 }

@@ -7,7 +7,9 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 31;
+export const SCHEMA_VERSION = 32;
+// Schema 32: the dance pet's fur colours (data/pet.json), frozen here for the migration.
+export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills","workouts"];
 
@@ -211,7 +213,10 @@ export const MIGRATIONS = {
   30: (col, id, doc) => { if (col === "practice" && doc.plan !== undefined) doc.plan = Array.isArray(doc.plan) ? [...new Set(doc.plan.filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 40)))].slice(0, 30) : []; return doc; },
   // 31 (1.21.0): workouts/{id} = one saved video each (the shape settings.workouts held), so a link Jenya adds can't be
   // overwritten by Sofia's phone's next whole-document settings write. A document without a usable link is emptied.
-  31: (col, id, doc) => { if (col === "workouts") { const w = normalizeWorkout(doc, id); return w ? { ...w, _v: doc._v, _at: doc._at } : { _v: doc._v, _at: doc._at, deleted: true }; } return doc; }
+  31: (col, id, doc) => { if (col === "workouts") { const w = normalizeWorkout(doc, id); return w ? { ...w, _v: doc._v, _at: doc._at } : { _v: doc._v, _at: doc._at, deleted: true }; } return doc; },
+  // 32 (dance pet, js/pet.js): settings.pet = { name (≤ 16 chars), fur (one of PET_FURS) }. Normalized when present; growth is
+  // read from the practice records, so nothing else is stored.
+  32: (col, id, doc) => { if (col === "settings" && doc.pet !== undefined) { const p = doc.pet && typeof doc.pet === "object" ? doc.pet : {}; const out = {}; const n = String(p.name == null ? "" : p.name).trim().slice(0, 16); if (n) out.name = n; if (PET_FURS.includes(p.fur)) out.fur = p.fur; doc.pet = out; } return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

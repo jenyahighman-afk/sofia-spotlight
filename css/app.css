@@ -361,3 +361,39 @@ body.modal{overflow:hidden}
 .drill-big{display:grid;place-items:center;gap:4px;padding:26px 10px;border-radius:14px;background:linear-gradient(135deg,#FFC2D6,#D9B3FF);color:#4A2340;text-decoration:none;font-family:Fredoka} .drill-big span{font-size:2.2rem}
 .drill-ask{border-bottom:0;margin-top:6px} .drill-for{flex:1 1 160px;min-width:0} #drillTitle a{color:var(--ink);text-decoration:none}
 .drill-card.book .drill-dd{font-size:1rem}
+
+/* Dance pet (js/pet.js): the bunny on Today, its moves (CSS animations) and its sheet */
+.pet-card{display:flex;gap:10px;align-items:center;padding:10px 12px}
+.pet-stage{flex:none;width:96px;height:112px;border:0;background:none;padding:0;cursor:pointer}
+.pet-svg{width:100%;height:100%;display:block;overflow:visible}
+.pet-info{min-width:0;display:grid;gap:4px} .pet-name{font-family:Fredoka;font-size:1.15rem}
+.pet-bubble{background:var(--card);border:2px solid var(--line);border-radius:14px 14px 14px 4px;padding:6px 10px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.pet-sheet-top{width:140px;height:160px;margin:0 auto 6px} .pet-list{display:flex;flex-wrap:wrap;gap:6px} .pet-sheet-top+.row input{width:100%}
+.pet-fur{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer} .pet-fur.on{border-color:var(--coral);box-shadow:0 0 0 2px var(--coral)}
+.pet-stage .pet-svg{animation:pet-breathe 3.2s ease-in-out infinite}
+.pet-stage.nap .pet-svg{animation:pet-breathe 5s ease-in-out infinite}
+.pet-z{animation:pet-z 2.4s ease-in-out infinite} .pet-z.z2{animation-delay:.8s}
+.move-wiggle .pet-svg{animation:pet-wiggle .4s ease-in-out 4}
+.move-hop .pet-svg{animation:pet-hop .4s ease-out 4}
+.move-sway .pet-svg{animation:pet-sway .8s ease-in-out 2}
+.move-spin .pet-svg,.move-twirl .pet-svg,.move-pirouette .pet-svg{animation:pet-spin .8s ease-in-out 2}
+.move-twirl .pet-svg{animation-duration:.55s;animation-iteration-count:3}
+.move-pirouette .pet-svg{animation-duration:.45s;animation-iteration-count:3}
+.move-jump .pet-svg,.move-leap .pet-svg{animation:pet-jump .55s ease-out 3}
+.move-leap .pet-svg{animation-name:pet-leap}
+.move-kick .pet-svg{animation:pet-kick .5s ease-in-out 3}
+.move-moon .pet-svg{animation:pet-moon 1.5s linear 1}
+.move-finale .pet-svg{animation:pet-spin .5s ease-in-out 2,pet-jump .5s ease-out 1s 1}
+.move-stretch .pet-svg{animation:pet-stretch 1.4s ease-in-out 1}
+@keyframes pet-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025,.985)}}
+@keyframes pet-wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+@keyframes pet-hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-16px)}}
+@keyframes pet-sway{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-8px) rotate(-6deg)}75%{transform:translateX(8px) rotate(6deg)}}
+@keyframes pet-spin{to{transform:rotateY(360deg)}}
+@keyframes pet-jump{0%,100%{transform:translateY(0) scale(1)}15%{transform:translateY(0) scale(1.08,.9)}50%{transform:translateY(-22px) scale(.95,1.06)}}
+@keyframes pet-leap{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(10px,-24px) rotate(10deg)}}
+@keyframes pet-kick{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg) translateY(-6px)}}
+@keyframes pet-moon{0%{transform:translateX(0)}50%{transform:translateX(-14px)}100%{transform:translateX(0)}}
+@keyframes pet-stretch{0%,100%{transform:scale(1)}40%{transform:scale(.94,1.1)}}
+@keyframes pet-z{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.pet-stage .pet-svg,.pet-z,[class*="move-"] .pet-svg{animation:none!important}}
