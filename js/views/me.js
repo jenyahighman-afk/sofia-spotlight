@@ -15,6 +15,8 @@ import { totalStars, nextUnlock, unlockedList } from "../stars.js";
 import { momentCount } from "../moments.js";
 import { renderReminder } from "../remind.js";
 import { renderFriends } from "../who.js";
+import { renderCardsCard } from "../cards.js";
+import { renderCostumeCard } from "../costume.js";
 import { renderGlowCard } from "../glow.js";
 
 let styleOpen = null;
@@ -24,7 +26,7 @@ function renderMe(){
   avRender(); renderGoalsCard(); renderPaletteRow(); applyPalette(); renderRitualCard();
   const today = todayStr(); const streak = computeStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today });
   const best = bestStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today });
-  renderReminder(); renderFriends(); renderGlowCard();
+  renderReminder(); renderFriends(); renderCardsCard(); renderCostumeCard(); renderGlowCard();
   $("#meMoments").innerHTML = `<div class="row"><h3 class="grow">📸 Moments</h3><span class="chip violet">${momentCount()} kept</span></div><p class="small muted">Turn a photo into a card with a sticker, your streak and your avatar. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
   const nu = nextUnlock(); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;
   $("#meStreak").innerHTML = `<div class="stat"><b>${streak}</b><span>day streak 🔥</span></div><div class="stat"><b>${best}</b><span>best streak</span></div><div class="stat"><b>${practicedDays(S.practice, PRACTICE_ITEMS.length)}</b><span>practice days</span></div><div class="stat"><b>${closedCount(S.corrections)}</b><span>fixes closed ✅</span></div>`;
