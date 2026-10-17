@@ -1,0 +1,13 @@
+{
+ "_note": "Suggested programs for My workouts (js/workouts.js): one tap adds a program to the family's list. Dance Masterclass has no per-program links (the address stays on the library), so url is the library and Sofia taps the program there; n = workouts in the program (the app counts her through them and loops), mins = minutes per workout. kind: strength | flex.",
+ "programs": [
+  { "name": "Core Control for Pirouettes (Beginners)", "url": "https://www.dance-masterclass.com/library?q=section-workouts", "kind": "strength", "n": 5, "mins": 10, "note": "Start here. Five 10-minute workouts, any order, five a week." },
+  { "name": "Pilates Principles", "url": "https://www.dance-masterclass.com/library?q=section-workouts", "kind": "strength", "n": 10, "mins": 10, "note": "The form lesson. Ten 10-minute sessions." },
+  { "name": "Abs & Core Power", "url": "https://www.dance-masterclass.com/library?q=section-workouts", "kind": "strength", "n": 9, "mins": 10, "note": "Core strength once she knows the form." },
+  { "name": "Pain-Free Knees", "url": "https://www.dance-masterclass.com/library?q=section-workouts", "kind": "strength", "n": 7, "mins": 20, "note": "Ms. Brittany's homework: knees over the toes. Home days." },
+  { "name": "Front Split Training (Beginners)", "url": "https://www.dance-masterclass.com/library?q=section-workouts", "kind": "flex", "n": 12, "mins": 10, "note": "After a warm-up. One split program at a time." },
+  { "name": "Middle Split Training (Beginners)", "url": "https://www.dance-masterclass.com/library?q=section-workouts", "kind": "flex", "n": 12, "mins": 10, "note": "After the front split program." },
+  { "name": "Hips & Hamstrings Release", "url": "https://www.dance-masterclass.com/library?q=section-workouts", "kind": "flex", "n": 6, "mins": 20, "note": "For the side-sit leg reach and the attitude line. After a warm-up." },
+  { "name": "Evening Recovery & Stretch", "url": "https://www.dance-masterclass.com/library?q=section-workouts", "kind": "flex", "n": 6, "mins": 20, "note": "Bedtime or a tired day." }
+ ]
+}
