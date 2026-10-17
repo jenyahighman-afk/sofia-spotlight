@@ -415,6 +415,53 @@ body.modal{overflow:hidden}
 @keyframes advent-glow{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.advent-reveal.pop,.door.ready.today{animation:none}}
 
+/* Dance Dares (js/dares.js): today's dare on Today, "I did it" and one reroll; calm when done */
+.dare-card{padding:10px 12px;border-color:var(--violet)} .dare-card.done{border-color:var(--line);opacity:.9}
+.dare-head{flex-wrap:nowrap;align-items:flex-start} .dare-head .grow{min-width:0} .dare-ic{font-size:1.8rem;line-height:1} .dare-text{font-family:Fredoka;font-size:1.05rem;line-height:1.3;margin-top:2px}
+.dare-card.done .dare-text{color:var(--ink-2)} .dare-btns{margin-top:8px;flex-wrap:wrap;gap:6px} .dare-count{margin-top:6px}
+/* Trick cards (js/cards.js): the binder grid, earned / shiny / locked cards and the big view */
+.tc-group{margin:14px 0 6px;display:flex;align-items:center;gap:6px;border-left:5px solid var(--c);padding-left:8px}
+.tc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tcard{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;min-height:150px;padding:5px 5px 6px;border-radius:12px;border:3px solid var(--c);background:linear-gradient(180deg,var(--c) 0 22%,#FFF8FB 22% 100%);color:#4A2340;font:inherit;text-align:center;cursor:pointer;box-shadow:0 3px 0 rgba(74,35,64,.15)}
+.tc-top{display:flex;justify-content:space-between;width:100%;gap:2px;font-size:.62rem;font-weight:800;color:#fff;line-height:1.2}
+.tc-style{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-ic{flex:1;display:flex;align-items:center;justify-content:center;font-size:2rem;line-height:1}
+.tc-photo{flex:1;min-height:0;width:100%;object-fit:cover;border-radius:8px}
+.tc-name{font-family:Fredoka;font-size:.78rem;line-height:1.15;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tc-foot{font-size:.6rem;font-weight:800;opacity:.75}
+.tc-extra{display:flex;gap:6px;justify-content:center;font-size:.62rem;font-weight:800}
+.tcard.tc-locked{border-style:dashed;border-color:#CBB8C4;background:#F3ECF0;box-shadow:none;color:#9A8592}
+.tcard.tc-locked .tc-top{color:#9A8592} .tcard.tc-locked .tc-ic{font-family:Fredoka;font-size:1.8rem;color:#CBB8C4}
+.tcard.tc-shiny{background:linear-gradient(180deg,var(--c) 0 22%,transparent 22%),linear-gradient(135deg,#FFE3EE,#FFF6D8 30%,#DFF3FF 55%,#EBDDFF 80%,#FFE3EE)}
+.tcard.tc-shiny::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.8) 48%,rgba(255,255,255,0) 60%);background-size:260% 100%;background-position:100% 0;animation:tc-shine 3.2s ease-in-out infinite}
+.tcard.tc-shiny .tc-foot{opacity:1;color:#B07A12} .tcard>*{position:relative;z-index:1}
+@keyframes tc-shine{0%{background-position:100% 0}60%,100%{background-position:-60% 0}}
+.tc-bigwrap{display:flex;justify-content:center;margin:8px 0}
+.tcard.big{width:min(260px,72vw);min-height:350px;cursor:default;padding:10px 10px 12px;gap:6px;border-width:4px;border-radius:18px}
+.tcard.big .tc-top{font-size:.8rem} .tcard.big .tc-ic{font-size:4.5rem} .tcard.big .tc-name{font-size:1.25rem;-webkit-line-clamp:4} .tcard.big .tc-foot,.tcard.big .tc-extra{font-size:.8rem}
+@media (prefers-reduced-motion:reduce){.tcard.tc-shiny::after{animation:none;background-position:40% 0}}
+/* Costume designer (js/costume.js) */
+.cos-top{display:flex;gap:12px;align-items:flex-start} .cos-preview{flex:none;width:118px;height:226px;border-radius:16px;background:linear-gradient(#EBDDFF,#FFD6E5);overflow:hidden} .cos-preview svg{width:100%;height:100%;display:block}
+.cos-side{flex:1 1 auto;min-width:0}
+.cos-saved{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;margin-top:4px}
+.cos-thumb{flex:none;width:64px;border:2px solid var(--line);border-radius:12px;background:var(--card);padding:2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;color:var(--ink);font:inherit} .cos-thumb svg{width:56px;height:107px;display:block} .cos-thumb small{font-size:.68rem;line-height:1.15;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700} .cos-thumb.on{border-color:var(--coral);box-shadow:0 0 0 2px var(--coral)} .cos-thumb.add{justify-content:center;font-size:1.6rem;min-height:111px;border-style:dashed}
+.cos-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px} .cos-sw{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);cursor:pointer;font-size:.75rem;padding:0} .cos-sw.on{border-color:var(--coral);box-shadow:0 0 0 2px var(--coral)} .cos-sw.locked{opacity:.55}
+/* Glow-Up Flipbook (js/glow.js): the Today nudge, the Me card, the flipbook stage and first vs now */
+.glow-nudge{margin:0 0 10px;border-color:var(--violet)}
+.glow-picks{display:grid;grid-template-columns:1fr;gap:6px;margin:6px 0}
+.glow-pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:8px 10px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.glow-pick small{color:var(--ink-2);font-size:.8rem;line-height:1.3} .glow-pick.on{border-color:var(--coral)}
+.glow-me{align-items:flex-start;gap:10px;flex-wrap:nowrap} .glow-pose{flex:none;width:64px;height:78px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.55);border-radius:14px}
+.glow-av{width:64px;height:78px} .glow-pose-ic{font-size:2rem}
+.glow-book{position:relative;width:100%;max-width:420px;margin:0 auto 10px;aspect-ratio:3/4;border-radius:18px;overflow:hidden;background:var(--blush)}
+.glow-page{position:absolute;inset:0;margin:0;opacity:0;transition:opacity .15s} .glow-page.on{opacity:1}
+.glow-page img{width:100%;height:100%;object-fit:cover;display:block}
+.glow-month{position:absolute;left:10px;bottom:10px;padding:4px 12px;border-radius:999px;background:rgba(74,35,64,.78);color:#fff;font-family:Fredoka;font-size:1.1rem}
+.glow-ctl{gap:8px;align-items:center;margin-bottom:8px} .glow-ctl input[type=range]{min-width:0;accent-color:#FF5C93}
+.glow-vs{display:grid;grid-template-columns:1fr 1fr;gap:6px} .glow-vs figure{margin:0;border-radius:14px;overflow:hidden;background:var(--blush)}
+.glow-vs img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block} .glow-vs figcaption{text-align:center;font-weight:800;font-size:.85rem;padding:4px}
+.glow-grown{text-align:center;font-family:Fredoka;font-size:1.15rem;margin:8px 0}
+@media (prefers-reduced-motion:reduce){.glow-page{transition:none}}
 /* Teach It (js/games/teach.js) */
 .teach-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .teach-slot{display:flex;flex-direction:column;align-items:center;gap:0;padding:6px 2px;border-radius:12px;border:2px dashed var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer;min-width:0}
