@@ -1,46 +1,192 @@
 {
  "defaultName": "Bun-Bun",
  "furs": [
-  { "id": "cream", "n": "Cream", "c": "#FFF3E6", "in": "#FFD6E2" },
-  { "id": "pink", "n": "Pink", "c": "#FFD1E1", "in": "#FF9EC0" },
-  { "id": "lilac", "n": "Lilac", "c": "#E6D6FF", "in": "#C9A7F5" },
-  { "id": "grey", "n": "Cloud", "c": "#E9E7EE", "in": "#FFC2D6" },
-  { "id": "brown", "n": "Cocoa", "c": "#D9B79A", "in": "#F7A8C6" }
+  {
+   "id": "cream",
+   "n": "Cream",
+   "c": "#FFF3E6",
+   "in": "#FFD6E2"
+  },
+  {
+   "id": "pink",
+   "n": "Pink",
+   "c": "#FFD1E1",
+   "in": "#FF9EC0"
+  },
+  {
+   "id": "lilac",
+   "n": "Lilac",
+   "c": "#E6D6FF",
+   "in": "#C9A7F5"
+  },
+  {
+   "id": "grey",
+   "n": "Cloud",
+   "c": "#E9E7EE",
+   "in": "#FFC2D6"
+  },
+  {
+   "id": "brown",
+   "n": "Cocoa",
+   "c": "#D9B79A",
+   "in": "#F7A8C6"
+  }
  ],
  "levels": [
-  { "at": 0, "n": "Tiny", "scale": 0.82 },
-  { "at": 3, "n": "Little", "scale": 0.88 },
-  { "at": 7, "n": "Junior", "scale": 0.94 },
-  { "at": 14, "n": "Star", "scale": 1.0 },
-  { "at": 30, "n": "Super Star", "scale": 1.06 },
-  { "at": 60, "n": "Legend", "scale": 1.12 }
+  {
+   "at": 0,
+   "n": "Tiny",
+   "scale": 0.82
+  },
+  {
+   "at": 3,
+   "n": "Little",
+   "scale": 0.88
+  },
+  {
+   "at": 7,
+   "n": "Junior",
+   "scale": 0.94
+  },
+  {
+   "at": 14,
+   "n": "Star",
+   "scale": 1.0
+  },
+  {
+   "at": 30,
+   "n": "Super Star",
+   "scale": 1.06
+  },
+  {
+   "at": 60,
+   "n": "Legend",
+   "scale": 1.12
+  }
  ],
  "moves": [
-  { "id": "wiggle", "n": "Wiggle", "at": 0 },
-  { "id": "hop", "n": "Bunny hop", "at": 2 },
-  { "id": "sway", "n": "Sway", "at": 4 },
-  { "id": "spin", "n": "Spin", "at": 6 },
-  { "id": "jump", "n": "Star jump", "at": 9 },
-  { "id": "twirl", "n": "Double twirl", "at": 12 },
-  { "id": "kick", "n": "High kick", "at": 16 },
-  { "id": "leap", "n": "Big leap", "at": 20 },
-  { "id": "moon", "n": "Moonwalk", "at": 25 },
-  { "id": "pirouette", "n": "Triple pirouette", "at": 32 },
-  { "id": "finale", "n": "Grand finale", "at": 45 }
+  {
+   "id": "wiggle",
+   "n": "Wiggle",
+   "at": 0
+  },
+  {
+   "id": "hop",
+   "n": "Bunny hop",
+   "at": 2
+  },
+  {
+   "id": "sway",
+   "n": "Sway",
+   "at": 4
+  },
+  {
+   "id": "spin",
+   "n": "Spin",
+   "at": 6
+  },
+  {
+   "id": "jump",
+   "n": "Star jump",
+   "at": 9
+  },
+  {
+   "id": "twirl",
+   "n": "Double twirl",
+   "at": 12
+  },
+  {
+   "id": "kick",
+   "n": "High kick",
+   "at": 16
+  },
+  {
+   "id": "leap",
+   "n": "Big leap",
+   "at": 20
+  },
+  {
+   "id": "moon",
+   "n": "Moonwalk",
+   "at": 25
+  },
+  {
+   "id": "pirouette",
+   "n": "Triple pirouette",
+   "at": 32
+  },
+  {
+   "id": "finale",
+   "n": "Grand finale",
+   "at": 45
+  }
  ],
  "outfits": [
-  { "id": "warmers", "n": "Leg warmers", "at": 0 },
-  { "id": "bow", "n": "Hair bow", "at": 5 },
-  { "id": "tutu", "n": "Tutu", "at": 10 },
-  { "id": "star", "n": "Star headband", "at": 18 },
-  { "id": "jacket", "n": "Team jacket", "at": 28 },
-  { "id": "crown", "n": "Sparkle crown", "at": 40 },
-  { "id": "show", "n": "Show costume", "show": true }
+  {
+   "id": "warmers",
+   "n": "Leg warmers",
+   "at": 0
+  },
+  {
+   "id": "bow",
+   "n": "Hair bow",
+   "at": 5
+  },
+  {
+   "id": "tutu",
+   "n": "Tutu",
+   "at": 10
+  },
+  {
+   "id": "star",
+   "n": "Star headband",
+   "at": 18
+  },
+  {
+   "id": "jacket",
+   "n": "Team jacket",
+   "at": 28
+  },
+  {
+   "id": "crown",
+   "n": "Sparkle crown",
+   "at": 40
+  },
+  {
+   "id": "show",
+   "n": "Show costume",
+   "show": true
+  }
  ],
  "lines": {
-  "ready": ["Wanna dance? Pick one below 👇", "I've been practicing my {move}! Your turn?", "Ready when you are! 💃", "One bite and I'll show you a move!", "Let's dance today, {who}!"],
-  "danced": ["We did it! Look at my {move}! ✨", "Best. Dance. Day. 🎉", "You danced, so I danced! 💖", "My {move} is getting so good!", "High five, {who}! 🖐️"],
-  "nap": ["Zzz… one bite wakes me up 😴", "Napping… dance with me later?", "Cozy nap time. I'll be ready when you are 💤"],
-  "show": ["Show week! I'm wearing my costume 🌟", "Breathe, smile, shine. You've got this 💖", "Costume on. Let's go! ✨"]
+  "ready": [
+   "Wanna dance? Pick one below 👇",
+   "I've been practicing my {move}! Your turn?",
+   "Ready when you are! 💃",
+   "One bite and I'll show you a move!",
+   "Let's dance today, {who}!"
+  ],
+  "danced": [
+   "We did it! Look at my {move}! ✨",
+   "Best. Dance. Day. 🎉",
+   "You danced, so I danced! 💖",
+   "My {move} is getting so good!",
+   "High five, {who}! 🖐️"
+  ],
+  "nap": [
+   "Zzz… one bite wakes me up 😴",
+   "Napping… dance with me later?",
+   "Cozy nap time. I'll be ready when you are 💤"
+  ],
+  "show": [
+   "Show week! I'm wearing my costume 🌟",
+   "Breathe, smile, shine. You've got this 💖",
+   "Costume on. Let's go! ✨"
+  ],
+  "hello": [
+   "Hi! I'm {name}! Dance with me and I'll grow 🌱",
+   "Hi {who}! I'm new here. Practice with me? 💖",
+   "Hello! One bite and I'll learn my first move!"
+  ]
  }
 }
