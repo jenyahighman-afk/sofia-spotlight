@@ -3,6 +3,7 @@ import { $, esc, fmt, todayStr, daysUntil, expose, toast } from "../util.js";
 import { CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "../data.js";
 import { S, events, nextEvent, storeSet, dances } from "../store.js";
 import { todayPick, chunkLabel, shortName } from "../memo.js";
+import { renderDayPlan } from "../dayplan.js";
 import { computeStreak, dayCounts, skipsLeft } from "../streak.js";
 import { cardsFor, moveOfDay, TIRED } from "../habit.js";
 import { openPracticeMode } from "../pmode.js";
@@ -35,7 +36,7 @@ function renderHome(){
     <div class="tired">${tired?`<span>😴 Rest counted. Streak safe ✓</span>`:`<span>😴 Tired today? That's allowed.</span><div class="row"><button class="btn sm ghost" onclick="habitTired('stretch')">🧘 2-min stretch</button><button class="btn sm ghost" onclick="habitTired('picture')">🎧 Picture the dance</button></div>`}</div>
     ${(()=>{ const n=todayNudge(); return n?`<div class="nudge"><span class="grow">${n.emoji} <b>${esc(n.text)}</b> Make it a moment?</span><button class="btn sm coral" onclick="openMoments('${n.key}')">📸 Yes</button><button class="lnk" onclick="mmLater().then(()=>this.closest('.nudge').remove())">later</button></div>`:""; })()}
     <div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="showPage('practice')">${fullDone?"✅ Full practice done":(hp?"▶ Full practice":"Practice list")}</button><button class="btn sm ghost" onclick="showPage('play')">🎮 All games</button><button class="btn sm ghost" onclick="openMoments()">📸 Moment</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
-  renderComp(); renderBites(); renderMindCard(); applyPalette();
+  renderDayPlan(); renderComp(); renderBites(); renderMindCard(); applyPalette();
   if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(ne.name)}</span>`; }
   // this week's fix
   const fix=currentWeekFix(today); const open=Object.values(S.corrections).some(c=>!c.deleted&&c.status!=="done");
