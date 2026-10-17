@@ -1,12 +1,13 @@
 // In-memory state, schema versioning and migrations, and the read/write API the views use.
 // The cloud backend (sync.js) is plugged in with setBackend(); this file stays importable in Node for the tests.
+import { normalizeWorkouts } from "./workouts-core.js";
 import { DEFAULT_DANCES, DEFAULT_EVENTS } from "./data.js";
 import { daysUntil } from "./util.js";
 import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 28;
+export const SCHEMA_VERSION = 29;
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills"];
 
@@ -197,6 +198,13 @@ export const MIGRATIONS = {
     const strs = (a, max) => Array.isArray(a) ? [...new Set(a.filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 60)))].slice(0, max) : [];
     if (col === "settings" && doc.memo !== undefined) { const out = {}; for (const [k, v] of Object.entries(doc.memo && typeof doc.memo === "object" ? doc.memo : {})) { if (!v || typeof v !== "object") continue; const tested = {}; for (const [n, days] of Object.entries(v.tested && typeof v.tested === "object" ? v.tested : {})) { const ds = strs(days, 10).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x)).sort(); if (ds.length) tested[n.slice(0, 60)] = ds; } out[k] = { known: strs(v.known, 20), tested }; } doc.memo = out; }
     if (col === "practice" && doc.memo !== undefined) { const out = {}; for (const [k, v] of Object.entries(doc.memo && typeof doc.memo === "object" ? doc.memo : {})) { const st = strs(v, 8).filter(x => ["story", "mark", "count", "test", "picture"].includes(x)); if (st.length) out[k] = st; } doc.memo = out; }
+    return doc;
+  },
+  // 29 (1.20.0): My workouts. settings.workouts = [{ id, name, url, kind, at }] (links to core / flexibility videos);
+  // practice.workouts = [ids logged that day]. Normalized when present.
+  29: (col, id, doc) => {
+    if (col === "settings" && doc.workouts !== undefined) doc.workouts = normalizeWorkouts(doc.workouts);
+    if (col === "practice" && doc.workouts !== undefined) doc.workouts = Array.isArray(doc.workouts) ? [...new Set(doc.workouts.filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 40)))].slice(0, 20) : [];
     return doc;
   }
 };

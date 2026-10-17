@@ -151,6 +151,7 @@ body.gated{overflow:hidden}
 /* Memorize it (js/memo.js): the fold under a dance's cover actions */
 details.memo{margin-top:6px;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.5)} details.memo>summary{display:flex;align-items:center;gap:8px;font-family:Fredoka;font-size:1rem;color:var(--ink)} details.memo>summary .chip{margin-left:auto}
 .memo-chips{gap:6px;margin:6px 0 8px;flex-wrap:wrap} .memo-chips .chip{cursor:pointer;border:0;font:inherit;font-weight:700;font-size:.78rem}
+.wo-row{margin-top:10px} .wo-head{align-items:center;gap:10px} .wo-list{display:flex;flex-direction:column;gap:6px} .wo{display:flex;align-items:center;gap:8px;padding:8px 10px;border:2px solid var(--line);border-radius:14px;background:var(--card)} .wo.done{background:var(--blush)} .wo-open{display:flex;align-items:center;gap:8px;flex:1 1 auto;min-width:0;color:var(--ink);text-decoration:none} .wo-ic{font-size:1.3rem;flex:none} .wo b{font-family:Fredoka}
 .memo-today{font-size:.92rem;margin:4px 0 8px;line-height:1.3} .memo-cp{margin:2px 0 6px;font-weight:700} .memo-vids{gap:6px;flex-wrap:wrap;margin:0 0 8px;align-items:center} .memo-vids .chip{text-decoration:none}
 .memo-step{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-top:1px dashed var(--line)} .memo-step.done{opacity:.65} .memo-ic{font-size:1.25rem;line-height:1.2;flex:none;width:26px;text-align:center} .memo-step b{font-family:Fredoka;font-size:.98rem}
 .memo-act{gap:6px;flex-wrap:wrap;margin-top:6px} .memo-act .btn.sm{padding:7px 11px;font-size:.82rem} .memo-rule{margin:8px 0 2px}
