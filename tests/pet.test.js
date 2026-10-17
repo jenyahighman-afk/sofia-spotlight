@@ -19,7 +19,7 @@ test("pet content: levels, moves and outfits start at day 0 and climb; every fur
   for (const k of ["levels", "moves"]) { const ats = pet[k].map(x => x.at); assert.equal(ats[0], 0, k + " start at 0"); assert.deepEqual(ats, [...ats].sort((a, b) => a - b), k + " in order"); assert.equal(new Set(pet[k].map(x => x.n)).size, pet[k].length, k + " names unique"); }
   assert.ok(pet.outfits.some(o => o.show), "there is a show costume"); assert.equal(pet.outfits.find(o => !o.show).at, 0, "leg warmers from day 0");
   assert.deepEqual(pet.furs.map(f => f.id), PET_FURS, "the migration's fur list matches data/pet.json");
-  for (const k of ["ready", "danced", "nap", "show"]) assert.ok(pet.lines[k].length >= 3, k + " lines"); assert.ok(pet.lines.nap.every(l => !/sad|miss|lonely|cry|disappoint/i.test(l)), "napping is never guilt");
+  for (const k of ["hello", "ready", "danced", "nap", "show"]) assert.ok(pet.lines[k].length >= 3, k + " lines"); assert.ok(pet.lines.nap.every(l => !/sad|miss|lonely|cry|disappoint/i.test(l)), "napping is never guilt");
   for (const m of pet.moves) assert.match(src("css/app.css"), new RegExp("\\.move-" + m.id + "\\b"), "a CSS dance for " + m.id);
 });
 
@@ -32,10 +32,10 @@ test("growth: level by practice days, a new move every few days, newest outfit w
 });
 
 test("mood: danced once today counts, ready after a practice yesterday, a cosy nap after a day off; lines fill in the move and her name", () => {
-  assert.equal(petMood({ todayDone: true, yesterdayDone: false }), "danced"); assert.equal(petMood({ todayDone: false, yesterdayDone: true }), "ready"); assert.equal(petMood({ todayDone: false, yesterdayDone: false }), "nap");
+  assert.equal(petMood({ todayDone: true, yesterdayDone: false }), "danced"); assert.equal(petMood({ todayDone: false, yesterdayDone: false, days: 0 }), "hello", "a brand-new pet never meets her asleep"); assert.equal(petMood({ todayDone: false, yesterdayDone: true }), "ready"); assert.equal(petMood({ todayDone: false, yesterdayDone: false }), "nap");
   const l = petLine("danced", { date: "2026-10-18", move: "Spin", who: "Sofia" }); assert.ok(pet.lines.danced.map(x => x.replace("{move}", "Spin").replace("{who}", "Sofia")).includes(l), l); assert.ok(!/\{/.test(l));
   assert.equal(petLine("ready", { date: "2026-10-18" }), petLine("ready", { date: "2026-10-18" }), "same line all day"); assert.notEqual(petLine("ready", { date: "2026-10-18" }), petLine("ready", { date: "2026-10-19" }), "a new line tomorrow");
-  assert.ok(pet.lines.show.includes(petLine("ready", { date: "2026-10-18", showWeek: true })), "show week lines"); assert.ok(pet.lines.nap.includes(petLine("nap", { date: "2026-10-18", showWeek: true })), "napping stays a nap in show week");
+  assert.ok(pet.lines.show.includes(petLine("ready", { date: "2026-10-18", showWeek: true })), "show week lines"); assert.ok(pet.lines.danced.map(x => x.replace("{move}", "wiggle").replace("{who}", "Sofia")).includes(petLine("danced", { date: "2026-10-18", showWeek: true })), "after dancing in show week it still celebrates"); assert.match(petLine("hello", { date: "2026-10-18", name: "Coco" }), /^(?!.*\{)/, "no placeholders left"); assert.ok(pet.lines.nap.includes(petLine("nap", { date: "2026-10-18", showWeek: true })), "napping stays a nap in show week");
 });
 
 test("settings and schema 32: name and fur normalized when present, defaults otherwise, nothing invented", () => {
@@ -56,7 +56,7 @@ test("the bunny SVG: closed eyes and z's when napping, the outfit drawn, sized b
 test("Today card: the pet naps after a day off, wakes up and dances when today counts, and says when it learns a move", () => {
   resetDom(); for (const k of Object.keys(S)) S[k] = {};
   S.settings = { pet: { name: "Coco", fur: "lilac" }, avatar: { name: "Sofia" } };
-  renderPet(); let h = el("#petCard").innerHTML; assert.ok(h.includes("Coco") && h.includes("pet-stage nap") && h.includes("petDance()") && h.includes("openPet()"), "a brand new pet with no practice naps"); assert.ok(h.includes("2 more practice days to learn the Bunny hop"));
+  renderPet(); let h = el("#petCard").innerHTML; assert.ok(h.includes("Coco") && h.includes("pet-stage hello") && !h.includes("pet-z") && h.includes("petDance()") && h.includes("openPet()"), "a brand-new pet says hello, awake"); S.practice = { [daysAgo(3)]: { bites: ["game"] } }; renderPet(); assert.ok(el("#petCard").innerHTML.includes("pet-stage nap"), "after a day off it naps"); S.practice = {}; assert.ok(h.includes("2 more practice days to learn the Bunny hop"));
   S.practice = { [daysAgo(1)]: { bites: ["game"] } }; renderPet(); h = el("#petCard").innerHTML; assert.ok(h.includes("pet-stage ready"), "practised yesterday: ready");
   S.practice = { [daysAgo(1)]: { bites: ["game"] }, [daysAgo(0)]: { bites: ["trick"] } }; renderPet(); h = el("#petCard").innerHTML; assert.ok(h.includes("pet-stage danced"), "today counts: dancing"); assert.ok(h.includes("I just learned the Bunny hop! 🎉"), "day 2 is the hop");
   const st = petState(); assert.equal(st.days, 2); assert.equal(st.move.id, "hop"); assert.equal(st.level.n, "Tiny");
