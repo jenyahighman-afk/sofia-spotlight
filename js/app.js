@@ -52,7 +52,12 @@ async function registerSW(){
   if (!("serviceWorker" in navigator)) return;
   try {
     const reg = await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
-    reg.addEventListener("updatefound", () => { const w = reg.installing; if (!w) return; w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) toast("Update ready ✨ It'll load next time you open the app", 3500); }); });
+    // A new version waits until every open copy of the app is gone, which on a Home Screen app can be days. So when one is
+    // waiting, show a Reload bar: the tap tells the new worker to take over (SKIP_WAITING) and reloads once it has.
+    const offer = (w) => { const bar = $("#updateBar"); if (!bar || !w) return; bar.hidden = false; $("#updateReload").onclick = () => { $("#updateReload").textContent = "…"; w.postMessage({ type: "SKIP_WAITING" }); }; };
+    let reloading = false; navigator.serviceWorker.addEventListener("controllerchange", () => { if (reloading) return; reloading = true; location.reload(); });
+    if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
+    reg.addEventListener("updatefound", () => { const w = reg.installing; if (!w) return; w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) offer(reg.waiting || w); }); });
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") reg.update().catch(() => {}); });
   } catch (e) { console.warn("service worker registration failed", e); }
   const seen = localStorage.getItem(VERSION_KEY);
