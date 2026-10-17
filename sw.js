@@ -20,8 +20,15 @@ const APP_FILES = [
 const LIB_HOSTS = ["www.gstatic.com", "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com", "storage.googleapis.com"]; // storage.googleapis.com = the MediaPipe pose model
 const isMedia = (url) => url.hostname === "firebasestorage.googleapis.com" || url.pathname.includes("/storage/v1/object/");
 
+// Install: every app file is fetched fresh, past the browser's HTTP cache (cache: "reload") and past GitHub's edge cache
+// (the query names the version, so the CDN can't answer with a copy from before the deploy), then stored under its plain URL.
+// Without this an install in the first ~10 minutes after a deploy could cache last version's files under the new version's name.
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(APP_CACHE).then((c) => c.addAll(APP_FILES)));
+  e.waitUntil(caches.open(APP_CACHE).then((c) => Promise.all(APP_FILES.map(async (u) => {
+    const res = await fetch(new Request(u + "?v=" + encodeURIComponent(VERSION), { cache: "reload" }));
+    if (!res.ok) throw new Error("install: " + u + " → " + res.status);
+    await c.put(u, res);
+  }))));
 });
 
 self.addEventListener("activate", (e) => {
