@@ -20,7 +20,7 @@ const V1_AERIAL_IDS = ["cartwheel-clean","one-hand-far","one-hand-near","dive-ca
 
 export const DEFAULT_PIN = "2027";
 // The daily habit "bites" a practice day can hold (js/habit.js) and the tired-day kinds. Frozen here for the migration.
-export const BITE_IDS = ["trick", "game", "move", "tired", "memo", "plan"]; const TIRED_KINDS = ["stretch", "picture"];
+export const BITE_IDS = ["trick", "game", "move", "tired", "memo", "plan", "dare"]; const TIRED_KINDS = ["stretch", "picture"];
 // Schema 25: the drill box (js/drills.js). settings.drills[id] = a saved public post, link only. Hosts frozen here for the migration.
 // Schema 27 moves the posts to their own collection (drills/{id}, one document each), so a post Jenya saves can't be
 // overwritten by the other phone's next whole-document settings write. normalizeDrill is shared by both steps.
@@ -219,8 +219,9 @@ export const MIGRATIONS = {
   32: (col, id, doc) => { if (col === "settings" && doc.pet !== undefined) { const p = doc.pet && typeof doc.pet === "object" ? doc.pet : {}; const out = {}; const n = String(p.name == null ? "" : p.name).trim().slice(0, 16); if (n) out.name = n; if (PET_FURS.includes(p.fur)) out.fur = p.fur; doc.pet = out; } return doc; },
   // 33 (show countdown, js/advent.js): settings.advent = { open: [dates of opened doors] }. Normalized when present: real dates only, once each, sorted.
   33: (col, id, doc) => { if (col === "settings" && doc.advent !== undefined) { const a = doc.advent && typeof doc.advent === "object" ? doc.advent : {}; doc.advent = { open: [...new Set((Array.isArray(a.open) ? a.open : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort() }; } return doc; },
-  // 34: reserved for a feature built on another branch; a no-op on this branch (replaced when the branches are stacked).
-  34: (col, id, doc) => doc,
+  // 34 (dance dares, js/dares.js): settings.dares = { done: [dates a dare was done], reroll: the last date the reroll was used ("" if never).
+  // Normalized when present: real dates only, done once each and sorted; "dare" joins the bite kinds.
+  34: (col, id, doc) => { if (col === "settings" && doc.dares !== undefined) { const a = doc.dares && typeof doc.dares === "object" ? doc.dares : {}; const ok = (d) => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d); doc.dares = { done: [...new Set((Array.isArray(a.done) ? a.done : []).filter(ok))].sort(), reroll: ok(a.reroll) ? a.reroll : "" }; } return doc; },
   // 35 (trick cards, js/cards.js): photos.card = the skill id whose trick card shows this photo. Kept when it is a skill-id
   // string (lower-case letters, digits, dashes), else dropped. The cards themselves are read from `skills`, nothing else is stored.
   35: (col, id, doc) => { if (col === "photos" && doc.card !== undefined && !(typeof doc.card === "string" && /^[a-z0-9-]{1,40}$/.test(doc.card))) delete doc.card; return doc; }
