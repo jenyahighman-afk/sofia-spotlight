@@ -414,3 +414,25 @@ body.modal{overflow:hidden}
 @keyframes advent-pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 @keyframes advent-glow{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.advent-reveal.pop,.door.ready.today{animation:none}}
+
+/* Trick cards (js/cards.js): the binder grid, earned / shiny / locked cards and the big view */
+.tc-group{margin:14px 0 6px;display:flex;align-items:center;gap:6px;border-left:5px solid var(--c);padding-left:8px}
+.tc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tcard{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;min-height:150px;padding:5px 5px 6px;border-radius:12px;border:3px solid var(--c);background:linear-gradient(180deg,var(--c) 0 22%,#FFF8FB 22% 100%);color:#4A2340;font:inherit;text-align:center;cursor:pointer;box-shadow:0 3px 0 rgba(74,35,64,.15)}
+.tc-top{display:flex;justify-content:space-between;width:100%;gap:2px;font-size:.62rem;font-weight:800;color:#fff;line-height:1.2}
+.tc-style{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-ic{flex:1;display:flex;align-items:center;justify-content:center;font-size:2rem;line-height:1}
+.tc-photo{flex:1;min-height:0;width:100%;object-fit:cover;border-radius:8px}
+.tc-name{font-family:Fredoka;font-size:.78rem;line-height:1.15;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tc-foot{font-size:.6rem;font-weight:800;opacity:.75}
+.tc-extra{display:flex;gap:6px;justify-content:center;font-size:.62rem;font-weight:800}
+.tcard.tc-locked{border-style:dashed;border-color:#CBB8C4;background:#F3ECF0;box-shadow:none;color:#9A8592}
+.tcard.tc-locked .tc-top{color:#9A8592} .tcard.tc-locked .tc-ic{font-family:Fredoka;font-size:1.8rem;color:#CBB8C4}
+.tcard.tc-shiny{background:linear-gradient(180deg,var(--c) 0 22%,transparent 22%),linear-gradient(135deg,#FFE3EE,#FFF6D8 30%,#DFF3FF 55%,#EBDDFF 80%,#FFE3EE)}
+.tcard.tc-shiny::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.8) 48%,rgba(255,255,255,0) 60%);background-size:260% 100%;background-position:100% 0;animation:tc-shine 3.2s ease-in-out infinite}
+.tcard.tc-shiny .tc-foot{opacity:1;color:#B07A12} .tcard>*{position:relative;z-index:1}
+@keyframes tc-shine{0%{background-position:100% 0}60%,100%{background-position:-60% 0}}
+.tc-bigwrap{display:flex;justify-content:center;margin:8px 0}
+.tcard.big{width:min(260px,72vw);min-height:350px;cursor:default;padding:10px 10px 12px;gap:6px;border-width:4px;border-radius:18px}
+.tcard.big .tc-top{font-size:.8rem} .tcard.big .tc-ic{font-size:4.5rem} .tcard.big .tc-name{font-size:1.25rem;-webkit-line-clamp:4} .tcard.big .tc-foot,.tcard.big .tc-extra{font-size:.8rem}
+@media (prefers-reduced-motion:reduce){.tcard.tc-shiny::after{animation:none;background-position:40% 0}}

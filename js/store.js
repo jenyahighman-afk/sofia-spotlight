@@ -7,7 +7,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 33;
+export const SCHEMA_VERSION = 35;
 // Schema 32: the dance pet's fur colours (data/pet.json), frozen here for the migration.
 export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
 
@@ -218,7 +218,12 @@ export const MIGRATIONS = {
   // read from the practice records, so nothing else is stored.
   32: (col, id, doc) => { if (col === "settings" && doc.pet !== undefined) { const p = doc.pet && typeof doc.pet === "object" ? doc.pet : {}; const out = {}; const n = String(p.name == null ? "" : p.name).trim().slice(0, 16); if (n) out.name = n; if (PET_FURS.includes(p.fur)) out.fur = p.fur; doc.pet = out; } return doc; },
   // 33 (show countdown, js/advent.js): settings.advent = { open: [dates of opened doors] }. Normalized when present: real dates only, once each, sorted.
-  33: (col, id, doc) => { if (col === "settings" && doc.advent !== undefined) { const a = doc.advent && typeof doc.advent === "object" ? doc.advent : {}; doc.advent = { open: [...new Set((Array.isArray(a.open) ? a.open : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort() }; } return doc; }
+  33: (col, id, doc) => { if (col === "settings" && doc.advent !== undefined) { const a = doc.advent && typeof doc.advent === "object" ? doc.advent : {}; doc.advent = { open: [...new Set((Array.isArray(a.open) ? a.open : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort() }; } return doc; },
+  // 34: reserved for a feature built on another branch; a no-op on this branch (replaced when the branches are stacked).
+  34: (col, id, doc) => doc,
+  // 35 (trick cards, js/cards.js): photos.card = the skill id whose trick card shows this photo. Kept when it is a skill-id
+  // string (lower-case letters, digits, dashes), else dropped. The cards themselves are read from `skills`, nothing else is stored.
+  35: (col, id, doc) => { if (col === "photos" && doc.card !== undefined && !(typeof doc.card === "string" && /^[a-z0-9-]{1,40}$/.test(doc.card))) delete doc.card; return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
