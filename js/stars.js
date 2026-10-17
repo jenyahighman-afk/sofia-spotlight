@@ -5,7 +5,7 @@ import { toast, todayStr } from "./util.js";
 import { markBite } from "./habit.js";
 
 // Which bite a finished game earns on Today's choice cards.
-const GAME_BITE = new Set(["sparkle", "oops", "nextmove", "compday", "choreo", "trio", "mirror", "along"]);
+const GAME_BITE = new Set(["sparkle", "oops", "nextmove", "compday", "choreo", "trio", "mirror", "along", "count"]);
 
 // How many stars a result earns. Kept generous at the bottom: finishing anything earns one.
 export function starsFor(game, value){
@@ -21,6 +21,7 @@ export function starsFor(game, value){
     case "trio":    return v >= 84 ? 3 : v >= 74 ? 2 : 1;
     case "mirror":  return v >= 250 ? 3 : v >= 120 ? 2 : 1;
     case "along":   return v >= 80 ? 3 : v >= 50 ? 2 : 1; // % in step with the video
+    case "count":   return v >= 85 ? 3 : v >= 60 ? 2 : 1; // % on the beat (or steadiness when the dance has no beat yet)
     case "practice": return v >= 100 ? 2 : 1; // a finished practice day
     case "quick": return 1; // a five-minute session
     default: return 1;

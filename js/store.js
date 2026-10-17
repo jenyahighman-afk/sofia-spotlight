@@ -7,7 +7,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 33;
+export const SCHEMA_VERSION = 39;
 // Schema 32: the dance pet's fur colours (data/pet.json), frozen here for the migration.
 export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
 
@@ -28,6 +28,17 @@ export const DRILL_HOSTS = ["youtube", "instagram", "pinterest", "other"];
 export function normalizeDrill(v){
   if (!v || typeof v !== "object" || !/^https?:\/\//i.test(String(v.url || ""))) return null; const str = (x, n) => String(x == null ? "" : x).trim().slice(0, n);
   return { url: str(v.url, 500), host: DRILL_HOSTS.includes(v.host) ? v.host : "other", vid: str(v.vid, 20), skill: str(v.skill, 40), note: str(v.note, 140), do: str(v.do, 140), dont: str(v.dont, 140), ask: !!v.ask, at: str(v.at, 10) };
+}
+// Schema 39: Count Along (js/games/count.js). settings.beats = { danceId: { bpm, offset } } (a beat measured with "Set the beat":
+// bpm 40-220, offset = seconds to the first 1, >= 0) and settings.countBest = { key: best % 0-100 }. Shared by the step and the game.
+export function normalizeBeats(v){
+  const out = {}; for (const [k, b] of Object.entries(v && typeof v === "object" && !Array.isArray(v) ? v : {})) { if (!b || typeof b !== "object") continue; const bpm = +b.bpm, off = +b.offset;
+    if (!Number.isFinite(bpm) || bpm < 40 || bpm > 220) continue; out[String(k).slice(0, 40)] = { bpm: Math.round(bpm * 10) / 10, offset: Number.isFinite(off) && off > 0 ? Math.round(off * 1000) / 1000 : 0 }; }
+  return out;
+}
+export function normalizeCountBest(v){
+  const out = {}; for (const [k, n] of Object.entries(v && typeof v === "object" && !Array.isArray(v) ? v : {})) { const x = Math.round(+n); if (Number.isFinite(x) && x >= 0) out[String(k).slice(0, 40)] = Math.min(100, x); }
+  return out;
 }
 // Schema 26: the two friend slots (js/who.js), frozen here for the migration.
 export const FRIEND_SLOTS = ["f1", "f2"];
@@ -218,7 +229,12 @@ export const MIGRATIONS = {
   // read from the practice records, so nothing else is stored.
   32: (col, id, doc) => { if (col === "settings" && doc.pet !== undefined) { const p = doc.pet && typeof doc.pet === "object" ? doc.pet : {}; const out = {}; const n = String(p.name == null ? "" : p.name).trim().slice(0, 16); if (n) out.name = n; if (PET_FURS.includes(p.fur)) out.fur = p.fur; doc.pet = out; } return doc; },
   // 33 (show countdown, js/advent.js): settings.advent = { open: [dates of opened doors] }. Normalized when present: real dates only, once each, sorted.
-  33: (col, id, doc) => { if (col === "settings" && doc.advent !== undefined) { const a = doc.advent && typeof doc.advent === "object" ? doc.advent : {}; doc.advent = { open: [...new Set((Array.isArray(a.open) ? a.open : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort() }; } return doc; }
+  33: (col, id, doc) => { if (col === "settings" && doc.advent !== undefined) { const a = doc.advent && typeof doc.advent === "object" ? doc.advent : {}; doc.advent = { open: [...new Set((Array.isArray(a.open) ? a.open : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort() }; } return doc; },
+  // 34-38: numbers held for the features built alongside this one; each is replaced by its own step when the branches are stacked.
+  34: (col, id, doc) => doc, 35: (col, id, doc) => doc, 36: (col, id, doc) => doc, 37: (col, id, doc) => doc, 38: (col, id, doc) => doc,
+  // 39 (Count Along, js/games/count.js): settings.beats = { danceId: { bpm 40-220, offset >= 0 } }, settings.countBest = { key: 0-100 }.
+  // Normalized when present: out-of-range beats are dropped, bests become whole numbers capped at 100. Nothing invented.
+  39: (col, id, doc) => { if (col === "settings" && doc.beats !== undefined) doc.beats = normalizeBeats(doc.beats); if (col === "settings" && doc.countBest !== undefined) doc.countBest = normalizeCountBest(doc.countBest); return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }

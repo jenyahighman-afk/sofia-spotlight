@@ -152,6 +152,17 @@
     <div id="alongList" style="margin-top:8px"></div>
     <p class="small muted">Use clips you have on the phone: a tutorial you saved, a clip of a teacher, a dance you filmed. Up to 2 minutes; whole body in view works best.</p>
   </div>
+  <div class="card aqua game-card" data-game="count">
+    <div class="row"><div class="grow"><h3>🥁 Count Along</h3><p class="small muted">Tap the beat to your competition music and see if you're right on the counts.</p></div><span class="small">Best: <b id="countBest">–</b></span></div>
+    <div id="countSetup"></div>
+    <div id="countArea" hidden>
+      <div class="row" style="margin:6px 0"><span class="chip sun" id="ctRound"></span><span class="grow"></span><span class="chip mint" id="ctLive"></span></div>
+      <div id="ctCounts"></div>
+      <button class="ct-pad" id="ctPad" type="button" aria-label="Tap on the beat">TAP</button>
+      <div class="ct-say" id="ctSay"></div>
+      <div class="row" id="ctActions" style="margin-top:8px"></div>
+    </div>
+  </div>
   <div class="card violet game-card" data-game="sparkle">
     <div class="row"><div class="grow"><h3>🎀 Step & Sparkle</h3><p class="small muted">Tap the lane when a sparkle hits the line. Stay on the beat!</p><p class="small">Best: <b id="gameBest">0</b></p></div>
     <div><button class="btn sm coral" onclick="startGame(76,'Stay a Little Longer · 76 BPM')">Lyrical</button><br><button class="btn sm sun" style="margin-top:6px" onclick="startGame(123,'Groove · 123 BPM')">Jazz</button><br><button class="btn sm" style="margin-top:6px;background:#B98BEF;color:#fff" onclick="startGame(140,'🦄 Party · 140 BPM',true)">Party</button></div></div>
