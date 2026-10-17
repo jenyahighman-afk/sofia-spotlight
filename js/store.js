@@ -12,6 +12,28 @@ export const SCHEMA_VERSION = 37;
 export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
 // Schema 37: the Glow-Up Flipbook poses (js/glow.js GLOW_POSES), frozen here for the migration.
 export const GLOW_POSE_IDS = ["arabesque", "passe", "first-position", "releve", "split"];
+// Schema 36: the costume designer's option ids (data/costumes.json), frozen here for the migration. First id = default.
+const COSTUME_COLORS = ["pink", "hotpink", "blush", "coral", "red", "wine", "peach", "gold", "mint", "emerald", "aqua", "sky", "royal", "navy", "lilac", "purple", "white", "silver", "black"];
+export const COSTUME_OPTS = {
+  leo: COSTUME_COLORS, skirtC: ["match", ...COSTUME_COLORS], skirt: ["chiffon", "none", "tutu", "lyrical", "fringe"], sleeves: ["none", "cap", "long", "one"],
+  accent: ["none", "sash", "belt", "bow", "trim"], trim: ["gold", "silver", "white", "pink", "black"], head: ["own", "tiara", "flowers", "feather", "star"],
+};
+export const COSTUMES_MAX = 6, COSTUME_NAME_MAX = 20;
+// One saved design, flat: known option ids only (unknown → the default), sparkle 0–3, name trimmed (≤ 20). null if not an object.
+export function normalizeCostume(v, i = 0){
+  if (!v || typeof v !== "object" || Array.isArray(v)) return null; const out = {};
+  out.id = /^[a-z0-9-]{1,24}$/.test(String(v.id || "")) ? v.id : "c" + (i + 1);
+  out.name = String(v.name == null ? "" : v.name).replace(/\s+/g, " ").trim().slice(0, COSTUME_NAME_MAX).trim() || "Costume " + (i + 1);
+  for (const [k, ids] of Object.entries(COSTUME_OPTS)) out[k] = ids.includes(v[k]) ? v[k] : ids[0];
+  const sp = Math.round(+v.sparkle); out.sparkle = Number.isFinite(sp) ? Math.max(0, Math.min(3, sp)) : 0;
+  return out;
+}
+// The list: objects only, ids unique, at most 6.
+export function normalizeCostumes(list){
+  const out = [], seen = new Set();
+  for (const v of Array.isArray(list) ? list : []) { const c = normalizeCostume(v, out.length); if (!c) continue; while (seen.has(c.id)) c.id = c.id.slice(0, 20) + "-" + (out.length + 1); seen.add(c.id); out.push(c); if (out.length >= COSTUMES_MAX) break; }
+  return out;
+}
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills","workouts"];
 
@@ -22,7 +44,7 @@ const V1_AERIAL_IDS = ["cartwheel-clean","one-hand-far","one-hand-near","dive-ca
 
 export const DEFAULT_PIN = "2027";
 // The daily habit "bites" a practice day can hold (js/habit.js) and the tired-day kinds. Frozen here for the migration.
-export const BITE_IDS = ["trick", "game", "move", "tired", "memo", "plan"]; const TIRED_KINDS = ["stretch", "picture"];
+export const BITE_IDS = ["trick", "game", "move", "tired", "memo", "plan", "dare"]; const TIRED_KINDS = ["stretch", "picture"];
 // Schema 25: the drill box (js/drills.js). settings.drills[id] = a saved public post, link only. Hosts frozen here for the migration.
 // Schema 27 moves the posts to their own collection (drills/{id}, one document each), so a post Jenya saves can't be
 // overwritten by the other phone's next whole-document settings write. normalizeDrill is shared by both steps.
@@ -221,8 +243,20 @@ export const MIGRATIONS = {
   32: (col, id, doc) => { if (col === "settings" && doc.pet !== undefined) { const p = doc.pet && typeof doc.pet === "object" ? doc.pet : {}; const out = {}; const n = String(p.name == null ? "" : p.name).trim().slice(0, 16); if (n) out.name = n; if (PET_FURS.includes(p.fur)) out.fur = p.fur; doc.pet = out; } return doc; },
   // 33 (show countdown, js/advent.js): settings.advent = { open: [dates of opened doors] }. Normalized when present: real dates only, once each, sorted.
   33: (col, id, doc) => { if (col === "settings" && doc.advent !== undefined) { const a = doc.advent && typeof doc.advent === "object" ? doc.advent : {}; doc.advent = { open: [...new Set((Array.isArray(a.open) ? a.open : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort() }; } return doc; },
-  // 34–36: reserved for features built alongside the flipbook (no-ops on this branch; replaced when those branches land).
-  34: (col, id, doc) => doc, 35: (col, id, doc) => doc, 36: (col, id, doc) => doc,
+  // 34 (dance dares, js/dares.js): settings.dares = { done: [dates a dare was done], reroll: the last date the reroll was used ("" if never).
+  // Normalized when present: real dates only, done once each and sorted; "dare" joins the bite kinds.
+  34: (col, id, doc) => { if (col === "settings" && doc.dares !== undefined) { const a = doc.dares && typeof doc.dares === "object" ? doc.dares : {}; const ok = (d) => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d); doc.dares = { done: [...new Set((Array.isArray(a.done) ? a.done : []).filter(ok))].sort(), reroll: ok(a.reroll) ? a.reroll : "" }; } return doc; },
+  // 35 (trick cards, js/cards.js): photos.card = the skill id whose trick card shows this photo. Kept when it is a skill-id
+  // string (lower-case letters, digits, dashes), else dropped. The cards themselves are read from `skills`, nothing else is stored.
+  35: (col, id, doc) => { if (col === "photos" && doc.card !== undefined && !(typeof doc.card === "string" && /^[a-z0-9-]{1,40}$/.test(doc.card))) delete doc.card; return doc; },
+  // 36 (costume designer, js/costume.js): settings.costumes = [{ id, name, leo, skirtC, skirt, sleeves, sparkle, accent, trim, head }]
+  // (≤ 6 flat objects) and settings.costumeOn = the worn design's id or "". Normalized when present: known option ids only.
+  36: (col, id, doc) => {
+    if (col !== "settings") return doc;
+    if (doc.costumes !== undefined) doc.costumes = normalizeCostumes(doc.costumes);
+    if (doc.costumeOn !== undefined) { const on = typeof doc.costumeOn === "string" ? doc.costumeOn : ""; doc.costumeOn = (doc.costumes || []).some(c => c.id === on) ? on : ""; }
+    return doc;
+  },
   // 37 (glow-up flipbook, js/glow.js): photos.glow = "YYYY-MM" (that month's flipbook photo), kept only when it is a month key;
   // settings.glowPose = one of GLOW_POSE_IDS, dropped when it is anything else.
   37: (col, id, doc) => { if (col === "photos" && doc.glow !== undefined && !(typeof doc.glow === "string" && /^\d{4}-\d{2}$/.test(doc.glow))) delete doc.glow; if (col === "settings" && doc.glowPose !== undefined && !GLOW_POSE_IDS.includes(doc.glowPose)) delete doc.glowPose; return doc; }

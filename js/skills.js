@@ -21,13 +21,19 @@ export function styleProgress(skills, ladder = SKILLS){
 export function allSkills(ladder = SKILLS){ return Object.entries(ladder.styles || {}).flatMap(([style, st]) => st.skills.map(s => ({ ...s, style }))); }
 export function findSkill(id, ladder = SKILLS){ return allSkills(ladder).find(s => s.id === id); }
 
+// Listeners for a skill's state changing (js/cards.js pops "New card!"). Called with (id, prev, next) after the save.
+const stateListeners = new Set();
+export function onSkillState(fn){ stateListeners.add(fn); return () => stateListeners.delete(fn); }
+function stateChanged(id, prev, next){ if (prev === next) return; for (const fn of stateListeners) { try { fn(id, prev, next); } catch (e) { console.warn(e); } } }
+
 // Kid tap: notyet → learning → clean → learning … (never past clean; teacher-checked stays teacher-checked).
 export async function kidCycle(id){
   const cur = skillState(S.skills, id); if (cur === "checked") return cur;
   const next = cur === "notyet" ? "learning" : cur === "learning" ? "clean" : "learning";
-  const s = findSkill(id); await storeSet("skills", id, { ...(S.skills[id] || {}), id, style: s ? s.style : "", state: next, at: todayStr() }); return next;
+  const s = findSkill(id); await storeSet("skills", id, { ...(S.skills[id] || {}), id, style: s ? s.style : "", state: next, at: todayStr() }); stateChanged(id, cur, next); return next;
 }
 export async function teacherCheck(id, teacher, date){
-  const s = findSkill(id); await storeSet("skills", id, { ...(S.skills[id] || {}), id, style: s ? s.style : "", state: "checked", teacher: String(teacher || "").trim(), checkedAt: date || todayStr(), at: todayStr() });
+  const prev = skillState(S.skills, id);
+  const s = findSkill(id); await storeSet("skills", id, { ...(S.skills[id] || {}), id, style: s ? s.style : "", state: "checked", teacher: String(teacher || "").trim(), checkedAt: date || todayStr(), at: todayStr() }); stateChanged(id, prev, "checked");
 }
 export async function uncheck(id){ const r = S.skills[id]; if (!r) return; await storeSet("skills", id, { ...r, state: "clean", teacher: "", checkedAt: "" }); }
