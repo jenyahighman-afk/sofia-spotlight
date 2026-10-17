@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { installEnv } from "./_env.mjs";
 installEnv();
-const { normalizeWorkouts, normalizeWorkout, workoutList, logWorkout, doneToday, hostName, KINDS, MAX } = await import("../js/workouts-core.js");
+const { normalizeWorkouts, normalizeWorkout, workoutList, logWorkout, doneToday, hostName, KINDS, MAX, progressOf, nextOf, presetsLeft } = await import("../js/workouts-core.js");
 const { migrateDoc, SCHEMA_VERSION, COLLECTIONS, receive, setBackend, S, saveWorkoutsMove } = await import("../js/store.js");
 const { workouts } = await import("../js/workouts.js");
 import { readFileSync } from "node:fs";
@@ -65,4 +65,16 @@ test("settings-held videos move once into the collection, then leave settings", 
     receive("settings", { main: { _v: 30, workouts: [{ id: "a", url: "https://old.com" }] } }, { fromCache: false }); receive("workouts", { a: { _v: 31, name: "Already", url: "https://www.masterclass.com/x", kind: "flex" } }, { fromCache: false });
     assert.equal(await saveWorkoutsMove(), 0, "a video the other phone already moved is not written again"); assert.equal(S.workouts.a.name, "Already"); assert.equal(writes.length, 3); assert.equal(writes[2].col, "settings");
   } finally { setBackend(null); for (const k of Object.keys(S)) S[k] = {}; }
+});
+
+test("programs: n and mins survive normalize, progress counts logged days, next loops through n, presets are offered until added", () => {
+  const w = normalizeWorkout({ name: "Core Control", url: "https://www.dance-masterclass.com/library?q=section-workouts", kind: "strength", n: 5, mins: 10 }, "cc");
+  assert.equal(w.n, 5); assert.equal(w.mins, 10); assert.equal("n" in normalizeWorkout({ url: "https://x.com" }, "x"), false, "no n when unknown"); assert.equal(normalizeWorkout({ url: "https://x.com", n: 999 }, "y").n, 60);
+  const practice = { "2026-10-18": { workouts: ["cc"] }, "2026-10-22": { workouts: ["cc", "zz"] }, "2026-10-23": { workouts: ["zz"] }, "2026-10-24": {} };
+  assert.equal(progressOf(practice, "cc"), 2); assert.equal(progressOf({}, "cc"), 0);
+  assert.equal(nextOf(w, practice), 3); assert.equal(nextOf(w, {}), 1); assert.equal(nextOf(w, { a: { workouts: ["cc"] }, b: { workouts: ["cc"] }, c: { workouts: ["cc"] }, d: { workouts: ["cc"] }, e: { workouts: ["cc"] } }), 1, "after all five it loops"); assert.equal(nextOf(normalizeWorkout({ url: "https://x.com" }, "x"), practice), 0, "no program count → no counter");
+  const presets = JSON.parse(readFileSync(new URL("../data/workout-presets.json", import.meta.url), "utf8"));
+  assert.equal(presets.programs.length, 8); for (const p of presets.programs) { assert.ok(p.name && /^https:\/\//.test(p.url) && (p.kind in KINDS) && p.n > 0 && p.mins > 0, p.name); }
+  assert.deepEqual(presets.programs.map(p => p.kind), ["strength", "strength", "strength", "strength", "flex", "flex", "flex", "flex"]);
+  assert.equal(presetsLeft(presets, []).length, 8); assert.equal(presetsLeft(presets, [{ name: "core control for pirouettes (beginners)" }]).length, 7, "matched by name, case-insensitive"); assert.equal(presetsLeft({}, []).length, 0);
 });
