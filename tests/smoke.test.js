@@ -9,7 +9,7 @@ import { installEnv, resetDom, el } from "./_env.mjs";
 installEnv();
 const read = (rel) => readFileSync(new URL("../" + rel, import.meta.url), "utf8");
 const html = read("index.html");
-const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind","plan10","workout-presets","pet","advent"];
+const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind","plan10","workout-presets","pet","advent","dares","costumes"];
 
 let M = {};
 before(async () => {
@@ -68,7 +68,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(el("#whoRow").innerHTML.includes("whoPick('all')") && el("#whoRow").innerHTML.includes("💃 Sofia") && el("#meFriends").innerHTML.includes("Hannah") && el("#meFriends").innerHTML.includes("Lauren"), "the who's-dancing picker on Play and the friends card on Me");
   assert.ok(el("#drillForm").innerHTML.includes("drillAdd()") && el("#drillList").innerHTML.includes("Nothing saved yet"), "the drill box shelf on Practice");
   assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
-  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 10, "ten game tiles on Play");
+  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 11, "eleven game tiles on Play");
   assert.ok(el("#alongList").innerHTML.includes("No routines yet"), "Dance Along empty state");
   assert.ok(el("#meStars").innerHTML.includes("⭐ 0") && el("#meStars").innerHTML.includes("Gold leotard"), "stars card shows the next unlock");
   assert.ok(el("#skillRings").innerHTML.includes("Acro"), "skill rings per style");
@@ -181,4 +181,12 @@ test("the tab bar is a row of the app shell, never position:fixed (iOS drifts fi
   const body = /\nbody\{([^}]*)\}/.exec(css)[1]; assert.match(body, /display:flex/); assert.match(body, /flex-direction:column/); assert.match(body, /100dvh/);
   const wrap = /\.wrap\{([^}]*)\}/.exec(css)[1]; assert.match(wrap, /overflow-y:auto/); assert.match(wrap, /min-height:0/);
   assert.match(css, /@media print\{[^@]*html,body\{height:auto;overflow:visible/, "printing still flows across pages");
+});
+
+test("the service worker's file list: no repeats, and every listed file exists", async () => {
+  const { readFileSync, existsSync } = await import("node:fs");
+  const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8"); const list = sw.slice(sw.indexOf("const APP_FILES"), sw.indexOf("];", sw.indexOf("const APP_FILES")));
+  const files = list.match(/"\.\/[^"]*"/g).map(x => x.slice(1, -1));
+  assert.equal(new Set(files).size, files.length, "repeated: " + files.filter((f, i) => files.indexOf(f) !== i).join(", "));
+  for (const f of files) if (f !== "./") assert.ok(existsSync(new URL("../" + f.slice(2), import.meta.url)), "missing " + f);
 });

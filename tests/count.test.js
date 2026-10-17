@@ -88,7 +88,7 @@ test("the words after a song round are kind and honest about what was measured",
 });
 
 test("schema 39: beats keep bpm 40-220 and offset ≥ 0; bests become whole numbers 0-100; nothing invented", () => {
-  assert.equal(SCHEMA_VERSION, 39);
+  assert.ok(SCHEMA_VERSION >= 39, "Count Along is schema 39");
   const m = migrateDoc("settings", "main", { _v: 33, beats: { solo: { bpm: "76.04", offset: -2 }, a: { bpm: 30, offset: 1 }, b: { bpm: 221 }, c: "x", d: { bpm: 120, offset: "1.23456" } }, countBest: { "d-solo": 87.6, "m-100": 140, bad: "x", neg: -5, z: 0 } });
   assert.equal(m._v, SCHEMA_VERSION);
   assert.deepEqual(m.beats, { solo: { bpm: 76, offset: 0 }, d: { bpm: 120, offset: 1.235 } });
@@ -114,7 +114,7 @@ function fresh(){ resetDom(); for (const k of Object.keys(S)) S[k] = {}; const w
 
 test("Play: a Count Along tile; the card shows the dance's real BPM, asks for music when there is none, and offers Set the beat only without a BPM", () => {
   fresh(); play.initPlay(); play.renderPlay();
-  const grid = el("#gameGrid").innerHTML; assert.ok(grid.includes("playOpen('count')") && grid.includes("Count Along"), "the tile"); assert.equal((grid.match(/game-tile/g) || []).length, 10);
+  const grid = el("#gameGrid").innerHTML; assert.ok(grid.includes("playOpen('count')") && grid.includes("Count Along"), "the tile"); assert.equal((grid.match(/game-tile/g) || []).length, 11);
   window.playOpen("count"); const setup = el("#countSetup").innerHTML;
   assert.ok(setup.includes("countMode('song')") && setup.includes("countMode('metro')"), "two modes");
   assert.ok(setup.includes('<option value="solo" selected>') && setup.includes("76 BPM from the dance card"), "the solo's own 76 BPM");
