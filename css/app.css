@@ -479,3 +479,17 @@ body.modal{overflow:hidden}
 .ct-pad{display:block;width:100%;min-height:180px;border:3px solid var(--aqua);border-radius:24px;background:var(--card);color:var(--ink);font-family:Fredoka;font-size:2.2rem;letter-spacing:.1em;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
 .ct-pad.hit{animation:cthit .18s ease-out} @keyframes cthit{0%{background:var(--aqua);color:#fff;transform:scale(.98)}100%{background:var(--card);transform:scale(1)}}
 .ct-say{font-weight:700;min-height:22px;margin-top:8px;line-height:1.35}
+
+/* What's new (js/news.js): the Today row and the sheet with "Show me how" steps */
+.news-card .news-ic{font-size:1.8rem;line-height:1}
+.news-intro{margin:0 0 10px}
+.news-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.news-item .news-e{font-size:1.9rem;line-height:1;min-width:2.2rem;text-align:center}
+.news-btns{margin-top:6px;flex-wrap:wrap;gap:6px}
+.news-how{text-align:center;padding:4px 2px}
+.news-how h3{margin:4px 0 2px}
+.news-big{font-size:3.4rem;line-height:1.1}
+.news-step{font-size:1.15rem;line-height:1.4;margin:14px 4px 16px;min-height:4.2em}
+.news-dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.news-dots span{width:9px;height:9px;border-radius:50%;background:var(--line)} .news-dots span.on{background:var(--coral)}
+.news-nav{flex-wrap:wrap;gap:6px}
