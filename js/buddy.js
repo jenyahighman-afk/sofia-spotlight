@@ -6,7 +6,8 @@
 // Pops up once per app open on Today and right after a bite counts; otherwise it waits in the corner (tap = another tip).
 // "🤫 Quiet today" stops the pop-ups for the day. Nothing is stored in the family space (per-phone localStorage only).
 // Pure parts up top (tested in Node); the DOM below.
-import { $, esc, todayStr, daysUntil, expose } from "./util.js";
+import { $, esc, todayStr, daysUntil, expose, toast } from "./util.js";
+import { speakBunny, stopSpeaking, nextVoice, canSpeak } from "./voice.js";
 import { S, events, dances } from "./store.js";
 import { BUDDY, CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "./data.js";
 import { dayCounts, computeStreak, skipsLeft, practicedDays } from "./streak.js";
@@ -119,16 +120,19 @@ export function renderBuddy(){
   b.hidden = false; el.classList.add("talking");
   b.innerHTML = `<button class="buddy-x" onclick="buddyHide()" aria-label="Close">✕</button>
     ${msg.opener ? `<div class="buddy-open">${esc(msg.opener)}</div>` : ""}<div class="buddy-text">${esc(msg.text)}</div>${msg.fact ? `<div class="buddy-fact">${esc(msg.fact)}</div>` : ""}
-    <div class="row buddy-btns">${msg.go ? `<button class="btn sm coral" onclick="buddyHide();${esc(msg.go)}">${esc(msg.button)}</button>` : ""}<button class="btn sm ghost" onclick="buddyMore()" aria-label="Another tip">🎲</button><button class="btn sm ghost" onclick="buddySay()" aria-label="Read it to me">🔊</button></div>
+    <div class="row buddy-btns">${msg.go ? `<button class="btn sm coral" onclick="buddyHide();${esc(msg.go)}">${esc(msg.button)}</button>` : ""}<button class="btn sm ghost" onclick="buddyMore()" aria-label="Another tip">🎲</button>${canSpeak() ? `<button class="btn sm ghost" onclick="buddySay()" aria-label="Read it to me">🔊</button><button class="btn sm ghost" onclick="buddyVoice()" aria-label="Try another voice">🎙️</button>` : ""}</div>
+    ${msg.heard ? `<div class="buddy-hint">No sound? Turn off Silent mode and turn the volume up 🔈</div>` : ""}
     <button class="lnk buddy-quiet" onclick="buddyQuiet()">🤫 Quiet today</button>`;
 }
 export function showBuddy({ justDone = false } = {}){
   let ctx; try { ctx = buddyContext(); } catch (e) { console.warn("buddy", e); return null; }
   msg = compose(ctx, { last: lastId(), justDone }); save({ last: msg.id }); renderBuddy(); return msg;
 }
-export function hideBuddy(){ msg = null; try { speechSynthesis.cancel(); } catch (e) {} renderBuddy(); }
+export function hideBuddy(){ msg = null; stopSpeaking(); renderBuddy(); }
 function scrollTo(sel){ setTimeout(() => { const e = $(sel); if (e && e.scrollIntoView) try { e.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (x) {} }, 60); }
-function say(){ if (!msg) return; try { speechSynthesis.cancel(); const t = [msg.opener, msg.text, msg.fact].filter(Boolean).join(" ").replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}*]/gu, ""); const u = new SpeechSynthesisUtterance(t); u.rate = 1.05; u.pitch = 1.35; speechSynthesis.speak(u); } catch (e) {} }
+function say(){ if (!msg) return; speakBunny([msg.opener, msg.text, msg.fact].filter(Boolean).join(". ")); if (!msg.heard) { msg.heard = true; renderBuddy(); } }
+// 🎙️: the next of this phone's best voices, and a short hello in it.
+function voice(){ const n = nextVoice(); if (!n) return; toast("🎙️ Voice: " + n); speakBunny("Hi! Is this my voice? Boing boing!"); }
 function tap(){ if (msg) hideBuddy(); else showBuddy(); }
 function quiet(){ save({ quiet: todayStr() }); hideBuddy(); }
 // Once per app open, when the day's data is in, on Today. Called by app.js on each data change.
@@ -143,4 +147,4 @@ export function initBuddy(){
   document.addEventListener("stageclosed", later);
   document.addEventListener("page", (e) => { const el = $("#buddy"); if (el) el.hidden = !KID_PAGES.includes(e.detail); if (msg && e.detail !== "home") hideBuddy(); later(); });
 }
-expose({ buddyTap: tap, buddyHide: hideBuddy, buddyMore: () => showBuddy(), buddySay: say, buddyQuiet: quiet, buddyScroll: scrollTo });
+expose({ buddyTap: tap, buddyHide: hideBuddy, buddyMore: () => showBuddy(), buddySay: say, buddyVoice: voice, buddyQuiet: quiet, buddyScroll: scrollTo });
