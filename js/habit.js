@@ -36,7 +36,9 @@ export const TIRED = {
 // Add a bite to today's record (once). Returns true when it was new.
 export async function markBite(id, date = todayStr()){
   if (!BITES.includes(id)) return false; const rec = S.practice[date] || { done: [], note: "", runs: [] }; const have = Array.isArray(rec.bites) ? rec.bites : [];
-  if (have.includes(id)) return false; await storeSet("practice", date, { ...rec, bites: [...have, id] }); try { pingDone(); } catch (e) {} return true;
+  if (have.includes(id)) return false; await storeSet("practice", date, { ...rec, bites: [...have, id] }); try { pingDone(); } catch (e) {}
+  try { document.dispatchEvent(new CustomEvent("bitedone", { detail: id })); } catch (e) {} // the helper (buddy.js) says well done + what's next
+  return true;
 }
 // A drill-box post tried for two minutes (js/drills.js): remembered on the day (practice.drills, once per post) and it is
 // the day's trick bite. Returns what markBite returned (true when the bite was new).

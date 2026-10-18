@@ -33,6 +33,7 @@ import { initPet } from "./pet.js";
 import { initAdvent } from "./advent.js";
 import { initCards } from "./cards.js";
 import { initNews } from "./news.js";
+import { initBuddy, renderBuddy, buddyAuto } from "./buddy.js";
 import { initCostume } from "./costume.js";
 import { initGlow } from "./glow.js";
 import { restoreTodayChecks } from "./views/practice.js";
@@ -48,10 +49,10 @@ const VERSION_KEY = "spotlight:version";
 const renders = [
   guard("home", renderHome), guard("dances", renderDances), guard("practice", renderPractice), guard("play", renderPlay), guard("me", renderMe),
   guard("events", renderEvents), guard("schedule", () => { renderClasses(); renderCalendar(); }), guard("notes", () => { renderNotes(); renderPhotos(); renderFiles(); }),
-  guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("coach", renderCoachHub), guard("grownups", renderGrownups), guard("settings", renderSettings),
+  guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("coach", renderCoachHub), guard("grownups", renderGrownups), guard("settings", renderSettings), guard("buddy", renderBuddy),
 ];
 function renderAll(){ renders.forEach(r => r()); }
-function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initCostume(); initGlow(); installReportLinks(); }
+function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initBuddy(); initCostume(); initGlow(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
 async function registerSW(){
@@ -82,7 +83,7 @@ function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.class
     // Locked Grown-ups pages bounce to the PIN pad (which remembers where to go next).
     setGuard(p => { if (GROWNUP_PAGES.includes(p) && !isUnlocked()) { $("#pinTarget").value = p; $("#pinIn").value = ""; $("#pinMsg").textContent = ""; return "pin"; } return p; });
     let restored = false;
-    onChange(() => { renderAll(); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); saveDrillsMove().then(n => { if (n) toast("Your drill box moved to its own shelf ✓"); }).catch(console.warn); saveWorkoutsMove().then(n => { if (n) toast("Your workouts moved to their own shelf ✓"); }).catch(console.warn); refreshSeedFiles().then(names => { if (names.length) toast("New version in My files: " + names.join(", "), 3500); }).catch(console.warn); checkBadges().catch(console.warn); });
+    onChange(() => { renderAll(); buddyAuto(settled("practice") && settled("settings")); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); saveDrillsMove().then(n => { if (n) toast("Your drill box moved to its own shelf ✓"); }).catch(console.warn); saveWorkoutsMove().then(n => { if (n) toast("Your workouts moved to their own shelf ✓"); }).catch(console.warn); refreshSeedFiles().then(names => { if (names.length) toast("New version in My files: " + names.join(", "), 3500); }).catch(console.warn); checkBadges().catch(console.warn); });
     renderAll();
   } catch (e) { console.error(e); return fatal("The app couldn't load its content: " + (e.message || e)); }
 
