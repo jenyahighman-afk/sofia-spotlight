@@ -7,9 +7,11 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 36;
+export const SCHEMA_VERSION = 37;
 // Schema 32: the dance pet's fur colours (data/pet.json), frozen here for the migration.
 export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
+// Schema 37: the Glow-Up Flipbook poses (js/glow.js GLOW_POSES), frozen here for the migration.
+export const GLOW_POSE_IDS = ["arabesque", "passe", "first-position", "releve", "split"];
 // Schema 36: the costume designer's option ids (data/costumes.json), frozen here for the migration. First id = default.
 const COSTUME_COLORS = ["pink", "hotpink", "blush", "coral", "red", "wine", "peach", "gold", "mint", "emerald", "aqua", "sky", "royal", "navy", "lilac", "purple", "white", "silver", "black"];
 export const COSTUME_OPTS = {
@@ -254,7 +256,10 @@ export const MIGRATIONS = {
     if (doc.costumes !== undefined) doc.costumes = normalizeCostumes(doc.costumes);
     if (doc.costumeOn !== undefined) { const on = typeof doc.costumeOn === "string" ? doc.costumeOn : ""; doc.costumeOn = (doc.costumes || []).some(c => c.id === on) ? on : ""; }
     return doc;
-  }
+  },
+  // 37 (glow-up flipbook, js/glow.js): photos.glow = "YYYY-MM" (that month's flipbook photo), kept only when it is a month key;
+  // settings.glowPose = one of GLOW_POSE_IDS, dropped when it is anything else.
+  37: (col, id, doc) => { if (col === "photos" && doc.glow !== undefined && !(typeof doc.glow === "string" && /^\d{4}-\d{2}$/.test(doc.glow))) delete doc.glow; if (col === "settings" && doc.glowPose !== undefined && !GLOW_POSE_IDS.includes(doc.glowPose)) delete doc.glowPose; return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
