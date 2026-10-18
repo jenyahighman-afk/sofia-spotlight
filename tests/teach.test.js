@@ -40,9 +40,9 @@ test("routines: normalized and flat, unique ids, names ≤ 20, at most 5, new on
 });
 
 test("schema 38: settings.teach normalized when present, other documents untouched", () => {
-  assert.equal(SCHEMA_VERSION, 38);
+  assert.ok(SCHEMA_VERSION >= 38, "Teach It is schema 38");
   const d = migrateDoc("settings", "main", { _v: 33, teach: [{ id: "x", name: "Mine", moves: ["plie", "aerial", "kick", "kick", "kick", "kick", "kick", "kick", "kick"], made: "2026-10-17", taught: 3 }, ...Array(6).fill({ name: "more" })] });
-  assert.equal(d._v, 38); assert.equal(d.teach.length, 5); assert.deepEqual(d.teach[0].moves, ["plie", "hold", "kick", "kick", "kick", "kick", "kick", "kick"]); assert.equal(d.teach[0].taught, 3);
+  assert.equal(d._v, SCHEMA_VERSION); assert.equal(d.teach.length, 5); assert.deepEqual(d.teach[0].moves, ["plie", "hold", "kick", "kick", "kick", "kick", "kick", "kick"]); assert.equal(d.teach[0].taught, 3);
   assert.deepEqual(migrateDoc("settings", "main", { _v: 33, teach: "junk" }).teach, []);
   assert.equal("teach" in migrateDoc("settings", "main", { _v: 33, pin: "2027" }), false);
   assert.deepEqual(migrateDoc("dances", "solo", { _v: 33, teach: [1] }).teach, [1], "only settings");

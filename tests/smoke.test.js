@@ -68,7 +68,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(el("#whoRow").innerHTML.includes("whoPick('all')") && el("#whoRow").innerHTML.includes("💃 Sofia") && el("#meFriends").innerHTML.includes("Hannah") && el("#meFriends").innerHTML.includes("Lauren"), "the who's-dancing picker on Play and the friends card on Me");
   assert.ok(el("#drillForm").innerHTML.includes("drillAdd()") && el("#drillList").innerHTML.includes("Nothing saved yet"), "the drill box shelf on Practice");
   assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
-  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 10, "ten game tiles on Play");
+  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, 11, "eleven game tiles on Play");
   assert.ok(el("#alongList").innerHTML.includes("No routines yet"), "Dance Along empty state");
   assert.ok(el("#meStars").innerHTML.includes("⭐ 0") && el("#meStars").innerHTML.includes("Gold leotard"), "stars card shows the next unlock");
   assert.ok(el("#skillRings").innerHTML.includes("Acro"), "skill rings per style");
