@@ -51,8 +51,8 @@ test("photo link: newest linked photo per card; bad links, videos and deleted ph
   const photos = { a: { url: "u1", card: "s-calypso", at: "2026-10-01T10:00" }, b: { url: "u2", card: "s-calypso", at: "2026-10-03T10:00" }, c: { url: "u3", card: "Bad Id!" }, d: { url: "u4", card: "b-plie", kind: "video" }, e: { url: "u5", card: "b-plie", deleted: true }, f: { url: "u6" } };
   const m = cardPhotos(photos); assert.deepEqual(Object.keys(m), ["s-calypso"]); assert.equal(m["s-calypso"].url, "u2"); assert.equal(m["s-calypso"].id, "b");
   assert.equal(normalizeCardLink("b-plie"), "b-plie"); assert.equal(normalizeCardLink("B-Plie"), null); assert.equal(normalizeCardLink(3), null); assert.equal(normalizeCardLink("x".repeat(41)), null);
-  assert.equal(SCHEMA_VERSION, 35);
-  const ok = migrateDoc("photos", "p", { _v: 33, url: "u", card: "s-calypso" }); assert.equal(ok._v, 35); assert.equal(ok.card, "s-calypso");
+  assert.ok(SCHEMA_VERSION >= 35, "trick cards are schema 35");
+  const ok = migrateDoc("photos", "p", { _v: 33, url: "u", card: "s-calypso" }); assert.equal(ok._v, SCHEMA_VERSION); assert.equal(ok.card, "s-calypso");
   for (const bad of [42, "Has Spaces", "", null, { id: "x" }, ["s-calypso"]]) assert.equal("card" in migrateDoc("photos", "p", { _v: 34, url: "u", card: bad }), false, JSON.stringify(bad));
   assert.equal("card" in migrateDoc("photos", "p", { _v: 34, url: "u" }), false, "nothing invented"); assert.equal(migrateDoc("settings", "main", { _v: 34, card: 5 }).card, 5, "other collections untouched");
 });

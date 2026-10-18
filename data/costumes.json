@@ -1,0 +1,66 @@
+{
+ "max": 6,
+ "nameMax": 20,
+ "colors": [
+  { "id": "pink", "n": "Pink", "c": "#FF6FA3" },
+  { "id": "hotpink", "n": "Hot pink", "c": "#FF3D8A" },
+  { "id": "blush", "n": "Blush", "c": "#F9C6D6" },
+  { "id": "coral", "n": "Coral", "c": "#FF7F6B" },
+  { "id": "red", "n": "Red", "c": "#E0384F" },
+  { "id": "wine", "n": "Wine", "c": "#8E2448" },
+  { "id": "peach", "n": "Peach", "c": "#FFB98A" },
+  { "id": "gold", "n": "Gold", "c": "#FFD23F" },
+  { "id": "mint", "n": "Mint", "c": "#9BE3C3" },
+  { "id": "emerald", "n": "Emerald", "c": "#1FA37A" },
+  { "id": "aqua", "n": "Aqua", "c": "#2ED3C8" },
+  { "id": "sky", "n": "Sky blue", "c": "#8CC8F2" },
+  { "id": "royal", "n": "Royal blue", "c": "#3E5FD8" },
+  { "id": "navy", "n": "Navy", "c": "#22305E" },
+  { "id": "lilac", "n": "Lilac", "c": "#C9A7F5" },
+  { "id": "purple", "n": "Purple", "c": "#7B3FC4" },
+  { "id": "white", "n": "White", "c": "#FFFFFF" },
+  { "id": "silver", "n": "Silver", "c": "#C9CED8" },
+  { "id": "black", "n": "Black", "c": "#1F1A1A" }
+ ],
+ "trims": [
+  { "id": "gold", "n": "Gold", "c": "#F4C24A" },
+  { "id": "silver", "n": "Silver", "c": "#DDE3EC" },
+  { "id": "white", "n": "White", "c": "#FFFFFF" },
+  { "id": "pink", "n": "Pink", "c": "#FF8FB8" },
+  { "id": "black", "n": "Black", "c": "#2E2140" }
+ ],
+ "skirts": [
+  { "id": "chiffon", "n": "Short chiffon" },
+  { "id": "none", "n": "No skirt" },
+  { "id": "tutu", "n": "Tutu" },
+  { "id": "lyrical", "n": "Lyrical wrap" },
+  { "id": "fringe", "n": "Fringe" }
+ ],
+ "sleeves": [
+  { "id": "none", "n": "No sleeves" },
+  { "id": "cap", "n": "Cap sleeves" },
+  { "id": "long", "n": "Long sleeves" },
+  { "id": "one", "n": "One shoulder" }
+ ],
+ "accents": [
+  { "id": "none", "n": "None" },
+  { "id": "sash", "n": "Sash" },
+  { "id": "belt", "n": "Belt" },
+  { "id": "bow", "n": "Waist bow" },
+  { "id": "trim", "n": "Sequin trim" }
+ ],
+ "heads": [
+  { "id": "own", "n": "My usual" },
+  { "id": "tiara", "n": "Tiara" },
+  { "id": "flowers", "n": "Flower crown" },
+  { "id": "feather", "n": "Feather" },
+  { "id": "star", "n": "Star clip" }
+ ],
+ "sparkles": [
+  { "v": 0, "n": "None" },
+  { "v": 1, "n": "A little" },
+  { "v": 2, "n": "Lots" },
+  { "v": 3, "n": "Dazzling" }
+ ],
+ "starter": { "leo": "lilac", "skirtC": "match", "skirt": "lyrical", "sleeves": "cap", "sparkle": 1, "accent": "trim", "trim": "silver", "head": "own" }
+}
