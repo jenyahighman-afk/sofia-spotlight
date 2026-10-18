@@ -1,0 +1,67 @@
+{
+  "id": "poll-1.30",
+  "title": "6 new things in your app!",
+  "intro": "You picked them in the poll, so here they are. Tap 👀 Show me how for the steps, or ▶ Try it to jump straight in.",
+  "items": [
+    {
+      "id": "dares", "e": "🎯", "n": "Dance Dares", "where": "Today",
+      "pitch": "A silly or tricky dance dare every day.",
+      "steps": [
+        "Find the 🎯 dare card near the top of Today.",
+        "Read today's dare and do it! 💃",
+        "Tap “I did it! 🎉”. That's your practice for the day, plus ⭐ 1 star.",
+        "Not feeling it? Tap “🎲 Try another” once a day for a new one."
+      ]
+    },
+    {
+      "id": "cards", "e": "🃏", "n": "Trick Cards", "where": "Me",
+      "pitch": "Collect a card for every trick you land.",
+      "steps": [
+        "Open Me and tap “🃏 Open my binder”.",
+        "In Skills on Me, tap a trick until it says ◉ Clean. Now it's your card!",
+        "When your teacher checks it, it turns ✨ shiny!",
+        "Tap a card you earned, then 📷 “Add a photo” of you doing the trick."
+      ]
+    },
+    {
+      "id": "costume", "e": "👗", "n": "Costume Designer", "where": "Me",
+      "pitch": "Design your dream show costume on your dancer.",
+      "steps": [
+        "On Me, tap “✨ Design a costume”.",
+        "Pick a leotard colour, skirt, sleeves, sparkle and a headpiece.",
+        "Give it a name and tap “✅ Keep design” (you can keep 6), or “👗 Wear it”.",
+        "Tap “💾 Save picture” to share your design."
+      ]
+    },
+    {
+      "id": "glow", "e": "🌱", "n": "Glow-Up Flipbook", "where": "Me",
+      "pitch": "One photo a month, then flip through and see how you've grown.",
+      "steps": [
+        "On Me, find the 🌱 Glow-Up Flipbook card and pick your pose.",
+        "Tap “📷 This month's photo”. A grown-up can take it for you.",
+        "Every month, take it again in the same pose.",
+        "Tap “▶ Flip” to watch yourself grow, or “🪞 First vs now”."
+      ]
+    },
+    {
+      "id": "teach", "e": "🎓", "n": "Teach It", "where": "Play",
+      "pitch": "Be the teacher! Make an 8-count and teach it.",
+      "steps": [
+        "On Play, tap 🎓 Teach It.",
+        "Fill the 8 counts with moves, one move on each count.",
+        "Tap “🎓 Teach it”. Your dancer shows it slow, then at full speed.",
+        "Your friend or a grown-up tries it, then you give 1–3 stars and a tip!"
+      ]
+    },
+    {
+      "id": "count", "e": "🥁", "n": "Count Along", "where": "Play",
+      "pitch": "Tap the beat and see if you're right on the counts.",
+      "steps": [
+        "On Play, tap 🥁 Count Along.",
+        "Pick your dance music with “▶ Find the beat”, or practise with the metronome.",
+        "Tap the big pad on every beat.",
+        "Perfect taps make a streak. See how on the beat you were!"
+      ]
+    }
+  ]
+}
