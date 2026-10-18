@@ -472,3 +472,10 @@ body.modal{overflow:hidden}
 .teach-view{position:relative}
 .teach-count{position:absolute;top:6px;right:12px;font-family:Fredoka;font-size:3.6rem;font-weight:700;line-height:1;color:var(--coral);text-shadow:0 3px 0 rgba(74,35,64,.12)}
 .teach-count.lead{color:#B98BEF}
+/* Count Along (js/games/count.js): the eight counts and a big tap pad */
+.ct-counts{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:8px 0}
+.ct-counts span{font-family:Fredoka;font-size:1.35rem;text-align:center;padding:8px 0;border-radius:12px;background:var(--blush);color:var(--ink-2);transition:background .08s,color .08s}
+.ct-counts span.one{font-weight:800} .ct-counts span.on{background:var(--aqua);color:#fff} .ct-counts span.on.one{background:var(--coral)}
+.ct-pad{display:block;width:100%;min-height:180px;border:3px solid var(--aqua);border-radius:24px;background:var(--card);color:var(--ink);font-family:Fredoka;font-size:2.2rem;letter-spacing:.1em;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
+.ct-pad.hit{animation:cthit .18s ease-out} @keyframes cthit{0%{background:var(--aqua);color:#fff;transform:scale(.98)}100%{background:var(--card);transform:scale(1)}}
+.ct-say{font-weight:700;min-height:22px;margin-top:8px;line-height:1.35}

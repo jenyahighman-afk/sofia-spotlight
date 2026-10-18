@@ -1,5 +1,5 @@
 // Dance with a friend on the same phone: a "Who's dancing?" picker (Play) — Sofia, Hannah, Lauren or all three — that the
-// games (Trio Formations, Step & Sparkle, Dance Along) and practice mode read. No accounts, no messaging. The friends'
+// games (Trio Formations, Step & Sparkle, Dance Along, Count Along) and practice mode read. No accounts, no messaging. The friends'
 // names live in settings.friends (editable on Me) and their best scores in settings.friendBests (schema 26). Sofia's own
 // stats, stars, bites and the streak stay hers: a game without Sofia dancing saves only the friends' scores. The pick
 // itself is per phone (localStorage), not synced. Pure parts up top (tested in Node).
@@ -7,7 +7,7 @@ import { $, esc, expose, todayStr } from "./util.js";
 import { S, setSettings } from "./store.js";
 
 export const SLOTS = ["f1", "f2"], DEFAULT_FRIENDS = { f1: "Hannah", f2: "Lauren" }, NAME_MAX = 20;
-export const FRIEND_GAMES = { sparkle: ["🎀", "Step & Sparkle"], trio: ["👯", "Trio Formations"], along: ["🕺", "Dance Along"] };
+export const FRIEND_GAMES = { sparkle: ["🎀", "Step & Sparkle"], trio: ["👯", "Trio Formations"], along: ["🕺", "Dance Along"], count: ["🥁", "Count Along"] };
 const KEY = "spotlight:who";
 // Who can dance: [{ id: "sofia" | "f1" | "f2", n }], Sofia first (her name from the avatar), friends from settings.friends.
 export function dancers(settings = S.settings){ const st = settings || {}; const f = st.friends || {}; const sofia = String((st.avatar || {}).name || "").trim() || "Sofia"; return [{ id: "sofia", n: sofia }, ...SLOTS.map(id => ({ id, n: String(f[id] || "").trim() || DEFAULT_FRIENDS[id] }))]; }
@@ -49,7 +49,7 @@ function whoPick(id){ setPick(togglePick(currentPick(), id)); }
 export function renderFriends(){
   const el = $("#meFriends"); if (!el) return; const fb = S.settings.friendBests || {};
   el.innerHTML = `<h3>👯 My dance friends</h3><p class="small muted">Dance together on this phone: pick who's dancing on Play. Their scores save here. The streak and the stars are Sofia's.</p>
-    ${dancers().slice(1).map(f => { const b = fb[f.id] || {}; const line = Object.entries(FRIEND_GAMES).map(([g, [ic]]) => b[g] ? `${ic} ${b[g]}${g === "along" ? "%" : ""}` : "").filter(Boolean).join(" · "); return `<div class="row who-friend"><input type="text" maxlength="${NAME_MAX}" value="${esc(f.n)}" onchange="whoName('${f.id}',this.value)" aria-label="Friend's name"><span class="small ${line ? "" : "muted"}">${line || "no scores yet"}</span></div>`; }).join("")}`;
+    ${dancers().slice(1).map(f => { const b = fb[f.id] || {}; const line = Object.entries(FRIEND_GAMES).map(([g, [ic]]) => b[g] ? `${ic} ${b[g]}${g === "along" || g === "count" ? "%" : ""}` : "").filter(Boolean).join(" · "); return `<div class="row who-friend"><input type="text" maxlength="${NAME_MAX}" value="${esc(f.n)}" onchange="whoName('${f.id}',this.value)" aria-label="Friend's name"><span class="small ${line ? "" : "muted"}">${line || "no scores yet"}</span></div>`; }).join("")}`;
 }
 async function setName(id, v){ if (!SLOTS.includes(id)) return; const n = String(v || "").trim().slice(0, NAME_MAX) || DEFAULT_FRIENDS[id]; await setSettings({ friends: { ...(S.settings.friends || {}), [id]: n } }); renderWho(); renderFriends(); }
 expose({ whoPick, whoName: setName });
