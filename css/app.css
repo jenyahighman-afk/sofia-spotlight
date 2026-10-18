@@ -18,7 +18,7 @@ p{margin:.35rem 0}
 a{color:var(--violet)}
 button,input,select,textarea{font:inherit;color:inherit}
 img{max-width:100%}
-.wrap{flex:1 1 auto;min-height:0;width:100%;max-width:720px;margin:0 auto;padding:14px 14px 28px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+.wrap{flex:1 1 auto;min-height:0;width:100%;max-width:720px;margin:0 auto;padding:14px 14px 84px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
 header.hero{position:relative;overflow:hidden;border-radius:22px;padding:22px 18px 18px;color:#4A2340;
   background:linear-gradient(135deg,#FFC2D6 0%,#FF7FAE 55%,#D9B3FF 100%);}
 header.hero:after{content:"✿ ✧ ✿";position:absolute;left:18px;bottom:8px;color:rgba(255,255,255,.55);font-size:.8rem;letter-spacing:.4em}
@@ -493,3 +493,21 @@ body.modal{overflow:hidden}
 .news-dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
 .news-dots span{width:9px;height:9px;border-radius:50%;background:var(--line)} .news-dots span.on{background:var(--coral)}
 .news-nav{flex-wrap:wrap;gap:6px}
+
+/* The talking helper (js/buddy.js): her pet in the corner above the tabs, a speech bubble with one next step */
+.buddy{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:none}
+.buddy[hidden],body.modal .buddy{display:none}
+.buddy-pet{pointer-events:auto;width:60px;height:68px;padding:0;border:0;background:var(--card);border-radius:50% 50% 46% 46%;box-shadow:0 3px 0 rgba(74,35,64,.14),0 6px 14px rgba(255,92,147,.25);-webkit-tap-highlight-color:transparent;cursor:pointer;animation:buddy-bob 3.2s ease-in-out infinite}
+.buddy-pet svg{width:100%;height:100%}
+.buddy.talking .buddy-pet{animation:buddy-hop .6s ease-out 2}
+@keyframes buddy-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes buddy-hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}}
+.buddy-bubble{pointer-events:auto;position:relative;width:min(320px,calc(100vw - 36px));background:var(--card);border:2px solid var(--coral);border-radius:18px 18px 6px 18px;padding:12px 14px 8px;box-shadow:0 6px 18px rgba(74,35,64,.18);animation:buddy-pop .25s cubic-bezier(.34,1.56,.64,1)}
+@keyframes buddy-pop{from{transform:scale(.7);opacity:0;transform-origin:bottom right}to{transform:scale(1);opacity:1}}
+.buddy-x{position:absolute;top:4px;right:6px;border:0;background:none;color:var(--ink-2);font-size:1rem;padding:4px 6px;cursor:pointer}
+.buddy-open{font-family:Fredoka;font-weight:700;color:var(--coral);padding-right:20px;margin-bottom:2px}
+.buddy-text{font-weight:800;line-height:1.35}
+.buddy-fact{margin-top:6px;font-size:.85rem;color:var(--ink-2)}
+.buddy-btns{margin-top:8px;gap:6px;flex-wrap:wrap}
+.buddy-quiet{display:block;margin:6px 0 0 auto;font-size:.75rem}
+@media (prefers-reduced-motion:reduce){.buddy-pet,.buddy.talking .buddy-pet,.buddy-bubble{animation:none}}
