@@ -1,0 +1,125 @@
+{
+  "_note": "The talking helper (js/buddy.js): her dance pet pops up with ONE next step. A message = an opener + the step for the situation + sometimes a true fact. Every {placeholder} is filled from the app's own data (her name, the pet's name, today's plan item, streak, skips, stars, events). Keep lines short, kind, funny; never invent facts.",
+  "openers": [
+    "Psst, {name}! 🐰",
+    "Boing boing! It's me, {pet}!",
+    "*wiggles ears dramatically*",
+    "Hi {name}! I ate a carrot and now I'm READY. 🥕",
+    "{pet} reporting for dance duty! 🫡",
+    "Knock knock! (It's me. I'm the knock.)",
+    "Did somebody say DANCE? No? Well, I did.",
+    "I tried a pirouette. I fell over. Your turn! 😅",
+    "Hey superstar ✨",
+    "Fun fact: bunnies can't point their toes. You can!",
+    "*peeks out from behind the screen* 👀",
+    "Ta-daaa! 🎉 Okay, I'll be serious for one second.",
+    "Hop hop! Important bunny business:",
+    "I practised my jazz hands. Look! 🙌 …they're paws.",
+    "Ahem. Bunny announcement! 📣",
+    "You're back! I was SO bored. I counted my whiskers. Twice.",
+    "{name}! {name}! {name}! Okay, hi. 🐰",
+    "Guess what? You're awesome. Also:"
+  ],
+  "steps": {
+    "plan": [
+      "Today's plan says: {item}. Do that and today counts ✅",
+      "Mission of the day 📋: {item}. Tick the box and we're golden.",
+      "Grown-up plan alert! {item}. One box ticked = the day counts.",
+      "The plan whispered to me 🤫: {item}. I think it's a good one."
+    ],
+    "plan-more": [
+      "Today already counts 🎉 One more from your plan? {item}",
+      "You did it! Bonus box if you're up for it: {item} ⭐",
+      "Streak safe ✅ Next on your plan: {item}. No pressure. Some pressure. Okay, no pressure."
+    ],
+    "trick": [
+      "Today's trick is {trick}. Five careful tries, then tap it done!",
+      "{trick} is calling your name. Literally. I heard it. 📞",
+      "Trick time: {trick}! Slow and clean beats fast and wobbly.",
+      "I bet you can do {trick} better than yesterday. Bunny bet! 🥕"
+    ],
+    "move": [
+      "Show me a move: {move}. I'll watch. I'm very good at watching. 👀",
+      "Technique time ✨ {move}. Pointy toes, proud chest!"
+    ],
+    "game": [
+      "Quick game today: {game}. It counts as practice AND it's fun. Sneaky! 🎮",
+      "How about {game}? Practice in disguise 🥸"
+    ],
+    "memo": [
+      "Memory mission: {memo}. Your brain is a muscle too 🧠💪",
+      "Let's lock in {memo}. Counts in your head, moves in your body!"
+    ],
+    "comp-weekend": [
+      "It's comp time! 🏆 Water, snacks, sleep, and your comp list. You've got this.",
+      "COMP WEEKEND! 🏆 No new tricks today. Warm up, breathe, sparkle."
+    ],
+    "comp-mode": [
+      "Show week 🏆 No new tricks, just clean. One full run of your solo today?",
+      "Comp mode is on! Clean runs win. Do your solo once, all the way through."
+    ],
+    "rest": [
+      "Rest day 🌙 Bunnies LOVE rest days. A 2-minute stretch still counts if you want.",
+      "No class, no plan today. Rest is part of training! Feel like a tiny stretch? 🧘"
+    ],
+    "comeback": [
+      "New streak starts today! One bite = day one 🔥",
+      "I missed you! Let's start a fresh streak. Just one bite today 🐰"
+    ],
+    "just-done": [
+      "Yesss! That counts for today ✅",
+      "WOOHOO! 🎉 Today counts!",
+      "Look at you go! ✅ Done for today.",
+      "*does a happy hop* That's today's practice! 🐰"
+    ],
+    "dare": [
+      "Today's dare is waiting 🎯 Are you brave enough? (You are.)",
+      "Psst… the dare card. Just saying. 🎯😏"
+    ],
+    "door": [
+      "Today's countdown door is still closed! 🎁 What's behind it?!",
+      "Door alert 🚪 Your countdown door hasn't been opened yet!"
+    ],
+    "glow": [
+      "New month = new flipbook photo! 📷 Same pose as last time.",
+      "Glow-up time 🌱 Take this month's photo for your flipbook."
+    ],
+    "full": [
+      "Got 10 more minutes? Your full practice list is ready ⭐",
+      "Bonus round: the full practice list! For extra-strong legs 🦵"
+    ],
+    "cards": [
+      "You have {cards} trick cards! 🃏 Want to look at your binder?",
+      "Peek at your trick cards 🃏 Any new shiny ones coming?"
+    ],
+    "costume": [
+      "Design a show costume for fun? 👗 I'd wear sequins. Lots of sequins.",
+      "Fashion time! ✨ Make a costume for your dancer."
+    ],
+    "teach": [
+      "Teach someone an 8-count! 🎓 You be the teacher today.",
+      "Make an 8-count and teach it to a grown-up. Then give them stars ⭐😂"
+    ],
+    "count": [
+      "Can you tap right on the beat? 🥁 Try Count Along!",
+      "Beat check! 🥁 Tap along and see how on-the-counts you are."
+    ],
+    "stars": [
+      "Only {starsLeft} more ⭐ to unlock {unlock}! A game gives 1–3.",
+      "{unlock} is SO close: {starsLeft} more stars ⭐"
+    ],
+    "all-done": [
+      "You did EVERYTHING today?! I need a nap just thinking about it 😴 Free play: any game you like!",
+      "All done! 🏆 You're officially a practice champion today. Want to just play?",
+      "Nothing left on today's list! 🎉 Go dance for fun, or rest your legs."
+    ]
+  },
+  "facts": {
+    "event": ["{eventDays} days to {event}! 🏆", "{event} is in {eventDays} days. We're getting ready! ✨"],
+    "streak": ["🔥 {streak}-day streak. Don't tell the other bunnies, they'll be jealous.", "🔥 {streak} days in a row! That's a lot of hops."],
+    "skips": ["Heads up: {skips} free skip left this week. One bite keeps the 🔥 going."],
+    "class": ["Studio today: {class} at {time} 🏫"],
+    "pet": ["We've danced together on {petDays} days 🐰💕"]
+  },
+  "buttons": ["Let's go ▶", "On it! ▶", "Okay okay ▶", "Show me ▶", "Hop to it ▶"]
+}

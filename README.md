@@ -81,6 +81,13 @@ A memory game built from a dance's step order (`js/games/nextmove.js`, any dance
 ### Show countdown (Today, under the pet)
 `js/advent.js`, content in `data/advent.json`. An advent calendar with one door a day from Oct 17 to the Winter Showcase (Jan 8): the number on each door is the days left. Behind a door is a sticker for her sticker book, a true dance fact or a short, safe mini challenge; every 7th door is a star bonus and the last door is show day. Today's door and any she missed can be opened; tomorrow's stays locked ("No peeking!"). Today shows how many days are left, how many stickers she has and how many doors are waiting. Opened doors are stored as dates (`settings.advent.open`, schema 33); stars from a bonus door are paid once.
 
+### The talking helper (every kid tab, bottom-right)
+`js/buddy.js`, lines in `data/buddy.json`. Her own dance pet peeks out of the corner with a speech bubble (text, so it works with the sound off; 🔊 reads it aloud) and **one next step**, worked out from the app's data:
+- **Before today counts:** comp weekend → the first unticked must-box of today's plan (with its ▶) → comp mode (one clean run) → rest day (a 2-minute stretch still counts) → one of Today's cards she hasn't done.
+- **Once today counts:** the plan's next box → the dare, today's countdown door, this month's flipbook photo, the full practice list → then something fun (Teach It, Count Along, costumes, trick cards, a close star unlock) → "all done".
+
+Each message is a random funny opener + the step + sometimes a true fact (days to the next event, streak, free skips left, today's class, days danced with the pet); a line with a value the app doesn't have is never used, and the same line never comes twice in a row. It pops up once per app open on Today and right after a bite counts (`habit.js` fires `bitedone`); otherwise tap the pet. **🎲** = another tip, **🤫 Quiet today** = no pop-ups until tomorrow. Nothing is stored in the family space (`spotlight:buddy` in localStorage: last line, quiet day).
+
 ### What's new (Today, top)
 `js/news.js`, content in `data/news.json`. When a release brings new features, Today opens with "🎁 Sofia, 6 new things in your app!" until she taps **See what's new**. The sheet lists each new thing with where it lives (Today, Me, Play), **👀 Show me how** (3–4 short steps, one at a time, Back / Next) and **▶ Try it** (closes the sheet and opens the feature). Seen is kept per phone in localStorage (`spotlight:news` = the news `id`), so nothing new is stored in the family space; Me keeps a **🎁 What's new** link to open it again. For the next release, change `id` and the items; a test checks every quoted button label in the steps really appears in that feature's code.
 
