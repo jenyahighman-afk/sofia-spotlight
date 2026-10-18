@@ -511,3 +511,4 @@ body.modal{overflow:hidden}
 .buddy-btns{margin-top:8px;gap:6px;flex-wrap:wrap}
 .buddy-quiet{display:block;margin:6px 0 0 auto;font-size:.75rem}
 @media (prefers-reduced-motion:reduce){.buddy-pet,.buddy.talking .buddy-pet,.buddy-bubble{animation:none}}
+.buddy-hint{margin-top:6px;font-size:.75rem;color:var(--ink-2)}
