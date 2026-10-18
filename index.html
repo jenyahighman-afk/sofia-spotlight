@@ -147,6 +147,13 @@
   <div class="card aqua game-card" data-game="mirror">
     <div class="row"><div class="grow"><h3>🪞 Mirror</h3><p class="small muted">Copy the dancer, hold a relevé, hit count 1. Camera stays on the phone.</p><p class="small">Best: <b id="mirrorBest">0</b></p></div><button class="btn sm coral" onclick="startMirror()">Play</button></div>
   </div>
+  <div class="card sun game-card" data-game="teach">
+    <h3>🎓 Teach It</h3>
+    <p class="small muted">Be the teacher! Make an 8-count, one move per count. Your dancer shows it slow, then full speed, with the counts. Then teach it to a friend or a grown-up and give them stars and a kind tip.</p>
+    <div id="teachBuild"></div>
+    <div id="teachStage" style="display:none;margin-top:10px"><div class="teach-view"><svg id="teachSvg" viewBox="0 0 300 270" style="width:100%;background:linear-gradient(#FFF7FA,#FFE6EF);border-radius:14px"></svg><div id="teachCount" class="teach-count"></div></div><div class="row" style="margin-top:4px"><span class="chip sun" id="teachPhase">…</span><span class="grow"></span><span class="small" id="teachNow"></span></div></div>
+    <div id="teachRate" style="display:none;margin-top:10px"></div>
+  </div>
   <div class="card coral game-card" data-game="along">
     <h3>🕺 Dance Along</h3>
     <p class="small muted">Learn a dance from a video. The clip plays with its music next to your camera and scores you copying it.</p>

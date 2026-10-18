@@ -7,7 +7,10 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 37;
+export const SCHEMA_VERSION = 38;
+// Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
+// bridge or rolls), frozen here for the migration.
+export const TEACH_MOVE_IDS = ["pose","plie","releve","passe","arab","attitude","develop","saute","pirouette","kick","fankick","chasse","pivot","jazzsq","layout","leap","calypso","tilt","reach","contract","spiral","floor","bounce","bodyroll","wave","toprock","freeze","hold"];
 // Schema 32: the dance pet's fur colours (data/pet.json), frozen here for the migration.
 export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
 // Schema 37: the Glow-Up Flipbook poses (js/glow.js GLOW_POSES), frozen here for the migration.
@@ -259,8 +262,24 @@ export const MIGRATIONS = {
   },
   // 37 (glow-up flipbook, js/glow.js): photos.glow = "YYYY-MM" (that month's flipbook photo), kept only when it is a month key;
   // settings.glowPose = one of GLOW_POSE_IDS, dropped when it is anything else.
-  37: (col, id, doc) => { if (col === "photos" && doc.glow !== undefined && !(typeof doc.glow === "string" && /^\d{4}-\d{2}$/.test(doc.glow))) delete doc.glow; if (col === "settings" && doc.glowPose !== undefined && !GLOW_POSE_IDS.includes(doc.glowPose)) delete doc.glowPose; return doc; }
+  37: (col, id, doc) => { if (col === "photos" && doc.glow !== undefined && !(typeof doc.glow === "string" && /^\d{4}-\d{2}$/.test(doc.glow))) delete doc.glow; if (col === "settings" && doc.glowPose !== undefined && !GLOW_POSE_IDS.includes(doc.glowPose)) delete doc.glowPose; return doc; },
+  // 38 (Teach It, js/games/teach.js): settings.teach = [{ id, name (≤ 20), moves: [8 move ids], made, taught }], at most 5.
+  // Normalized when present: flat routines only, known move ids (an unknown one becomes a hold on that count), exactly 8
+  // entries (padded with holds / trimmed), unique ids. An array of strings inside an object inside an array is not a nested array.
+  38: (col, id, doc) => { if (col === "settings" && doc.teach !== undefined) doc.teach = normalizeTeachList(doc.teach); return doc; }
 };
+// Shared by schema 38 and js/games/teach.js (which re-exports it as normalizeTeach).
+export function normalizeTeachList(list, ids = TEACH_MOVE_IDS){
+  const k = new Set(ids), out = [], seen = new Set(), DATE = /^\d{4}-\d{2}-\d{2}$/;
+  for (const [i, r] of (Array.isArray(list) ? list : []).entries()) {
+    if (!r || typeof r !== "object" || Array.isArray(r)) continue; let rid = String(r.id || "").trim().toLowerCase(); if (!/^[a-z0-9-]{1,24}$/.test(rid)) rid = "t" + (i + 1);
+    while (seen.has(rid)) rid = rid.slice(0, 20) + "-" + (out.length + 1); seen.add(rid);
+    const mv = (Array.isArray(r.moves) ? r.moves.slice(0, 8) : []).map(x => typeof x === "string" && k.has(x.trim()) ? x.trim() : "hold"); while (mv.length < 8) mv.push("hold");
+    out.push({ id: rid, name: String(r.name == null ? "" : r.name).trim().slice(0, 20) || "My 8-count", moves: mv, made: DATE.test(String(r.made || "")) ? r.made : "", taught: Math.min(9999, Math.max(0, Math.floor(+r.taught || 0))) });
+    if (out.length >= 5) break;
+  }
+  return out;
+}
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
 

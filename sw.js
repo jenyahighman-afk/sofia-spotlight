@@ -14,6 +14,7 @@ const APP_FILES = [
   "./js/costume.js",
   "./js/glow.js",
   "./js/games/choreo.js", "./js/games/oops.js", "./js/games/nextmove.js", "./js/games/quest.js", "./js/games/trio.js", "./js/games/compday.js", "./js/games/sparkle.js",
+  "./js/games/teach.js",
   "./js/views/home.js", "./js/views/dances.js", "./js/views/events.js", "./js/views/schedule.js", "./js/views/practice.js", "./js/views/notes.js", "./js/views/play.js", "./js/views/lists.js", "./js/views/settings.js", "./js/views/me.js", "./js/views/skillcheck.js",
   "./data/dances.json", "./data/events.json", "./data/classes.json", "./data/home-days.json", "./data/practice-items.json", "./data/phases.json", "./data/packs.json", "./data/aerial.json", "./data/season.json",
   "./data/styles.json", "./data/moves.json", "./data/avatar-options.json", "./data/daily.json", "./data/mind.json", "./data/oops.json", "./data/trio.json", "./data/compday.json", "./data/sparkle.json", "./data/skills.json", "./data/practice-pool.json", "./data/exercises.json", "./data/plan10.json", "./data/workout-presets.json", "./data/pet.json", "./data/advent.json", "./data/dares.json", "./data/costumes.json",
