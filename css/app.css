@@ -462,3 +462,13 @@ body.modal{overflow:hidden}
 .glow-vs img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block} .glow-vs figcaption{text-align:center;font-weight:800;font-size:.85rem;padding:4px}
 .glow-grown{text-align:center;font-family:Fredoka;font-size:1.15rem;margin:8px 0}
 @media (prefers-reduced-motion:reduce){.glow-page{transition:none}}
+/* Teach It (js/games/teach.js) */
+.teach-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.teach-slot{display:flex;flex-direction:column;align-items:center;gap:0;padding:6px 2px;border-radius:12px;border:2px dashed var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer;min-width:0}
+.teach-slot b{font-family:Fredoka;font-size:.85rem;color:var(--ink-2)} .teach-slot span{font-size:1.3rem;line-height:1.2} .teach-slot small{font-size:.58rem;line-height:1.1;overflow-wrap:break-word;max-width:100%;text-align:center}
+.teach-slot.full{border-style:solid;border-color:var(--sun)} .teach-slot.on{border-color:var(--coral);background:var(--blush)}
+.teach-moves{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.teach-move{display:flex;flex-direction:column;align-items:center;padding:6px 0;min-width:0} .teach-move span{font-size:1.3rem} .teach-move small{font-size:.58rem;line-height:1.1;letter-spacing:-.01em;overflow-wrap:break-word;max-width:100%}
+.teach-view{position:relative}
+.teach-count{position:absolute;top:6px;right:12px;font-family:Fredoka;font-size:3.6rem;font-weight:700;line-height:1;color:var(--coral);text-shadow:0 3px 0 rgba(74,35,64,.12)}
+.teach-count.lead{color:#B98BEF}
