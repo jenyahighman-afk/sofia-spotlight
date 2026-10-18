@@ -7,9 +7,31 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 35;
+export const SCHEMA_VERSION = 36;
 // Schema 32: the dance pet's fur colours (data/pet.json), frozen here for the migration.
 export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
+// Schema 36: the costume designer's option ids (data/costumes.json), frozen here for the migration. First id = default.
+const COSTUME_COLORS = ["pink", "hotpink", "blush", "coral", "red", "wine", "peach", "gold", "mint", "emerald", "aqua", "sky", "royal", "navy", "lilac", "purple", "white", "silver", "black"];
+export const COSTUME_OPTS = {
+  leo: COSTUME_COLORS, skirtC: ["match", ...COSTUME_COLORS], skirt: ["chiffon", "none", "tutu", "lyrical", "fringe"], sleeves: ["none", "cap", "long", "one"],
+  accent: ["none", "sash", "belt", "bow", "trim"], trim: ["gold", "silver", "white", "pink", "black"], head: ["own", "tiara", "flowers", "feather", "star"],
+};
+export const COSTUMES_MAX = 6, COSTUME_NAME_MAX = 20;
+// One saved design, flat: known option ids only (unknown → the default), sparkle 0–3, name trimmed (≤ 20). null if not an object.
+export function normalizeCostume(v, i = 0){
+  if (!v || typeof v !== "object" || Array.isArray(v)) return null; const out = {};
+  out.id = /^[a-z0-9-]{1,24}$/.test(String(v.id || "")) ? v.id : "c" + (i + 1);
+  out.name = String(v.name == null ? "" : v.name).replace(/\s+/g, " ").trim().slice(0, COSTUME_NAME_MAX).trim() || "Costume " + (i + 1);
+  for (const [k, ids] of Object.entries(COSTUME_OPTS)) out[k] = ids.includes(v[k]) ? v[k] : ids[0];
+  const sp = Math.round(+v.sparkle); out.sparkle = Number.isFinite(sp) ? Math.max(0, Math.min(3, sp)) : 0;
+  return out;
+}
+// The list: objects only, ids unique, at most 6.
+export function normalizeCostumes(list){
+  const out = [], seen = new Set();
+  for (const v of Array.isArray(list) ? list : []) { const c = normalizeCostume(v, out.length); if (!c) continue; while (seen.has(c.id)) c.id = c.id.slice(0, 20) + "-" + (out.length + 1); seen.add(c.id); out.push(c); if (out.length >= COSTUMES_MAX) break; }
+  return out;
+}
 
 export const COLLECTIONS = ["dances","events","notes","todos","packs","practice","photos","files","choreo","settings","corrections","skills","badges","reports","reviews","goals","drills","workouts"];
 
@@ -224,7 +246,15 @@ export const MIGRATIONS = {
   34: (col, id, doc) => { if (col === "settings" && doc.dares !== undefined) { const a = doc.dares && typeof doc.dares === "object" ? doc.dares : {}; const ok = (d) => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d); doc.dares = { done: [...new Set((Array.isArray(a.done) ? a.done : []).filter(ok))].sort(), reroll: ok(a.reroll) ? a.reroll : "" }; } return doc; },
   // 35 (trick cards, js/cards.js): photos.card = the skill id whose trick card shows this photo. Kept when it is a skill-id
   // string (lower-case letters, digits, dashes), else dropped. The cards themselves are read from `skills`, nothing else is stored.
-  35: (col, id, doc) => { if (col === "photos" && doc.card !== undefined && !(typeof doc.card === "string" && /^[a-z0-9-]{1,40}$/.test(doc.card))) delete doc.card; return doc; }
+  35: (col, id, doc) => { if (col === "photos" && doc.card !== undefined && !(typeof doc.card === "string" && /^[a-z0-9-]{1,40}$/.test(doc.card))) delete doc.card; return doc; },
+  // 36 (costume designer, js/costume.js): settings.costumes = [{ id, name, leo, skirtC, skirt, sleeves, sparkle, accent, trim, head }]
+  // (≤ 6 flat objects) and settings.costumeOn = the worn design's id or "". Normalized when present: known option ids only.
+  36: (col, id, doc) => {
+    if (col !== "settings") return doc;
+    if (doc.costumes !== undefined) doc.costumes = normalizeCostumes(doc.costumes);
+    if (doc.costumeOn !== undefined) { const on = typeof doc.costumeOn === "string" ? doc.costumeOn : ""; doc.costumeOn = (doc.costumes || []).some(c => c.id === on) ? on : ""; }
+    return doc;
+  }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
