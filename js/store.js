@@ -7,7 +7,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 34;
+export const SCHEMA_VERSION = 35;
 // Schema 32: the dance pet's fur colours (data/pet.json), frozen here for the migration.
 export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
 
@@ -221,7 +221,10 @@ export const MIGRATIONS = {
   33: (col, id, doc) => { if (col === "settings" && doc.advent !== undefined) { const a = doc.advent && typeof doc.advent === "object" ? doc.advent : {}; doc.advent = { open: [...new Set((Array.isArray(a.open) ? a.open : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort() }; } return doc; },
   // 34 (dance dares, js/dares.js): settings.dares = { done: [dates a dare was done], reroll: the last date the reroll was used ("" if never).
   // Normalized when present: real dates only, done once each and sorted; "dare" joins the bite kinds.
-  34: (col, id, doc) => { if (col === "settings" && doc.dares !== undefined) { const a = doc.dares && typeof doc.dares === "object" ? doc.dares : {}; const ok = (d) => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d); doc.dares = { done: [...new Set((Array.isArray(a.done) ? a.done : []).filter(ok))].sort(), reroll: ok(a.reroll) ? a.reroll : "" }; } return doc; }
+  34: (col, id, doc) => { if (col === "settings" && doc.dares !== undefined) { const a = doc.dares && typeof doc.dares === "object" ? doc.dares : {}; const ok = (d) => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d); doc.dares = { done: [...new Set((Array.isArray(a.done) ? a.done : []).filter(ok))].sort(), reroll: ok(a.reroll) ? a.reroll : "" }; } return doc; },
+  // 35 (trick cards, js/cards.js): photos.card = the skill id whose trick card shows this photo. Kept when it is a skill-id
+  // string (lower-case letters, digits, dashes), else dropped. The cards themselves are read from `skills`, nothing else is stored.
+  35: (col, id, doc) => { if (col === "photos" && doc.card !== undefined && !(typeof doc.card === "string" && /^[a-z0-9-]{1,40}$/.test(doc.card))) delete doc.card; return doc; }
 };
 
 export function docVersion(doc){ return doc && Number.isInteger(doc._v) && doc._v >= 1 ? doc._v : 1; }
