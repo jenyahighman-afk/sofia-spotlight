@@ -7,7 +7,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 39;
+export const SCHEMA_VERSION = 40;
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
 // bridge or rolls), frozen here for the migration.
 export const TEACH_MOVE_IDS = ["pose","plie","releve","passe","arab","attitude","develop","saute","pirouette","kick","fankick","chasse","pivot","jazzsq","layout","leap","calypso","tilt","reach","contract","spiral","floor","bounce","bodyroll","wave","toprock","freeze","hold"];
@@ -281,8 +281,22 @@ export const MIGRATIONS = {
   // 34-38: numbers held for the features built alongside this one; each is replaced by its own step when the branches are stacked.
   // 39 (Count Along, js/games/count.js): settings.beats = { danceId: { bpm 40-220, offset >= 0 } }, settings.countBest = { key: 0-100 }.
   // Normalized when present: out-of-range beats are dropped, bests become whole numbers capped at 100. Nothing invented.
-  39: (col, id, doc) => { if (col === "settings" && doc.beats !== undefined) doc.beats = normalizeBeats(doc.beats); if (col === "settings" && doc.countBest !== undefined) doc.countBest = normalizeCountBest(doc.countBest); return doc; }
+  39: (col, id, doc) => { if (col === "settings" && doc.beats !== undefined) doc.beats = normalizeBeats(doc.beats); if (col === "settings" && doc.countBest !== undefined) doc.countBest = normalizeCountBest(doc.countBest); return doc; },
+  // 40 (no weekly solo rehearsal): Ms. Brittany's solo rehearsals are booked as needed (at least 2 a month), not every Wednesday.
+  // A stored solo saved from the edit form keeps the old seed lines, so the exact old teacher / rehearsal / Nov 4 checkpoint
+  // texts are swapped for the new ones (SOLO_V40). Anything the family typed themselves is left alone.
+  40: (col, id, doc) => { if (col === "dances" && id === "solo") fixSoloRehearsal(doc); return doc; }
 };
+export const SOLO_V40 = {
+  teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],
+  rehearsal: ["Wednesdays 3:30–4:00 solo rehearsal with Ms. Brittany · Thu/Fri/Sun home practice", "Solo rehearsals with Ms. Brittany booked as needed (at least 2 a month) · Thu/Fri/Sun home practice"],
+  checkpoint: ["Show Ms. Brittany a run with no missed steps", "A full run with no missed steps, filmed for Ms. Brittany"],
+};
+export function fixSoloRehearsal(doc){
+  for (const k of ["teacher", "rehearsal"]) if (doc[k] === SOLO_V40[k][0]) doc[k] = SOLO_V40[k][1];
+  if (Array.isArray(doc.checkpoints)) doc.checkpoints = doc.checkpoints.map(c => c && typeof c === "object" && c.text === SOLO_V40.checkpoint[0] ? { ...c, text: SOLO_V40.checkpoint[1] } : c);
+  return doc;
+}
 // Shared by schema 38 and js/games/teach.js (which re-exports it as normalizeTeach).
 export function normalizeTeachList(list, ids = TEACH_MOVE_IDS){
   const k = new Set(ids), out = [], seen = new Set(), DATE = /^\d{4}-\d{2}-\d{2}$/;
