@@ -21,13 +21,28 @@ test("the plan is well-formed: every day Oct 17–Nov 9, a tag, must and opt ite
 });
 
 test("the two weeks after Oct 26 carry the checkpoints on their days, on the same weekly schedule", () => {
-  const cp = { "2026-10-31": ["trio", "★ trio checkpoint"], "2026-11-01": ["solo", "★ solo checkpoint"], "2026-11-04": ["solo", "★ run for Ms. Brittany"], "2026-11-09": ["solo", "★ tricks start"] };
+  const cp = { "2026-10-31": ["trio", "★ trio checkpoint"], "2026-11-01": ["solo", "★ solo checkpoint"], "2026-11-04": ["solo", "★ clean run for Ms. Brittany"], "2026-11-09": ["solo", "★ tricks start"] };
   for (const [d, [dance, label]] of Object.entries(cp)) { const p = dayPlan(d, plan); assert.equal(p.label, label, d); assert.ok(p.must.some(m => m.t.startsWith("★") || m.go === "memo:" + dance), d + " has its checkpoint as a must"); }
   const dances = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8")); const list = Array.isArray(dances) ? dances : (dances.dances || Object.values(dances));
   for (const d of list.filter(x => x && Array.isArray(x.checkpoints))) for (const c of d.checkpoints) if (c.d >= "2026-10-27" && c.d <= "2026-11-09") assert.ok(cp[c.d], d.id + " checkpoint " + c.d + " is in the plan");
   // Same week as Oct 17–26: the classes on a weekday match that weekday a week or two earlier.
   for (const d of Object.keys(plan.days).filter(x => x >= "2026-10-27")) { const prev = new Date(Date.parse(d + "T12:00:00Z") - 7 * 864e5).toISOString().slice(0, 10); const back = plan.days[prev] || plan.days[new Date(Date.parse(d + "T12:00:00Z") - 14 * 864e5).toISOString().slice(0, 10)]; assert.equal(plan.days[d].tag, back.tag, d + " tag"); assert.equal(plan.days[d].classes || "", back.classes || "", d + " classes"); }
   assert.ok(dayPlan("2026-11-09", plan).note.includes("Tricks start")); assert.ok(dayPlan("2026-10-31", plan).note.includes("Halloween"));
+});
+
+test("no weekly solo rehearsal: Wednesdays are Contemporary only; the PITCH jazz hold is on Nov 7–8; schema 40 updates a stored solo", async () => {
+  const classes = JSON.parse(readFileSync(new URL("../data/classes.json", import.meta.url), "utf8"));
+  assert.ok(!classes.some(c => /solo rehearsal/i.test(c.name)), "no standing solo rehearsal in the weekly classes");
+  assert.deepEqual(classes.filter(c => c.day === 3).map(c => c.name), ["Mini Contemporary III"]);
+  for (const d of Object.keys(plan.days)) { const v = plan.days[d]; assert.ok(!/solo rehearsal/i.test(v.classes || ""), d); assert.notEqual(v.tag, "rehearsal", d); assert.ok(![...v.must, ...v.opt].some(i => /before rehearsal|at rehearsal|after: write her notes/i.test(i.t)), d + " has no rehearsal-only item"); }
+  assert.match(dayPlan("2026-11-07", plan).note, /PITCH jazz/); assert.match(dayPlan("2026-11-08", plan).note, /PITCH jazz/);
+  const { fixSoloRehearsal, SOLO_V40 } = await import("../js/store.js");
+  const old = { id: "solo", teacher: SOLO_V40.teacher[0], rehearsal: SOLO_V40.rehearsal[0], checkpoints: [{ d: "2026-11-01", text: "Whole solo from memory, on the music" }, { d: "2026-11-04", text: SOLO_V40.checkpoint[0] }] };
+  const m = migrateDoc("dances", "solo", { ...old, _v: 39 }); assert.equal(m.teacher, SOLO_V40.teacher[1]); assert.equal(m.rehearsal, SOLO_V40.rehearsal[1]); assert.equal(m.checkpoints[1].text, SOLO_V40.checkpoint[1]); assert.equal(m.checkpoints[1].d, "2026-11-04"); assert.equal(m.checkpoints[0].text, "Whole solo from memory, on the music"); assert.equal(m._v, SCHEMA_VERSION);
+  const own = fixSoloRehearsal({ teacher: "Ms. Brittany, Tuesdays", rehearsal: "", checkpoints: [{ d: "2026-11-04", text: "my own goal" }] }); assert.equal(own.teacher, "Ms. Brittany, Tuesdays", "text the family typed stays"); assert.equal(own.checkpoints[0].text, "my own goal");
+  assert.equal(migrateDoc("dances", "trio", { _v: 39, teacher: SOLO_V40.teacher[0] }).teacher, SOLO_V40.teacher[0], "only the solo");
+  const seed = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8")); const solo = (Array.isArray(seed) ? seed : seed.dances || Object.values(seed)).find(x => x && x.id === "solo");
+  assert.equal(solo.teacher, SOLO_V40.teacher[1]); assert.equal(solo.rehearsal, SOLO_V40.rehearsal[1]); assert.ok(solo.checkpoints.some(c => c.text === SOLO_V40.checkpoint[1]), "the seed matches what the migration writes");
 });
 
 test("ticks save per day; a must-box makes the day count; untick removes; ▶ targets", () => {
