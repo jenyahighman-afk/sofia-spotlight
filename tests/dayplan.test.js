@@ -35,3 +35,9 @@ test("schema 30 normalizes practice.plan, never invents it", () => {
   assert.equal("plan" in migrateDoc("practice", "2026-10-17", { _v: 29 }), false); assert.deepEqual(migrateDoc("practice", "2026-10-17", { _v: 29, plan: "x" }).plan, []);
   assert.deepEqual(migrateDoc("practice", "2026-10-17", { _v: 21, bites: ["plan", "zzz"] }).bites, ["plan"], "plan is a bite kind");
 });
+
+test("on Today the plan card comes right after the dance pet, then the show countdown calendar", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8"); const at = (id) => html.indexOf(`id="${id}"`);
+  assert.ok(at("petArea") < at("dayPlan") && at("dayPlan") < at("adventCard"), "pet → plan → countdown");
+  assert.ok(/id="petArea"[^\n]*\n\s*<div class="card mint dayplan" id="dayPlan"/.test(html), "nothing in between the pet and the plan");
+});
