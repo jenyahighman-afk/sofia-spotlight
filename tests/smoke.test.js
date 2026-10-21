@@ -57,6 +57,11 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(el("#danceList").innerHTML.includes('data-memo="solo"') && el("#danceList").innerHTML.includes('data-memo="trio"'), "the solo and the trio get a Memorize card");
   assert.ok(el("#danceList").innerHTML.includes("Today's chunk:") && el("#danceList").innerHTML.includes("memoPlay('trio','test')"), "the card names today's chunk and opens Test me");
   assert.ok(!el("#danceList").innerHTML.includes('data-memo="wf-tap"'), "a dance without chunks gets none");
+  { const dl = el("#danceList").innerHTML; assert.ok(/<details class="more memo" data-memo="solo" >/.test(dl), "Memorize it starts folded");
+    const cards = (dl.match(/data-memo="/g) || []).length; assert.ok(cards >= 2);
+    assert.equal((dl.match(/class="memo-how"/g) || []).length, cards * 6, "each of the five steps and the full run explain themselves behind How?, on every Memorize card");
+    assert.equal((dl.match(/memo-how memo-rule/g) || []).length, cards, "the rules sit behind How does this work?"); assert.ok(dl.includes("“"), "the story itself stays in view"); }
+  assert.match(read("js/views/dances.js"), /Google Photos/, "the links field says Google Photos albums go there");
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
   assert.ok(html.includes('<details class="more plan-fold" id="planFold">') && html.indexOf('id="planFold"') < html.indexOf('id="practiceChecklist"'), "the exercise list sits inside a closed fold on Practice");

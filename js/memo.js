@@ -58,7 +58,7 @@ const VIDEO_HOST = /photos\.(google|app\.goo)|goo\.gl|drive\.google|youtu\.?be|v
 export function videoLinks(d){ return (d.links || []).map(l => { const [a, b] = String(l).split("|").map(x => x.trim()); const url = b || a; const name = b ? a : ""; return { name, url }; }).filter(l => /^https?:\/\//.test(l.url) && VIDEO_HOST.test(l.url)).map((l, i) => ({ ...l, name: l.name || "Video " + (i + 1) })); }
 
 // ---- DOM ----
-const PIC = { timer: null, left: 0, danceId: "" }; const OPEN = new Map(); // per dance: did she fold the card?
+const PIC = { timer: null, left: 0, danceId: "" }; const OPEN = new Map(); // per dance: did she open or fold the card? (starts folded)
 const rec = (date) => S.practice[date] || { done: [], note: "", runs: [] };
 export function memoCard(d, date = todayStr()){
   const c = chunkOfDay(d, S.settings); const done = new Set(stepsDone(rec(date), d.id)); const finished = STEP_IDS.every(s => done.has(s)); const m = memoFor(S.settings, d.id);
@@ -72,17 +72,18 @@ export function memoCard(d, date = todayStr()){
     if (s.id === "picture") return PIC.timer && PIC.danceId === d.id ? `<span class="chip coral memo-clock">${PIC.left}s</span>` : `<button class="btn sm coral" onclick="memoPicture('${d.id}')">▶ 1 min</button>`;
     return "";
   };
-  const rows = STEPS.map(s => `<div class="memo-step ${done.has(s.id) ? "done" : ""}"><span class="memo-ic">${done.has(s.id) ? "✅" : s.ic}</span><div class="grow"><b>${esc(s.n)}</b> <span class="small muted">${s.t}</span><div class="small">${esc(s.id === "story" ? (d.story ? "“" + d.story + "”" : s.how) : s.how)}</div>${done.has(s.id) ? "" : `<div class="row memo-act">${act(s)}</div>`}</div></div>`).join("");
+  const how = (t) => `<details class="memo-how"><summary>How?</summary><div class="small">${esc(t)}</div></details>`; // explanations open only when asked
+  const rows = STEPS.map(s => `<div class="memo-step ${done.has(s.id) ? "done" : ""}"><span class="memo-ic">${done.has(s.id) ? "✅" : s.ic}</span><div class="grow"><b>${esc(s.n)}</b> <span class="small muted">${s.t}</span>${s.id === "story" && d.story ? `<div class="small">${esc("“" + d.story + "”")}</div>` : ""}${how(s.how)}${done.has(s.id) ? "" : `<div class="row memo-act">${act(s)}</div>`}</div></div>`).join("");
   const cp = nextCheckpoint(d, date); const vids = videoLinks(d);
   const cpLine = cp ? `<div class="small memo-cp">🎯 ${daysBetween(date, cp.d) === 0 ? "Today" : daysBetween(date, cp.d) === 1 ? "Tomorrow" : `In ${daysBetween(date, cp.d)} days`} · ${esc(cp.text)}</div>` : "";
   const vidLine = vids.length ? `<div class="row memo-vids">📹 ${vids.map(v => `<a class="chip" href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.name)}</a>`).join("")}</div>` : "";
   const head = cpLine + vidLine + (c ? `<div class="memo-today">Today's chunk: <b>${esc(chunkLabel(c))}</b>${moves.length ? `<div class="small muted">${esc(moves.map(x => x.length > 42 ? x.slice(0, 40).replace(/\s+\S*$/, "") + "…" : x).join(" · "))}</div>` : ""}</div>`
     : `<div class="memo-today">Every chunk is known 🎉 Now it's run days: once with Lines on, once off. Clean with no help? Ask for the <b>No cues</b> badge.</div>`);
-  const open = OPEN.has(d.id) ? OPEN.get(d.id) : !finished;
+  const open = OPEN.has(d.id) ? OPEN.get(d.id) : false; // folded until tapped; remembers her choice while the app is open
   return `<details class="more memo" data-memo="${d.id}" ${open ? "open" : ""}><summary>🧠 Memorize it ${finished ? `<span class="chip mint">done today ✓</span>` : `<span class="chip">${done.size}/${STEP_IDS.length}</span>`}</summary>
     <div class="row memo-chips">${chips}</div>${head}${c ? rows : ""}
-    <div class="memo-step"><span class="memo-ic">🎬</span><div class="grow"><b>Full run</b> <span class="small muted">once a week</span><div class="small">Once with 📜 Lines on, once with Lines off. Then ▶ Run it in the player.</div><div class="row memo-act"><button class="btn sm ghost" onclick="openPlayer('${d.id}')">▶ Open the player</button></div></div></div>
-    <p class="small muted memo-rule">One chunk a day. A chunk is known after Test me is perfect on ${KNOWN_AFTER} different days. The printable plan is in Me → My files.</p></details>`;
+    <div class="memo-step"><span class="memo-ic">🎬</span><div class="grow"><b>Full run</b> <span class="small muted">once a week</span>${how("Once with 📜 Lines on, once with Lines off. Then ▶ Run it in the player.")}<div class="row memo-act"><button class="btn sm ghost" onclick="openPlayer('${d.id}')">▶ Open the player</button></div></div></div>
+    <details class="memo-how memo-rule"><summary>How does this work?</summary><p class="small muted">One chunk a day: do the five steps, top to bottom. A chunk is known after Test me is perfect on ${KNOWN_AFTER} different days. The printable plan is in Me → My files.</p></details></details>`;
 }
 export function bindMemo(root){ (root || document).querySelectorAll("details[data-memo]").forEach(el => { el.addEventListener("toggle", () => OPEN.set(el.dataset.memo, el.open)); }); }
 function rerender(){ document.dispatchEvent(new CustomEvent("memochanged")); }
