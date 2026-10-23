@@ -66,6 +66,21 @@ test("acro is the studio's chart: Levels 1–4 in four sections, her group in fo
 });
 const acroIds = () => ladder.styles.acro.skills.map(s => s.id);
 
+test("acro page 2 rows match the close-up photos (rows checked one by one)", () => {
+  const rows = (prefix) => ladder.styles.acro.skills.filter(s => s.n.startsWith(prefix + ":")).map(s => [s.n.slice(prefix.length + 2), s.lvl]);
+  assert.deepEqual(rows("Rubberband"), [["one", 3], ["repeated", 4]]);
+  assert.deepEqual(rows("1990 (handspin)"), [["rotating handstands", 3], ["spin", 4]]);
+  assert.deepEqual(rows("Windmill"), [["coin drop", 2], ["stab to mill", 3], ["repeated", 4]]);
+  assert.deepEqual(rows("Handspin"), [["in stab", 3], ["side stab", 4]]);
+  assert.deepEqual(rows("Dead leg / knee drop"), [["side drop", 3], ["butterfly drop", 4], ["twist drop", 3]]);
+  assert.deepEqual(rows("Machine"), [["2 in a row", 2], ["nonstop", 3]]);
+  assert.deepEqual(rows("Swipe"), [["coffee grinder", 1], ["swipe", 3], ["airswipe", 4], ["swipe roll", 4]]);
+  assert.deepEqual(rows("Rolo"), [["2 in a row", 2], ["nonstop", 3]]);
+  assert.deepEqual(rows("Sister cartwheel"), [["one", 2], ["4 in a row", 3]]);
+  assert.deepEqual(rows("Lift"), [["assisted table", 1], ["candle hold", 3], ["hand hold aerial", 4], ["front flip", 3], ["flying table", 4], ["partner line backflip", 3]]);
+  assert.deepEqual(rows("Bluebird"), [["from standing", 3], ["from lean", 4]]);
+});
+
 test("progress rings: learning counts a third, clean two thirds, teacher-checked full; acro counts her group's levels", () => {
   const skills = { "a-aerial": { state: "checked", teacher: "Hannah" }, "a-onehand": { state: "clean" }, "a-dive-walkover": { state: "learning" }, "a-cartwheel": { state: "checked" }, "a-bogus": { state: "weird" } };
   const p = styleProgress(skills, ladder);
