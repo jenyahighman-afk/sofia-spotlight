@@ -14,17 +14,21 @@ const ladder = got.skills;
 const { cardList, cardCounts, binderGroups, cardPhotos, cardMoment, normalizeCardLink, tierOf, cardHTML, renderCardsCard, renderBinder, initCards } = await import("../js/cards.js");
 const { kidCycle, teacherCheck } = await import("../js/skills.js");
 const { S, migrateDoc, SCHEMA_VERSION, setBackend } = await import("../js/store.js");
-const total = Object.values(ladder.styles).reduce((a, s) => a + s.skills.length, 0);
+// A leveled ladder (acro) puts her group's levels in the binder (plus anything she has started); plain ladders put every skill.
+const binderSkills = (st) => st.skills.filter(s => !Array.isArray(st.focus) || st.focus.includes(s.lvl));
+const total = Object.values(ladder.styles).reduce((a, s) => a + binderSkills(s).length, 0);
 
 test("one card per skill, every style, in ladder order with its number from the data", () => {
   const cards = cardList({}, ladder); assert.equal(cards.length, total); assert.equal(new Set(cards.map(c => c.id)).size, total, "ids unique");
   for (const [style, st] of Object.entries(ladder.styles)) {
-    const mine = cards.filter(c => c.style === style); assert.deepEqual(mine.map(c => c.id), st.skills.map(s => s.id), style + " in ladder order");
-    mine.forEach((c, i) => { assert.equal(c.no, i + 1); assert.equal(c.of, st.skills.length); assert.equal(c.ic, st.ic); assert.equal(c.styleName, st.n); assert.match(c.color, /^#[0-9A-F]{6}$/i); });
+    const mine = cards.filter(c => c.style === style); assert.deepEqual(mine.map(c => c.id), binderSkills(st).map(s => s.id), style + " in ladder order");
+    mine.forEach((c, i) => { assert.equal(c.no, i + 1); assert.equal(c.of, binderSkills(st).length); assert.equal(c.ic, st.ic); assert.equal(c.styleName, st.n); assert.match(c.color, /^#[0-9A-F]{6}$/i); });
   }
   assert.ok(cards.every(c => c.tier === "locked" && c.date === "" && c.gems === 0), "nothing earned with no records");
   assert.ok(cards.every(c => /^[a-z0-9-]{1,40}$/.test(c.id)), "card ids are onclick-safe");
   assert.deepEqual(binderGroups(cards).map(g => g.style), Object.keys(ladder.styles));
+  const started = cardList({ "a-cartwheel": { state: "clean", at: "2026-10-01" } }, ladder); assert.ok(started.some(c => c.id === "a-cartwheel" && c.tier === "card"), "a Level 1 acro skill she landed still earns its card");
+  assert.ok(!cards.some(c => c.id === "a-cartwheel"), "an untouched Level 1 skill stays out of the binder");
 });
 
 test("clean earns a card, teacher-checked a shiny one, learning stays locked; counts and dates come from the records", () => {

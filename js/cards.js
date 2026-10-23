@@ -8,7 +8,7 @@
 import { $, esc, toast, uid, expose, fmt } from "./util.js";
 import { S, storeSet } from "./store.js";
 import { SKILLS } from "./data.js";
-import { skillState, onSkillState, findSkill } from "./skills.js";
+import { skillState, onSkillState, findSkill, inFocus } from "./skills.js";
 import { openStage } from "./stage.js";
 import { media, friendlyError } from "./sync.js";
 import { resizeImage } from "./media.js";
@@ -26,7 +26,7 @@ export const tierOf = (state) => TIER[state] || "locked";
 export function cardList(skills = S.skills, ladder = SKILLS){
   const out = [];
   for (const [style, st] of Object.entries(ladder.styles || {})) {
-    const list = st.skills || [];
+    const list = (st.skills || []).filter(sk => inFocus(st, sk) || skillState(skills, sk.id) !== "notyet"); // acro: her group's levels + anything started
     list.forEach((sk, i) => {
       const state = skillState(skills, sk.id); const r = (skills || {})[sk.id] || {}; const tier = tierOf(state);
       const gems = r.quest && Array.isArray(r.quest.gems) ? r.quest.gems.length : 0;
