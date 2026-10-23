@@ -15,7 +15,7 @@ const { cardList, cardCounts, binderGroups, cardPhotos, cardMoment, normalizeCar
 const { kidCycle, teacherCheck } = await import("../js/skills.js");
 const { S, migrateDoc, SCHEMA_VERSION, setBackend } = await import("../js/store.js");
 // A leveled ladder (acro) puts her group's levels in the binder (plus anything she has started); plain ladders put every skill.
-const binderSkills = (st) => st.skills.filter(s => !Array.isArray(st.focus) || st.focus.includes(s.lvl));
+const binderSkills = (st) => st.skills.filter(s => !Array.isArray(st.focus) || s.bonus || st.focus.includes(s.lvl));
 const total = Object.values(ladder.styles).reduce((a, s) => a + binderSkills(s).length, 0);
 
 test("one card per skill, every style, in ladder order with its number from the data", () => {
