@@ -1087,20 +1087,26 @@
      "sec": "Variation movements"
     },
     {
-     "id": "a-dead-leg-knee-drop-repeated",
-     "n": "Dead leg / knee drop: repeated",
-     "lvl": 4,
-     "sec": "Variation movements"
-    },
-    {
-     "id": "a-1990-rubberband-rotating-handstands",
-     "n": "1990 / rubberband: rotating handstands",
+     "id": "a-rubberband-one",
+     "n": "Rubberband: one",
      "lvl": 3,
      "sec": "Variation movements"
     },
     {
-     "id": "a-1990-rubberband-spin",
-     "n": "1990 / rubberband: spin",
+     "id": "a-rubberband-repeated",
+     "n": "Rubberband: repeated",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-1990-handspin-rotating-handstands",
+     "n": "1990 (handspin): rotating handstands",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-1990-handspin-spin",
+     "n": "1990 (handspin): spin",
      "lvl": 4,
      "sec": "Variation movements"
     },
@@ -1123,51 +1129,57 @@
      "sec": "Variation movements"
     },
     {
-     "id": "a-windmill-in-stab",
-     "n": "Windmill: in stab",
+     "id": "a-handspin-in-stab",
+     "n": "Handspin: in stab",
      "lvl": 3,
      "sec": "Variation movements"
     },
     {
-     "id": "a-windmill-side-stab",
-     "n": "Windmill: side stab",
+     "id": "a-handspin-side-stab",
+     "n": "Handspin: side stab",
      "lvl": 4,
      "sec": "Variation movements"
     },
     {
-     "id": "a-handspin-2-in-a-row",
-     "n": "Handspin: 2 in a row",
+     "id": "a-rolo-2-in-a-row",
+     "n": "Rolo: 2 in a row",
      "lvl": 2,
-     "sec": "Variation movements"
+     "sec": "Partner moves"
     },
     {
-     "id": "a-handspin-nonstop",
-     "n": "Handspin: nonstop",
-     "lvl": 3,
-     "sec": "Variation movements"
-    },
-    {
-     "id": "a-rolo-4-in-a-row",
-     "n": "Rolo: 4 in a row",
+     "id": "a-rolo-nonstop",
+     "n": "Rolo: nonstop",
      "lvl": 3,
      "sec": "Partner moves"
     },
     {
-     "id": "a-sister-cartwheel-candle-hold",
-     "n": "Sister cartwheel: candle hold",
-     "lvl": 3,
+     "id": "a-sister-cartwheel-one",
+     "n": "Sister cartwheel: one",
+     "lvl": 2,
      "sec": "Partner moves"
     },
     {
-     "id": "a-sister-cartwheel-hand-hold-aerial",
-     "n": "Sister cartwheel: hand hold aerial",
-     "lvl": 4,
+     "id": "a-sister-cartwheel-4-in-a-row",
+     "n": "Sister cartwheel: 4 in a row",
+     "lvl": 3,
      "sec": "Partner moves"
     },
     {
      "id": "a-lift-assisted-table",
      "n": "Lift: assisted table",
      "lvl": 1,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-lift-candle-hold",
+     "n": "Lift: candle hold",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-lift-hand-hold-aerial",
+     "n": "Lift: hand hold aerial",
+     "lvl": 4,
      "sec": "Partner moves"
     },
     {
