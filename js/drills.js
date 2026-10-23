@@ -43,7 +43,7 @@ const shortText = (t) => { const s = String(t || "").split(/[:,(—]/)[0].trim()
 // Everything a post can be "for": the skill ladders (data/skills.json) and the aerial mission items (data/aerial.json).
 export function skillOptions(ladder = SKILLS, aerial = AERIAL){
   const out = [];
-  for (const st of Object.values(ladder.styles || {})) for (const k of st.skills) out.push({ id: k.id, n: k.n, group: st.n });
+  for (const st of Object.values(ladder.styles || {})) for (const k of st.skills) out.push({ id: k.id, n: k.n, group: Number.isInteger(k.lvl) ? `${st.n} · Level ${k.lvl}` : st.n });
   for (const a of aerial) out.push({ id: a.id, n: shortText(a.text), group: "Aerial mission · " + a.section });
   return out;
 }

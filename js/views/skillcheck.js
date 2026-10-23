@@ -2,12 +2,13 @@
 import { $, esc, todayStr, toast, expose } from "../util.js";
 import { SKILLS } from "../data.js";
 import { S, dances } from "../store.js";
-import { skillState, teacherCheck, uncheck, STATE_LABEL, allSkills } from "../skills.js";
+import { skillState, teacherCheck, uncheck, STATE_LABEL, allSkills, levelGroups } from "../skills.js";
 import { awardParentBadge, earned } from "../badges.js";
 
 function renderSkillCheck(){
-  $("#skillCheckList").innerHTML = Object.entries(SKILLS.styles).map(([k, st]) => `<div class="field-lab">${st.ic} ${esc(st.n)}</div>` + st.skills.map(sk => { const r = S.skills[sk.id] || {}; const state = skillState(S.skills, sk.id);
-    return `<div class="check"><span class="chip ${state === "checked" ? "coral" : state === "clean" ? "sun" : state === "learning" ? "violet" : ""}">${STATE_LABEL[state]}</span><span class="grow">${esc(sk.n)}${state === "checked" ? `<br><span class="small muted">${esc(r.teacher || "")} · ${esc(r.checkedAt || "")}</span>` : ""}</span>${state === "checked" ? `<button class="btn sm ghost" onclick="skillUncheck('${sk.id}')">Undo</button>` : `<button class="btn sm coral" onclick="skillCheck('${sk.id}')">Teacher checked</button>`}</div>`; }).join("")).join("");
+  const item = (sk) => { const r = S.skills[sk.id] || {}; const state = skillState(S.skills, sk.id);
+    return `<div class="check"><span class="chip ${state === "checked" ? "coral" : state === "clean" ? "sun" : state === "learning" ? "violet" : ""}">${STATE_LABEL[state]}</span><span class="grow">${esc(sk.n)}${state === "checked" ? `<br><span class="small muted">${esc(r.teacher || "")} · ${esc(r.checkedAt || "")}</span>` : ""}</span>${state === "checked" ? `<button class="btn sm ghost" onclick="skillUncheck('${sk.id}')">Undo</button>` : `<button class="btn sm coral" onclick="skillCheck('${sk.id}')">Teacher checked</button>`}</div>`; };
+  $("#skillCheckList").innerHTML = Object.entries(SKILLS.styles).map(([k, st]) => { const groups = levelGroups(st); return `<div class="field-lab">${st.ic} ${esc(st.n)}${st.src ? ` <span class="small muted">· ${esc(st.src)}</span>` : ""}</div>` + (groups ? groups.map(g => `<details class="lvl" ${g.focus ? "open" : ""}><summary>${esc(g.label)}${g.focus ? ` <span class="chip coral">her group</span>` : ""} <span class="chip">${g.skills.length}</span></summary>${g.skills.map(item).join("")}</details>`).join("") : st.skills.map(item).join("")); }).join("");
   const ds = dances(); $("#awardDance").innerHTML = ds.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("");
   $("#awardTrick").innerHTML = allSkills().map(s => `<option value="${s.id}">${esc(s.n)}</option>`).join("") + `<option value="__custom">Something else…</option>`;
   const parent = earned().filter(b => b.parent);
