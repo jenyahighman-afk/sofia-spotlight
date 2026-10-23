@@ -1259,6 +1259,16 @@
      "n": "Bluebird: from lean",
      "lvl": 4,
      "sec": "Partner moves"
+    },
+    {
+     "id": "a-handstand",
+     "n": "Handstand, 3 seconds",
+     "bonus": true
+    },
+    {
+     "id": "a-chin",
+     "n": "Chin stand",
+     "bonus": true
     }
    ]
   },
