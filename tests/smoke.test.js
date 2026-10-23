@@ -99,11 +99,12 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(dl.includes("fixchip") && dl.includes("showMe('a')"), "chip opens Show me");
   { window.meStyle("acro"); const sl = el("#skillList").innerHTML;
     assert.ok(sl.includes("Glass House Dance") && sl.includes("her group: <b>Level 2–3</b>"), "the acro list names the studio chart and her group");
-    assert.equal((sl.match(/<details class="lvl"/g) || []).length, 4, "Levels 1–4 fold"); assert.equal((sl.match(/<details class="lvl" open>/g) || []).length, 2, "her two levels start open");
+    assert.equal((sl.match(/<details class="lvl"/g) || []).length, 5, "Levels 1–4 and Bonus moves fold"); assert.equal((sl.match(/<details class="lvl" open>/g) || []).length, 3, "her two levels and the bonus moves start open");
+    assert.ok(sl.includes("✨ Bonus moves") && sl.includes("meSkill('a-handstand')") && sl.includes("meSkill('a-chin')"), "bonus moves tap through");
     assert.ok(sl.includes("⭐ To level up · Level 3") && sl.includes("⭐ To level up · Level 4") && !sl.includes("To level up · Level 2"), "level-up lines for the levels above her lowest");
     assert.ok(sl.includes("meSkill('a-onehand')") && sl.includes("Cartwheel: 1 handed"), "skills tap through as before");
     assert.ok(sl.includes('<div class="lvl-sec">Partner moves</div>') && sl.indexOf("Acro basics") < sl.indexOf("Power tumbling"), "sections in chart order inside a level"); window.meStyle("acro");
-    const sc = el("#skillCheckList").innerHTML; assert.ok(sc.includes("Glass House Dance") && (sc.match(/<details class="lvl"/g) || []).length === 4, "Skill check folds acro by level too"); }
+    const sc = el("#skillCheckList").innerHTML; assert.ok(sc.includes("Glass House Dance") && (sc.match(/<details class="lvl"/g) || []).length === 5, "Skill check folds acro by level too"); }
   assert.ok(el("#mePatterns").innerHTML.includes("You've had this note 5 times"), "Me shows the repeated tag across dances");
   assert.ok(dl.includes("You've had this note 3 times") && dl.includes("gotIt('d')") === false && dl.includes("Got it!"), "jazz card shows its own 3-times line with a Got it! on an open note");
   assert.ok(el("#weekFix").innerHTML.includes("Point your foot") && el("#weekFix").innerHTML.includes("This week's fix"), "Today shows this week's fix");
