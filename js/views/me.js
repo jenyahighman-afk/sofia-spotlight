@@ -7,7 +7,7 @@ import { renderPaletteRow, applyPalette } from "../palette.js";
 import { renderRitualCard } from "../mind.js";
 import { computeStreak, bestStreak, practicedDays } from "../streak.js";
 import { earned, AUTO_BADGES, checkBadges } from "../badges.js";
-import { styleProgress, skillState, kidCycle, STATE_EMOJI, STATE_LABEL } from "../skills.js";
+import { styleProgress, skillState, kidCycle, STATE_EMOJI, STATE_LABEL, levelGroups, focusLabel } from "../skills.js";
 import { patterns, TAG_LABEL, TAG_EMOJI, closeCorrection, closedCount, isOpen } from "../corrections.js";
 import { openGrownups } from "../grownups.js";
 import { renderGoalsCard } from "../goals.js";
@@ -41,7 +41,13 @@ function renderMe(){
   const prog = styleProgress(S.skills);
   $("#skillRings").innerHTML = Object.entries(prog).map(([k, p]) => `<button class="skill-ring ${styleOpen === k ? "on" : ""}" onclick="meStyle('${k}')">${ring(p.pct, p.ic)}<small>${esc(p.n)}</small><small class="muted">${p.checked}★ ${p.clean}◉</small></button>`).join("");
   const st = styleOpen && SKILLS.styles[styleOpen];
-  $("#skillList").innerHTML = st ? `<div class="small muted" style="margin:6px 0">Tap a skill: learning → clean. A grown-up marks ★ teacher-checked.</div>` + st.skills.map(sk => { const state = skillState(S.skills, sk.id); return `<button class="skill ${state}" onclick="meSkill('${sk.id}')"><span class="st">${STATE_EMOJI[state]}</span><span class="grow">${esc(sk.n)}</span><small>${STATE_LABEL[state]}${state === "checked" && S.skills[sk.id] && S.skills[sk.id].teacher ? " · " + esc(S.skills[sk.id].teacher) : ""}</small></button>`; }).join("") : "";
+  const row = (sk) => { const state = skillState(S.skills, sk.id); return `<button class="skill ${state}" onclick="meSkill('${sk.id}')"><span class="st">${STATE_EMOJI[state]}</span><span class="grow">${esc(sk.n)}</span><small>${STATE_LABEL[state]}${state === "checked" && S.skills[sk.id] && S.skills[sk.id].teacher ? " · " + esc(S.skills[sk.id].teacher) : ""}</small></button>`; };
+  const groups = st ? levelGroups(st) : null;
+  const leveled = () => { const up = groups.filter(g => g.req.length && g.lvl > Math.min(...(st.focus || [1]))); const reqLine = (g) => `<div class="lvl-up"><b>⭐ To level up · ${esc(g.label)}</b>${g.req.map(r => r.id ? `<span class="chip ${["clean", "checked"].includes(skillState(S.skills, r.id)) ? "mint" : ""}">${STATE_EMOJI[skillState(S.skills, r.id)]} ${esc(r.n)}</span>` : `<span class="chip">○ ${esc(r.n)}</span>`).join("")}</div>`;
+    return `<div class="small muted" style="margin:6px 0">${esc(st.src || "")}${focusLabel(st) ? ` · her group: <b>${esc(focusLabel(st))}</b>` : ""}. Tap a skill: learning → clean. A grown-up marks ★ teacher-checked.</div>${up.map(reqLine).join("")}`
+      + groups.map(g => { const done = g.skills.filter(k => ["clean", "checked"].includes(skillState(S.skills, k.id))).length; return `<details class="lvl" ${g.focus ? "open" : ""}><summary>${esc(g.label)}${g.focus ? ` <span class="chip coral">her group</span>` : ""} <span class="chip">${done}/${g.skills.length}</span></summary>${bySection(g.skills)}</details>`; }).join(""); };
+  const bySection = (list) => (st.sections || [""]).map(sec => { const part = list.filter(k => (k.sec || "") === sec || (!sec && !k.sec)); return part.length ? (sec ? `<div class="lvl-sec">${esc(sec)}</div>` : "") + part.map(row).join("") : ""; }).join("");
+  $("#skillList").innerHTML = !st ? "" : groups ? leveled() : `<div class="small muted" style="margin:6px 0">Tap a skill: learning → clean. A grown-up marks ★ teacher-checked.</div>` + st.skills.map(row).join("");
   // patterns
   const ps = patterns(S.corrections);
   $("#mePatterns").innerHTML = ps.length ? ps.map(p => { const open = Object.values(S.corrections).filter(c => isOpen(c) && c.tag === p.tag).sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0]; return `<div class="row pattern"><span class="grow">${TAG_EMOJI[p.tag]} You've had this note ${p.n} times: <b>${TAG_LABEL[p.tag]}</b></span>${open ? `<button class="btn sm sun" onclick="meGotIt('${open.id}')">Got it!</button>` : `<span class="chip mint">all closed</span>`}</div>`; }).join("") : `<span class="small muted">No repeats. Nice.</span>`;

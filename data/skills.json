@@ -199,46 +199,1066 @@
   "acro": {
    "n": "Acro",
    "ic": "🤸",
+   "src": "Glass House Dance · acro skills by level",
+   "focus": [
+    2,
+    3
+   ],
+   "sections": [
+    "Acro basics",
+    "Power tumbling",
+    "Variation movements",
+    "Partner moves"
+   ],
+   "levelup": [
+    {
+     "lvl": 2,
+     "need": [
+      "a-front-limber",
+      "a-back-bend-kickover"
+     ]
+    },
+    {
+     "lvl": 3,
+     "need": [
+      "a-aerial",
+      "a-ro-back-walkover"
+     ]
+    },
+    {
+     "lvl": 4,
+     "need": [
+      "a-aerial-1-step",
+      "Front aerial timer"
+     ]
+    }
+   ],
    "skills": [
     {
+     "id": "a-handstand-clap-feet",
+     "n": "Handstand: clap feet",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handstand-double-stag",
+     "n": "Handstand: double stag",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handstand-helicopter",
+     "n": "Handstand: helicopter",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handstand-walking-level-4",
+     "n": "Handstand: walking (Level 4)",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handstand-walking-level-3",
+     "n": "Handstand: walking (Level 3)",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handstand-hold-5-sec",
+     "n": "Handstand hold: 5 sec",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handstand-hold-shoulder-taps",
+     "n": "Handstand hold: shoulder taps",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handstand-hold-30-sec",
+     "n": "Handstand hold: 30 sec",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
      "id": "a-cartwheel",
-     "n": "Cartwheel, straight arms and legs"
+     "n": "Cartwheel: both sides",
+     "lvl": 1,
+     "sec": "Acro basics"
     },
     {
      "id": "a-onehand",
-     "n": "One-hand cartwheel"
+     "n": "Cartwheel: 1 handed",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-cartwheel-helicopter",
+     "n": "Cartwheel: helicopter",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-cartwheel-helicopter-walkout",
+     "n": "Cartwheel: helicopter walkout",
+     "lvl": 4,
+     "sec": "Acro basics"
     },
     {
      "id": "a-roundoff",
-     "n": "Round-off, feet together"
+     "n": "Round off",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-round-off-brandy",
+     "n": "Round off: brandy",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-round-off-bob-no-hands",
+     "n": "Round off: bob (no hands)",
+     "lvl": 3,
+     "sec": "Acro basics"
     },
     {
      "id": "a-bridge",
-     "n": "Bridge, 10 seconds"
-    },
-    {
-     "id": "a-handstand",
-     "n": "Handstand, 3 seconds"
-    },
-    {
-     "id": "a-dive",
-     "n": "Dive cartwheel"
+     "n": "Bridge",
+     "lvl": 1,
+     "sec": "Acro basics"
     },
     {
      "id": "a-frontwalkover",
-     "n": "Front walkover"
+     "n": "Front walkover",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-dive-walkover",
+     "n": "Dive walkover",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-aerial",
+     "n": "Front aerial",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-back-bend-kickover",
+     "n": "Back bend, kickover",
+     "lvl": 1,
+     "sec": "Acro basics"
     },
     {
      "id": "a-backwalkover",
-     "n": "Back walkover"
+     "n": "Back walkover",
+     "lvl": 2,
+     "sec": "Acro basics"
     },
     {
-     "id": "a-chin",
-     "n": "Chin stand"
+     "id": "a-monster-walkover",
+     "n": "Monster walkover",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-limber",
+     "n": "Front limber",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-limber-1-hand",
+     "n": "Front limber: 1 hand",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-stand-clap-feet",
+     "n": "Elbow stand: clap feet",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-stand-double-stag",
+     "n": "Elbow stand: double stag",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-stand-helicopter",
+     "n": "Elbow stand: helicopter",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-stand-elbow-tick-tock",
+     "n": "Elbow stand: elbow tick tock",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-stand-c-curve",
+     "n": "Elbow stand: C-curve",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-stand-hollowback",
+     "n": "Elbow stand: hollowback",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-cartwheel-from-knees",
+     "n": "Elbow cartwheel: from knees",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-cartwheel-from-standing",
+     "n": "Elbow cartwheel: from standing",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-cartwheel-one-elbow-from-standin",
+     "n": "Elbow cartwheel: one elbow from standing",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-elbow-cartwheel-helicopter",
+     "n": "Elbow cartwheel: helicopter",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-headstand",
+     "n": "Headstand",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-headstand-from-crow",
+     "n": "Headstand: from crow",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-headstand-walking-circle",
+     "n": "Headstand: walking circle",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-headstand-headspin-drill",
+     "n": "Headstand: headspin / drill",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-headspring-headstand-to-bridge",
+     "n": "Headspring: headstand to bridge",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-headspring",
+     "n": "Headspring",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-headspring-no-hands",
+     "n": "Headspring: no hands",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-kip-up-to-shoulder-bridge",
+     "n": "Kip up: to shoulder bridge",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-kip-up-to-bridge",
+     "n": "Kip up: to bridge",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-kip-up-to-standing",
+     "n": "Kip up: to standing",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-kip-up-no-hands",
+     "n": "Kip up: no hands",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-dive",
+     "n": "Aerial: dive cartwheel / time",
+     "lvl": 1,
+     "sec": "Acro basics"
     },
     {
      "id": "a-aerial",
-     "n": "Aerial"
+     "n": "Aerial",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-aerial-hurdle-aerial-bad-side",
+     "n": "Aerial: hurdle aerial / bad side",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-aerial-1-step",
+     "n": "Aerial: 1 step",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-aerial-from-knee",
+     "n": "Aerial: from knee",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-aerial-sweep-through-leg",
+     "n": "Aerial: sweep through leg",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-aerial-with-run",
+     "n": "Front aerial: with run",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-aerial-1-step",
+     "n": "Front aerial: 1 step",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-roll-somersault",
+     "n": "Front roll: somersault",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-roll-dive-roll-distance",
+     "n": "Front roll: dive roll (distance)",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-roll-dive-roll-height",
+     "n": "Front roll: dive roll (height)",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-roll-pirate-roll-no-hands",
+     "n": "Front roll: pirate roll (no hands)",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-roll-handstand-roll",
+     "n": "Front roll: handstand roll",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-ponche-roll",
+     "n": "Ponche roll",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-ponche-roll-no-hands",
+     "n": "Ponche roll: no hands",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-crow",
+     "n": "Crow",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-shoulder-roll",
+     "n": "Shoulder roll",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-shoulder-roll-fish-roll",
+     "n": "Shoulder roll: fish roll",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-shoulder-roll-switch-leg",
+     "n": "Shoulder roll: switch leg",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-shoulder-roll-reverse-fish",
+     "n": "Shoulder roll: reverse fish",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-shoulder-roll-fish-flop",
+     "n": "Shoulder roll: fish flop",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-backwards-roll-to-straddle",
+     "n": "Backwards roll: to straddle",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-backwards-roll-to-standing",
+     "n": "Backwards roll: to standing",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-backwards-roll-to-handstand",
+     "n": "Backwards roll: to handstand",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-candlestick",
+     "n": "Candlestick",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-chest-stand-leg-on-floor",
+     "n": "Chest stand: leg on floor",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-chest-stand-no-legs",
+     "n": "Chest stand: no legs",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-chest-stand-reverse-fish",
+     "n": "Chest stand: reverse fish",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-chest-stand-chest-cartwheel",
+     "n": "Chest stand: chest cartwheel",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-valdez-floor-jet",
+     "n": "Valdez / floor jeté",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-valdez-floor-jet-reverse",
+     "n": "Valdez / floor jeté: reverse",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-valdez-floor-jet-two-feet",
+     "n": "Valdez / floor jeté: two feet",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-valdez-floor-jet-valdez-to-walkover",
+     "n": "Valdez / floor jeté: Valdez to walkover",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-valdez-floor-jet-reverse-1-hand",
+     "n": "Valdez / floor jeté: reverse 1 hand",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-valdez-floor-jet-to-handstand",
+     "n": "Valdez / floor jeté: to handstand",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-valdez-floor-jet-switch-leg",
+     "n": "Valdez / floor jeté: switch leg",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-valdez-floor-jet-reverse-switch-leg",
+     "n": "Valdez / floor jeté: reverse switch leg",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-spider-rainbow-to-bridge",
+     "n": "Spider: rainbow to bridge",
+     "lvl": 1,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-spider-in-and-outs",
+     "n": "Spider: in & outs",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-spider-spiders",
+     "n": "Spider: spiders",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-spider-1-hand-spiders",
+     "n": "Spider: 1 hand spiders",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-tuck-from-running",
+     "n": "Front tuck: from running",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-tuck-standing",
+     "n": "Front tuck: standing",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-front-tuck-webster",
+     "n": "Front tuck: Webster",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-back-tuck-standing",
+     "n": "Back tuck: standing",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-back-tuck-ro-back-tuck",
+     "n": "Back tuck: R.O. back tuck",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handspring-front-handspring",
+     "n": "Handspring: front handspring",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handspring-front-step-out",
+     "n": "Handspring: front step out",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handspring-back-step-out",
+     "n": "Handspring: back step out",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handspring-back-walkover-snap-down",
+     "n": "Handspring: back walkover snap down",
+     "lvl": 2,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handspring-back-handspring",
+     "n": "Handspring: back handspring",
+     "lvl": 3,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-handspring-repeated",
+     "n": "Handspring: repeated",
+     "lvl": 4,
+     "sec": "Acro basics"
+    },
+    {
+     "id": "a-ro-back-bend-kickover",
+     "n": "R.O. back bend kickover",
+     "lvl": 2,
+     "sec": "Power tumbling"
+    },
+    {
+     "id": "a-ro-back-walkover",
+     "n": "R.O. back walkover",
+     "lvl": 3,
+     "sec": "Power tumbling"
+    },
+    {
+     "id": "a-ro-back-handspring-back-tuck",
+     "n": "R.O. back handspring, back tuck",
+     "lvl": 4,
+     "sec": "Power tumbling"
+    },
+    {
+     "id": "a-ro-back-handspring",
+     "n": "R.O. back handspring",
+     "lvl": 3,
+     "sec": "Power tumbling"
+    },
+    {
+     "id": "a-arabian",
+     "n": "Arabian",
+     "lvl": 4,
+     "sec": "Power tumbling"
+    },
+    {
+     "id": "a-layout",
+     "n": "Layout",
+     "lvl": 4,
+     "sec": "Power tumbling"
+    },
+    {
+     "id": "a-side-flip",
+     "n": "Side flip",
+     "lvl": 4,
+     "sec": "Power tumbling"
+    },
+    {
+     "id": "a-bronco",
+     "n": "Bronco",
+     "lvl": 1,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-bronco-dive-bronco",
+     "n": "Bronco: dive bronco",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-bronco-twist-bronco",
+     "n": "Bronco: twist bronco",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-leg-hold-heel-stretch",
+     "n": "Leg hold: heel stretch",
+     "lvl": 1,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-leg-hold-bow-and-arrow",
+     "n": "Leg hold: bow & arrow",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-leg-hold-needle",
+     "n": "Leg hold: needle",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-leg-hold-half-scorpion",
+     "n": "Leg hold: half scorpion",
+     "lvl": 1,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-leg-hold-scorpion",
+     "n": "Leg hold: scorpion",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-turtle",
+     "n": "Freeze: turtle",
+     "lvl": 1,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-stab",
+     "n": "Freeze: stab",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-baby-chair",
+     "n": "Freeze: baby > chair",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-drop-to-stab",
+     "n": "Freeze: drop to stab",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-baby-freeze",
+     "n": "Freeze: baby freeze",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-chair-freeze",
+     "n": "Freeze: chair freeze",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-shoulder-stand-with-feet",
+     "n": "Freeze: shoulder stand (with feet)",
+     "lvl": 1,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-shoulder-stand-no-feet",
+     "n": "Freeze: shoulder stand (no feet)",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-freeze-mid-roll",
+     "n": "Freeze: freeze mid-roll",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-shoulder-sweep-cartwheel",
+     "n": "Freeze: shoulder sweep / cartwheel",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-shoulder-spin",
+     "n": "Freeze: shoulder spin",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-freeze-side-stab",
+     "n": "Freeze: side stab",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-backspin-from-seated",
+     "n": "Backspin: from seated",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-backspin-from-standing",
+     "n": "Backspin: from standing",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-backspin-no-hands",
+     "n": "Backspin: no hands",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-540-barrel",
+     "n": "540: barrel",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-540-ninja-rotating-hitch-kick",
+     "n": "540: ninja / rotating hitch kick",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-540",
+     "n": "540",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-butterfly-flying-squirrel",
+     "n": "Butterfly: flying squirrel",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-butterfly-butterfly-parallel-to-floor",
+     "n": "Butterfly: butterfly (parallel to floor)",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-butterfly-b-twist",
+     "n": "Butterfly: B-twist",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-machine-2-in-a-row",
+     "n": "Machine: 2 in a row",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-machine-nonstop",
+     "n": "Machine: nonstop",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-swipe-coffee-grinder",
+     "n": "Swipe: coffee grinder",
+     "lvl": 1,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-swipe-swipe",
+     "n": "Swipe: swipe",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-swipe-airswipe",
+     "n": "Swipe: airswipe",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-swipe-swipe-roll",
+     "n": "Swipe: swipe roll",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-dead-leg-knee-drop-side-drop",
+     "n": "Dead leg / knee drop: side drop",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-dead-leg-knee-drop-butterfly-drop",
+     "n": "Dead leg / knee drop: butterfly drop",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-dead-leg-knee-drop-twist-drop",
+     "n": "Dead leg / knee drop: twist drop",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-dead-leg-knee-drop-repeated",
+     "n": "Dead leg / knee drop: repeated",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-1990-rubberband-rotating-handstands",
+     "n": "1990 / rubberband: rotating handstands",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-1990-rubberband-spin",
+     "n": "1990 / rubberband: spin",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-windmill-coin-drop",
+     "n": "Windmill: coin drop",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-windmill-stab-to-mill",
+     "n": "Windmill: stab to mill",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-windmill-repeated",
+     "n": "Windmill: repeated",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-windmill-in-stab",
+     "n": "Windmill: in stab",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-windmill-side-stab",
+     "n": "Windmill: side stab",
+     "lvl": 4,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-handspin-2-in-a-row",
+     "n": "Handspin: 2 in a row",
+     "lvl": 2,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-handspin-nonstop",
+     "n": "Handspin: nonstop",
+     "lvl": 3,
+     "sec": "Variation movements"
+    },
+    {
+     "id": "a-rolo-4-in-a-row",
+     "n": "Rolo: 4 in a row",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-sister-cartwheel-candle-hold",
+     "n": "Sister cartwheel: candle hold",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-sister-cartwheel-hand-hold-aerial",
+     "n": "Sister cartwheel: hand hold aerial",
+     "lvl": 4,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-lift-assisted-table",
+     "n": "Lift: assisted table",
+     "lvl": 1,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-lift-front-flip",
+     "n": "Lift: front flip",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-lift-flying-table",
+     "n": "Lift: flying table",
+     "lvl": 4,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-lift-partner-line-backflip",
+     "n": "Lift: partner line backflip",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-partner-butterfly-1-at-a-time",
+     "n": "Partner butterfly: 1 at a time",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-partner-butterfly-repeated",
+     "n": "Partner butterfly: repeated",
+     "lvl": 4,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-airplane-hold",
+     "n": "Airplane: hold",
+     "lvl": 2,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-airplane-airplane-to-walkover",
+     "n": "Airplane: airplane to walkover",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-airplane-airplane-handspring",
+     "n": "Airplane: airplane handspring",
+     "lvl": 4,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-table-lift-over-the-back-cartwheel",
+     "n": "Table lift: over the back cartwheel",
+     "lvl": 2,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-table-lift-over-the-back-chest-stand",
+     "n": "Table lift: over the back chest stand",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-jump-catch-hold-or-lift",
+     "n": "Jump catch: hold or lift",
+     "lvl": 2,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-jump-catch-jump-catch-sideways",
+     "n": "Jump catch: jump catch sideways",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-jump-catch-catch-and-spin",
+     "n": "Jump catch: catch and spin",
+     "lvl": 4,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-bluebird-from-standing",
+     "n": "Bluebird: from standing",
+     "lvl": 3,
+     "sec": "Partner moves"
+    },
+    {
+     "id": "a-bluebird-from-lean",
+     "n": "Bluebird: from lean",
+     "lvl": 4,
+     "sec": "Partner moves"
     }
    ]
   },
