@@ -23,6 +23,14 @@
  ],
  "files": [
   {
+   "name": "Acro-Skills-Reference.pdf",
+   "path": "files/Acro-Skills-Reference.pdf",
+   "type": "application/pdf",
+   "size": 1099937,
+   "rev": "bf162d802496",
+   "since": "1.37.0"
+  },
+  {
    "name": "Sofia-Aerial-Mission-Print.pdf",
    "path": "files/Sofia-Aerial-Mission-Print.pdf",
    "type": "application/pdf",
