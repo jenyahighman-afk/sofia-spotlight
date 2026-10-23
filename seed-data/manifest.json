@@ -31,6 +31,14 @@
    "since": "1.37.0"
   },
   {
+   "name": "Acro-Skills-Reference.xlsx",
+   "path": "files/Acro-Skills-Reference.xlsx",
+   "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+   "size": 101659,
+   "rev": "0158421499da",
+   "since": "1.37.1"
+  },
+  {
    "name": "Sofia-Aerial-Mission-Print.pdf",
    "path": "files/Sofia-Aerial-Mission-Print.pdf",
    "type": "application/pdf",
