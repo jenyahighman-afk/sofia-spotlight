@@ -3,26 +3,26 @@
 import { $, esc, toast, expose, todayStr } from "./util.js";
 import { S, storeSet, dances, setSettings } from "./store.js";
 import { checkBadges } from "./badges.js";
-import { normalizeCues, cueAt, fmtTime } from "./cues.js";
+import { normalizeCues, cueAt, fmtTime, fmtCueTime, isCueTable, trickAhead } from "./cues.js";
+import { srcFor, trackUrl } from "./track.js";
+import { cuePhoto } from "./cuecards.js";
+export { srcFor };
 
-const AUDIO_RE = /\.(mp3|m4a|aac|wav|ogg|oga|flac|webm)(\?.*)?$/i;
 const fmtT = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
-export const parseTime = (t) => { const m = /^(\d+):(\d{2})$/.exec(t); return m ? +m[1] * 60 + +m[2] : null; };
+export const parseTime = (t) => { const m = /^(\d+):(\d{2}(?:\.\d+)?)$/.exec(t); return m ? +m[1] * 60 + +m[2] : null; };
 
 // Loop presets: the dance's explicit `loops` plus one section per timestamp found in its "big moments" map ("~0:50 cartwheel · ~1:08 …").
 // "cartwheel (right on the swell)" → "cartwheel": drop parentheticals, cut at a word boundary.
 export const shortLabel = (s) => { let t = String(s).replace(/\(.*$/, "").replace(/^[—–-]\s*/, "").trim(); if (t.length > 20) t = t.slice(0, 20).replace(/\s+\S*$/, ""); return t; };
 export function presetsFor(d, duration = 0){
   const out = [...(d.loops || [])].filter(l => Number.isFinite(l.a) && Number.isFinite(l.b) && l.b > l.a);
-  const found = [...String(d.map || "").matchAll(/(\d+:\d{2})\s*([^·,;\n]*)/g)].map(m => ({ t: parseTime(m[1]), n: shortLabel(m[2]) })).filter(x => x.t !== null);
+  const found = [...String(d.map || "").matchAll(/(\d+:\d{2}(?:\.\d+)?)\s*([^·,;\n]*)/g)].map(m => ({ t: parseTime(m[1]), n: shortLabel(m[2]) })).filter(x => x.t !== null);
   found.forEach((f, i) => { const next = found[i + 1]; const b = next ? next.t : (duration ? Math.ceil(duration) : f.t + 12); if (b > f.t && !out.some(o => o.a === f.t)) out.push({ n: f.n || fmtT(f.t), a: f.t, b, fromMap: true }); });
   return out;
 }
 
-const PL = { dance: null, audio: null, objUrl: "", a: null, b: null, speed: 100, counts: false, voice: "off", raf: 0, lastCount: 0, run: null, ctx: null, offline: false, testMe: false, revealed: -1, lastCueIdx: -2, showList: false };
-let objectUrlCache = {}; // danceId → object URL for a track already downloaded this session
+const PL = { lastHtml: "", dance: null, audio: null, objUrl: "", a: null, b: null, speed: 100, counts: false, voice: "off", raf: 0, lastCount: 0, run: null, ctx: null, offline: false, testMe: false, revealed: -1, lastCueIdx: -2, showList: false };
 
-export function srcFor(d){ if (d.musicFile && d.musicFile.url) return { url: d.musicFile.url, kind: "file" }; if (d.musicUrl && AUDIO_RE.test(d.musicUrl)) return { url: d.musicUrl, kind: "link" }; return null; }
 
 function setStatus(html){ $("#plStatus").innerHTML = html; }
 function speedUI(){ [50, 75, 100].forEach(v => $("#plS" + v).classList.toggle("coral", PL.speed === v)); $("#plRange").value = PL.speed; $("#plSpeedLab").textContent = PL.speed + "%"; }
@@ -58,26 +58,34 @@ function toggle(){ if (!PL.audio) return; PL.audio.paused ? play() : pause(); }
 function seek(ev){ if (!PL.audio || !Number.isFinite(PL.audio.duration)) return; const r = ev.currentTarget.getBoundingClientRect(); PL.audio.currentTime = PL.audio.duration * Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)); }
 
 // ---- cue sheet ----
+// A cue table (the solo) shows Sofia's photo in the shape above the label, key tricks as a bold ★ card, and a preview of
+// the next key trick 2 s before it lands. Nothing holds past a cue's end.
 const cues = () => normalizeCues(PL.dance && PL.dance.cues);
+const table = () => isCueTable(PL.dance && PL.dance.cues);
+const timeOf = (t) => table() ? fmtCueTime(t) : fmtTime(t);
+const photoImg = (c, cls) => { const u = c && c.n ? cuePhoto(PL.dance, c.n) : ""; return u ? `<img class="${cls}" src="${esc(u)}" alt="">` : ""; };
 function cueHtml(t){
-  const { cur, next, soon, untilNext, index } = cueAt(cues(), t);
+  const list = cues(); const { cur, next, soon, untilNext, index } = cueAt(list, t);
   if (!cur && !next) return "";
   const hidden = PL.testMe && cur && PL.revealed !== index;
-  const move = cur ? (hidden ? `<span class="cue-hidden" onclick="plReveal(${index})">Tap to show</span>` : esc(cur.move || "…")) : "…";
+  const move = cur ? (hidden ? `<span class="cue-hidden" onclick="plReveal(${index})">Tap to show</span>` : (cur.trick ? "★ " : "") + esc(cur.move || "…")) : "…";
   const lyric = cur && cur.lyric ? `<div class="cue-lyric">“${esc(cur.lyric)}”</div>` : "";
-  const nx = next ? `<div class="cue-next">${soon ? "NEXT" : "next"} · ${PL.testMe ? "…" : esc(next.move || next.lyric)} · ${Math.ceil(untilNext)}s</div>` : (cur ? `<div class="cue-next">last cue</div>` : "");
-  return `<div class="cue-move">${move}</div>${lyric}${nx}`;
+  const word = cur && cur.hannahWord && !hidden ? `<div class="cue-word">Hannah: “${esc(cur.hannahWord)}”</div>` : "";
+  const ahead = !PL.testMe && trickAhead(list, t, 2);
+  const nx = ahead ? `<div class="cue-preview">${photoImg(ahead, "cue-pthumb")}<span>NEXT ★ ${esc(ahead.move)}</span></div>`
+    : next ? `<div class="cue-next">${soon ? "NEXT" : "next"} · ${PL.testMe ? "…" : esc(next.move || next.lyric)} · ${Math.ceil(untilNext)}s</div>` : (cur ? `<div class="cue-next">last cue</div>` : "");
+  return `${cur && !hidden ? photoImg(cur, "cue-photo") : ""}<div class="cue-move">${move}</div>${lyric}${word}${nx}`;
 }
 function renderCue(t){
-  const { index, soon } = cueAt(cues(), t); const html = cueHtml(t);
-  const box = $("#plCue"); box.hidden = !html; if (html) { box.innerHTML = html; box.classList.toggle("soon", soon); }
-  const run = $("#plRunCue"); if (run) { run.innerHTML = S.settings.prompter && cues().length ? prompterHtml(cues(), t) : (html || `<div class="cue-move">Full run · eyes up</div>`); run.classList.toggle("soon", soon); }
+  const list = cues(); const { cur, index, soon } = cueAt(list, t); const html = cueHtml(t);
+  const box = $("#plCue"); box.hidden = !html; if (html !== PL.lastHtml) { PL.lastHtml = html; if (html) box.innerHTML = html; } box.classList.toggle("soon", soon); box.classList.toggle("trick", !!(cur && cur.trick));
+  const run = $("#plRunCue"); if (run) { const rh = S.settings.prompter && list.length ? prompterHtml(list, t) : (html || `<div class="cue-move">Full run · eyes up</div>`); if (run._h !== rh) { run._h = rh; run.innerHTML = rh; } run.classList.toggle("soon", soon); run.classList.toggle("trick", !!(cur && cur.trick)); }
   if (index !== PL.lastCueIdx) { PL.lastCueIdx = index; }
 }
-function cueSheetUI(){ const list = cues(); const pl = $("#plLines"); if (pl) pl.classList.toggle("coral", !!S.settings.prompter); $("#plCueCount").textContent = list.length ? `· ${list.length} cue${list.length === 1 ? "" : "s"}` : "· none yet"; $("#plTestMe").classList.toggle("coral", PL.testMe); $("#plCueList").classList.toggle("coral", PL.showList); const el = $("#plCues"); el.hidden = !PL.showList;
-  el.innerHTML = list.length ? list.map((c, i) => `<div class="check"><span class="cue-t" onclick="plSeek(${c.t})">${fmtTime(c.t)}</span><span class="grow"><b>${esc(c.move)}</b>${c.lyric ? ` <span class="muted">“${esc(c.lyric)}”</span>` : ""}</span><button class="del" onclick="plCueEdit(${i})" title="Edit">✏️</button><button class="del" onclick="plCueDel(${i})">✕</button></div>`).join("") : `<p class="small muted">Play the track and tap ＋ Cue here at each moment. Type the words being sung and what she does.</p>`; }
+function cueSheetUI(){ const list = cues(); const tbl = table(); const pl = $("#plLines"); if (pl) pl.classList.toggle("coral", !!S.settings.prompter); $("#plCueCount").textContent = list.length ? `· ${list.length} cue${list.length === 1 ? "" : "s"}${tbl && PL.dance.cueSource ? " · " + PL.dance.cueSource : ""}` : "· none yet"; $("#plTestMe").classList.toggle("coral", PL.testMe); $("#plCueList").classList.toggle("coral", PL.showList); $("#plAddCue").hidden = tbl; const el = $("#plCues"); el.hidden = !PL.showList;
+  el.innerHTML = list.length ? list.map((c, i) => `<div class="check ${c.trick ? "trick" : ""}"><span class="cue-t" onclick="plSeek(${c.t})">${timeOf(c.t)}</span><span class="grow"><b>${c.trick ? "★ " : ""}${esc(c.move)}</b>${c.lyric ? ` <span class="muted">“${esc(c.lyric)}”</span>` : ""}</span>${tbl ? "" : `<button class="del" onclick="plCueEdit(${i})" title="Edit">✏️</button><button class="del" onclick="plCueDel(${i})">✕</button>`}</div>`).join("") + (tbl ? `<p class="small muted">Checked times. A grown-up can nudge a cue in Grown-ups → 🎯 Cue check.</p>` : "") : `<p class="small muted">Play the track and tap ＋ Cue here at each moment. Type the words being sung and what she does.</p>`; }
 async function saveCues(list){ const d = PL.dance; await storeSet("dances", d.id, { ...(S.dances[d.id] || {}), id: d.id, cues: normalizeCues(list) }); PL.dance = dances().find(x => x.id === d.id) || d; PL.lastCueIdx = -2; cueSheetUI(); }
-async function addCue(){ if (!PL.audio) return; const wasPlaying = !PL.audio.paused; pause(); const t = PL.audio.currentTime;
+async function addCue(){ if (!PL.audio || table()) return; const wasPlaying = !PL.audio.paused; pause(); const t = PL.audio.currentTime;
   const lyric = prompt(`Cue at ${fmtTime(t)} — what words are sung here? (optional)`, ""); if (lyric === null) { if (wasPlaying) play(); return; }
   const move = prompt("What does she do here?", ""); if (move === null) { if (wasPlaying) play(); return; }
   if (!lyric.trim() && !move.trim()) return toast("Type the words or the move");
@@ -116,7 +124,7 @@ function runClose(){ $("#plRun").hidden = true; $("#plRun").innerHTML = ""; }
 // opts (the Memorize card): { speed: 50|75|100, loop: {a, b} seconds, counts: "voice"|"click"|"off" (turns the 8-count on), testMe: true|false }.
 export async function openPlayer(danceId, opts = {}){
   const d = dances().find(x => x.id === danceId); if (!d) return toast("That dance isn't here");
-  closePlayer(true); PL.dance = d; PL.a = null; PL.b = null; PL.speed = 100; PL.lastCount = -1; PL.run = null; PL.revealed = -1; PL.lastCueIdx = -2; PL.showList = false;
+  closePlayer(true); PL.dance = d; PL.lastHtml = ""; PL.a = null; PL.b = null; PL.speed = 100; PL.lastCount = -1; PL.run = null; PL.revealed = -1; PL.lastCueIdx = -2; PL.showList = false;
   if (opts.speed) PL.speed = Math.max(50, Math.min(100, Math.round(+opts.speed))); if (opts.loop && Number.isFinite(+opts.loop.a) && Number.isFinite(+opts.loop.b)) { PL.a = +opts.loop.a; PL.b = +opts.loop.b; }
   if (opts.counts) { PL.counts = true; PL.voice = opts.counts; if (opts.counts === "click") ensureCtx(); } if (typeof opts.testMe === "boolean") PL.testMe = opts.testMe;
   $("#player").hidden = false; document.body.classList.add("modal");
@@ -129,12 +137,8 @@ export async function openPlayer(danceId, opts = {}){
   audio.addEventListener("ended", () => { $("#plPlay").textContent = "▶"; if (PL.run) runEnded(); });
   audio.addEventListener("loadedmetadata", () => { renderPresets(); setStatus(navigator.onLine ? "" : "Offline · playing the saved copy"); });
   audio.addEventListener("error", () => setStatus(`<span class="bad">The music didn't load.<br>Check the connection, or re-add the file under More ▸.</span>`));
-  try {
-    // Download once (through the service worker's media cache, so it plays offline next time) and play the local copy: no range requests, no buffering.
-    let url = objectUrlCache[d.id + "|" + src.url];
-    if (!url) { const res = await fetch(src.url); if (!res.ok) throw new Error("HTTP " + res.status); const blob = await res.blob(); url = URL.createObjectURL(blob); objectUrlCache[d.id + "|" + src.url] = url; }
-    if (PL.audio !== audio) return; audio.src = url;
-  } catch (e) { console.warn("player: direct fetch failed, streaming instead", e); if (PL.audio !== audio) return; audio.src = src.url; if (src.kind === "link") setStatus(`Streaming from the link · works online only`); }
+  // Download once (through the service worker's media cache, so it plays offline next time) and play the local copy: no range requests, no buffering.
+  const got = await trackUrl(d); if (PL.audio !== audio || !got) return; audio.src = got.url; if (got.streamed && got.link) setStatus(`Streaming from the link · works online only`);
   audio.playbackRate = PL.speed / 100; cancelAnimationFrame(PL.raf); tick();
 }
 export function closePlayer(silent){

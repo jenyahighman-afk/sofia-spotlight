@@ -25,8 +25,10 @@ test("the two weeks after Oct 26 carry the checkpoints on their days, on the sam
   for (const [d, [dance, label]] of Object.entries(cp)) { const p = dayPlan(d, plan); assert.equal(p.label, label, d); assert.ok(p.must.some(m => m.t.startsWith("★") || m.go === "memo:" + dance), d + " has its checkpoint as a must"); }
   const dances = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8")); const list = Array.isArray(dances) ? dances : (dances.dances || Object.values(dances));
   for (const d of list.filter(x => x && Array.isArray(x.checkpoints))) for (const c of d.checkpoints) if (c.d >= "2026-10-27" && c.d <= "2026-11-09") assert.ok(cp[c.d], d.id + " checkpoint " + c.d + " is in the plan");
-  // Same week as Oct 17–26: the classes on a weekday match that weekday a week or two earlier.
-  for (const d of Object.keys(plan.days).filter(x => x >= "2026-10-27")) { const prev = new Date(Date.parse(d + "T12:00:00Z") - 7 * 864e5).toISOString().slice(0, 10); const back = plan.days[prev] || plan.days[new Date(Date.parse(d + "T12:00:00Z") - 14 * 864e5).toISOString().slice(0, 10)]; assert.equal(plan.days[d].tag, back.tag, d + " tag"); assert.equal(plan.days[d].classes || "", back.classes || "", d + " classes"); }
+  // Same week as Oct 17–26: the classes on a weekday match that weekday a week or two earlier — except a one-off studio
+  // date (data/events.json kind "class", e.g. the Thu Oct 29 Acro make-up), which makes that day a short class day.
+  const oneOff = new Set(JSON.parse(readFileSync(new URL("../data/events.json", import.meta.url), "utf8")).filter(e => e.kind === "class").map(e => e.start));
+  for (const d of Object.keys(plan.days).filter(x => x >= "2026-10-27" && !oneOff.has(x))) { const prev = new Date(Date.parse(d + "T12:00:00Z") - 7 * 864e5).toISOString().slice(0, 10); const back = (!oneOff.has(prev) && plan.days[prev]) || plan.days[new Date(Date.parse(d + "T12:00:00Z") - 14 * 864e5).toISOString().slice(0, 10)]; assert.equal(plan.days[d].tag, back.tag, d + " tag"); assert.equal(plan.days[d].classes || "", back.classes || "", d + " classes"); }
   assert.ok(dayPlan("2026-11-09", plan).note.includes("Tricks start")); assert.ok(dayPlan("2026-10-31", plan).note.includes("Halloween"));
 });
 

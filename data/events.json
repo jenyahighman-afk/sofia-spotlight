@@ -1,5 +1,15 @@
 [
  {
+  "id": "acro-makeup-1029",
+  "kind": "class",
+  "name": "Acro make-up class",
+  "start": "2026-10-29",
+  "end": "2026-10-29",
+  "time": "5:30 PM",
+  "room": "",
+  "dances": "Acro"
+ },
+ {
   "id": "wf",
   "name": "Winter Showcase (Winter Formal)",
   "start": "2027-01-08",

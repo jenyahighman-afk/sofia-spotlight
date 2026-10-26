@@ -9,7 +9,7 @@ export const isUnlocked = () => { if (!pinOn()) return true; const t = +(session
 export function lockGrownups(){ sessionStorage.removeItem(UNLOCK_KEY); }
 
 // Every page that lives behind the gate. showPage() sends any of these back through the gate when locked.
-export const GROWNUP_PAGES = ["grownups","events","schedule","lists","notes","reviews","reports","settings","skillcheck"];
+export const GROWNUP_PAGES = ["grownups","events","schedule","lists","notes","reviews","reports","settings","skillcheck","cuecheck"];
 
 export function openGrownups(page = "grownups"){
   if (isUnlocked()) return showPage(page);

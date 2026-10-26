@@ -7,3 +7,10 @@ Thumbs.db
 .claude/settings.local.json
 worker/node_modules/
 worker/.wrangler/
+# Photos, video, audio and transcripts of Sofia (and Hannah) never go in this public repo: they live in the
+# family's Firebase Storage only. media/ holds the local cue pack, the walkthrough transcript and clips.
+media/
+*.MOV
+*.mov
+*.m4a
+*.mp4

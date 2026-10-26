@@ -15,17 +15,29 @@ export function rotate(pool, n, day, prefer = []){
 }
 const firstSentence = (s) => String(s || "").split(/(?<=[.!?])\s/)[0].slice(0, 110).trim();
 
-// opts: { pool, date, preferTags, weekFix: {id,text,tag}|null, tricks: [string], aerial: [{id,section,text}], aerialDone: Set|array, dances: [{id,...}] }
+// A studio class or rehearsal day: the short version, a 15-minute memory run (the toolkit's rule).
+export const MEMORY_RUN = [
+  { id: "mem-warm", text: "Warm up 3 min: jumping jacks, arm circles, leg swings", secs: 180, pose: "jacks", kind: "warm" },
+  { id: "mem-top", text: "15-minute memory run · From the top: the solo as far as you know, with the music, Lines off", secs: 300, pose: "hold", kind: "run" },
+  { id: "mem-chunk", text: "This week's chunk: Again, Next, From the top (🧠 Memorize → Chunks)", secs: 240, pose: "reach", kind: "run" },
+  { id: "mem-predict", text: "Pause & Predict with a grown-up: what comes next?", secs: 180, pose: "pose", kind: "run" },
+  { id: "mem-picture", text: "Picture it: eyes closed, the whole solo in your head, counts and all", secs: 60, pose: "hold", kind: "run" },
+];
+export const KNEE_DRILL = { id: "knees-block", text: "Memory + knees: pliés in 1st and 2nd facing the mirror 2×8, knees over toes · slow lunges 2×5 each side · relevés. Tricks wait until the solo is memorized.", secs: 300, kind: "trick", pose: "plie" };
+// opts: { pool, date, preferTags, weekFix: {id,text,tag}|null, tricks: [string], aerial: [{id,section,text}], aerialDone: Set|array, dances: [{id,...}],
+//   short: true on a studio day (MEMORY_RUN only), focus: "knees" (KNEE_DRILL instead of a trick) | "none" (no trick drill) | [trick lines] (this week's tricks only) }
 export function buildPlan(opts){
   const { pool, date } = opts; const day = dayNumber(date); const wd = weekday(date); const items = [];
+  if (opts.short) return MEMORY_RUN.map(it => ({ ...it }));
   const prefer = opts.preferTags || [];
   const comp = opts.mode === "comp"; // comp week: one core, one legs, no trick drills or aerial missions — clean runs instead
   for (const slot of pool.slots || []) for (const it of rotate(slot.pool, comp && (slot.kind === "core" || slot.kind === "legs") ? Math.min(1, slot.n) : slot.n, day, slot.kind === "tech" ? prefer : [])) items.push({ ...it, kind: slot.kind });
   // This week's fix, as a drill (kept in the plan all week; the same id all week so a check-off sticks per day).
   if (opts.weekFix && opts.weekFix.text) items.push({ id: "fix-" + opts.weekFix.id, text: "This week's fix: " + opts.weekFix.text, secs: 120, kind: "fix", pose: (pool.fixPoses || {})[opts.weekFix.tag] || "pose", tag: opts.weekFix.tag });
   // One trick drill from the dance cards, rotating daily.
-  const tricks = (opts.tricks || []).map(firstSentence).filter(Boolean);
-  if (tricks.length && !comp) { const t = tricks[day % tricks.length]; items.push({ id: "trick-" + (day % tricks.length), text: "Trick drill: " + t, secs: 120, kind: "trick", pose: /calypso/i.test(t) ? "calypso" : /scorpion|needle/i.test(t) ? "arab" : /cartwheel/i.test(t) ? "cartwheel" : /walkover|handstand/i.test(t) ? "handstand" : /turn|passé|passe/i.test(t) ? "pirouette" : /kick/i.test(t) ? "kick" : /donut|bridge|back/i.test(t) ? "bridge" : /extension|attitude/i.test(t) ? "develop" : "reach" }); }
+  const tricks = (Array.isArray(opts.focus) && opts.focus.length ? opts.focus : opts.tricks || []).map(firstSentence).filter(Boolean);
+  if (opts.focus === "knees" && !comp) items.push({ ...KNEE_DRILL });
+  else if (tricks.length && !comp && opts.focus !== "none") { const t = tricks[day % tricks.length]; items.push({ id: "trick-" + (day % tricks.length), text: "Trick drill: " + t, secs: 120, kind: "trick", pose: /calypso/i.test(t) ? "calypso" : /scorpion|needle/i.test(t) ? "arab" : /cartwheel/i.test(t) ? "cartwheel" : /walkover|handstand/i.test(t) ? "handstand" : /turn|passé|passe/i.test(t) ? "pirouette" : /kick/i.test(t) ? "kick" : /donut|bridge|back/i.test(t) ? "bridge" : /extension|attitude/i.test(t) ? "develop" : "reach" }); }
   // Aerial mission: unchecked steps from the drill/strength sections, on the weekdays the pool says (home days).
   const nAerial = (pool.aerialByWeekday || {})[String(wd)] || 0;
   if (nAerial && !comp) { const done = new Set(opts.aerialDone || []); const open = (opts.aerial || []).filter(a => !done.has(a.id) && a.section !== "In class only");

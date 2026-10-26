@@ -33,12 +33,17 @@ test("nothing is earned from a blank slate; streaks, closed fixes, aerial, games
 test("skills.json: the solo's tricks first, then five styles; 8–12 skills each, unique ids, states listed", () => {
   const styles = Object.keys(ladder.styles);
   assert.deepEqual(styles, ["solo", "ballet", "jazz", "contemporary", "acro", "hiphop"]);
-  for (const n of ["Donut roll", "Calypso", "Front walkover to knee", "Scorpion → needle"]) assert.ok(ladder.styles.solo.skills.some(s => s.n === n), n);
-  assert.ok(ladder.styles.solo.skills.every(s => s.tip), "every solo trick has a one-line cue");
+  for (const n of ["Donut roll", "Calypso", "Walkover to knees", "Scorpion → needle", "Heel stretch", "Leap on the swell", "Floor ending"]) assert.ok(ladder.styles.solo.skills.some(s => s.n === n), n);
+  assert.ok(ladder.styles.solo.skills.every(s => s.tip && !/^\d+:\d/.test(s.tip)), "every solo trick has a one-line cue (no time in it)");
+  // The 11 key tricks of the verified cue table, each pointing at its ★ cue; the toolkit's numbered tricks 1–8 are all there.
+  const solo = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8")).find(d => d.id === "solo");
+  const keyed = ladder.styles.solo.skills.filter(s => s.cue); assert.equal(keyed.length, 11);
+  for (const s of keyed) assert.ok(solo.cues.find(c => c.n === s.cue && c.trick), s.id + " → a key-trick cue");
+  assert.deepEqual([...new Set(ladder.styles.solo.skills.map(s => s.ladder).filter(Boolean))].sort(), [1, 2, 3, 4, 5, 6, 7, 8]);
   const ids = new Set();
   for (const [k, st] of Object.entries(ladder.styles)) {
     assert.ok(st.n && st.ic, k);
-    if (k !== "acro") assert.ok(st.skills.length >= 8 && st.skills.length <= 12, `${k} has ${st.skills.length} skills`);
+    if (k !== "acro") assert.ok(st.skills.length >= 8 && st.skills.length <= (k === "solo" ? 13 : 12), `${k} has ${st.skills.length} skills`);
     for (const s of st.skills) { assert.ok(s.id && s.n, k); assert.ok(!ids.has(s.id), "duplicate skill id " + s.id); ids.add(s.id); }
   }
   assert.deepEqual(ladder.states, ["notyet", "learning", "clean", "checked"]);

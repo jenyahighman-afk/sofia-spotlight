@@ -6,7 +6,7 @@ const VISION_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18
 const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm";
 const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
 
-let vision = null, imageLM = null, videoLM = null, loading = null;
+let vision = null, imageLM = null, videoLM = null, multiLM = null, loading = null;
 export const poseAvailable = () => typeof WebAssembly !== "undefined";
 async function load(){
   if (vision) return vision;
@@ -16,6 +16,9 @@ async function load(){
 export async function imageDetector(){ if (imageLM) return imageLM; const { mod, fs } = await load(); imageLM = await mod.PoseLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: MODEL_URL }, runningMode: "IMAGE", numPoses: 1 }); return imageLM; }
 export async function videoDetector(){ if (videoLM) return videoLM; const { mod, fs } = await load(); videoLM = await mod.PoseLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: MODEL_URL }, runningMode: "VIDEO", numPoses: 1 }); return videoLM; }
 
+// Up to 3 people per still (the coach: Sofia, a mirror reflection, someone in the background); js/dancer.js picks her.
+export async function multiDetector(){ if (multiLM) return multiLM; const { mod, fs } = await load(); multiLM = await mod.PoseLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: MODEL_URL }, runningMode: "IMAGE", numPoses: 3, minPoseDetectionConfidence: 0.4, minPosePresenceConfidence: 0.4 }); return multiLM; }
+export async function detectAll(source){ const d = await multiDetector(); const r = d.detect(source); return r && Array.isArray(r.landmarks) ? r.landmarks : []; }
 export async function detectImage(source){ const d = await imageDetector(); const r = d.detect(source); return r && r.landmarks && r.landmarks[0] ? r.landmarks[0] : null; }
 export async function detectVideoFrame(video, ts){ const d = await videoDetector(); const r = d.detectForVideo(video, ts); return r && r.landmarks && r.landmarks[0] ? r.landmarks[0] : null; }
 

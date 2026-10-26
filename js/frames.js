@@ -14,14 +14,18 @@ export function peakTime(rms, windowSec = 0.1){ if (!rms.length) return null; le
 export function aroundPeak(peak, duration, offsets = [-0.6, -0.2, 0.2, 0.6]){ if (peak === null || !(duration > 0)) return []; return offsets.map(o => +Math.max(0.05, Math.min(duration - 0.05, peak + o)).toFixed(2)); }
 // All sample times, sorted, de-duplicated (two times within 0.15 s count as one).
 export function sampleTimes(duration, peak){ const all = [...evenTimes(duration, 16), ...aroundPeak(peak, duration)].sort((a, b) => a - b); const out = []; for (const t of all) if (!out.length || t - out[out.length - 1] > 0.15) out.push(t); return out.slice(0, 20); }
-// A full run (longer than RUN_SEC with a cue sheet): 8 frames spread evenly plus one just after each cue, up to 20.
+// A full run (longer than RUN_SEC with a cue sheet): 8 frames spread evenly plus one at each cue, up to 20. A cue table's
+// key tricks come first and are caught at their photo moment (pt: Sofia in the shape); other cues 0.8 s after they start.
 // The clip is assumed to start with the music; the even frames cover the case where it doesn't.
 export const RUN_SEC = 90;
 export function runTimes(duration, cues, peak){
-  const ts = (cues || []).map(c => +c.t).filter(t => Number.isFinite(t) && t >= 0 && t + 0.8 < duration).sort((a, b) => a - b);
-  if (!(duration > 0) || ts.length < 6) return sampleTimes(duration, peak);
-  const room = 20 - 8; const step = ts.length > room ? ts.length / room : 1; const picked = []; for (let i = 0; picked.length < Math.min(room, ts.length); i++) { const t = ts[Math.floor(i * step)]; if (t !== undefined && !picked.includes(t)) picked.push(t); }
-  const all = [...evenTimes(duration, 8), ...picked.map(t => +(t + 0.8).toFixed(2))].sort((a, b) => a - b); const out = [];
+  const at = (c) => typeof c.pt === "number" && Number.isFinite(c.pt) ? c.pt : +c.t + 0.8;
+  const ok = (cues || []).filter(c => c && Number.isFinite(+c.t) && +c.t >= 0 && at(c) < duration);
+  if (!(duration > 0) || ok.length < 6) return sampleTimes(duration, peak);
+  const room = 20 - 8; const tricks = ok.filter(c => c.trick), rest = ok.filter(c => !c.trick).sort((a, b) => a.t - b.t);
+  const picked = tricks.slice(0, room).map(at); const left = room - picked.length;
+  if (left > 0) { const step = rest.length > left ? rest.length / left : 1; for (let i = 0; picked.length < room && i * step < rest.length; i++) { const t = at(rest[Math.floor(i * step)]); if (!picked.includes(t)) picked.push(t); } }
+  const all = [...evenTimes(duration, 8), ...picked.map(t => +(+t).toFixed(2))].sort((a, b) => a - b); const out = [];
   for (const t of all) if (!out.length || t - out[out.length - 1] > 0.15) out.push(t);
   return out.slice(0, 20);
 }

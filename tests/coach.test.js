@@ -1,7 +1,7 @@
 // Coach worker core (validation, prompt, rate limit, parsing), frame sampling, pose math and goals math — all pure.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateRequest, buildUserContent, parseReview, checkAndCount, memoryStore, corsHeaders, parseOrigins, SYSTEM_PROMPT, MAX_FRAMES, DAILY_LIMIT } from "../worker/src/core.js";
+import { validateRequest, buildUserContent, parseReview, checkAndCount, memoryStore, corsHeaders, parseOrigins, SYSTEM_PROMPT, BODY_RULE, MAX_FRAMES, DAILY_LIMIT } from "../worker/src/core.js";
 import { evenTimes, sampleTimes, runTimes, loudness, peakTime, aroundPeak } from "../js/frames.js";
 import { angleAt, readouts, onReleve, armPose, LM, poseFeatures, featureDistance } from "../js/posemath.js";
 
@@ -107,4 +107,36 @@ test("looser arm-pose rules: arms up counts with wrists above the shoulders even
   set(LM.lWrist, 0.35, 0.17); set(LM.rWrist, 0.65, 0.17); assert.equal(armPose(lm), "up", "just above the shoulders, below the nose");
   set(LM.lWrist, 0.1, 0.36); set(LM.rWrist, 0.9, 0.36); assert.equal(armPose(lm), "second", "a bit below shoulder height still counts as wide");
   set(LM.lWrist, 0.42, 0.52); set(LM.rWrist, 0.58, 0.52); assert.equal(armPose(lm), "low");
+});
+
+// 1.22.0: the coach looks only at the dancer and stays behind her teacher.
+test("the prompt tells the model to ignore background objects and talk only about joints seen at ≥ 0.6; teachers outrank it", () => {
+  assert.equal(BODY_RULE, "Only comment on body parts that appear in the pose data with visibility ≥ 0.6. Ignore background objects, mats, mirrors, reflections and other people. If unsure, say nothing about that body part.");
+  assert.ok(SYSTEM_PROMPT.includes(BODY_RULE)); assert.ok(/outrank/.test(SYSTEM_PROMPT) && /askTeacher/.test(SYSTEM_PROMPT) && /Memory \+ knees/.test(SYSTEM_PROMPT) && /missed/.test(SYSTEM_PROMPT));
+  assert.ok(/at 1:18 donut roll/.test(SYSTEM_PROMPT), "moves named by their time in the music");
+});
+test("the request carries crops' times, the cue table, pinned notes first, Memory + knees and pose data (seen parts only)", () => {
+  const v = validateRequest({ familyId: FID, frames: [frame, frame], times: [78.26, "x"], dance: "Solo", corrections: ["Eyes up"], memoryKnees: true,
+    pinned: [{ text: "Knees over toes in every plié", tag: "knees", by: "Ms. Brittany" }, { text: "Memorize every step", tag: "memory", by: "Ms. Brittany" }],
+    cues: ["1:18.25–1:21 ★ Donut roll on the mat", "1:21–1:28.5 Traveling, passé on the mat"],
+    poseFrames: [{ t: 78.26, vis: 0.82, parts: ["left knee", "right knee", "chair", "mirror"], kneeLeft: 141.4, kneeOverToeLeft: "falls in", footRight: "x" }, { t: null, vis: 0.7, parts: [] }] });
+  assert.ok(v.ok); assert.deepEqual(v.req.times, [78.3, null]); assert.equal(v.req.memoryKnees, true); assert.equal(v.req.pinned.length, 2);
+  assert.deepEqual(v.req.poseFrames[0].parts, ["left knee", "right knee"], "only body parts, never a chair or a mirror"); assert.equal(v.req.poseFrames[0].kneeLeft, 141); assert.equal("footRight" in v.req.poseFrames[0], false);
+  const text = buildUserContent(v.req).at(-1).text;
+  assert.ok(text.indexOf("Knees over toes in every plié (Ms. Brittany, knees)") < text.indexOf("- Eyes up"), "pinned teacher notes come first");
+  assert.ok(text.includes("Memory + knees is active") && text.includes("no new tricks, no stretching advice"));
+  assert.ok(text.includes("1:18.25–1:21 ★ Donut roll on the mat") && text.includes("frame 1 1:18.3"));
+  assert.ok(text.includes("frame 1: seen left knee, right knee; kneeLeft 141; kneeOverToeLeft falls in") && text.includes("frame 2: seen nothing clearly"));
+  assert.ok(text.trim().endsWith(BODY_RULE), "the body rule is the last thing it reads");
+  assert.equal(buildUserContent(validateRequest({ familyId: FID, frames: [frame] }).req).at(-1).text.includes("Memory + knees"), false);
+});
+test("the review has missed or unsure steps and askTeacher; a fix off the teacher's pinned notes is flagged 'ask Ms. Brittany'", () => {
+  const req = validateRequest({ familyId: FID, frames: [frame], pinned: [{ text: "Knees over toes", tag: "knees" }, { text: "Memorize every step", tag: "memory" }] }).req;
+  const base = { loved: "Big arch", fix: "x", feet: "✓", knees: "✓", eyes: "✓", arms: "✓", try: "", missed: "At 1:18 the donut roll came early", askTeacher: false };
+  const knees = parseReview(JSON.stringify({ ...base, tag: "knees" }), req); assert.equal(knees.askTeacher, false); assert.equal(knees.missed, "At 1:18 the donut roll came early");
+  assert.equal(parseReview(JSON.stringify({ ...base, tag: "timing" }), req).askTeacher, false, "timing sits with the memory/timing homework");
+  assert.equal(parseReview(JSON.stringify({ ...base, tag: "arms" }), req).askTeacher, true, "different from the teacher: ask Ms. Brittany");
+  assert.equal(parseReview(JSON.stringify({ ...base, tag: "arms" })).askTeacher, false, "no pinned notes, no flag");
+  assert.equal(parseReview(JSON.stringify({ ...base, tag: "arms", askTeacher: true })).askTeacher, true, "the model can flag it itself");
+  assert.equal(parseReview("{\"loved\":\"a\",\"fix\":\"b\",\"tag\":\"memory\"}").tag, "memory"); assert.equal(parseReview("{\"loved\":\"a\",\"fix\":\"b\"}").missed, "");
 });

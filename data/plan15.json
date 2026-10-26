@@ -1,0 +1,37 @@
+{
+ "_note": "The 15-week plan to the Winter Showcase (js/season15.js; the printed Sofia-Practice-Toolkit.pdf page 1–2). Weeks run Monday to Sunday from `start`. fri = the Friday focus line; tricks = trick numbers from `ladder` (data/skills.json solo skills carry the same `ladder` numbers); weakest = the weakest trick that week. Until `memoryKneesUntil` the trick card says Memory + knees: no new tricks. A checkpoint with `rehearsal` is dated by the next booked solo rehearsal after `after`.",
+ "start": "2026-09-28",
+ "memoryKneesUntil": "2026-11-09",
+ "phases": [
+  { "n": "Own it", "from": 1, "to": 6, "d": "Sep 28 – Nov 8", "g": "Know every step with no video and no one to follow. Solo: Hannah's two videos, step by step. Knees over toes." },
+  { "n": "Clean it", "from": 7, "to": 9, "d": "Nov 9 – Nov 29", "g": "Feet, knees, arms, eyes. One fix a week. Trick preps look like dancing. Thanksgiving week (Nov 23) is light." },
+  { "n": "Perform it", "from": 10, "to": 14, "d": "Nov 30 – Jan 3", "g": "Focal points, stamina, full-out runs, costume on. Hold every ending." },
+  { "n": "Taper", "from": 15, "to": 15, "d": "Jan 4 – Jan 9", "g": "One run a day. Nothing new. No deep stretching. Sleep. Show Sat Jan 9!" }
+ ],
+ "weeks": [
+  { "w": 1, "of": "2026-09-28", "solo": "0:00–0:48 from memory", "trio": "0:00–0:22", "fri": "Trick 1", "tricks": [1] },
+  { "w": 2, "of": "2026-10-05", "solo": "0:48–2:04 from memory", "trio": "0:22–0:42", "fri": "Trick 2", "tricks": [2] },
+  { "w": 3, "of": "2026-10-12", "solo": "Hannah's video 1, step by step", "trio": "0:42–1:04 canon", "fri": "Memory + knees" },
+  { "w": 4, "of": "2026-10-19", "solo": "Hannah's video 2, step by step", "trio": "1:04 to the end", "fri": "Memory + knees" },
+  { "w": 5, "of": "2026-10-26", "solo": "Whole solo from memory, on the counts", "trio": "Whole trio, no video, by Sat Oct 31", "fri": "Memory + knees" },
+  { "w": 6, "of": "2026-11-02", "solo": "Whole solo ×2, no stops; show Ms. Brittany at the next rehearsal", "trio": "0:22 stillness: one shared focus", "fri": "Knees over toes" },
+  { "w": 7, "of": "2026-11-09", "solo": "Point + straighten on the floor work; side leg: pick one", "trio": "0:30 arabesque on knees", "fri": "Trick 1", "tricks": [1] },
+  { "w": 8, "of": "2026-11-16", "solo": "Long arms, high passé, trick preps are dancing", "trio": "0:52–0:58 shapes + arms", "fri": "Trick 6", "tricks": [6] },
+  { "w": 9, "of": "2026-11-23", "light": true, "solo": "One easy run", "trio": "Say the counts out loud", "fri": "Rest" },
+  { "w": 10, "of": "2026-11-30", "solo": "Donut roll + a focal point for every section", "trio": "Dance bigger upstage", "fri": "Trick 8", "tricks": [8] },
+  { "w": 11, "of": "2026-12-07", "solo": "Two full-outs back to back", "trio": "Trio with music ×2", "fri": "Tricks 3 + 4", "tricks": [3, 4] },
+  { "w": 12, "of": "2026-12-14", "solo": "Full run in costume", "trio": "Match Lauren's size", "fri": "Trick 5", "tricks": [5] },
+  { "w": 13, "of": "2026-12-21", "solo": "Hold the ending to 2:00", "trio": "Hold past 2:12", "fri": "Trick 7", "tricks": [7] },
+  { "w": 14, "of": "2026-12-28", "solo": "Costume run #2", "trio": "Ready for the Sat Jan 2 rehearsal", "fri": "Weakest trick", "weakest": true },
+  { "w": 15, "of": "2027-01-04", "solo": "Taper: one run a day; family mini show Thu Jan 7", "trio": "One run", "fri": "Nothing new" }
+ ],
+ "ladder": { "1": "Side-sit leg reach", "2": "Heel stretch", "3": "Leap + cartwheel", "4": "Walkover to knees + handstand", "5": "Floor kick", "6": "Passé turns", "7": "The ending", "8": "Donut roll" },
+ "checkpoints": [
+  { "d": "2026-10-31", "t": "Whole trio, no video" },
+  { "d": "2026-11-01", "t": "Whole solo from memory, on the music" },
+  { "rehearsal": true, "after": "2026-11-01", "t": "Next solo rehearsal: show Ms. Brittany with no missed steps" },
+  { "d": "2027-01-02", "t": "Mandatory rehearsal (back from break)" },
+  { "d": "2027-01-07", "t": "Family mini show" },
+  { "d": "2027-01-09", "t": "Winter Showcase ★" }
+ ]
+}

@@ -19,7 +19,7 @@ export async function review(req, env){
   // Structured output pins the JSON shape; effort low keeps a 20-frame review quick and cheap. Server-side fallbacks so a
   // safety-classifier decline (rare on practice footage) is re-run on the default fallback model inside the same call.
   const response = await client.beta.messages.create({
-    model, max_tokens: 1200,
+    model, max_tokens: 1500,
     betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
     output_config: { effort: "low", format: { type: "json_schema", schema: REVIEW_SCHEMA } },
     system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
@@ -27,7 +27,7 @@ export async function review(req, env){
   });
   if (response.stop_reason === "refusal") return { error: "The coach couldn't review these frames. Try a clearer clip in good light.", status: 422 };
   const text = response.content.filter(b => b.type === "text").map(b => b.text).join("");
-  const parsed = parseReview(text);
+  const parsed = parseReview(text, req);
   if (!parsed) return { error: "The coach's reply wasn't readable. Try again.", status: 502 };
   return { review: parsed, model: response.model, usage: { input: response.usage.input_tokens, output: response.usage.output_tokens, cached: response.usage.cache_read_input_tokens || 0 } };
 }

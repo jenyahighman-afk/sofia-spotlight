@@ -4,9 +4,9 @@ import { S, storeSet, setSettings, settled, dances } from "./store.js";
 import { DEFAULT_DANCES } from "./data.js";
 import { todayStr } from "./util.js";
 
-export const TAGS = ["feet","knees","eyes","arms","timing","spacing","energy","other"];
-export const TAG_LABEL = { feet:"Feet", knees:"Knees", eyes:"Eyes", arms:"Arms", timing:"Timing", spacing:"Spacing", energy:"Energy", other:"Other" };
-export const TAG_EMOJI = { feet:"🦶", knees:"🦵", eyes:"👀", arms:"💪", timing:"⏱️", spacing:"↔️", energy:"⚡", other:"✨" };
+export const TAGS = ["feet","knees","eyes","arms","memory","timing","spacing","energy","other"];
+export const TAG_LABEL = { feet:"Feet", knees:"Knees", eyes:"Eyes", arms:"Arms", memory:"Memory", timing:"Timing", spacing:"Spacing", energy:"Energy", other:"Other" };
+export const TAG_EMOJI = { feet:"🦶", knees:"🦵", eyes:"👀", arms:"💪", memory:"🧠", timing:"⏱️", spacing:"↔️", energy:"⚡", other:"✨" };
 
 // Which tag a free-text correction belongs to. First match wins; order is the order dancers hear them: feet, knees, eyes, arms.
 const RULES = [
@@ -14,6 +14,7 @@ const RULES = [
   ["knees", /\b(knee|knees|straight|straighten|lock|bent)\b/i],
   ["eyes", /\b(eye|eyes|eyeline|eyelines|look|focal|focus|spot|mirror|chin)\b/i],
   ["arms", /\b(arm|arms|elbow|elbows|shoulder|shoulders|reach|hands|fingers)\b/i],
+  ["memory", /\b(memori[sz]e|memorized|memory|remember|forget|forgot|what comes next)\b/i],
   ["timing", /\b(count|counts|beat|timing|behind|late|early|music|tempo|silence|hold)\b/i],
   ["spacing", /\b(spacing|space|formation|line|lines|match|height|size|agree|travel)\b/i],
   ["energy", /\b(energy|commit|sharp|hit|freeze|full|big|attack|accent|melting)\b/i],
@@ -26,18 +27,26 @@ export function hashText(s){ let h = 5381; for (const ch of String(s)) h = ((h *
 export const migratedId = (danceId, text) => `c-${danceId}-${hashText(String(text).trim())}`;
 
 // A card line may start with an explicit tag: "#feet Donut roll: chin tucked…". Otherwise the tag is inferred from the words.
-const TAG_PREFIX = /^#(feet|knees|eyes|arms|timing|spacing|energy|other)\s+/i;
+const TAG_PREFIX = /^#(feet|knees|eyes|arms|memory|timing|spacing|energy|other)\s+/i;
 export function parseLine(line){ const m = TAG_PREFIX.exec(String(line).trim()); const text = String(line).trim().replace(TAG_PREFIX, "").trim(); return { text, tag: m ? m[1].toLowerCase() : inferTag(text), explicit: !!m }; }
 // The records the dance-card arrays would produce (pure; used by the runtime copy and the tests).
 export function recordsFromDance(dance, date){
   return (dance.corrections || []).map(parseLine).filter(l => l.text).map(({ text, tag, explicit }) => ({ id: migratedId(dance.id, text), danceId: dance.id, text, source: "notes", date, tag, status: "working", explicit }));
 }
 
+// Pinned teacher corrections (data/dances.json `pinned`: Ms. Brittany's homework of Oct 13): copied into the tracker like
+// card lines, marked pinned, dated and credited to the teacher. Pinned notes lead the solo page, Today and the week's fix.
+export function pinnedFromDance(dance){
+  return (Array.isArray(dance.pinned) ? dance.pinned : []).filter(p => p && p.text).map(p => ({ id: migratedId(dance.id, p.text), danceId: dance.id, text: String(p.text).trim(), source: String(p.by || "teacher"), date: String(p.date || ""), tag: TAGS.includes(p.tag) ? p.tag : inferTag(p.text), status: "working", pinned: true }));
+}
 export const isOpen = (c) => c && !c.deleted && c.status !== "done";
 export const isDone = (c) => c && !c.deleted && c.status === "done";
 const dateOf = (c) => c.date || (c.at ? String(c.at).slice(0, 10) : "");
 
-export function forDance(corrections, danceId){ return Object.values(corrections || {}).filter(c => !c.deleted && c.danceId === danceId).sort((a, b) => dateOf(b).localeCompare(dateOf(a))); }
+// Pinned teacher notes first, then newest first.
+export function forDance(corrections, danceId){ return Object.values(corrections || {}).filter(c => !c.deleted && c.danceId === danceId).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || dateOf(b).localeCompare(dateOf(a))); }
+// Open pinned notes (one dance, or every dance), oldest pin first so their order on the card holds.
+export function pinnedOpen(corrections, danceId = null){ return Object.values(corrections || {}).filter(c => isOpen(c) && c.pinned && (!danceId || c.danceId === danceId)).sort((a, b) => dateOf(a).localeCompare(dateOf(b)) || String(a.id).localeCompare(String(b.id))); }
 export function openFor(corrections, danceId){ return forDance(corrections, danceId).filter(isOpen); }
 export function topFixes(corrections, danceId, n = 3){ return openFor(corrections, danceId).slice(0, n); }
 
@@ -58,6 +67,7 @@ export function weekKey(iso){ const d = new Date(iso + "T00:00:00"); d.setDate(d
 
 // Exactly one open correction becomes the week's fix: the one whose tag repeats most (60 days), oldest first. Null when nothing is open.
 export function chooseWeekFix(corrections, today = todayStr()){
+  const pins = pinnedOpen(corrections); if (pins.length) return pins[0]; // the teacher's homework outranks everything else
   const open = Object.values(corrections || {}).filter(isOpen); if (!open.length) return null;
   const rank = {}; patterns(corrections, { today, min: 1 }).forEach(p => { rank[p.tag] = p.n; });
   open.sort((a, b) => (rank[b.tag] || 0) - (rank[a.tag] || 0) || dateOf(a).localeCompare(dateOf(b)) || String(a.id).localeCompare(String(b.id)));
@@ -68,7 +78,10 @@ export function chooseWeekFix(corrections, today = todayStr()){
 let migrating = false;
 // Copy each dance's "Corrections to work on" lines into the collection, once the cloud has told us what's already there.
 // Card lines the teacher has since corrected. Their notes are removed (and never re-created from an edited card) so the old advice stops showing.
-export const RETIRED_LINES = { solo: ["Donut roll: chin tucked, roll over the shoulder, chest leads", "Point the foot and straighten the knee on the tailbone balance and every floor extension"] };
+// 1.22.0: the head-back donut roll gives way to the over-one-shoulder drill, and the side-sit note is retimed (0:10.5).
+// REPLACED_LINES carries a retired note's status over to its new wording (the same correction), when the new one is new.
+export const RETIRED_LINES = { solo: ["Donut roll: chin tucked, roll over the shoulder, chest leads", "Point the foot and straighten the knee on the tailbone balance and every floor extension", "Donut roll: arms down, head ALL the way back — do not tuck the chin (Hannah)", "Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down."] };
+export const REPLACED_LINES = { solo: [["Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down.", "Point the foot and keep the knee straight on the side-sit leg reach (0:10.5) and every floor extension, including on the way down."]] };
 export const retiredIds = () => new Set(Object.entries(RETIRED_LINES).flatMap(([danceId, lines]) => lines.map(t => migratedId(danceId, t))));
 export async function migrateDanceCorrections(){
   if (migrating || !settled("corrections") || !settled("dances")) return 0;
@@ -82,6 +95,14 @@ export async function migrateDanceCorrections(){
     const sources = []; const seenIds = new Set();
     for (const d of [...dances(), ...DEFAULT_DANCES]) for (const r of recordsFromDance(d, date)) { if (seenIds.has(r.id)) continue; seenIds.add(r.id); sources.push(r); }
     const retired = retiredIds();
+    for (const [danceId, pairs] of Object.entries(REPLACED_LINES)) for (const [oldText, newText] of pairs) {
+      const old = S.corrections[migratedId(danceId, oldText)], newId = migratedId(danceId, newText);
+      if (!old || old.deleted || old.source !== "notes" || S.corrections[newId]) continue;
+      const { text, tag } = parseLine(newText); await storeSet("corrections", newId, { id: newId, danceId, text, source: "notes", date: old.date || date, tag, status: old.status || "working", ...(old.doneAt ? { doneAt: old.doneAt } : {}) }); n++;
+    }
+    for (const d of [...dances(), ...DEFAULT_DANCES]) for (const p of pinnedFromDance(d)) {
+      const have = S.corrections[p.id]; if (!have) { await storeSet("corrections", p.id, p); n++; } else if (!have.pinned && !have.deleted) await storeSet("corrections", p.id, { ...have, pinned: true });
+    }
     for (const id of retired) { const old = S.corrections[id]; if (old && !old.deleted && old.source === "notes") await storeSet("corrections", id, { ...old, deleted: true }); }
     for (let { explicit, ...rec } of sources) {
       if (retired.has(rec.id)) continue;
@@ -104,7 +125,8 @@ export async function reopenCorrection(id){ const c = S.corrections[id]; if (!c)
 export async function removeCorrection(id){ const c = S.corrections[id]; if (!c) return; await storeSet("corrections", id, { ...c, deleted: true }); }
 
 // This week's fix (settings.weekFix = {id, week}). pickWeekFix chooses one when the week has none; the id is what Today shows all week.
-export function currentWeekFix(today = todayStr()){ const w = S.settings.weekFix; if (!w || w.week !== weekKey(today)) return null; const c = S.corrections[w.id]; return c && !c.deleted ? c : null; }
+// While a teacher's pinned note is open it is the week's fix, whatever was picked before it arrived.
+export function currentWeekFix(today = todayStr()){ const pins = pinnedOpen(S.corrections); const w = S.settings.weekFix; const c = w && w.week === weekKey(today) ? S.corrections[w.id] : null; if (pins.length && !(c && c.pinned && isOpen(c))) return pins[0]; return c && !c.deleted ? c : null; }
 export async function pickWeekFix(today = todayStr()){
   const c = chooseWeekFix(S.corrections, today); if (!c) return null;
   await setSettings({ weekFix: { id: c.id, week: weekKey(today), pickedAt: today } }); return c;

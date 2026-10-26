@@ -12,9 +12,80 @@
    "dance": "solo",
    "skills": [
     {
+     "id": "s-side-sit",
+     "n": "Side-sit leg reach",
+     "tip": "Push the floor, reach the toe. Knee stays straight as the leg fans down.",
+     "cue": 3,
+     "ladder": 1
+    },
+    {
+     "id": "s-kneel-arch",
+     "n": "Kneeling arch + leg kick",
+     "tip": "Warm the back first. Back leg kicks up straight and pointed.",
+     "cue": 5
+    },
+    {
+     "id": "s-side-ext",
+     "n": "Heel stretch",
+     "tip": "Leg held high: a clean attitude or straight, never halfway.",
+     "cue": 8,
+     "ladder": 2
+    },
+    {
+     "id": "s-leap",
+     "n": "Leap on the swell",
+     "tip": "Leap ON the swell, legs long.",
+     "cue": 12,
+     "ladder": 3
+    },
+    {
+     "id": "s-cartwheel",
+     "n": "Cartwheel",
+     "tip": "Reach, look, place. Head up until the hands go down.",
+     "cue": 13,
+     "ladder": 3
+    },
+    {
+     "id": "s-walkover-knee",
+     "n": "Walkover to knees",
+     "tip": "Handstand, bridge, knees. The knee touches softly, never drops.",
+     "cue": 16,
+     "ladder": 4
+    },
+    {
      "id": "s-donut",
      "n": "Donut roll",
-     "tip": "Arms down, head all the way back. No chin tuck."
+     "tip": "Mat only. Over ONE shoulder, chin tucked. Never over the head.",
+     "cue": 19,
+     "ladder": 8
+    },
+    {
+     "id": "s-handstand",
+     "n": "Handstand, split legs",
+     "tip": "Wrists first. Split at the top, step down to sit.",
+     "cue": 21,
+     "ladder": 4
+    },
+    {
+     "id": "s-floor-kick",
+     "n": "Floor kick",
+     "tip": "Kick from the hip, pointed foot at the top.",
+     "cue": 23,
+     "ladder": 5
+    },
+    {
+     "id": "s-passe-turns",
+     "n": "Passé turns",
+     "tip": "Toe to the side of the knee, high relevé, sharp spot.",
+     "cue": 25,
+     "ladder": 6
+    },
+    {
+     "id": "s-ending",
+     "n": "Floor ending",
+     "tip": "Curl on your side and hold until it is silent.",
+     "cue": 28,
+     "ladder": 7
     },
     {
      "id": "s-calypso",
@@ -22,39 +93,9 @@
      "tip": "Front leg straight and turned out, back knee high, land soft."
     },
     {
-     "id": "s-walkover-knee",
-     "n": "Front walkover to knee",
-     "tip": "Reach long, legs split at the top, lower to the knee with control."
-    },
-    {
      "id": "s-scorpion-needle",
      "n": "Scorpion → needle",
      "tip": "Warm the back first. Hips square, standing knee straight. Never force it."
-    },
-    {
-     "id": "s-cartwheel",
-     "n": "Cartwheel on the swell",
-     "tip": "Dance the 4 counts in. Head up until the hands go down."
-    },
-    {
-     "id": "s-side-sit",
-     "n": "Side-sit leg reach",
-     "tip": "Push the floor, reach the toe. Knee stays straight as the leg fans down."
-    },
-    {
-     "id": "s-side-ext",
-     "n": "Side extension",
-     "tip": "Clean attitude or straight — never halfway."
-    },
-    {
-     "id": "s-floor-kick",
-     "n": "Floor kick",
-     "tip": "Kick from the hip, pointed foot at the top."
-    },
-    {
-     "id": "s-passe-turns",
-     "n": "Passé turns",
-     "tip": "Toe to the side of the knee, high relevé, sharp spot."
     }
    ]
   },
