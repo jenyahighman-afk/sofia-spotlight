@@ -14,7 +14,7 @@ import { awardStars } from "./stars.js";
 import { markBite, markDrillTried } from "./habit.js";
 import { sofiaDancing, whoSuffix, pickedNames, namesLine } from "./who.js";
 
-const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
+const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸", mind:"🧠" };
 let ITEMS = [];
 const PM = { i: 0, timed: false, left: 0, total: 0, timer: 0, paused: false, ctx: null };
 // A quick session (js/quick.js) runs the same screen but keeps its own done list and is saved as one record at the end.

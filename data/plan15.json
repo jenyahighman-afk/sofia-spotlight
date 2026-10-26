@@ -1,37 +1,253 @@
 {
- "_note": "The 15-week plan to the Winter Showcase (js/season15.js; the printed Sofia-Practice-Toolkit.pdf page 1–2). Weeks run Monday to Sunday from `start`. fri = the Friday focus line; tricks = trick numbers from `ladder` (data/skills.json solo skills carry the same `ladder` numbers); weakest = the weakest trick that week. Until `memoryKneesUntil` the trick card says Memory + knees: no new tricks. A checkpoint with `rehearsal` is dated by the next booked solo rehearsal after `after`.",
+ "_note": "The 15-week plan to the Winter Showcase (js/season15.js; the printed Sofia-Practice-Toolkit.pdf page 1–2). Weeks run Monday to Sunday from `start`. fri = the Friday focus line; tricks = trick numbers from `ladder` (data/skills.json solo skills carry the same `ladder` numbers); weakest = the weakest trick that week. Until `memoryKneesUntil` the trick card says Memory + knees: no new tricks. A checkpoint with `rehearsal` is dated by the next booked solo rehearsal after `after`. rules = the session rules from the research Jenya approved Oct 26 (imagery from Nov 9, short self-chosen clips weeks 1–9, Sunday review, one full-out a session from Nov 9 and back-to-back on Sundays from Nov 30, taper from Dec 28, memory run only the night before the show, light weeks = memory run, never more than 2 days without dancing). extra = this week's mini audience / stage tape / sleep line.",
  "start": "2026-09-28",
  "memoryKneesUntil": "2026-11-09",
  "phases": [
-  { "n": "Own it", "from": 1, "to": 6, "d": "Sep 28 – Nov 8", "g": "Know every step with no video and no one to follow. Solo: Hannah's two videos, step by step. Knees over toes." },
-  { "n": "Clean it", "from": 7, "to": 9, "d": "Nov 9 – Nov 29", "g": "Feet, knees, arms, eyes. One fix a week. Trick preps look like dancing. Thanksgiving week (Nov 23) is light." },
-  { "n": "Perform it", "from": 10, "to": 14, "d": "Nov 30 – Jan 3", "g": "Focal points, stamina, full-out runs, costume on. Hold every ending." },
-  { "n": "Taper", "from": 15, "to": 15, "d": "Jan 4 – Jan 9", "g": "One run a day. Nothing new. No deep stretching. Sleep. Show Sat Jan 9!" }
+  {
+   "n": "Own it",
+   "from": 1,
+   "to": 6,
+   "d": "Sep 28 – Nov 8",
+   "g": "Know every step with no video and no one to follow. Solo: Hannah's two videos, step by step, copying arms, feet, head and focus at half speed. Apply a teacher's new correction right away. Knees over toes."
+  },
+  {
+   "n": "Clean it",
+   "from": 7,
+   "to": 9,
+   "d": "Nov 9 – Nov 29",
+   "g": "Feet, knees, arms, eyes: one fix at a time, and move on once it shows on two videos in a row. Trick preps look like dancing. Thanksgiving week (Nov 23) is light: the memory run only."
+  },
+  {
+   "n": "Perform it",
+   "from": 10,
+   "to": 14,
+   "d": "Nov 30 – Jan 3",
+   "g": "Focal points, stamina, costume on: one full-out every session, two back to back on Sundays. 2–3 mini audiences, and tape out the stage size once. Hold every ending."
+  },
+  {
+   "n": "Taper",
+   "from": 15,
+   "to": 15,
+   "d": "Jan 4 – Jan 9",
+   "g": "From Dec 28 fewer runs but still one full-out a session, same days. Nothing new, no deep stretching. Night before the show: memory run or picture it only. Sleep 9–12 hours. Show Sat Jan 9!"
+  }
  ],
  "weeks": [
-  { "w": 1, "of": "2026-09-28", "solo": "0:00–0:48 from memory", "trio": "0:00–0:22", "fri": "Trick 1", "tricks": [1] },
-  { "w": 2, "of": "2026-10-05", "solo": "0:48–2:04 from memory", "trio": "0:22–0:42", "fri": "Trick 2", "tricks": [2] },
-  { "w": 3, "of": "2026-10-12", "solo": "Hannah's video 1, step by step", "trio": "0:42–1:04 canon", "fri": "Memory + knees" },
-  { "w": 4, "of": "2026-10-19", "solo": "Hannah's video 2, step by step", "trio": "1:04 to the end", "fri": "Memory + knees" },
-  { "w": 5, "of": "2026-10-26", "solo": "Whole solo from memory, on the counts", "trio": "Whole trio, no video, by Sat Oct 31", "fri": "Memory + knees" },
-  { "w": 6, "of": "2026-11-02", "solo": "Whole solo ×2, no stops; show Ms. Brittany at the next rehearsal", "trio": "0:22 stillness: one shared focus", "fri": "Knees over toes" },
-  { "w": 7, "of": "2026-11-09", "solo": "Point + straighten on the floor work; side leg: pick one", "trio": "0:30 arabesque on knees", "fri": "Trick 1", "tricks": [1] },
-  { "w": 8, "of": "2026-11-16", "solo": "Long arms, high passé, trick preps are dancing", "trio": "0:52–0:58 shapes + arms", "fri": "Trick 6", "tricks": [6] },
-  { "w": 9, "of": "2026-11-23", "light": true, "solo": "One easy run", "trio": "Say the counts out loud", "fri": "Rest" },
-  { "w": 10, "of": "2026-11-30", "solo": "Donut roll + a focal point for every section", "trio": "Dance bigger upstage", "fri": "Trick 8", "tricks": [8] },
-  { "w": 11, "of": "2026-12-07", "solo": "Two full-outs back to back", "trio": "Trio with music ×2", "fri": "Tricks 3 + 4", "tricks": [3, 4] },
-  { "w": 12, "of": "2026-12-14", "solo": "Full run in costume", "trio": "Match Lauren's size", "fri": "Trick 5", "tricks": [5] },
-  { "w": 13, "of": "2026-12-21", "solo": "Hold the ending to 2:00", "trio": "Hold past 2:12", "fri": "Trick 7", "tricks": [7] },
-  { "w": 14, "of": "2026-12-28", "solo": "Costume run #2", "trio": "Ready for the Sat Jan 2 rehearsal", "fri": "Weakest trick", "weakest": true },
-  { "w": 15, "of": "2027-01-04", "solo": "Taper: one run a day; family mini show Thu Jan 7", "trio": "One run", "fri": "Nothing new" }
+  {
+   "w": 1,
+   "of": "2026-09-28",
+   "solo": "0:00–0:48 from memory",
+   "trio": "0:00–0:22",
+   "fri": "Trick 1",
+   "tricks": [
+    1
+   ]
+  },
+  {
+   "w": 2,
+   "of": "2026-10-05",
+   "solo": "0:48–2:04 from memory",
+   "trio": "0:22–0:42",
+   "fri": "Trick 2",
+   "tricks": [
+    2
+   ]
+  },
+  {
+   "w": 3,
+   "of": "2026-10-12",
+   "solo": "Hannah's video 1, step by step",
+   "trio": "0:42–1:04 canon",
+   "fri": "Memory + knees"
+  },
+  {
+   "w": 4,
+   "of": "2026-10-19",
+   "solo": "Hannah's video 2, step by step",
+   "trio": "1:04 to the end",
+   "fri": "Memory + knees"
+  },
+  {
+   "w": 5,
+   "of": "2026-10-26",
+   "solo": "Whole solo from memory, on the counts",
+   "trio": "Whole trio, no video, by Sat Oct 31",
+   "fri": "Memory + knees"
+  },
+  {
+   "w": 6,
+   "of": "2026-11-02",
+   "solo": "Whole solo ×2, no stops; show Ms. Brittany at the next rehearsal",
+   "trio": "0:22 stillness: one shared focus",
+   "fri": "Knees over toes"
+  },
+  {
+   "w": 7,
+   "of": "2026-11-09",
+   "solo": "Point + straighten on the floor work; side leg: pick one",
+   "trio": "0:30 arabesque on knees",
+   "fri": "Trick 1",
+   "tricks": [
+    1
+   ]
+  },
+  {
+   "w": 8,
+   "of": "2026-11-16",
+   "solo": "Long arms, high passé, trick preps are dancing",
+   "trio": "0:52–0:58 shapes + arms",
+   "fri": "Trick 6",
+   "tricks": [
+    6
+   ]
+  },
+  {
+   "w": 9,
+   "of": "2026-11-23",
+   "light": true,
+   "solo": "One easy run",
+   "trio": "Say the counts out loud",
+   "fri": "Rest"
+  },
+  {
+   "w": 10,
+   "of": "2026-11-30",
+   "solo": "Donut roll + a focal point for every section",
+   "trio": "Dance bigger upstage",
+   "fri": "Trick 8",
+   "tricks": [
+    8
+   ],
+   "extra": "🎤 Mini audience #1: dance it for grandparents on a video call"
+  },
+  {
+   "w": 11,
+   "of": "2026-12-07",
+   "solo": "Two full-outs back to back",
+   "trio": "Trio with music ×2",
+   "fri": "Tricks 3 + 4",
+   "tricks": [
+    3,
+    4
+   ]
+  },
+  {
+   "w": 12,
+   "of": "2026-12-14",
+   "solo": "Full run in costume",
+   "trio": "Match Lauren's size",
+   "fri": "Trick 5",
+   "tricks": [
+    5
+   ],
+   "extra": "📏 Tape out the stage size on the floor for the costume run · 🎤 Mini audience #2"
+  },
+  {
+   "w": 13,
+   "of": "2026-12-21",
+   "solo": "Hold the ending to 2:00",
+   "trio": "Hold past 2:12",
+   "fri": "Trick 7",
+   "tricks": [
+    7
+   ],
+   "extra": "🎤 Mini audience #3: one run after class for a friend or two"
+  },
+  {
+   "w": 14,
+   "of": "2026-12-28",
+   "solo": "Costume run #2",
+   "trio": "Ready for the Sat Jan 2 rehearsal",
+   "fri": "Weakest trick",
+   "weakest": true,
+   "extra": "😴 Sleep 9–12 hours, same bedtime every night"
+  },
+  {
+   "w": 15,
+   "of": "2027-01-04",
+   "solo": "Taper: one run a day; family mini show Thu Jan 7",
+   "trio": "One run",
+   "fri": "Nothing new",
+   "extra": "😴 Sleep 9–12 hours · night before the show: memory run or picture it, no full-out"
+  }
  ],
- "ladder": { "1": "Side-sit leg reach", "2": "Heel stretch", "3": "Leap + cartwheel", "4": "Walkover to knees + handstand", "5": "Floor kick", "6": "Passé turns", "7": "The ending", "8": "Donut roll" },
+ "ladder": {
+  "1": "Side-sit leg reach",
+  "2": "Heel stretch",
+  "3": "Leap + cartwheel",
+  "4": "Walkover to knees + handstand",
+  "5": "Floor kick",
+  "6": "Passé turns",
+  "7": "The ending",
+  "8": "Donut roll"
+ },
  "checkpoints": [
-  { "d": "2026-10-31", "t": "Whole trio, no video" },
-  { "d": "2026-11-01", "t": "Whole solo from memory, on the music" },
-  { "rehearsal": true, "after": "2026-11-01", "t": "Next solo rehearsal: show Ms. Brittany with no missed steps" },
-  { "d": "2027-01-02", "t": "Mandatory rehearsal (back from break)" },
-  { "d": "2027-01-07", "t": "Family mini show" },
-  { "d": "2027-01-09", "t": "Winter Showcase ★" }
- ]
+  {
+   "d": "2026-10-31",
+   "t": "Whole trio, no video"
+  },
+  {
+   "d": "2026-11-01",
+   "t": "Whole solo from memory, on the music"
+  },
+  {
+   "rehearsal": true,
+   "after": "2026-11-01",
+   "t": "Next solo rehearsal: show Ms. Brittany with no missed steps"
+  },
+  {
+   "d": "2027-01-02",
+   "t": "Mandatory rehearsal (back from break)"
+  },
+  {
+   "d": "2027-01-07",
+   "t": "Family mini show"
+  },
+  {
+   "d": "2027-01-09",
+   "t": "Winter Showcase ★"
+  }
+ ],
+ "rules": {
+  "imagery": {
+   "from": "2026-11-09",
+   "secs": 360,
+   "title": "Show in your head (6 min)",
+   "parentDays": 14,
+   "script": [
+    "Stand in your opening pose, in your dance clothes.",
+    "Play the real song, full speed.",
+    "Close your eyes. See the stage, the lights, the judges' table.",
+    "Dance it in your head through your own eyes; let your arms and head mark small.",
+    "Feel the story. Slow, calm breaths.",
+    "Hold the ending until the very last note.",
+    "Do it 2–3 times. The last time, watch yourself from the audience."
+   ],
+   "note": "Picturing it at bedtime is extra and optional: never let it push bedtime later."
+  },
+  "clips": {
+   "to": "2026-11-29",
+   "secs": 240,
+   "text": "🎬 Film one chunk, watch it when you want, try it again (1–2 short clips)"
+  },
+  "review": {
+   "secs": 300,
+   "sunday": "🎬 Sunday film review with a grown-up: what went well first, then ONE fix",
+   "taper": "🎬 This week: at most one happy review (what went well)"
+  },
+  "fullOut": {
+   "from": "2026-11-09",
+   "backToBackFrom": "2026-11-30",
+   "before": "▶ Solo from the top with the music, as far as you know (full out once you know it all)",
+   "one": "▶ Solo: mark once, then ONE full-out, eyes up",
+   "pair": "▶▶ Back-to-back: solo full out, 1 minute rest, full out again (or solo then trio)"
+  },
+  "taper": {
+   "from": "2026-12-28"
+  },
+  "nightBefore": [
+   "2027-01-08"
+  ],
+  "maxGap": 2
+ }
 }

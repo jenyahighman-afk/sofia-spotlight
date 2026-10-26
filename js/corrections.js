@@ -131,4 +131,30 @@ export async function pickWeekFix(today = todayStr()){
   const c = chooseWeekFix(S.corrections, today); if (!c) return null;
   await setSettings({ weekFix: { id: c.id, week: weekKey(today), pickedAt: today } }); return c;
 }
+// A teacher's new notes (the last 7 days, open, not pinned, not typed by Mom / Sofia / the AI coach): practised right away
+// in the daily plan, not saved for the cleaning weeks. Newest first.
+const NOT_TEACHER = /^(me|mom|notes|ai coach)/i;
+export function newTeacherNotes(corrections, today = todayStr(), days = 7){
+  const from = shiftDate(today, -days);
+  return Object.values(corrections || {}).filter(c => isOpen(c) && !c.pinned && c.source && !NOT_TEACHER.test(String(c.source).trim()) && dateOf(c) >= from && dateOf(c) <= today)
+    .sort((a, b) => dateOf(b).localeCompare(dateOf(a))).map(c => ({ id: c.id, text: c.text, source: String(c.source).trim(), tag: c.tag }));
+}
+// One fix at a time, and move on once it shows on two videos in a row (settings.fixSeen = { correctionId: [dates] }).
+// "On the video" adds the day (once a day); "Not yet" starts the count again. Pure.
+export const FIX_SEEN_TO_MOVE = 2;
+export function markSeen(seen, id, date, ok){
+  const all = { ...(seen && typeof seen === "object" ? seen : {}) };
+  if (!ok) { all[id] = []; return all; }
+  all[id] = [...new Set([...(all[id] || []), date])].sort().slice(-FIX_SEEN_TO_MOVE); return all;
+}
+export const seenCount = (seen, id) => ((seen && seen[id]) || []).length;
+// The store half: returns { count, moved: next fix | null, ask: true when it's a pinned teacher note (she checks it off) }.
+export async function fixOnVideo(id, ok, today = todayStr()){
+  const c = S.corrections[id]; if (!c) return { count: 0 };
+  const seen = markSeen(S.settings.fixSeen, id, today, ok); const count = seenCount(seen, id);
+  if (!ok || count < FIX_SEEN_TO_MOVE) { await setSettings({ fixSeen: seen }); return { count }; }
+  if (c.pinned) { await setSettings({ fixSeen: seen }); return { count, ask: true }; }
+  delete seen[id]; await setSettings({ fixSeen: seen }); await closeCorrection(id);
+  return { count, moved: await pickWeekFix(today) };
+}
 export const closedCount = (corrections) => Object.values(corrections || {}).filter(isDone).length;

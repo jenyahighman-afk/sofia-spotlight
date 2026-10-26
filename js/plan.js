@@ -25,14 +25,20 @@ export const MEMORY_RUN = [
 ];
 export const KNEE_DRILL = { id: "knees-block", text: "Memory + knees: pliés in 1st and 2nd facing the mirror 2×8, knees over toes · slow lunges 2×5 each side · relevés. Tricks wait until the solo is memorized.", secs: 300, kind: "trick", pose: "plie" };
 // opts: { pool, date, preferTags, weekFix: {id,text,tag}|null, tricks: [string], aerial: [{id,section,text}], aerialDone: Set|array, dances: [{id,...}],
-//   short: true on a studio day (MEMORY_RUN only), focus: "knees" (KNEE_DRILL instead of a trick) | "none" (no trick drill) | [trick lines] (this week's tricks only) }
+//   session: season15.sessionRules(date) (imagery, clips, review, run, taper), newNotes: [{id, text, source, tag}] (a teacher's notes from the last 7 days),
+//   short: true on a studio day, a light week or the night before the show (MEMORY_RUN only; nightBefore: no full-out), focus: "knees" (KNEE_DRILL instead of a trick) | "none" (no trick drill) | [trick lines] (this week's tricks only) }
 export function buildPlan(opts){
   const { pool, date } = opts; const day = dayNumber(date); const wd = weekday(date); const items = [];
-  if (opts.short) return MEMORY_RUN.map(it => ({ ...it }));
+  if (opts.short) return MEMORY_RUN.map(it => it.id === "mem-top" && opts.nightBefore ? { ...it, text: "Night before the show · From the top, marking it with the music: no full-out tonight" } : { ...it });
+  const ses = opts.session || {};
   const prefer = opts.preferTags || [];
   const comp = opts.mode === "comp"; // comp week: one core, one legs, no trick drills or aerial missions — clean runs instead
-  for (const slot of pool.slots || []) for (const it of rotate(slot.pool, comp && (slot.kind === "core" || slot.kind === "legs") ? Math.min(1, slot.n) : slot.n, day, slot.kind === "tech" ? prefer : [])) items.push({ ...it, kind: slot.kind });
+  // Taper (from Dec 28): one core, one legs, one technique — fewer exercises, the full-out stays.
+  const fewer = (k) => (comp && (k === "core" || k === "legs")) || (ses.taper && (k === "core" || k === "legs" || k === "tech"));
+  for (const slot of pool.slots || []) for (const it of rotate(slot.pool, fewer(slot.kind) ? Math.min(1, slot.n) : slot.n, day, slot.kind === "tech" ? prefer : [])) items.push({ ...it, kind: slot.kind });
   // This week's fix, as a drill (kept in the plan all week; the same id all week so a check-off sticks per day).
+  // A teacher's new correction (last 7 days) is practised right away, not saved for the cleaning weeks.
+  for (const n of (opts.newNotes || []).slice(0, 2)) if (n && n.text && (!opts.weekFix || n.id !== opts.weekFix.id)) items.push({ id: "new-" + n.id, text: `New from ${n.source}: ${n.text}`, secs: 90, kind: "fix", pose: (pool.fixPoses || {})[n.tag] || "pose", tag: n.tag });
   if (opts.weekFix && opts.weekFix.text) items.push({ id: "fix-" + opts.weekFix.id, text: "This week's fix: " + opts.weekFix.text, secs: 120, kind: "fix", pose: (pool.fixPoses || {})[opts.weekFix.tag] || "pose", tag: opts.weekFix.tag });
   // One trick drill from the dance cards, rotating daily.
   const tricks = (Array.isArray(opts.focus) && opts.focus.length ? opts.focus : opts.tricks || []).map(firstSentence).filter(Boolean);
@@ -46,7 +52,11 @@ export function buildPlan(opts){
     for (const a of picks) items.push({ id: "aerial-" + a.id, text: "Aerial mission: " + a.text, secs: 90, kind: "aerial", pose: (pool.aerialPoses || {})[a.section] || "cartwheel", aerialId: a.id, ...(a.how ? { how: a.how } : {}) }); }
   // Runs: only dances that exist (built-in or added) and aren't deleted.
   const have = new Set((opts.dances || []).map(d => d.id));
-  for (const r of pool.runs || []) if (!r.dance || have.has(r.dance)) items.push({ ...r, kind: "run" });
+  for (const r of pool.runs || []) if (!r.dance || have.has(r.dance)) items.push({ ...r, ...(r.id === "solo-run" && ses.run ? { text: ses.run.text, secs: ses.run.secs } : {}), kind: "run" });
+  // The research rules (season15.sessionRules): film one chunk (weeks 1–9), the Sunday review, the show in her head (from Nov 9).
+  if (ses.clips) items.push({ id: "film-chunk", text: ses.clips.text, secs: ses.clips.secs, kind: "run", pose: "pose" });
+  if (ses.review) items.push({ id: "film-review", text: ses.review.text, secs: ses.review.secs, kind: "run", pose: "pose" });
+  if (ses.imagery) items.push({ id: "imagery", text: ses.imagery.title, how: ses.imagery.how, secs: ses.imagery.secs, kind: "mind", pose: "hold" });
   return items;
 }
 export const planTotal = (items) => items.length;

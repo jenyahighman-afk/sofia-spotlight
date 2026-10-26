@@ -12,8 +12,8 @@ import { poolItems } from "../plan.js";
 import { checkBadges } from "../badges.js";
 import { renderDrillBox, drillStrip } from "../drills.js";
 
-const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸" };
-const GROUP = { warm:"Warm-up", core:"Core", legs:"Legs", flex:"Flex", tech:"Technique", fix:"This week's fix", trick:"Trick", aerial:"Aerial mission", run:"Runs" };
+const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸", mind:"🧠" };
+const GROUP = { warm:"Warm-up", core:"Core", legs:"Legs", flex:"Flex", tech:"Technique", fix:"This week's fix", trick:"Trick", aerial:"Aerial mission", run:"Runs", mind:"Picture it" };
 const SWAPPABLE = new Set(["warm","core","legs","flex","tech"]);
 let lastPct = -1, dateSel = null;
 const curDate = () => dateSel || todayStr();
