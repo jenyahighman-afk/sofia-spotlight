@@ -6,6 +6,8 @@ import { $, esc, toast, todayStr, expose } from "../util.js";
 import { SKILLS } from "../data.js";
 import { S, storeSet, setSettings, dances } from "../store.js";
 import { normalizeCues } from "../cues.js";
+import { drillFor } from "../trickdrill.js";
+export { drillFor };
 import { openFor } from "../corrections.js";
 import { lastTrickReview } from "../coachhub.js";
 import { srcFor } from "../player.js";
@@ -24,17 +26,19 @@ export function seedBars(review){ const b = {}; for (const k of BARS) { const v 
 export const questOf = (rec) => { const q = (rec || {}).quest || {}; return { bars: BARS.every(k => typeof (q.bars || {})[k] === "number") ? { ...q.bars } : null, gems: Array.isArray(q.gems) ? [...q.gems] : [] }; };
 const hit = (bars, k, n) => ({ ...bars, [k]: Math.max(0, (bars[k] || 0) - n) });
 export const cleared = (bars) => BARS.every(k => (bars[k] || 0) <= 0);
-// The music loop for a trick: the cue whose move names it, 6 s before to 8 s after; else null.
-export function trickLoop(dance, name){ const cs = normalizeCues((dance || {}).cues); const key = String(name).toLowerCase().split(/\s|→/)[0]; const c = cs.find(x => x.move.toLowerCase().includes(key)); if (!c) return null; return { a: Math.max(0, c.t - 6), b: c.t + 8, at: c.t }; }
+// The music loop for a trick: its cue (skill.cue = the cue number in a cue table), else the cue whose move names it
+// (key-trick cues first), 6 s before to 8 s after; else null.
+const firstWord = (name) => String(name).toLowerCase().split(/\s|→/)[0].replace(/[^a-zé-]/g, "");
+export function trickLoop(dance, name, n){ const cs = normalizeCues((dance || {}).cues); const key = firstWord(name); const named = cs.filter(x => x.move.toLowerCase().includes(key)); const c = (n && cs.find(x => x.n === n)) || named.find(x => x.trick) || named[0]; if (!c) return null; return { a: Math.max(0, c.t - 6), b: c.t + 8, at: c.t }; }
 // No cue for the trick yet: the dance's own "tricks" loop preset (else its second loop), danced twice from memory.
 export function fallbackLoop(dance){ const ls = (dance || {}).loops || []; const l = ls.find(x => /trick/i.test(x.n || "")) || ls[1]; return l && l.b > l.a ? { a: l.a, b: l.b, at: null, fallback: true } : null; }
 // Stations for a trick: [{kind, title, cue, secs, bar}]. `cue` is the one line on screen; the bar each station mainly hits.
 export function buildStations(skill, dance, corrections = []){
-  const name = skill.n; const drill = (dance.tricks || []).find(t => t.toLowerCase().startsWith(name.toLowerCase().split(/\s|→/)[0])) || "";
+  const name = skill.n; const drill = drillFor(skill, dance);
   const prep = drill.split(/(?<=[.!?])\s/).slice(1, 3).join(" ").trim() || drill.slice(0, 120) || `Warm up for the ${name}.`;
   const note = corrections.map(c => c.text).find(t => t.toLowerCase().includes(name.toLowerCase().split(/\s|→/)[0]));
   const cue = note ? note.replace(/^[^:]*:\s+/, "") : skill.tip || "Clean lines. Eyes up.";
-  const loop = trickLoop(dance, name) || fallbackLoop(dance);
+  const loop = trickLoop(dance, name, skill.cue) || fallbackLoop(dance);
   return [
     { kind: "prep", title: "Prep", cue: prep, secs: 90, bar: "knees" },
     { kind: "slow", title: "Slow five", cue: `${name} ×5, slowly. ${cue}`, secs: 90, bar: "feet", reps: 5 },

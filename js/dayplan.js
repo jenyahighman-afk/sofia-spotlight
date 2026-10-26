@@ -3,7 +3,8 @@
 // practice[date].plan (item ids) and the first must-box ticked is the day's "plan" bite, so one must-box done = the day
 // counts, like the sheet says. Items with `go` get a ▶ that opens the right place in the app. Pure parts up top.
 import { $, esc, todayStr, fmt, expose } from "./util.js";
-import { S, storeSet } from "./store.js";
+import { S, storeSet, studioDates } from "./store.js";
+import { studioOn } from "./studio.js";
 import { PLAN10 } from "./data.js";
 import { markBite } from "./habit.js";
 
@@ -35,11 +36,11 @@ export function goFor(go){
 export function renderDayPlan(date = todayStr()){
   const el = $("#dayPlan"); if (!el) return; const p = dayPlan(date); if (!p) { el.hidden = true; el.innerHTML = ""; return; }
   const ticks = new Set(planTicks(S.practice[date])); const row = (it) => { const on = ticks.has(it.id); const go = goFor(it.go); return `<label class="dp-item ${it.must ? "must" : "opt"} ${on ? "on" : ""}"><input type="checkbox" ${on ? "checked" : ""} onchange="dpTick('${esc(it.id)}')"><span class="grow">${esc(it.t)}${!it.must && it === p.opt[0] ? ` <span class="dp-tag">if there's time</span>` : ""}</span>${go && !on ? `<button type="button" class="lnk" onclick="event.preventDefault();${go}">▶</button>` : ""}</label>`; };
-  const mustN = p.must.filter(m => ticks.has(m.id)).length;
+  const mustN = p.must.filter(m => ticks.has(m.id)).length; const booked = studioOn(date, [], studioDates()); // a solo rehearsal booked later, on a day planned as home
   el.hidden = false; el.innerHTML = `<div class="row dp-head"><b class="grow">📋 Today's plan</b><span class="chip ${mustN ? "mint" : ""}">${TAGS[p.tag]}${p.label ? " · " + esc(p.label) : ""}</span></div>
     ${p.classes ? `<div class="small muted dp-classes">📍 ${esc(p.classes)}</div>` : ""}
     <div class="dp-list">${p.must.map(row).join("")}${p.opt.map(row).join("")}</div>
-    <div class="small muted dp-foot">⏱ ${p.mins[0]} min must · +${p.mins[1]} min if there's time${mustN ? " · ✓ today counts" : " · one must-box done = today counts"}</div>${p.note ? `<div class="small dp-note">${esc(p.note)}</div>` : ""}`;
+    <div class="small muted dp-foot">⏱ ${p.mins[0]} min must · +${p.mins[1]} min if there's time${mustN ? " · ✓ today counts" : " · one must-box done = today counts"}</div>${p.note ? `<div class="small dp-note">${esc(p.note)}</div>` : ""}${booked.length && p.tag === "home" ? `<div class="small dp-note">🏫 ${booked.map(b => esc(`${b.name}${b.t ? " " + b.t : ""}`)).join(" · ")} today, so do the short version: the 15-minute memory run (Practice → ▶ Start practice).</div>` : ""}`;
 }
 async function dpTick(id){
   const date = todayStr(); const p = dayPlan(date); if (!p) return; const { rec, on, mustDone } = tickPlan(S.practice[date], p, id);

@@ -3,11 +3,12 @@
 import { normalizeWorkouts, normalizeWorkout } from "./workouts-core.js";
 import { DEFAULT_DANCES, DEFAULT_EVENTS } from "./data.js";
 import { daysUntil } from "./util.js";
+import { isCueTable, applyCueTimes } from "./cues.js";
 import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 40;
+export const SCHEMA_VERSION = 41;
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
 // bridge or rolls), frozen here for the migration.
 export const TEACH_MOVE_IDS = ["pose","plie","releve","passe","arab","attitude","develop","saute","pirouette","kick","fankick","chasse","pivot","jazzsq","layout","leap","calypso","tilt","reach","contract","spiral","floor","bounce","bodyroll","wave","toprock","freeze","hold"];
@@ -98,6 +99,60 @@ function fixSoloFloor(doc){
   if (Array.isArray(doc.cues) && doc.cues.some(isLungeCue)) doc.cues = doc.cues.filter(c => !isLungeCue(c));
   return doc;
 }
+
+// Schema 41 (1.38.0): the verified solo cue table (Hannah run-through, checked Oct 25) replaces the estimated cues, and the
+// card's old times and labels go: "~0:15", "~0:34 attitude", "~1:08 walkover/handstand", "~1:42", "~1:50", the head-back
+// donut roll. (The Wednesday rehearsal lines are step 40's.) Frozen here like SOLO_V19 so the step keeps working after data/dances.json changes.
+export const SOLO_V41 = {
+  map: "0:10.5 side-sit leg reach · 0:16.5 kneeling arch + leg kick · 0:31.5 heel stretch · 0:48 leap on the swell · 0:49.5 cartwheel · 1:07.75 walkover to knees (handstand → bridge → knees) · 1:18.25 donut roll on the mat · 1:28.5 handstand · 1:40.75 floor kick · 1:49.5 passé turns · 2:00.5 floor ending — hold until the music is gone",
+  strength: "Committed acro: cartwheel, walkover to knees and handstand are clean",
+  sideSit: "Point the foot and keep the knee straight on the side-sit leg reach (0:10.5) and every floor extension, including on the way down.",
+  donut: "#other Donut roll (1:18.25): mat only. Roll back over ONE shoulder, head to the side, chin tucked. Never over the head.",
+  donutStep: "Donut roll on the mat: over ONE shoulder, chin tucked",
+  tricks: {
+    side: "Side-sit leg reach (0:10.5): sit on one hip, hand on the floor, leg straight up to the ceiling: 4 counts up, hold 2, 4 down, 6 each side. Arm slides up the leg, fingers past the toes. Cue: push the floor, reach the toe; knee stays straight as the leg fans down.",
+    arch: "Kneeling arch + leg kick (0:16.5): warm the back first (cobra, then seal). Kneel tall, arch, tip forward onto the hands and kick the back leg up, straight and pointed. 4 slow on the mat, knees over toes as you come back up.",
+    heel: "Heel stretch (0:31.5): développé side at a counter: 4 up, hold 2, 4 down ×6. Side-lying leg lifts 2×12. Standing heel down. Decide with Ms. Brittany: clean attitude or straight leg, never halfway.",
+    leap: "Leap + cartwheel (0:48 · 0:49.5): leap ON the swell, then cartwheel: reach, look, place. Head stays up until the hands go down. Cartwheel over a tape line, legs straight. Play from 0:44 ×5.",
+    walk: "Walkover to knees (1:07.75: handstand → bridge → knees) + handstand (1:28.5): wrists first. Wall handstand 3×10–15 s. Kick up to vertical ×5, split at the top ×5. The landing knee touches softly, never drops. Kick-overs only with a spotter.",
+    kick: "Floor kick (1:40.75): 8 slow kicks each side, 4 up, 4 down, pointed at the top. Kick from the hip, back long; hamstring stretch after.",
+    passe: "Passé turns (1:49.5): passé balance on relevé 10 s. Quarter turns ×8, half ×8, singles ×10. Spot a sticker on the wall; arms round like holding a beach ball.",
+    end: "The ending (2:00.5): play the last 15 seconds of the real track ×5. Hold, breathe, count 8 more after you think it's over.",
+    donut: "Donut roll (1:18.25): Mat only. Cobra + seal 20 s first. Kneel, sit back, roll back over ONE shoulder (head to the side, chin tucked), up to the knees ×5. Never over the head.",
+  },
+};
+const OLD_TRICKS_41 = [[/^Side-sit leg reach \(~0:15\)/, "side"], [/^Side extension:/, "heel"], [/^Cartwheel on the swell:/, "leap"], [/^Walkover\/handstand line:/, "walk"], [/^Floor kick:/, "kick"], [/^Passé turns:/, "passe"], [/^The ending:/, "end"], [/^Donut roll \(after/, "donut"], [/^Front walkover to knee:/, null]];
+const OLD_MAP_41 = /~0:34 attitude|~1:08 walkover|~0:15 side-sit|~1:42 floor kick|~1:50 pass/i, OLD_DONUT_41 = /Donut roll: arms down, head ALL the way back/i, OLD_SIDESIT_41 = /side-sit leg reach \(~0:15\)/i;
+const OLD_STRENGTH_41 = /walkover, handstand line is clean/, OLD_STEP_41 = /^Donut roll: arms down, head all the way back$/i;
+const anyLine = (list, test) => Array.isArray(list) && list.some(l => test(String(l)));
+// True when a stored solo still has something step 32 rewrites (old point cues, or any of the old lines). Each list is
+// checked against its own patterns only: "Side extension: commit…" is a correction that stays, not the old drill line.
+export const soloNeeds41 = (doc) => !!doc && ((Array.isArray(doc.cues) && doc.cues.length > 0 && !isCueTable(doc.cues))
+  || (typeof doc.map === "string" && OLD_MAP_41.test(doc.map))
+  || anyLine(doc.corrections, t => OLD_DONUT_41.test(t) || OLD_SIDESIT_41.test(t)) || anyLine(doc.tricks, t => OLD_TRICKS_41.some(([re]) => re.test(t)))
+  || anyLine(doc.strengths, t => OLD_STRENGTH_41.test(t)) || anyLine(doc.steps, t => OLD_STEP_41.test(t))
+  || (Array.isArray(doc.eyes) && doc.eyes.some(l => /^Attitude \/ standing →/.test(String(l)))));
+// Swap only the old lines; whatever else the family edited into the stored solo stays. The old cue sheet is kept in cuesOld.
+function fixSolo41(doc){
+  if (Array.isArray(doc.cues) && doc.cues.length && !isCueTable(doc.cues)) { if (!Array.isArray(doc.cuesOld)) doc.cuesOld = doc.cues; delete doc.cues; }
+  if (typeof doc.map === "string" && OLD_MAP_41.test(doc.map)) doc.map = SOLO_V41.map;
+  if (Array.isArray(doc.corrections)) doc.corrections = doc.corrections.map(l => OLD_DONUT_41.test(String(l)) ? SOLO_V41.donut : OLD_SIDESIT_41.test(String(l)) ? SOLO_V41.sideSit : l);
+  if (Array.isArray(doc.tricks) && doc.tricks.some(l => OLD_TRICKS_41.some(([re]) => re.test(String(l))))) {
+    const out = [];
+    for (const l of doc.tricks) {
+      const hit = OLD_TRICKS_41.find(([re]) => re.test(String(l))); if (!hit) { out.push(l); continue; }
+      if (hit[1] && !out.includes(SOLO_V41.tricks[hit[1]])) out.push(SOLO_V41.tricks[hit[1]]);
+      if (hit[1] === "side" && !doc.tricks.some(x => /^Kneeling arch/.test(String(x)))) out.push(SOLO_V41.tricks.arch);
+    }
+    doc.tricks = out;
+  }
+  if (Array.isArray(doc.strengths)) doc.strengths = doc.strengths.map(l => OLD_STRENGTH_41.test(String(l)) ? SOLO_V41.strength : l);
+  if (Array.isArray(doc.steps)) doc.steps = doc.steps.map(l => OLD_STEP_41.test(String(l)) ? SOLO_V41.donutStep : l);
+  if (Array.isArray(doc.eyes)) doc.eyes = doc.eyes.map(l => String(l).replace(/^Attitude \/ standing →/, "Heel stretch / standing →").replace(/^Cartwheel → walkover →/, "Leap + cartwheel → walkover →"));
+  return doc;
+}
+const num41 = (v, lo, hi) => { if (v === null || v === undefined || v === "") return null; const n = +v; return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : null; };
+const mediaRef = (m) => m && typeof m === "object" && /^https?:\/\//.test(String(m.url || "")) ? { url: String(m.url).slice(0, 1000), path: String(m.path || "").slice(0, 300) } : null;
 
 // MIGRATIONS[n] upgrades one document from schema n-1 to schema n. Each returns the upgraded document.
 export const MIGRATIONS = {
@@ -285,7 +340,23 @@ export const MIGRATIONS = {
   // 40 (no weekly solo rehearsal): Ms. Brittany's solo rehearsals are booked as needed (at least 2 a month), not every Wednesday.
   // A stored solo saved from the edit form keeps the old seed lines, so the exact old teacher / rehearsal / Nov 4 checkpoint
   // texts are swapped for the new ones (SOLO_V40). Anything the family typed themselves is left alone.
-  40: (col, id, doc) => { if (col === "dances" && id === "solo") fixSoloRehearsal(doc); return doc; }
+  40: (col, id, doc) => { if (col === "dances" && id === "solo") fixSoloRehearsal(doc); return doc; },
+  // 41 (1.38.0): the verified solo cue table. A stored solo gets the new lines (fixSolo41; the old cue sheet moves to
+  // cuesOld) and is written back once like 19. New fields, normalized when present:
+  //   dances.cueTimes  = { [cue n]: start seconds } — nudges saved by the cue check tool over the built-in table
+  //   dances.cueMedia  = { [cue n]: { photo: {url, path, at}, clip: {url, path} } } — Sofia's photo and Hannah's clip, family Storage only
+  //   dances.hannahVideos = [{ name, url, path, offset }] — up to 2; offset = seconds into the video where the track starts
+  //   events.kind = "class" — a one-off studio date (a booked solo rehearsal, a make-up class): not a show, no countdown
+  //   settings.predict = { [cue n]: { got, missed, last } } — Pause & Predict results
+  41: (col, id, doc) => {
+    if (col === "dances" && id === "solo") fixSolo41(doc);
+    if (col === "dances" && doc.cueTimes !== undefined) { const o = {}; for (const [k, v] of Object.entries(doc.cueTimes && typeof doc.cueTimes === "object" ? doc.cueTimes : {})) { const n = parseInt(k, 10), t = num41(v, 0, 600); if (n > 0 && t !== null) o[n] = Math.round(t * 100) / 100; } doc.cueTimes = o; }
+    if (col === "dances" && doc.cueMedia !== undefined) { const o = {}; for (const [k, v] of Object.entries(doc.cueMedia && typeof doc.cueMedia === "object" ? doc.cueMedia : {})) { const n = parseInt(k, 10); if (!(n > 0) || !v || typeof v !== "object") continue; const e = {}; const ph = mediaRef(v.photo), cl = mediaRef(v.clip); if (ph) e.photo = { ...ph, at: String((v.photo || {}).at || "").slice(0, 10) }; if (cl) e.clip = cl; if (e.photo || e.clip) o[n] = e; } doc.cueMedia = o; }
+    if (col === "dances" && doc.hannahVideos !== undefined) doc.hannahVideos = (Array.isArray(doc.hannahVideos) ? doc.hannahVideos : []).map(v => { const r = mediaRef(v); if (!r) return null; const off = num41(v.offset, 0, 600); return { ...r, name: String(v.name || "").slice(0, 60), offset: off === null ? 0 : off }; }).filter(Boolean).slice(0, 2);
+    if (col === "events" && doc.kind !== undefined && doc.kind !== "class") delete doc.kind;
+    if (col === "settings" && doc.predict !== undefined) { const o = {}; for (const [k, v] of Object.entries(doc.predict && typeof doc.predict === "object" ? doc.predict : {})) { const n = parseInt(k, 10); if (!(n > 0) || !v || typeof v !== "object") continue; o[n] = { got: Math.max(0, parseInt(v.got, 10) || 0), missed: Math.max(0, parseInt(v.missed, 10) || 0), last: v.last === "got" || v.last === "missed" ? v.last : "" }; } doc.predict = o; }
+    return doc;
+  }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],
@@ -337,7 +408,7 @@ function notify(){ clearTimeout(renderTimer); renderTimer = setTimeout(() => cha
 
 // Called by the backend with the full current contents of one collection ({id: doc}). meta.fromCache tells whether the server has confirmed it.
 export function receive(col, docs, meta = {}){
-  if (col === "dances") { const raw = docs && docs.solo, v = docVersion(raw); soloStale = !!raw && ((v < 19 && soloHasOldFloor(raw)) || (v < 20 && soloMissingLungeStrength(raw))); }
+  if (col === "dances") { const raw = docs && docs.solo, v = docVersion(raw); soloStale = !!raw && ((v < 19 && soloHasOldFloor(raw)) || (v < 20 && soloMissingLungeStrength(raw)) || (v < 41 && soloNeeds41(raw))); }
   const migrated = migrateCollection(col, docs);
   if (col === "settings") S.settings = migrated.main || {}; else S[col] = migrated;
   received.any.add(col); if (meta.fromCache === false) received.server.add(col);
@@ -359,7 +430,7 @@ export async function storeDel(col, id){
   notify();
   if (backend) await backend.del(col, id);
 }
-// The cloud half of steps 19 and 20. receive() flags a stored solo below schema 19 with old lines, or below 20 without the
+// The cloud half of steps 19, 20 and 41. receive() flags a stored solo below schema 19 with old lines, or below 20 without the
 // lunge strength; once the server has confirmed the dances, the migrated copy is saved back, so the Firestore doc itself
 // changes. After that save its _v is current and it is never flagged again. Two phones doing it at once write the same thing.
 let soloStale = false;
@@ -389,8 +460,12 @@ export function setSettings(patch){ return storeSet("settings", "main", { ...S.s
 export function docTime(doc){ if (!doc) return 0; if (typeof doc._at === "number") return doc._at; const t = Date.parse(doc.at || ""); return Number.isFinite(t) ? t : 0; }
 
 // ---------- MERGED MODELS ----------
-export function dances(){ const merged={}; DEFAULT_DANCES.forEach(d=>merged[d.id]={...d}); Object.entries(S.dances).forEach(([id,d])=>merged[id]={...(merged[id]||{}),...d}); return Object.values(merged).filter(d=>!d.deleted); }
-export function events(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted).sort((a,b)=>a.start.localeCompare(b.start)); }
+// A dance's cue table shows the cue check tool's nudges (cueTimes) over the built-in times; everything else comes from data.
+export function dances(){ const merged={}; DEFAULT_DANCES.forEach(d=>merged[d.id]={...d}); Object.entries(S.dances).forEach(([id,d])=>merged[id]={...(merged[id]||{}),...d}); return Object.values(merged).filter(d=>!d.deleted).map(d=>d.cueTimes&&isCueTable(d.cues)?{...d,cues:applyCueTimes(d.cues,d.cueTimes)}:d); }
+// One-off studio dates (events.kind "class": a booked solo rehearsal, a make-up class) are not shows: no countdown, no comp mode.
+export const isStudioDate = (e) => !!e && e.kind === "class";
+export function events(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted&&!isStudioDate(e)).sort((a,b)=>a.start.localeCompare(b.start)); }
+export function studioDates(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted&&isStudioDate(e)).sort((a,b)=>a.start.localeCompare(b.start)); }
 export function nextEvent(){ return events().find(e=>daysUntil(e.end)>=0); }
 export function pin(){ return typeof S.settings.pin === "string" && S.settings.pin ? S.settings.pin : DEFAULT_PIN; }
 export function pinOn(){ return S.settings.pinOn !== false; }

@@ -9,7 +9,9 @@ const dances = JSON.parse(readFileSync(new URL("../data/dances.json", import.met
 
 test("snap times: the solo's cue sheet for a full run, even spacing for a short clip or no cues", () => {
   const solo = dances.find(d => d.id === "solo"); const t = snapTimes(124, solo.cues);
-  assert.ok(t.length >= 16 && t.length <= 20); assert.ok(t.includes(50.8), "one just after the cartwheel cue"); assert.ok(t.every(x => x < 124));
+  assert.ok(t.length >= 16 && t.length <= 20); assert.ok(t.every(x => x < 124));
+  // Every key trick is caught at its photo moment (Sofia in the shape): cartwheel 0:50.5, donut roll 1:19.75, the ending 2:02.
+  for (const pt of [11, 18.5, 33, 48.5, 50.5, 68.25, 79.75, 89, 101.75, 110.25, 122]) assert.ok(t.includes(pt), "frame at " + pt);
   assert.equal(snapTimes(30, solo.cues).length, 16); assert.equal(snapTimes(124, []).length, 16);
 });
 test("the due frame is the first untaken time at or before now; stale ones are skipped, not fired in a burst", () => {

@@ -9,17 +9,19 @@ import { installEnv, resetDom, el } from "./_env.mjs";
 installEnv();
 const read = (rel) => readFileSync(new URL("../" + rel, import.meta.url), "utf8");
 const html = read("index.html");
-const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind","plan10","workout-presets","pet","advent","dares","costumes","news","buddy"];
+const dataFiles = ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle","skills","practice-pool","exercises","daily","mind","plan10","workout-presets","pet","advent","dares","costumes","news","buddy","plan15","howto"];
 
 let M = {};
 before(async () => {
   const data = await import("../js/data.js"); const got = {}; for (const f of dataFiles) got[f] = JSON.parse(read("data/" + f + ".json")); data.applyData(got);
-  M.store = await import("../js/store.js");
+  M.store = await import("../js/store.js"); M.studio = await import("../js/studio.js"); M.util = await import("../js/util.js");
   M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
   M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js"); M.along = await import("../js/games/along.js"); M.hub = await import("../js/coachhub.js");
 });
 
+// A studio day (any weekly class or a one-off date) has the short 15-minute memory run instead of the full plan.
+const shortDay = () => M.studio.isShortDay(M.util.todayStr(), JSON.parse(read("data/classes.json")), M.store.studioDates());
 const SCREENS = () => ({
   home: M.home.renderHome, dances: M.dances.renderDances, practice: M.practice.renderPractice, play: M.play.renderPlay, me: M.me.renderMe,
   events: M.events.renderEvents, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, notes: () => { M.notes.renderNotes(); M.notes.renderPhotos(); M.notes.renderFiles(); },
@@ -30,7 +32,7 @@ const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["rmTime", "mmPair", "mmStatus", "mmCanvas", "mmPhoto", "mmThen", "mmNow", "rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount", "drillUrl", "drillSkill", "drillNote"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["rmTime", "mmPair", "mmStatus", "mmCanvas", "mmPhoto", "mmThen", "mmNow", "rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "ckGrab", "coachTapSkip", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount", "drillUrl", "drillSkill", "drillNote"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -63,7 +65,8 @@ test("every screen initialises and renders with an empty family space (no throw,
     assert.equal((dl.match(/memo-how memo-rule/g) || []).length, cards, "the rules sit behind How does this work?"); assert.ok(dl.includes("“"), "the story itself stays in view"); }
   assert.match(read("js/views/dances.js"), /Google Photos/, "the links field says Google Photos albums go there");
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
-  assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > 10, "checklist rows rendered");
+  assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > (shortDay() ? 5 : 10), "checklist rows rendered");
+  if (shortDay()) assert.ok(el("#practiceChecklist").innerHTML.includes("15-minute memory run"), "a studio day has the memory run");
   assert.ok(html.includes('<details class="more plan-fold" id="planFold">') && html.indexOf('id="planFold"') < html.indexOf('id="practiceChecklist"'), "the exercise list sits inside a closed fold on Practice");
   assert.match(el("#planCount").textContent, /^\d+ of \d+ done$/, "the fold's summary counts today's exercises");
   assert.ok(html.includes('<body class="pg-home">'), "the body starts on Today");
@@ -128,7 +131,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#goalReminder").innerHTML.includes("Check-in time"), "goal due after 14 days shows on Today");
   M.goals.openGoal("g1"); assert.ok(el("#goalBody").innerHTML.includes("openCoach('','Right split')"), "a goal's sheet has a coach button for that goal");
   assert.ok(el("#danceList").innerHTML.includes("openCoach('solo')"), "Coach me on the dance cover");
-  assert.ok(el("#practiceChecklist").innerHTML.includes("openCoach('',"), "Coach me on tricks in Practice");
+  if (!shortDay()) assert.ok(el("#practiceChecklist").innerHTML.includes("openCoach('',"), "Coach me on tricks in Practice");
   assert.ok(el("#skillCheckList").innerHTML.includes("Hannah"), "teacher name shown");
   M.showme.showMe("a"); assert.ok(el("#showmeStage").innerHTML.includes("Flexed foot") && el("#showmeStage").innerHTML.includes("Point your foot"), "Show me renders both sides");
   for (const tag of ["feet","knees","eyes","arms","spacing","energy","timing","other"]) { M.showme.showMe(null, tag); assert.equal((el("#showmeStage").innerHTML.match(/<svg/g) || []).length, 2, tag + " has two stages"); }
@@ -138,9 +141,10 @@ test("practice player presets come from the dance's loops and its music-map time
   const solo = JSON.parse(read("data/dances.json")).find(d => d.id === "solo");
   const ps = M.player.presetsFor(solo, 124);
   assert.ok(ps.some(p => p.n === "Soft half" && p.a === 0 && p.b === 48));
-  assert.ok(ps.some(p => p.fromMap && p.a === 50 && p.b === 68 && p.n === "cartwheel"), "0:50 cartwheel → next stamp 1:08, label trimmed");
+  assert.ok(ps.some(p => p.fromMap && p.a === 49.5 && p.b === 67.75 && p.n === "cartwheel"), "0:49.5 cartwheel → next stamp 1:07.75");
+  assert.ok(ps.some(p => p.fromMap && p.a === 67.75 && p.n === "walkover to knees"), "1:07.75, parenthetical dropped");
   assert.ok(ps.every(p => p.b > p.a));
-  assert.equal(M.player.parseTime("1:52"), 112); assert.equal(M.player.parseTime("x"), null);
+  assert.equal(M.player.parseTime("1:52"), 112); assert.equal(M.player.parseTime("1:07.75"), 67.75); assert.equal(M.player.parseTime("x"), null);
   assert.equal(M.player.shortLabel("floor ending — hold until the music is gone"), "floor ending — hold");
   assert.deepEqual(M.player.presetsFor({ id: "x" }, 0), []);
 });
@@ -202,4 +206,11 @@ test("the service worker's file list: no repeats, and every listed file exists",
   const files = list.match(/"\.\/[^"]*"/g).map(x => x.slice(1, -1));
   assert.equal(new Set(files).size, files.length, "repeated: " + files.filter((f, i) => files.indexOf(f) !== i).join(", "));
   for (const f of files) if (f !== "./") assert.ok(existsSync(new URL("../" + f.slice(2), import.meta.url)), "missing " + f);
+});
+
+test("the service worker caches every JS module and data file, so the app opens offline", () => {
+  const sw = read("sw.js"); const missing = [];
+  for (const dir of ["js", "js/views", "js/games"]) for (const f of readdirSync(new URL("../" + dir, import.meta.url))) if (f.endsWith(".js") && !sw.includes(`"./${dir}/${f}"`)) missing.push(`${dir}/${f}`);
+  for (const f of readdirSync(new URL("../data", import.meta.url))) if (f.endsWith(".json") && !sw.includes(`"./data/${f}"`)) missing.push("data/" + f);
+  assert.deepEqual(missing, []);
 });

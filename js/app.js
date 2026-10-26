@@ -42,6 +42,11 @@ import { installErrorCapture, installReportLinks, guard, renderReports } from ".
 import { migrateDanceCorrections } from "./corrections.js";
 import { checkBadges } from "./badges.js";
 import { refreshSeedFiles } from "./seed.js";
+import { initCueCards, initVideos } from "./cuecards.js";
+import { initCueCheck, renderCueCheck } from "./cuecheck.js";
+import { initMemorize } from "./memorize.js";
+import { initHowto } from "./howto.js";
+import { initStudio } from "./studio.js";
 
 const VERSION_KEY = "spotlight:version";
 
@@ -49,10 +54,10 @@ const VERSION_KEY = "spotlight:version";
 const renders = [
   guard("home", renderHome), guard("dances", renderDances), guard("practice", renderPractice), guard("play", renderPlay), guard("me", renderMe),
   guard("events", renderEvents), guard("schedule", () => { renderClasses(); renderCalendar(); }), guard("notes", () => { renderNotes(); renderPhotos(); renderFiles(); }),
-  guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("coach", renderCoachHub), guard("grownups", renderGrownups), guard("settings", renderSettings), guard("buddy", renderBuddy),
+  guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("coach", renderCoachHub), guard("grownups", renderGrownups), guard("settings", renderSettings), guard("buddy", renderBuddy), guard("cuecheck", renderCueCheck),
 ];
 function renderAll(){ renders.forEach(r => r()); }
-function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initBuddy(); initCostume(); initGlow(); installReportLinks(); }
+function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initBuddy(); initCostume(); initGlow(); initCueCards(); initVideos(); initCueCheck(); initMemorize(); initHowto(); initStudio(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
 async function registerSW(){

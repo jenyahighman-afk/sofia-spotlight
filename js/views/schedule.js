@@ -1,10 +1,13 @@
-// Schedule tab: weekly classes table, month calendar, the printable week view, and the .ics export.
+// Schedule tab: weekly classes table, one-off studio dates (booked solo rehearsals, make-up classes), month calendar,
+// the printable week view, and the .ics export.
 import { $, esc, todayStr, dateStr, toast, saveBlob } from "../util.js";
 import { CLASSES, HOME_DAYS, SEASON } from "../data.js";
-import { S, events } from "../store.js";
+import { S, events, studioDates } from "../store.js";
 import { buildICS } from "../ics.js";
+import { studioOn, upcomingHtml } from "../studio.js";
 
-function renderClasses(){ const names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]; $("#classTable").innerHTML=`<thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Room</th></tr></thead><tbody>`+CLASSES.map(c=>`<tr><td>${names[c.day]}</td><td>${c.t}</td><td>${esc(c.name)}</td><td>${c.room}</td></tr>`).join("")+`</tbody>`; }
+function renderStudio(){ const el=$("#studioList"); if(el) el.innerHTML=upcomingHtml(); }
+function renderClasses(){ renderStudio(); const names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]; $("#classTable").innerHTML=`<thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Room</th></tr></thead><tbody>`+CLASSES.map(c=>`<tr><td>${names[c.day]}</td><td>${c.t}</td><td>${esc(c.name)}</td><td>${c.room}</td></tr>`).join("")+`</tbody>`; }
 
 let calMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
 let calMode="month"; // "month" | "week"
@@ -17,7 +20,7 @@ function renderCal(){
   let h=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(n=>`<div class="hd">${n}</div>`).join("");
   for(let i=0;i<startDow;i++) h+=`<div class="d off"></div>`;
   for(let day=1;day<=dim;day++){ const d=new Date(y,m,day); const ds=y+"-"+String(m+1).padStart(2,"0")+"-"+String(day).padStart(2,"0"); const wd=d.getDay(); let ev="";
-    CLASSES.filter(c=>c.day===wd).forEach(c=>ev+=`<div class="ev">${esc(c.name.replace(/Mini\/Jr |Mini /,""))}</div>`);
+    studioOn(ds,CLASSES,studioDates()).forEach(c=>ev+=`<div class="ev ${c.oneOff?"oneoff":""}">${esc(c.name.replace(/Mini\/Jr |Mini /,""))}</div>`);
     if(HOME_DAYS[wd]) ev+=`<div class="ev home">Home practice</div>`;
     events().filter(e=>ds>=e.start&&ds<=e.end).forEach(e=>ev+=`<div class="ev comp">${esc(e.name)}</div>`);
     Object.values(S.todos).filter(t=>t.due===ds).forEach(t=>ev+=`<div class="ev other">${esc(t.text)}</div>`);
@@ -31,7 +34,7 @@ function renderWeek(){
   const opt={month:"short",day:"numeric"}; $("#calLabel").textContent=weekStart.toLocaleDateString(undefined,opt)+" – "+end.toLocaleDateString(undefined,{...opt,year:"numeric"});
   const names=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]; let h="";
   for(let i=0;i<7;i++){ const d=new Date(weekStart); d.setDate(weekStart.getDate()+i); const ds=dateStr(d); const wd=d.getDay(); let items="";
-    CLASSES.filter(c=>c.day===wd).sort((a,b)=>a.t.localeCompare(b.t)).forEach(c=>items+=`<div class="ev"><b>${esc(c.t)}</b> ${esc(c.name)} <span class="muted">· ${esc(c.room)}</span></div>`);
+    studioOn(ds,CLASSES,studioDates()).forEach(c=>items+=`<div class="ev ${c.oneOff?"oneoff":""}"><b>${esc(c.t)}</b> ${esc(c.name)}${c.room?` <span class="muted">· ${esc(c.room)}</span>`:""}</div>`);
     if(HOME_DAYS[wd]) items+=`<div class="ev home">Home: ${esc(HOME_DAYS[wd])}</div>`;
     events().filter(e=>ds>=e.start&&ds<=e.end).forEach(e=>items+=`<div class="ev comp">${esc(e.name)}</div>`);
     Object.values(S.todos).filter(t=>t.due===ds&&!t.done).forEach(t=>items+=`<div class="ev other">To-do: ${esc(t.text)}</div>`);
@@ -44,7 +47,7 @@ function step(dir){ if(calMode==="week"){ weekStart=new Date(weekStart); weekSta
 function setMode(m){ calMode=m; if(m==="week") weekStart=mondayOf(calMonth.getMonth()===new Date().getMonth()&&calMonth.getFullYear()===new Date().getFullYear()?new Date():calMonth); else calMonth=new Date(weekStart.getFullYear(),weekStart.getMonth(),1); renderCalendar(); }
 
 async function exportIcs(){
-  try{ const ics=buildICS({classes:CLASSES,events:events(),season:SEASON}); await saveBlob(new Blob([ics],{type:"text/calendar;charset=utf-8"}),"sofia-spotlight.ics"); toast("Calendar file ready"); }
+  try{ const oneOffs=studioDates().map(e=>({...e,name:e.name+(e.time?" · "+e.time:"")})); const ics=buildICS({classes:CLASSES,events:[...events(),...oneOffs],season:SEASON}); await saveBlob(new Blob([ics],{type:"text/calendar;charset=utf-8"}),"sofia-spotlight.ics"); toast("Calendar file ready"); }
   catch(e){ console.warn(e); toast("Couldn't build the calendar file",2500); }
 }
 

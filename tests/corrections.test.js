@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { retiredIds, inferTag, parseLine, migratedId, hashText, recordsFromDance, patterns, chooseWeekFix, weekKey, shiftDate, topFixes, openFor } from "../js/corrections.js";
+import { retiredIds, inferTag, parseLine, migratedId, hashText, recordsFromDance, patterns, chooseWeekFix, weekKey, shiftDate, topFixes, openFor, pinnedFromDance, pinnedOpen, REPLACED_LINES } from "../js/corrections.js";
 
 const dances = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8"));
 
@@ -75,15 +75,30 @@ test("an explicit #tag prefix on a card line wins and is stripped from the text;
   assert.equal(parseLine("#bogus Point").text, "#bogus Point");
   assert.equal(migratedId("solo", "Donut roll"), recordsFromDance({ id: "solo", corrections: ["#feet Donut roll"] }, "2026-09-30")[0].id);
   const donut = recordsFromDance(dances.find(d => d.id === "solo"), "2026-09-30").find(r => r.text.startsWith("Donut roll"));
-  assert.equal(donut.tag, "feet"); assert.ok(!donut.text.startsWith("#"));
+  assert.equal(donut.tag, "other"); assert.ok(!donut.text.startsWith("#"));
+  assert.deepEqual(parseLine("#memory Know what comes next"), { text: "Know what comes next", tag: "memory", explicit: true });
+  assert.equal(inferTag("Memorize every step"), "memory");
 });
 
 test("the tailbone-balance line is retired and the card carries the side-sit leg reach note instead (still a feet note)", () => {
   const ids = retiredIds(); assert.ok(ids.has(migratedId("solo", "Point the foot and straighten the knee on the tailbone balance and every floor extension")));
   const now = recordsFromDance(dances.find(d => d.id === "solo"), "2026-10-11"); assert.ok(now.every(r => !ids.has(r.id) && !/tailbone/i.test(r.text)));
-  const first = now[0]; assert.match(first.text, /^Point the foot and keep the knee straight on the side-sit leg reach \(~0:15\)/); assert.equal(first.tag, "feet");
+  const first = now[0]; assert.match(first.text, /^Point the foot and keep the knee straight on the side-sit leg reach \(0:10\.5\)/); assert.equal(first.tag, "feet");
+  assert.ok(ids.has(migratedId("solo", "Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down.")), "the ~0:15 wording is retired");
+  const [[from, to]] = REPLACED_LINES.solo; assert.ok(ids.has(migratedId("solo", from)) && !ids.has(migratedId("solo", to)) && first.text === to, "its status carries to the 0:10.5 wording");
 });
-test("the corrected donut-roll line is retired: its old note id is on the retired list and the card no longer carries it", () => {
+test("the donut roll: both older lines are retired and the card carries the over-one-shoulder drill (Oct 25)", () => {
   const ids = retiredIds(); assert.ok(ids.has(migratedId("solo", "Donut roll: chin tucked, roll over the shoulder, chest leads")));
-  const now = recordsFromDance(dances.find(d => d.id === "solo"), "2026-10-04"); assert.ok(now.every(r => !ids.has(r.id))); assert.ok(now.some(r => /head ALL the way back/.test(r.text) && r.tag === "feet"));
+  assert.ok(ids.has(migratedId("solo", "Donut roll: arms down, head ALL the way back — do not tuck the chin (Hannah)")));
+  const now = recordsFromDance(dances.find(d => d.id === "solo"), "2026-10-25"); assert.ok(now.every(r => !ids.has(r.id))); assert.ok(!now.some(r => /head ALL the way back/i.test(r.text)));
+  assert.ok(now.some(r => /Donut roll \(1:18\.25\)/.test(r.text) && /ONE shoulder/.test(r.text) && /Never over the head/.test(r.text)));
+});
+test("Ms. Brittany's Oct 13 homework: two pinned notes (knees, memory) that lead the solo list and become the week's fix", () => {
+  const solo = dances.find(d => d.id === "solo"); const pins = pinnedFromDance(solo);
+  assert.deepEqual(pins.map(p => p.tag), ["knees", "memory"]); assert.ok(pins.every(p => p.pinned && p.source === "Ms. Brittany" && p.date === "2026-10-13" && p.status === "working"));
+  assert.match(pins[0].text, /knees over toes in every plié, lunge, landing and floor entry/); assert.match(pins[1].text, /Hannah's two videos step by step/);
+  const corr = Object.fromEntries([...pins, { id: "x1", danceId: "solo", text: "Eyes up", tag: "eyes", date: "2026-10-20", status: "working" }, { id: "x2", danceId: "solo", text: "Eyes up again", tag: "eyes", date: "2026-10-21", status: "working" }].map(c => [c.id, c]));
+  assert.deepEqual(topFixes(corr, "solo", 2).map(c => c.tag), ["knees", "memory"], "the solo's top two, even with newer notes");
+  assert.equal(chooseWeekFix(corr, "2026-10-25").tag, "knees"); assert.deepEqual(pinnedOpen(corr).map(c => c.tag), ["knees", "memory"]);
+  corr[pins[0].id] = { ...corr[pins[0].id], status: "done" }; assert.equal(chooseWeekFix(corr, "2026-10-25").tag, "memory", "knees got it → memory is next");
 });

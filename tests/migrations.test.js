@@ -2,10 +2,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime, SOLO_V19, SOLO_LUNGE_STRENGTH, soloHasOldFloor, receive, saveSoloFix, setBackend, S } from "../js/store.js";
+import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime, SOLO_V19, SOLO_V40, SOLO_V41, soloNeeds41, SOLO_LUNGE_STRENGTH, soloHasOldFloor, receive, saveSoloFix, setBackend, S } from "../js/store.js";
 import { applyData } from "../js/data.js";
 import { PRACTICE_ITEMS, AERIAL } from "../js/data.js";
 
+// Runs the steps up to `to` only (to test an older step without the later ones on top).
+const migrateTo = (col, id, doc, to) => { let v = docVersion(doc), d = { ...doc }; while (v < to) { v++; d = MIGRATIONS[v](col, id, d) || d; d._v = v; } return d; };
 const json = (f) => JSON.parse(readFileSync(new URL("../data/" + f + ".json", import.meta.url), "utf8"));
 const loadAll = () => { const got = {}; for (const f of ["dances","events","classes","home-days","practice-items","phases","packs","aerial","season","styles","moves","avatar-options","oops","trio","compday","sparkle"]) got[f] = json(f); applyData(got); };
 
@@ -86,9 +88,9 @@ test("2 → 3: corrections and skills written by an older build get their defaul
 });
 
 test("3 → 4: dance cue sheets are normalized when present and never invented when absent", () => {
-  const d = migrateDoc("dances", "solo", { _v: 3, name: "Solo", cues: [{ t: "0:50", move: "Cartwheel" }, { t: 12, lyric: "words", move: "Floor" }, { t: "x", move: "bad" }] });
+  const d = migrateDoc("dances", "trio", { _v: 3, name: "Trio", cues: [{ t: "0:50", move: "Cartwheel" }, { t: 12, lyric: "words", move: "Floor" }, { t: "x", move: "bad" }] });
   assert.equal(d._v, SCHEMA_VERSION); assert.deepEqual(d.cues, [{ t: 12, lyric: "words", move: "Floor" }, { t: 50, lyric: "", move: "Cartwheel" }]);
-  const partial = migrateDoc("dances", "solo", { _v: 3, musicUrl: "x" });
+  const partial = migrateDoc("dances", "trio", { _v: 3, musicUrl: "x" });
   assert.equal("cues" in partial, false, "a partial override must not hide the built-in cue sheet");
   assert.deepEqual(migrateDoc("dances", "d", { cues: "junk" }).cues, []);
 });
@@ -140,19 +142,19 @@ const oldSolo = () => ({ _v: 18, _at: 1, name: "Solo", notes: "my notes", map: O
   cues: [{ t: 0, lyric: "", move: "Opening walk" }, { t: 12, lyric: "words here", move: "Floor work & tailbone balance" }, { t: 18, lyric: "", move: "Lunge reach — pull the thread" }, { t: 50, lyric: "", move: "Cartwheel on the swell" }] });
 
 test("18 → 19: a stored solo with the tailbone balance gets the side-sit leg reach lines, the lunge reach cue goes; everything else (the lunge strength too) is kept", () => {
-  const d = migrateDoc("dances", "solo", oldSolo());
+  const d = migrateTo("dances", "solo", oldSolo(), 40); // step 41 rewrites these lines again (its own test below)
   assert.equal(d.map, SOLO_V19.mapHead + " ~0:34 attitude with arms up · ~0:50 cartwheel (right on the swell) · 1:53–2:03 floor ending — hold until the music is gone");
   assert.ok(d.map.startsWith("~0:11 drop to the floor & seated fold · ~0:15 side-sit leg reach (leg to the ceiling, arm traces it) · ~0:17 leg fans down, slide out long · ~0:34 attitude"));
   assert.deepEqual(d.corrections, [SOLO_V19.correction, "Long arms overhead, shoulders down", "My own line"]);
   assert.deepEqual(d.tricks, [SOLO_V19.trick, "Floor kick: kick from the hip"]);
   assert.deepEqual(d.cues.map(c => c.t), [0, 11, 15, 17, 50]); assert.deepEqual(d.strengths, ["Floor work is smooth", "Full-body reach on the lunge (arms past the body)"]); assert.equal(d.cues[1].lyric, "words here"); assert.equal(d.cues[2].move, "Side-sit leg reach — leg to the ceiling, arm traces it");
-  assert.equal(soloHasOldFloor(d), false); assert.equal(d.notes, "my notes"); assert.equal(d.name, "Solo"); assert.equal(d._v, SCHEMA_VERSION);
+  assert.equal(soloHasOldFloor(d), false); assert.equal(d.notes, "my notes"); assert.equal(d.name, "Solo"); assert.equal(d._v, 40);
   // A solo override with none of the old lines, another dance, or a solo already at 19 is left alone.
   assert.deepEqual(migrateDoc("dances", "solo", { _v: 18, musicUrl: "x" }), { _v: SCHEMA_VERSION, musicUrl: "x" });
   assert.equal(migrateDoc("dances", "trio", { _v: 18, map: "tailbone" }).map, "tailbone");
   assert.equal(migrateDoc("dances", "solo", { _v: 19, map: "tailbone" }).map, "tailbone");
   // No "~0:34" to cut at: only the tailbone part of the map is swapped.
-  assert.equal(migrateDoc("dances", "solo", { _v: 18, map: "~0:05 walk · ~0:12 tailbone balance · ~0:40 turn" }).map, "~0:05 walk · " + SOLO_V19.mapHead.replace(/ ·$/, "") + " · ~0:40 turn");
+  assert.equal(migrateTo("dances", "solo", { _v: 18, map: "~0:05 walk · ~0:12 tailbone balance · ~0:40 turn" }, 40).map, "~0:05 walk · " + SOLO_V19.mapHead.replace(/ ·$/, "") + " · ~0:40 turn");
   // The step must not touch the stored object it was given.
   const raw = oldSolo(); migrateDoc("dances", "solo", raw); assert.deepEqual(raw, oldSolo());
 });
@@ -178,7 +180,7 @@ test("18 → 19 reaches the cloud: once the server confirms the dances, the old 
   const writes = []; setBackend({ set: async (col, id, rec) => { writes.push({ col, id, rec }); }, del: async () => {} });
   try {
     receive("dances", { solo: oldSolo() }, { fromCache: true }); assert.equal(await saveSoloFix(), false, "waits for the server");
-    receive("dances", { solo: oldSolo() }, { fromCache: false }); assert.equal(S.dances.solo.corrections[0], SOLO_V19.correction);
+    receive("dances", { solo: oldSolo() }, { fromCache: false }); assert.equal(S.dances.solo.corrections[0], SOLO_V41.sideSit, "19, then 41 (retimed)");
     assert.equal(await saveSoloFix(), true); assert.equal(await saveSoloFix(), false, "only once");
     assert.equal(writes.length, 1); const w = writes[0]; assert.equal(w.col, "dances"); assert.equal(w.id, "solo"); assert.equal(w.rec._v, SCHEMA_VERSION);
     assert.equal(soloHasOldFloor(w.rec), false); assert.equal(w.rec.notes, "my notes"); assert.deepEqual(w.rec.corrections.slice(1), ["Long arms overhead, shoulders down", "My own line"]);
@@ -188,7 +190,7 @@ test("18 → 19 reaches the cloud: once the server confirms the dances, the old 
     receive("dances", {}, { fromCache: false }); assert.equal(await saveSoloFix(), false); assert.equal(writes.length, 1);
     // Only the lunge reach cue left (no tailbone): still fixed and written back once.
     receive("dances", { solo: { _v: 18, cues: [{ t: 18, lyric: "", move: "Lunge reach — pull the thread" }, { t: 50, lyric: "", move: "Cartwheel" }] } }, { fromCache: false });
-    assert.deepEqual(S.dances.solo.cues.map(c => c.t), [50]); assert.equal(await saveSoloFix(), true); assert.equal(writes.length, 2);
+    assert.equal(S.dances.solo.cues, undefined, "the built-in table shows"); assert.deepEqual(S.dances.solo.cuesOld.map(c => c.t), [50]); assert.equal(await saveSoloFix(), true); assert.equal(writes.length, 2);
     // A solo already saved by 1.12.1 (schema 19) without the lunge strength gets it back, written once.
     receive("dances", { solo: { _v: 19, strengths: ["Floor work is smooth", "Committed acro"] } }, { fromCache: false });
     assert.equal(S.dances.solo.strengths[1], SOLO_LUNGE_STRENGTH); assert.equal(await saveSoloFix(), true); assert.equal(writes.length, 3);
@@ -245,4 +247,39 @@ test("a whole collection migrates and other collections pass through unchanged",
   assert.equal(out.a._v, SCHEMA_VERSION); assert.equal(out.a.title, "t");
   assert.equal(docTime(out.a), Date.parse("2026-09-27T03:01:15.743Z"));
   assert.equal(docTime({ _at: 5, at: "2026-01-01" }), 5);
+});
+
+// The family's solo as 1.21 stored it (a full copy of the card, edited in-app: our notes + one line of our own).
+const solo31 = () => JSON.parse(readFileSync(new URL("./fixtures/solo-v31.json", import.meta.url), "utf8"));
+test("40 → 41: the stored solo gets the verified cue table and the Oct 25 lines; the old cues are kept, our own lines stay", () => {
+  const raw = solo31(); assert.equal(soloNeeds41(raw), true);
+  const d = migrateDoc("dances", "solo", raw);
+  assert.equal(d.cues, undefined, "no stored cue sheet: the built-in verified table shows"); assert.deepEqual(d.cuesOld, raw.cues, "the old sheet is kept, not lost");
+  assert.equal(d.map, SOLO_V41.map); assert.equal(d.rehearsal, SOLO_V40.rehearsal[1], "step 40's wording"); assert.equal(d.teacher, SOLO_V40.teacher[1]);
+  assert.ok(d.corrections.includes(SOLO_V41.sideSit) && d.corrections.includes(SOLO_V41.donut)); assert.ok(d.corrections.includes("My own line")); assert.equal(d.corrections.length, raw.corrections.length);
+  assert.ok(d.tricks.includes(SOLO_V41.tricks.donut) && d.tricks.includes(SOLO_V41.tricks.arch) && d.tricks.includes(SOLO_V41.tricks.walk)); assert.ok(!d.tricks.some(t => /^Front walkover to knee/.test(t)));
+  assert.ok(d.tricks.some(t => /^Calypso/.test(t)) && d.tricks.some(t => /^Scorpion/.test(t)), "lines with no new version stay");
+  assert.ok(d.steps.includes(SOLO_V41.donutStep)); assert.ok(d.eyes.includes("Heel stretch / standing → ")); assert.equal(d.checkpoints.find(c => c.d === "2026-11-04").text, SOLO_V40.checkpoint[1], "the Nov 4 run for Ms. Brittany stays (step 40)");
+  const card = JSON.stringify({ ...d, cuesOld: undefined }); for (const old of ["tailbone", "~0:15", "~0:34", "~1:42", "~1:50", "Walkover/handstand", "Wednesdays 3:30", "head ALL the way back"]) assert.ok(!card.includes(old), old);
+  assert.equal(d.notes, "our notes"); assert.equal(d._v, SCHEMA_VERSION); assert.equal(soloNeeds41(d), false); assert.deepEqual(raw, solo31(), "the stored object is not mutated");
+  // Run twice: nothing changes the second time. A partial override, or another dance, is left alone.
+  assert.deepEqual(migrateDoc("dances", "solo", { ...d, _v: 40 }), d);
+  assert.deepEqual(migrateDoc("dances", "solo", { _v: 40, musicUrl: "x" }), { _v: SCHEMA_VERSION, musicUrl: "x" });
+  assert.deepEqual(migrateDoc("dances", "trio", { _v: 40, map: "~0:34 attitude" }).map, "~0:34 attitude");
+});
+test("40 → 41: cue nudges, cue media, Hannah's videos, studio dates and Pause & Predict results are normalized when present", () => {
+  const d = migrateDoc("dances", "solo", { _v: 40, cueTimes: { 19: "78.5", x: 3, 2: "nope" }, cueMedia: { 3: { photo: { url: "https://firebasestorage.googleapis.com/x", path: "families/X/photos/c3", at: "2026-10-25" }, clip: { url: "javascript:alert(1)" } }, 4: { photo: {} } }, hannahVideos: [{ name: "Run-through", url: "https://f/v.mp4", path: "p", offset: "4.98" }, { url: "nope" }, { url: "https://a" }, { url: "https://b" }] });
+  assert.deepEqual(d.cueTimes, { 19: 78.5 }); assert.deepEqual(d.cueMedia, { 3: { photo: { url: "https://firebasestorage.googleapis.com/x", path: "families/X/photos/c3", at: "2026-10-25" } } });
+  assert.deepEqual(d.hannahVideos.map(v => [v.name, v.offset]), [["Run-through", 4.98], ["", 0]]);
+  assert.equal(migrateDoc("events", "r1", { _v: 40, kind: "class", start: "2026-11-04" }).kind, "class"); assert.equal("kind" in migrateDoc("events", "e", { _v: 40, kind: "comp" }), false);
+  assert.deepEqual(migrateDoc("settings", "main", { _v: 40, predict: { 12: { got: "2", missed: 1, last: "missed" }, 0: { got: 1 }, bad: 1 } }).predict, { 12: { got: 2, missed: 1, last: "missed" } });
+  assert.equal("predict" in migrateDoc("settings", "main", { _v: 40 }), false);
+});
+test("40 → 41 reaches the cloud: the stored solo is written back once in its new form, then never again", async () => {
+  const writes = []; setBackend({ set: async (col, id, rec) => { writes.push({ col, id, rec }); }, del: async () => {} });
+  try {
+    receive("dances", { solo: solo31() }, { fromCache: false }); assert.equal(await saveSoloFix(), true); assert.equal(await saveSoloFix(), false);
+    assert.equal(writes.length, 1); assert.equal(writes[0].rec.cues, undefined); assert.ok(Array.isArray(writes[0].rec.cuesOld)); assert.equal(writes[0].rec._v, SCHEMA_VERSION);
+    receive("dances", { solo: writes[0].rec }, { fromCache: false }); assert.equal(await saveSoloFix(), false, "the saved copy is current");
+  } finally { setBackend(null); }
 });

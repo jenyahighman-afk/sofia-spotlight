@@ -516,3 +516,42 @@ body.modal{overflow:hidden}
 .buddy-quiet{display:block;margin:6px 0 0 auto;font-size:.75rem}
 @media (prefers-reduced-motion:reduce){.buddy-pet,.buddy.talking .buddy-pet,.buddy-bubble{animation:none}}
 .buddy-hint{margin-top:6px;font-size:.75rem;color:var(--ink-2)}
+
+/* 1.22.0 — photo cue cards, memorize mode, cue check, 15-week plan, how-to */
+.cue .cue-photo{display:block;margin:0 auto 6px;width:100%;max-width:300px;aspect-ratio:5/4;object-fit:cover;border-radius:12px;background:var(--line)}
+.cue.trick{background:var(--card);border:3px solid var(--coral)} .cue.trick .cue-move{font-weight:700;color:#FF5C93}
+.cue .cue-word{font-size:.9rem;font-weight:800;margin-top:2px;color:var(--ink-2)}
+.cue .cue-preview{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-weight:800;font-size:.9rem;color:#FF5C93;animation:cuePulse 1s ease-in-out infinite}
+.cue .cue-pthumb{width:48px;height:38px;object-fit:cover;border-radius:8px}
+@keyframes cuePulse{50%{opacity:.55}}
+.cuelist .check.trick b{color:#FF5C93}
+.cc-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:8px 0;scrollbar-width:none;-webkit-overflow-scrolling:touch} .cc-track::-webkit-scrollbar{display:none}
+.cc-card{flex:0 0 100%;box-sizing:border-box;scroll-snap-align:center;padding:2px 4px;text-align:center}
+.cc-photo{width:100%;aspect-ratio:5/4;border-radius:16px;overflow:hidden;background:var(--blush);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:3rem}
+.cc-photo img{width:100%;height:100%;object-fit:cover} .cc-photo small{font-size:.8rem;color:var(--ink-2)}
+.cc-card.trick .cc-photo{border:4px solid var(--coral)}
+.cc-time{font-family:Fredoka;font-size:1.05rem;margin-top:8px} .cc-label{font-family:Fredoka;font-size:1.45rem;line-height:1.15;margin:4px 0}
+.cc-card.trick .cc-label{color:#FF5C93} .cc-word{font-weight:800;color:var(--ink-2);margin:4px 0} .cc-btns{justify-content:center;gap:8px;margin-top:6px} .cc-nav{align-items:center;text-align:center}
+.table-tools{flex-wrap:wrap;gap:6px;margin-top:8px} .hv-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+#hvVideo,#mzVideo{width:100%;max-height:60vh;border-radius:12px;background:#000;margin:6px 0}
+.fixchip.pin{border:2px solid var(--coral)}
+.season .sw-goal{margin-top:5px;font-size:.95rem;line-height:1.3} .season .sw-next{margin-top:8px;padding:6px 10px;border-radius:12px;background:var(--blush);font-size:.95rem}
+.season .sw-pins{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.day .ev.oneoff,.cal .d .ev.oneoff,.weekgrid .ev.oneoff{background:#FFC2D6;color:#4A2340}
+.ck-list{margin-top:8px} .ck-row{display:flex;gap:8px;align-items:center;padding:6px 4px;border-bottom:1px dashed var(--line)} .ck-row.on{background:var(--blush);border-radius:12px}
+.ck-row.trick b{color:#FF5C93} .ck-thumb{width:56px;height:45px;flex:none;border-radius:8px;overflow:hidden;background:var(--line);display:flex;align-items:center;justify-content:center;font-weight:800}
+.ck-thumb img{width:100%;height:100%;object-fit:cover} .ck-btns{display:grid;grid-template-columns:repeat(2,auto);gap:4px;flex:none} .ck-btns .btn{padding:6px 8px}
+.ck-grab{padding:8px;border-radius:12px;background:var(--blush);margin:4px 0 8px} .ck-grab img{display:block;width:100%;max-width:420px;margin:0 auto 6px;border-radius:10px}
+.ck-time{font-family:Fredoka;font-size:1.3rem;min-width:64px} .coral-t{color:#FF5C93}
+.mz-tabs{gap:6px;margin:6px 0} .mz-src,.mz-mode{flex-wrap:wrap;gap:6px;margin:6px 0}
+.mz-chunk{text-align:center;padding:10px;border-radius:16px;background:var(--blush);margin:8px 0} .mz-chunk.trick{border:3px solid var(--coral);background:var(--card)}
+.mz-chunk img{display:block;margin:0 auto 6px;width:100%;max-width:320px;aspect-ratio:5/4;object-fit:cover;border-radius:12px}
+.mz-label{font-family:Fredoka;font-size:1.4rem;line-height:1.15} .mz-chunk.trick .mz-label{color:#FF5C93}
+.mz-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0} .mz-btns.two{grid-template-columns:1fr 1fr} .mz-btns .big-btn{padding:14px 6px;font-size:1.05rem}
+.mz-ask{font-family:Fredoka;font-size:1.6rem;text-align:center;margin:14px 0} .mz-missed{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.howto-kid{list-style:none;padding:0;margin:8px 0} .howto-kid li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line);font-size:1.05rem;line-height:1.3} .howto-kid .ic{font-size:1.4rem;flex:none}
+.howto-grown{margin-top:10px} .howto-rec{padding:8px 0;border-bottom:1px dashed var(--line)} .howto-rec a{color:inherit;text-decoration:underline}
+.coach-tip{display:flex;flex-direction:column;gap:6px;margin:8px 0} .coach-tip li{line-height:1.3}
+.coach-pick-dancer{position:relative;margin:8px 0} .coach-pick-dancer canvas{width:100%;border-radius:12px;display:block} .coach-pick-dancer .pd-box{position:absolute;border:3px solid #FF5C93;border-radius:8px;background:rgba(255,92,147,.12);cursor:pointer}
+.coach-pick-dancer .pd-box b{position:absolute;top:-12px;left:-12px;background:#FF5C93;color:#fff;border-radius:999px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.rv-missed{margin-top:6px} .rv-ask{display:inline-block;margin-left:6px}

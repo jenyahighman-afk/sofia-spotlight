@@ -80,7 +80,7 @@ test("swap / add / skip for the day: same-pool only, stale ids ignored, groups s
 });
 
 test("the solo's new trick drills are in the rotation with a matching picture", () => {
-  const tricks = dances.find(d => d.id === "solo").tricks; assert.ok(tricks.some(t => t.startsWith("Front walkover to knee")) && tricks.some(t => t.startsWith("Scorpion to needle")) && tricks.some(t => t.startsWith("Calypso")));
+  const tricks = dances.find(d => d.id === "solo").tricks; assert.ok(tricks.some(t => t.startsWith("Walkover to knees")) && tricks.some(t => t.startsWith("Scorpion to needle")) && tricks.some(t => t.startsWith("Calypso")));
   const seen = new Map(); for (let i = 1; i <= 28; i++) { const tr = buildPlan({ ...base, tricks, date: "2026-10-" + String(i).padStart(2, "0") }).find(x => x.kind === "trick"); seen.set(tr.text.slice(13, 30), tr.pose); }
   assert.equal([...seen.keys()].some(k => k.startsWith("Calypso")), true); assert.equal(seen.get([...seen.keys()].find(k => k.startsWith("Calypso"))), "calypso");
   assert.equal(seen.get([...seen.keys()].find(k => k.startsWith("Scorpion"))), "arab");

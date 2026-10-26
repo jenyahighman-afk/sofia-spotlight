@@ -5,7 +5,8 @@ import { S, storeSet, dances } from "../store.js";
 import { photoTile, uploadMusic } from "./notes.js";
 import { TAGS, TAG_LABEL, TAG_EMOJI, topFixes, forDance, patterns, addCorrection, closeCorrection, reopenCorrection, removeCorrection, inferTag } from "../corrections.js";
 import { checkBadges } from "../badges.js";
-import { normalizeCues, parseCueText, formatCueText, fmtTime } from "../cues.js";
+import { normalizeCues, parseCueText, formatCueText, fmtTime, fmtCueTime, isCueTable } from "../cues.js";
+import { videosRow, videosEdit } from "../cuecards.js";
 import { memoDances, memoCard, bindMemo } from "../memo.js";
 
 const STYLE_EMOJI = { lyrical:"🌸", jazz:"⚡", contemporary:"🌊", "hip hop":"🎧", hiphop:"🎧", ballet:"🩰", acro:"🤸", ballroom:"💃", tap:"👟" };
@@ -22,7 +23,7 @@ let editDance=null, noteFor=null, noteTag="other"; const moreOpen=new Set();
 function coverArt(d){ const ph=Object.values(S.photos).filter(p=>p.dance===d.id&&p.kind!=="video").sort((a,b)=>(b.at||"").localeCompare(a.at||""))[0]; return ph&&ph.url?`<img src="${esc(ph.url)}" alt="" loading="lazy">`:`<span>${danceEmoji(d)}</span>`; }
 function chips(d){
   const top=topFixes(S.corrections,d.id); if(!top.length) return `<div class="small muted">No fixes yet. Add a note from class.</div>`;
-  return `<div class="fixchips">${top.map(c=>`<button class="fixchip" onclick="showMe('${c.id}')">${TAG_EMOJI[c.tag]||"✨"} ${esc(c.text)}</button>`).join("")}</div>`;
+  return `<div class="fixchips">${top.map(c=>`<button class="fixchip ${c.pinned?"pin":""}" onclick="showMe('${c.id}')">${c.pinned?"📌 ":""}${TAG_EMOJI[c.tag]||"✨"} ${esc(c.text)}${c.pinned?` <span class="small muted">· ${esc(c.source||"")}</span>`:""}</button>`).join("")}</div>`;
 }
 function patternLine(d){
   const ps=patterns(S.corrections,{danceId:d.id}); if(!ps.length) return "";
@@ -35,6 +36,9 @@ function noteForm(d){
     <div class="row" style="margin-top:6px"><input type="text" id="noteText-${d.id}" placeholder="What did they say?" maxlength="140" autocomplete="off">${("webkitSpeechRecognition" in window||"SpeechRecognition" in window)?`<button class="btn sm ghost" id="noteMic-${d.id}" onclick="noteMic('${d.id}')" title="Say it">🎤</button>`:""}</div>
     <div class="row" style="margin-top:6px"><select id="noteSrc-${d.id}" style="max-width:150px">${sources.map(s=>`<option>${esc(s)}</option>`).join("")}</select><span class="grow"></span><button class="btn sm ghost" onclick="noteCancel()">Cancel</button><button class="btn sm coral" onclick="noteSave('${d.id}')">Save</button></div></div>`;
 }
+// A dance with a verified cue table (the solo): cue cards, memorize mode, Hannah's videos, the how-to.
+const tableTools=(d)=>`<div class="row table-tools"><button class="btn sm violet" onclick="openCueCards('${d.id}')">🃏 Cue cards</button><button class="btn sm violet" onclick="openMemorize('${d.id}','chunks')">🧩 Chunks</button><button class="btn sm violet" onclick="openMemorize('${d.id}','predict')">⏸ Pause &amp; Predict</button><button class="btn sm ghost" onclick="openHowto()">📖 How to practice</button></div>${videosRow(d)}`;
+const cueSheetRo=(d)=>{ const list=normalizeCues(d.cues); if(!list.length) return `<div class="ro"></div>`; const tbl=isCueTable(d.cues); return `<div class="ro">${tbl&&d.cueSource?`<div class="small muted">Times: ${esc(d.cueSource)}${d.cueCheckedAt?" · nudged in Cue check "+esc(d.cueCheckedAt):""}</div>`:""}<ul>${list.map(c=>`<li${c.trick?' class="trick"':""}><b>${tbl?fmtCueTime(c.t)+"–"+fmtCueTime(c.end):fmtTime(c.t)}</b> ${c.trick?"★ ":""}${esc(c.move)}${c.lyric?` <span class="muted">“${esc(c.lyric)}”</span>`:""}</li>`).join("")}</ul></div>`; };
 function fullList(d){
   const all=forDance(S.corrections,d.id); if(!all.length) return `<div class="ro"></div>`;
   return `<div class="ro"><ul class="corr-list">${all.map(c=>`<li class="${c.status==="done"?"done":""}"><span class="chip ${c.status==="done"?"mint":"violet"}">${TAG_EMOJI[c.tag]} ${TAG_LABEL[c.tag]||c.tag}</span> ${esc(c.text)} <span class="muted small">· ${esc(c.source||"")} ${esc(c.date||"")}</span> ${c.status==="done"?`<button class="lnk" onclick="reopenFix('${c.id}')">reopen</button>`:`<button class="lnk" onclick="gotIt('${c.id}')">got it</button>`} <button class="lnk" onclick="removeFix('${c.id}')">remove</button></li>`).join("")}</ul></div>`;
@@ -46,7 +50,7 @@ function renderDances(){
   $("#danceList").innerHTML=list.map(d=>{
     const editing=editDance===d.id; const open=moreOpen.has(d.id);
     const cover=`<div class="cover-top"><div class="cover-art ${d.color||""}">${coverArt(d)}</div><div class="grow"><h3>${esc(d.name)}</h3><div class="small muted">${esc(d.song||"song TBD")}</div>${d.story?`<div class="story">🎭 ${esc(d.story)}</div>`:""}</div></div>
-      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}')">▶ Practice</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>${memoDances([d]).length?memoCard(d):""}
+      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}')">▶ Practice</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>${isCueTable(d.cues)?tableTools(d):""}${memoDances([d]).length?memoCard(d):""}
       ${noteFor===d.id?noteForm(d):""}${chips(d)}${patternLine(d)}`;
     const mapbar=d.id==="solo"?`<div class="mapbar" style="margin:8px 0"><div class="soft">soft 0:00–0:48</div><div class="loud">full 0:48–1:52</div><div class="fade">fade</div></div>`:"";
     const photos=`<div class="field-lab">Photos for this dance</div><div class="photos" style="margin-top:6px">${Object.entries(S.photos).filter(([,p])=>p.dance===d.id).map(([pid,p])=>`<div class="ph">${photoTile(p)}${p.cap?`<div class="cap">${esc(p.cap)}</div>`:""}<button class="del" onclick="delPhoto('${pid}')">✕</button></div>`).join("")}</div>
@@ -57,15 +61,15 @@ function renderDances(){
       more=`${mapbar}<div class="row" style="margin-top:6px">${d.musicUrl?`<a class="btn sm aqua" href="${esc(d.musicUrl)}" target="_blank" rel="noopener">▶ Music link</a>`:""}${links.map((u,i)=>{ const m=String(u).match(/^(.*?)\s*\|\s*(https?:\S+)$/); const url=m?m[2]:u, label=m?m[1].trim():"Link "+(i+1); return `<a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">🔗 ${esc(label)}</a>`; }).join("")}${musicButton(d)}<span class="grow"></span><button class="btn sm coral" onclick="danceEdit('${d.id}')">✏️ Edit</button></div>${musicPlayer(d)}
         ${roText("Song",d.song)}${roText("Style",d.style)}${roText("BPM",d.bpm)}${roText("Choreographer",d.choreo)}${roText("Teacher / class",d.teacher)}${roText("Rehearsal & class schedule",d.rehearsal)}
         ${roText("Costume",d.costume)}${roText("Shoes",d.shoes)}${roText("Hair",d.hair)}
-        ${roText("Music map",d.music)}${roText("Where the big moments land",d.map)}<div class="field-lab">Cue sheet (shown in the player)</div><div class="ro">${normalizeCues(d.cues).length?`<ul>${normalizeCues(d.cues).map(c=>`<li><b>${fmtTime(c.t)}</b> ${esc(c.move)}${c.lyric?` <span class="muted">“${esc(c.lyric)}”</span>`:""}</li>`).join("")}</ul>`:""}</div>
+        ${roText("Music map",d.music)}${roText("Where the big moments land",d.map)}<div class="field-lab">Cue sheet (shown in the player)</div>${cueSheetRo(d)}
         ${roText("The story (for Sofia)",d.story)}${roList("Step order (from the walkthrough)",d.steps)}${roList("Performance notes",d.performance)}${roList("What's already strong",d.strengths)}<div class="field-lab">All corrections</div>${fullList(d)}${roList("Trick drills",d.tricks)}${roList("Where do I look?",d.eyes)}
-        ${roText("Notes",d.notes)}${photos}`;
+        ${roText("Notes",d.notes)}${d.id==="solo"?videosEdit(d)+`<div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="openRehearsal()">📅 Add solo rehearsal</button><span class="small muted">Booked with Ms. Brittany? That day's home plan becomes the 15-minute memory run.</span></div>`:""}${photos}`;
     } else {
       more=`<p class="small muted">Editing. Nothing is saved until you tap Save.</p>
       ${edText("song","Song",d.song,"Title — artist")}${edText("style","Style",d.style)}${edText("bpm","BPM (beats per minute, for the count overlay)",d.bpm,"e.g. 76")}${edText("choreo","Choreographer",d.choreo)}${edText("teacher","Teacher / class",d.teacher)}${edText("rehearsal","Rehearsal & class schedule",d.rehearsal)}
       ${edText("musicUrl","Music link",d.musicUrl,"Paste a link to the track")}${edList("links","Video, Google Photos and other links (one per line: Name | https://…). Video and Google Photos links also show in Memorize it",d.links)}
       ${edText("costume","Costume",d.costume)}${edText("shoes","Shoes",d.shoes)}${edText("hair","Hair",d.hair)}
-      ${edText("music","Music map",d.music)}${edText("map","Where the big moments land (m:ss timestamps become loop presets)",d.map)}<label class="f">Cue sheet <span class="muted">(one per line: m:ss | words sung | move)</span></label><textarea data-k="cues" data-cues="1" class="dfield" placeholder="0:50 | words here | Cartwheel on the swell">${esc(formatCueText(d.cues))}</textarea>
+      ${edText("music","Music map",d.music)}${edText("map","Where the big moments land (m:ss timestamps become loop presets)",d.map)}${isCueTable(d.cues)?`<div class="field-lab">Cue sheet</div><p class="small muted">The checked cue table (${esc(d.cueSource||"")}). Nudge a time in Grown-ups → 🎯 Cue check.</p>`:`<label class="f">Cue sheet <span class="muted">(one per line: m:ss | words sung | move)</span></label><textarea data-k="cues" data-cues="1" class="dfield" placeholder="0:50 | words here | Cartwheel on the swell">${esc(formatCueText(d.cues))}</textarea>`}
       ${edText("story","The story (one or two lines, shown to Sofia on the card)",d.story)}${edList("steps","Step order (one step per line)",d.steps)}${edList("performance","Performance notes (face, musicality, presence)",d.performance)}${edList("strengths","What's already strong",d.strengths)}${edList("corrections","Corrections (older list — new lines become notes)",d.corrections)}${edList("tricks","Trick drills",d.tricks)}${edList("eyes","Where do I look?",d.eyes)}
       ${edText("notes","Notes",d.notes)}
       <div class="row" style="margin-top:10px"><button class="btn coral" onclick="saveDance('${d.id}')">Save</button><button class="btn ghost" onclick="danceEdit(null)">Cancel</button><span class="grow"></span><button class="btn sm ghost" onclick="delDance('${d.id}')">Remove dance</button></div>`;
@@ -76,7 +80,10 @@ function renderDances(){
   $("#danceList").querySelectorAll("details.more").forEach(el=>el.addEventListener("toggle",()=>{ el.open?moreOpen.add(el.dataset.more):moreOpen.delete(el.dataset.more); }));
   growAll($("#danceList"));
 }
-function collectDance(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const d={...dances().find(x=>x.id===id)}; card.querySelectorAll(".dfield").forEach(el=>{ d[el.dataset.k]=el.dataset.cues?parseCueText(el.value):el.dataset.list?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value; }); if(d.bpm!==""&&d.bpm!==undefined){ const n=parseFloat(d.bpm); d.bpm=Number.isFinite(n)&&n>0?n:""; } return d; }
+function collectDance(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const d={...dances().find(x=>x.id===id)}; card.querySelectorAll(".dfield").forEach(el=>{ d[el.dataset.k]=el.dataset.cues?parseCueText(el.value):el.dataset.list?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value; }); if(d.bpm!==""&&d.bpm!==undefined){ const n=parseFloat(d.bpm); d.bpm=Number.isFinite(n)&&n>0?n:""; }
+  // Data-owned fields stay out of the stored copy, so later data updates (Hannah's words, a new pin) still show through:
+  // the pinned teacher notes, and a cue table the family hasn't overridden (nudges live in cueTimes).
+  delete d.pinned; if(isCueTable(d.cues)&&!(S.dances[id]&&S.dances[id].cues)) delete d.cues; return d; }
 async function saveDance(id){ await storeSet("dances",id,collectDance(id)); editDance=null; renderDances(); toast("Saved"); }
 async function delDance(id){ if(!confirm("Remove this dance from the list?")) return; await storeSet("dances",id,{...(S.dances[id]||{}),deleted:true}); editDance=null; }
 
