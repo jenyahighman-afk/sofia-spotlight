@@ -8,7 +8,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 41;
+export const SCHEMA_VERSION = 42;
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
 // bridge or rolls), frozen here for the migration.
 export const TEACH_MOVE_IDS = ["pose","plie","releve","passe","arab","attitude","develop","saute","pirouette","kick","fankick","chasse","pivot","jazzsq","layout","leap","calypso","tilt","reach","contract","spiral","floor","bounce","bodyroll","wave","toprock","freeze","hold"];
@@ -355,6 +355,12 @@ export const MIGRATIONS = {
     if (col === "dances" && doc.hannahVideos !== undefined) doc.hannahVideos = (Array.isArray(doc.hannahVideos) ? doc.hannahVideos : []).map(v => { const r = mediaRef(v); if (!r) return null; const off = num41(v.offset, 0, 600); return { ...r, name: String(v.name || "").slice(0, 60), offset: off === null ? 0 : off }; }).filter(Boolean).slice(0, 2);
     if (col === "events" && doc.kind !== undefined && doc.kind !== "class") delete doc.kind;
     if (col === "settings" && doc.predict !== undefined) { const o = {}; for (const [k, v] of Object.entries(doc.predict && typeof doc.predict === "object" ? doc.predict : {})) { const n = parseInt(k, 10); if (!(n > 0) || !v || typeof v !== "object") continue; o[n] = { got: Math.max(0, parseInt(v.got, 10) || 0), missed: Math.max(0, parseInt(v.missed, 10) || 0), last: v.last === "got" || v.last === "missed" ? v.last : "" }; } doc.predict = o; }
+    return doc;
+  },
+  // 42 (1.39.0, the research rules): settings.fixSeen = { correctionId: [dates the fix showed on a video, in a row] }, at most
+  // the last 2 (two in a row = on to the next fix). Normalized when present: real dates only, sorted, empty lists kept.
+  42: (col, id, doc) => {
+    if (col === "settings" && doc.fixSeen !== undefined) { const o = {}; for (const [k, v] of Object.entries(doc.fixSeen && typeof doc.fixSeen === "object" ? doc.fixSeen : {})) { if (!/^[\w-]{1,80}$/.test(k)) continue; o[k] = [...new Set((Array.isArray(v) ? v : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort().slice(-2); } doc.fixSeen = o; }
     return doc;
   }
 };

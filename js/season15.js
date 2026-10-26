@@ -38,8 +38,29 @@ export function checkpoints(date, plan = PLAN15, oneOffs = []){
     .filter(c => !c.d || c.d >= date).sort((a, b) => (a.d || "9999").localeCompare(b.d || "9999"));
 }
 const firstSentence = (s) => String(s || "").split(/(?<=[.;])\s/)[0];
+// The session rules on `date` (plan15.json `rules`, from the research Jenya approved Oct 26). What the daily plan adds or
+// changes: { short (a light week or the night before the show: the 15-minute memory run), nightBefore, imagery: {title,
+// how, secs} | null, clips: {text, secs} | null, review: {text, secs} | null (Sundays), run: {text, secs} (the solo run
+// line), taper (fewer exercises, still one full-out) }.
+export function sessionRules(date, plan = PLAN15){
+  const r = (plan && plan.rules) || {}; const wk = weekOf(date, plan); const wd = new Date(date + "T00:00:00").getDay();
+  const nightBefore = (r.nightBefore || []).includes(date); const taper = !!(r.taper && r.taper.from && date >= r.taper.from && wk);
+  const im = r.imagery; const imagery = im && im.from && date >= im.from && wk ? { title: im.title, secs: im.secs || 360, how: [...(im.script || []).map((s, i) => `${i + 1}. ${s}`), date < addDays(im.from, im.parentDays || 0) ? "A grown-up reads the steps out loud for the first two weeks." : "", im.note || ""].filter(Boolean).join(" ") } : null;
+  const clips = r.clips && wk && date <= r.clips.to ? { text: r.clips.text, secs: r.clips.secs || 240 } : null;
+  const review = r.review && wk && wd === 0 ? { text: taper ? r.review.taper : r.review.sunday, secs: r.review.secs || 300 } : null;
+  const fo = r.fullOut || {}; const run = !fo.from || date < fo.from ? { text: fo.before, secs: 300 } : fo.backToBackFrom && date >= fo.backToBackFrom && wd === 0 && !taper ? { text: fo.pair, secs: 480 } : { text: fo.one, secs: 300 };
+  return { short: nightBefore || !!(wk && wk.light), nightBefore, imagery, clips, review, run: run.text ? run : null, taper };
+}
+// Whole days since she last danced (any practice item, run, bite, plan tick or quick session), 0 = today. Infinity if never.
+export function daysSinceDance(practice, today){
+  const danced = (r) => r && [r.done, r.runs, r.bites, r.plan, r.quick].some(a => Array.isArray(a) && a.length);
+  const days = Object.keys(practice || {}).filter(d => d <= today && danced(practice[d])).sort(); if (!days.length) return Infinity;
+  return Math.round((dnum(today) - dnum(days[days.length - 1])));
+}
 
 // ---- DOM (Today) ----
+// Never more than 2 days without dancing: after two empty days the card asks for the memory run today.
+function gapNudge(date){ const max = ((PLAN15.rules || {}).maxGap) || 2; const gap = daysSinceDance(S.practice, date); return Number.isFinite(gap) && gap >= max ? `<div class="sw-next sw-gap">🧠 ${gap} days without dancing: do the 15-minute memory run today <button class="btn sm coral" onclick="showPage('practice')">▶ Go</button></div>` : ""; }
 export function renderSeasonCard(date = todayStr()){
   const el = $("#seasonCard"); if (!el) return; const wk = weekOf(date);
   const pins = pinnedOpen(S.corrections, "solo"); const cps = checkpoints(date, PLAN15, studioDates()); const next = cps[0];
@@ -48,6 +69,8 @@ export function renderSeasonCard(date = todayStr()){
   el.hidden = false;
   el.innerHTML = `${wk ? `<div class="row"><b class="grow">📅 Week ${wk.w} of ${wk.total}${wk.phase ? " · " + esc(wk.phase.n) : ""}${wk.light ? " · light week" : ""}</b><span class="chip">${esc(fmt(wk.of).replace(/^\w+, /, ""))} – ${esc(fmt(wk.to).replace(/^\w+, /, ""))}</span></div>
     <div class="sw-goal">🌸 <b>Solo:</b> ${esc(wk.solo)}</div><div class="sw-goal">👯 <b>Trio:</b> ${esc(wk.trio)}</div>${fri ? `<div class="sw-goal">⭐ <b>Friday:</b> ${esc(fri)}</div>` : ""}` : ""}
+    ${wk && wk.extra ? `<div class="sw-goal">${esc(wk.extra)}</div>` : ""}
+    ${gapNudge(date)}
     ${next ? `<div class="sw-next">🎯 ${next.d ? `<b>${esc(fmt(next.d))}</b>${daysUntil(next.d) > 0 ? ` <span class="muted">(${daysUntil(next.d)} day${daysUntil(next.d) === 1 ? "" : "s"})</span>` : " <b>· today!</b>"}` : `<b>Book it:</b>`} ${esc(next.t)}</div>` : ""}
     ${pins.length ? `<div class="sw-pins"><div class="small"><b>📌 Ms. Brittany's homework</b></div>${pins.map(c => `<button class="fixchip pin" onclick="showMe('${c.id}')">${c.tag === "memory" ? "🧠" : "🦵"} ${esc(firstSentence(c.text))}</button>`).join("")}</div>` : ""}`;
 }
