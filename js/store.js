@@ -8,7 +8,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 42;
+export const SCHEMA_VERSION = 43;
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
 // bridge or rolls), frozen here for the migration.
 export const TEACH_MOVE_IDS = ["pose","plie","releve","passe","arab","attitude","develop","saute","pirouette","kick","fankick","chasse","pivot","jazzsq","layout","leap","calypso","tilt","reach","contract","spiral","floor","bounce","bodyroll","wave","toprock","freeze","hold"];
@@ -149,6 +149,21 @@ function fixSolo41(doc){
   if (Array.isArray(doc.strengths)) doc.strengths = doc.strengths.map(l => OLD_STRENGTH_41.test(String(l)) ? SOLO_V41.strength : l);
   if (Array.isArray(doc.steps)) doc.steps = doc.steps.map(l => OLD_STEP_41.test(String(l)) ? SOLO_V41.donutStep : l);
   if (Array.isArray(doc.eyes)) doc.eyes = doc.eyes.map(l => String(l).replace(/^Attitude \/ standing →/, "Heel stretch / standing →").replace(/^Cartwheel → walkover →/, "Leap + cartwheel → walkover →"));
+  return doc;
+}
+// Schema 43 (1.40.0): the donut roll is Hannah's again — her walkthrough: arms down, head ALL the way back, don't tuck the
+// chin (Jenya, Oct 26). Step 41's over-one-shoulder lines in a stored solo become these; written back once like 41.
+export const SOLO_V43 = {
+  donut: "#other Donut roll (1:18.25): arms down, head ALL the way back. Don't tuck the chin (Hannah).",
+  donutStep: "Donut roll: arms down, head all the way back",
+  trick: "Donut roll (1:18.25): mat only. Warm the back first (cobra, then seal, 20 s). Kneeling backbend with hands to heels 3×5 s. Bridge holds 3×10 s. Then the donut shape: arms down, knees bent, chest open, head ALL the way back. Hannah's fix: don't tuck the chin. Practise on the mat, the way she set it. Cue: lead with the chest, eyes follow the feet.",
+};
+const SHOULDER_43 = (l) => /donut/i.test(String(l)) && /over ONE shoulder/i.test(String(l));
+export const soloNeeds43 = (doc) => !!doc && [doc.corrections, doc.tricks, doc.steps].some(f => Array.isArray(f) && f.some(SHOULDER_43));
+function fixSolo43(doc){
+  if (Array.isArray(doc.corrections)) doc.corrections = doc.corrections.map(l => SHOULDER_43(l) ? SOLO_V43.donut : l);
+  if (Array.isArray(doc.tricks)) doc.tricks = doc.tricks.map(l => SHOULDER_43(l) ? SOLO_V43.trick : l);
+  if (Array.isArray(doc.steps)) doc.steps = doc.steps.map(l => SHOULDER_43(l) ? SOLO_V43.donutStep : l);
   return doc;
 }
 const num41 = (v, lo, hi) => { if (v === null || v === undefined || v === "") return null; const n = +v; return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : null; };
@@ -362,7 +377,9 @@ export const MIGRATIONS = {
   42: (col, id, doc) => {
     if (col === "settings" && doc.fixSeen !== undefined) { const o = {}; for (const [k, v] of Object.entries(doc.fixSeen && typeof doc.fixSeen === "object" ? doc.fixSeen : {})) { if (!/^[\w-]{1,80}$/.test(k)) continue; o[k] = [...new Set((Array.isArray(v) ? v : []).filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort().slice(-2); } doc.fixSeen = o; }
     return doc;
-  }
+  },
+  // 43 (1.40.0): Hannah's donut roll again (SOLO_V43): step 41's over-one-shoulder note, drill and step become hers.
+  43: (col, id, doc) => { if (col === "dances" && id === "solo") fixSolo43(doc); return doc; }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],
@@ -414,7 +431,7 @@ function notify(){ clearTimeout(renderTimer); renderTimer = setTimeout(() => cha
 
 // Called by the backend with the full current contents of one collection ({id: doc}). meta.fromCache tells whether the server has confirmed it.
 export function receive(col, docs, meta = {}){
-  if (col === "dances") { const raw = docs && docs.solo, v = docVersion(raw); soloStale = !!raw && ((v < 19 && soloHasOldFloor(raw)) || (v < 20 && soloMissingLungeStrength(raw)) || (v < 41 && soloNeeds41(raw))); }
+  if (col === "dances") { const raw = docs && docs.solo, v = docVersion(raw); soloStale = !!raw && ((v < 19 && soloHasOldFloor(raw)) || (v < 20 && soloMissingLungeStrength(raw)) || (v < 41 && soloNeeds41(raw)) || (v < 43 && soloNeeds43(raw))); }
   const migrated = migrateCollection(col, docs);
   if (col === "settings") S.settings = migrated.main || {}; else S[col] = migrated;
   received.any.add(col); if (meta.fromCache === false) received.server.add(col);
@@ -436,7 +453,7 @@ export async function storeDel(col, id){
   notify();
   if (backend) await backend.del(col, id);
 }
-// The cloud half of steps 19, 20 and 41. receive() flags a stored solo below schema 19 with old lines, or below 20 without the
+// The cloud half of steps 19, 20, 41 and 43. receive() flags a stored solo below schema 19 with old lines, or below 20 without the
 // lunge strength; once the server has confirmed the dances, the migrated copy is saved back, so the Firestore doc itself
 // changes. After that save its _v is current and it is never flagged again. Two phones doing it at once write the same thing.
 let soloStale = false;

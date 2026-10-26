@@ -87,11 +87,13 @@ test("the tailbone-balance line is retired and the card carries the side-sit leg
   assert.ok(ids.has(migratedId("solo", "Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down.")), "the ~0:15 wording is retired");
   const [[from, to]] = REPLACED_LINES.solo; assert.ok(ids.has(migratedId("solo", from)) && !ids.has(migratedId("solo", to)) && first.text === to, "its status carries to the 0:10.5 wording");
 });
-test("the donut roll: both older lines are retired and the card carries the over-one-shoulder drill (Oct 25)", () => {
+test("the donut roll is Hannah's (her walkthrough: arms down, head ALL the way back, no chin tuck); the over-one-shoulder note is retired", () => {
   const ids = retiredIds(); assert.ok(ids.has(migratedId("solo", "Donut roll: chin tucked, roll over the shoulder, chest leads")));
-  assert.ok(ids.has(migratedId("solo", "Donut roll: arms down, head ALL the way back — do not tuck the chin (Hannah)")));
-  const now = recordsFromDance(dances.find(d => d.id === "solo"), "2026-10-25"); assert.ok(now.every(r => !ids.has(r.id))); assert.ok(!now.some(r => /head ALL the way back/i.test(r.text)));
-  assert.ok(now.some(r => /Donut roll \(1:18\.25\)/.test(r.text) && /ONE shoulder/.test(r.text) && /Never over the head/.test(r.text)));
+  assert.ok(ids.has(migratedId("solo", "Donut roll (1:18.25): mat only. Roll back over ONE shoulder, head to the side, chin tucked. Never over the head.")));
+  const now = recordsFromDance(dances.find(d => d.id === "solo"), "2026-10-26"); assert.ok(now.every(r => !ids.has(r.id))); assert.ok(!now.some(r => /ONE shoulder|chin tucked/i.test(r.text)));
+  assert.ok(now.some(r => r.text === "Donut roll (1:18.25): arms down, head ALL the way back. Don't tuck the chin (Hannah)." && r.tag === "other"));
+  // Its status comes from Hannah's own note (retired by mistake in 1.22) first, else from the over-one-shoulder note.
+  const pairs = REPLACED_LINES.solo.filter(([, to]) => /Donut/.test(to)); assert.equal(pairs.length, 2); assert.equal(pairs[0][2], true); assert.match(pairs[0][0], /head ALL the way back — do not tuck the chin/); assert.match(pairs[1][0], /ONE shoulder/);
 });
 test("Ms. Brittany's Oct 13 homework: two pinned notes (knees, memory) that lead the solo list and become the week's fix", () => {
   const solo = dances.find(d => d.id === "solo"); const pins = pinnedFromDance(solo);

@@ -328,6 +328,7 @@ export const mediaConfig = { provider: "supabase", url: "https://YOUR-PROJECT.su
 ## Data safety
 - Every stored record carries `_v` (schema version) and `_at` (write time). `js/store.js` has `SCHEMA_VERSION` (now 24) and a `MIGRATIONS` map; documents are migrated on read and on import, so old phones' data always loads.
 - Never rename or drop a stored field without bumping `SCHEMA_VERSION` and adding a migration — `tests/migrations.test.js` loads schema-1 and schema-2 samples and checks they still come through.
+- Schema 43 (1.40.0): the donut roll is Hannah's again (her walkthrough: arms down, head ALL the way back, don't tuck the chin): a stored solo's over-one-shoulder note, drill and step from 1.38–1.39 become hers and are written back once; the tracker's over-one-shoulder note is retired and Hannah's note takes the status her original note had.
 - Schema 42 (1.39.0): `settings.fixSeen` = { correctionId: [dates the fix showed on a video] } (two in a row = on to the next fix).
 - Schema 41 (1.38.0): the solo's verified cue table (data only; a stored solo's old point cues move to `dances.cuesOld`, its old map / drill / donut lines are swapped once and written back, like 19; the rehearsal lines are step 40's); `dances.cueTimes` (Cue check nudges), `dances.cueMedia` (cue photos + Hannah's clips in family Storage), `dances.hannahVideos`, `events.kind = "class"` (one-off studio dates), `settings.predict` (Pause & Predict).
 - Schema 31 (1.21.0): `workouts/{id}` documents (one saved video each); the one-time move out of `settings.workouts`.

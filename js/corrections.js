@@ -78,10 +78,14 @@ export function chooseWeekFix(corrections, today = todayStr()){
 let migrating = false;
 // Copy each dance's "Corrections to work on" lines into the collection, once the cloud has told us what's already there.
 // Card lines the teacher has since corrected. Their notes are removed (and never re-created from an edited card) so the old advice stops showing.
-// 1.22.0: the head-back donut roll gives way to the over-one-shoulder drill, and the side-sit note is retimed (0:10.5).
-// REPLACED_LINES carries a retired note's status over to its new wording (the same correction), when the new one is new.
-export const RETIRED_LINES = { solo: ["Donut roll: chin tucked, roll over the shoulder, chest leads", "Point the foot and straighten the knee on the tailbone balance and every floor extension", "Donut roll: arms down, head ALL the way back — do not tuck the chin (Hannah)", "Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down."] };
-export const REPLACED_LINES = { solo: [["Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down.", "Point the foot and keep the knee straight on the side-sit leg reach (0:10.5) and every floor extension, including on the way down."]] };
+// 1.22.0: the side-sit note is retimed (0:10.5). 1.40.0: the donut roll is Hannah's again (her walkthrough: arms down, head
+// ALL the way back, don't tuck the chin); the over-one-shoulder note of 1.22–1.39 is retired.
+// REPLACED_LINES carries a retired note's status over to its new wording (the same correction), when the new one is new;
+// a third `true` also takes it from a note an earlier release retired (Hannah's own donut note, retired by mistake in 1.22).
+export const RETIRED_LINES = { solo: ["Donut roll: chin tucked, roll over the shoulder, chest leads", "Point the foot and straighten the knee on the tailbone balance and every floor extension", "Donut roll: arms down, head ALL the way back — do not tuck the chin (Hannah)", "Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down.", "Donut roll (1:18.25): mat only. Roll back over ONE shoulder, head to the side, chin tucked. Never over the head."] };
+export const REPLACED_LINES = { solo: [["Point the foot and keep the knee straight on the side-sit leg reach (~0:15) and every floor extension, including on the way down.", "Point the foot and keep the knee straight on the side-sit leg reach (0:10.5) and every floor extension, including on the way down."],
+  ["Donut roll: arms down, head ALL the way back — do not tuck the chin (Hannah)", "#other Donut roll (1:18.25): arms down, head ALL the way back. Don't tuck the chin (Hannah).", true],
+  ["Donut roll (1:18.25): mat only. Roll back over ONE shoulder, head to the side, chin tucked. Never over the head.", "#other Donut roll (1:18.25): arms down, head ALL the way back. Don't tuck the chin (Hannah)."]] };
 export const retiredIds = () => new Set(Object.entries(RETIRED_LINES).flatMap(([danceId, lines]) => lines.map(t => migratedId(danceId, t))));
 export async function migrateDanceCorrections(){
   if (migrating || !settled("corrections") || !settled("dances")) return 0;
@@ -95,9 +99,9 @@ export async function migrateDanceCorrections(){
     const sources = []; const seenIds = new Set();
     for (const d of [...dances(), ...DEFAULT_DANCES]) for (const r of recordsFromDance(d, date)) { if (seenIds.has(r.id)) continue; seenIds.add(r.id); sources.push(r); }
     const retired = retiredIds();
-    for (const [danceId, pairs] of Object.entries(REPLACED_LINES)) for (const [oldText, newText] of pairs) {
-      const old = S.corrections[migratedId(danceId, oldText)], newId = migratedId(danceId, newText);
-      if (!old || old.deleted || old.source !== "notes" || S.corrections[newId]) continue;
+    for (const [danceId, pairs] of Object.entries(REPLACED_LINES)) for (const [oldText, newText, fromRetired] of pairs) {
+      const old = S.corrections[migratedId(danceId, parseLine(oldText).text)], newId = migratedId(danceId, parseLine(newText).text);
+      if (!old || (old.deleted && !fromRetired) || old.source !== "notes" || S.corrections[newId]) continue;
       const { text, tag } = parseLine(newText); await storeSet("corrections", newId, { id: newId, danceId, text, source: "notes", date: old.date || date, tag, status: old.status || "working", ...(old.doneAt ? { doneAt: old.doneAt } : {}) }); n++;
     }
     for (const d of [...dances(), ...DEFAULT_DANCES]) for (const p of pinnedFromDance(d)) {

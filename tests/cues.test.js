@@ -63,15 +63,16 @@ test("the cue check tool: ±0.25 s nudges keep the table gapless and stay betwee
   assert.equal(isCueTable([{ t: 0, move: "x" }]), false);
 });
 
-test("the solo carries the step order from the walkthrough: short lines, tricks in the teacher's order, the donut roll over one shoulder", () => {
+test("the solo carries the step order from the walkthrough: short lines, tricks in the teacher's order, Hannah's donut roll (head back)", () => {
   const dances = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8"));
   const solo = dances.find(x => x.id === "solo"); const st = solo.steps;
   assert.ok(Array.isArray(st) && st.length >= 25); assert.ok(st.every(x => typeof x === "string" && x.length > 0 && x.length <= 70));
   const at = (w) => st.findIndex(x => x.toLowerCase().includes(w)); const order = ["handstand", "walkover", "donut roll", "calypso", "scorpion"].map(at);
   assert.ok(order.every(i => i >= 0)); assert.deepEqual(order, [...order].sort((a, b) => a - b));
-  // Oct 25 drill text, word for word; nothing on the card still says to put the head back.
-  assert.ok(solo.tricks.includes("Donut roll (1:18.25): Mat only. Cobra + seal 20 s first. Kneel, sit back, roll back over ONE shoulder (head to the side, chin tucked), up to the knees ×5. Never over the head."));
-  assert.ok(![...solo.corrections, ...solo.tricks, ...solo.steps].some(c => /head ALL the way back/i.test(c)));
+  // Hannah's donut roll (her walkthrough, Jenya Oct 26): arms down, head ALL the way back, don't tuck the chin; nothing says over one shoulder.
+  assert.ok(solo.tricks.some(t => /^Donut roll \(1:18\.25\)/.test(t) && /head ALL the way back/.test(t) && /don't tuck the chin/.test(t)));
+  assert.ok(solo.steps.includes("Donut roll: arms down, head all the way back")); assert.ok(solo.corrections.some(c => /Donut roll \(1:18\.25\): arms down, head ALL the way back/.test(c)));
+  assert.ok(![...solo.corrections, ...solo.tricks, ...solo.steps].some(c => /ONE shoulder|chin tucked/i.test(c)));
   // None of the old times or labels are left anywhere on the card.
   const card = JSON.stringify({ ...solo, cuesOld: undefined }); for (const old of ["tailbone", "~0:15", "~0:34", "~1:42", "~1:50", "~0:19", "Walkover/handstand", "walkover/handstand", "Wednesdays 3:30"]) assert.ok(!card.includes(old), old);
 });

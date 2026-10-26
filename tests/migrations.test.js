@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime, SOLO_V19, SOLO_V40, SOLO_V41, soloNeeds41, SOLO_LUNGE_STRENGTH, soloHasOldFloor, receive, saveSoloFix, setBackend, S } from "../js/store.js";
+import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime, SOLO_V19, SOLO_V40, SOLO_V41, soloNeeds41, SOLO_V43, soloNeeds43, SOLO_LUNGE_STRENGTH, soloHasOldFloor, receive, saveSoloFix, setBackend, S } from "../js/store.js";
 import { applyData } from "../js/data.js";
 import { PRACTICE_ITEMS, AERIAL } from "../js/data.js";
 
@@ -256,12 +256,12 @@ test("40 → 41: the stored solo gets the verified cue table and the Oct 25 line
   const d = migrateDoc("dances", "solo", raw);
   assert.equal(d.cues, undefined, "no stored cue sheet: the built-in verified table shows"); assert.deepEqual(d.cuesOld, raw.cues, "the old sheet is kept, not lost");
   assert.equal(d.map, SOLO_V41.map); assert.equal(d.rehearsal, SOLO_V40.rehearsal[1], "step 40's wording"); assert.equal(d.teacher, SOLO_V40.teacher[1]);
-  assert.ok(d.corrections.includes(SOLO_V41.sideSit) && d.corrections.includes(SOLO_V41.donut)); assert.ok(d.corrections.includes("My own line")); assert.equal(d.corrections.length, raw.corrections.length);
-  assert.ok(d.tricks.includes(SOLO_V41.tricks.donut) && d.tricks.includes(SOLO_V41.tricks.arch) && d.tricks.includes(SOLO_V41.tricks.walk)); assert.ok(!d.tricks.some(t => /^Front walkover to knee/.test(t)));
+  assert.ok(d.corrections.includes(SOLO_V41.sideSit) && d.corrections.includes(SOLO_V43.donut), "41, then 43: Hannah's donut roll"); assert.ok(d.corrections.includes("My own line")); assert.equal(d.corrections.length, raw.corrections.length);
+  assert.ok(d.tricks.includes(SOLO_V43.trick) && d.tricks.includes(SOLO_V41.tricks.arch) && d.tricks.includes(SOLO_V41.tricks.walk)); assert.ok(!d.tricks.some(t => /^Front walkover to knee/.test(t)));
   assert.ok(d.tricks.some(t => /^Calypso/.test(t)) && d.tricks.some(t => /^Scorpion/.test(t)), "lines with no new version stay");
-  assert.ok(d.steps.includes(SOLO_V41.donutStep)); assert.ok(d.eyes.includes("Heel stretch / standing → ")); assert.equal(d.checkpoints.find(c => c.d === "2026-11-04").text, SOLO_V40.checkpoint[1], "the Nov 4 run for Ms. Brittany stays (step 40)");
-  const card = JSON.stringify({ ...d, cuesOld: undefined }); for (const old of ["tailbone", "~0:15", "~0:34", "~1:42", "~1:50", "Walkover/handstand", "Wednesdays 3:30", "head ALL the way back"]) assert.ok(!card.includes(old), old);
-  assert.equal(d.notes, "our notes"); assert.equal(d._v, SCHEMA_VERSION); assert.equal(soloNeeds41(d), false); assert.deepEqual(raw, solo31(), "the stored object is not mutated");
+  assert.ok(d.steps.includes(SOLO_V43.donutStep)); assert.ok(d.eyes.includes("Heel stretch / standing → ")); assert.equal(d.checkpoints.find(c => c.d === "2026-11-04").text, SOLO_V40.checkpoint[1], "the Nov 4 run for Ms. Brittany stays (step 40)");
+  const card = JSON.stringify({ ...d, cuesOld: undefined }); for (const old of ["tailbone", "~0:15", "~0:34", "~1:42", "~1:50", "Walkover/handstand", "Wednesdays 3:30", "ONE shoulder", "chin tucked"]) assert.ok(!card.includes(old), old);
+  assert.equal(d.notes, "our notes"); assert.equal(d._v, SCHEMA_VERSION); assert.equal(soloNeeds43(d), false); // (soloNeeds41 matches Hannah's restored step line again; 41 never re-runs on a solo at 41+) assert.deepEqual(raw, solo31(), "the stored object is not mutated");
   // Run twice: nothing changes the second time. A partial override, or another dance, is left alone.
   assert.deepEqual(migrateDoc("dances", "solo", { ...d, _v: 40 }), d);
   assert.deepEqual(migrateDoc("dances", "solo", { _v: 40, musicUrl: "x" }), { _v: SCHEMA_VERSION, musicUrl: "x" });
@@ -282,4 +282,30 @@ test("40 → 41 reaches the cloud: the stored solo is written back once in its n
     assert.equal(writes.length, 1); assert.equal(writes[0].rec.cues, undefined); assert.ok(Array.isArray(writes[0].rec.cuesOld)); assert.equal(writes[0].rec._v, SCHEMA_VERSION);
     receive("dances", { solo: writes[0].rec }, { fromCache: false }); assert.equal(await saveSoloFix(), false, "the saved copy is current");
   } finally { setBackend(null); }
+});
+
+test("42 → 43: a stored solo saved with the over-one-shoulder donut roll (1.38–1.39) gets Hannah's note, drill and step back, written once", async () => {
+  const saved = { _v: 42, id: "solo", notes: "ours", corrections: ["Eyes up", SOLO_V41.donut, "My own line"], tricks: [SOLO_V41.tricks.side, SOLO_V41.tricks.donut, "Calypso: mine"], steps: ["Start looking down", SOLO_V41.donutStep] };
+  assert.equal(soloNeeds43(saved), true); const d = migrateDoc("dances", "solo", saved);
+  assert.deepEqual(d.corrections, ["Eyes up", SOLO_V43.donut, "My own line"]); assert.deepEqual(d.tricks, [SOLO_V41.tricks.side, SOLO_V43.trick, "Calypso: mine"]); assert.deepEqual(d.steps, ["Start looking down", SOLO_V43.donutStep]);
+  assert.equal(soloNeeds43(d), false); assert.equal(d.notes, "ours"); assert.equal(migrateDoc("dances", "trio", { _v: 42, tricks: [SOLO_V41.tricks.donut] }).tricks[0], SOLO_V41.tricks.donut, "only the solo");
+  const data = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8")).find(x => x.id === "solo");
+  assert.ok(data.corrections.includes(SOLO_V43.donut) && data.tricks.includes(SOLO_V43.trick) && data.steps.includes(SOLO_V43.donutStep), "the same lines as the built-in card");
+  const writes = []; setBackend({ set: async (col, id, rec) => { writes.push(rec); }, del: async () => {} });
+  try { receive("dances", { solo: saved }, { fromCache: false }); assert.equal(await saveSoloFix(), true); assert.equal(await saveSoloFix(), false); assert.equal(writes.length, 1); assert.equal(writes[0].corrections[1], SOLO_V43.donut); }
+  finally { setBackend(null); }
+});
+test("Hannah's donut note comes back with the status her original note had (retired by mistake in 1.22); the over-one-shoulder note is retired", async () => {
+  loadAll(); const { migrateDanceCorrections, migratedId } = await import("../js/corrections.js");
+  const orig = migratedId("solo", "Donut roll: arms down, head ALL the way back — do not tuck the chin (Hannah)");
+  const sh = migratedId("solo", "Donut roll (1:18.25): mat only. Roll back over ONE shoulder, head to the side, chin tucked. Never over the head.");
+  const nu = migratedId("solo", "Donut roll (1:18.25): arms down, head ALL the way back. Don't tuck the chin (Hannah).");
+  try {
+    receive("dances", {}, { fromCache: false });
+    receive("corrections", { [orig]: { id: orig, danceId: "solo", text: "Donut roll: arms down, head ALL the way back — do not tuck the chin (Hannah)", source: "notes", tag: "feet", status: "done", doneAt: "2026-10-10", date: "2026-10-04", deleted: true },
+      [sh]: { id: sh, danceId: "solo", text: "Donut roll (1:18.25): mat only. Roll back over ONE shoulder, head to the side, chin tucked. Never over the head.", source: "notes", tag: "other", status: "working", date: "2026-10-26" } }, { fromCache: false });
+    await migrateDanceCorrections();
+    assert.equal(S.corrections[nu].status, "done"); assert.equal(S.corrections[nu].doneAt, "2026-10-10"); assert.equal(S.corrections[nu].tag, "other"); assert.ok(!S.corrections[nu].deleted);
+    assert.equal(S.corrections[sh].deleted, true, "the over-one-shoulder note is gone from the tracker");
+  } finally { receive("corrections", {}, { fromCache: false }); receive("dances", {}, { fromCache: false }); }
 });
