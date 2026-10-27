@@ -74,3 +74,22 @@ test("Today's dated plan: Thu Oct 29 (Acro make-up 5:30) is the 15-minute memory
   const d = json("plan10").days["2026-10-29"]; assert.equal(d.tag, "class"); assert.deepEqual(d.mins, [15, 5]); assert.match(d.classes, /Acro make-up class 5:30 PM/); assert.match(d.label, /15-minute memory run/);
   assert.ok(d.must.some(m => m.go === "player:trio"), "the trio's no-video run before Saturday stays"); assert.ok(!d.must.some(m => /Warm-up 5 min/.test(m.t)));
 });
+
+test("required privates: two per routine per month through May 2027, one in June; bookings counted per routine and month", async () => {
+  const { privatesRequired, privatesBooked, privatesStatus, routineOf, nextMonth, ROUTINES, privatesHtml } = await import("../js/studio.js");
+  assert.equal(privatesRequired("2026-09"), 0); assert.equal(privatesRequired("2026-10"), 2); assert.equal(privatesRequired("2027-05"), 2); assert.equal(privatesRequired("2027-06"), 1); assert.equal(privatesRequired("2027-07"), 0);
+  assert.equal(nextMonth("2026-12"), "2027-01"); assert.equal(nextMonth("2026-10"), "2026-11");
+  const solo1 = bookingRecord("2026-11-04", "3:30–4:00 PM", "", "GHD", "s1"), solo2 = bookingRecord("2026-11-18", "3:30–4:00 PM", "", "GHD", "s2");
+  const trio1 = bookingRecord("2026-11-12", "4:00–4:30 PM", "", "GHD", "t1", "trio"), mk = bookingRecord("2026-11-05", "5:30 PM", "Acro make-up class", "", "m1", "other");
+  assert.equal(solo1.dances, "Solo"); assert.equal(solo1.name, "Solo rehearsal with Ms. Brittany", "the solo default keeps the original record"); assert.equal(trio1.dances, "Trio"); assert.equal(trio1.name, "Trio private"); assert.equal(mk.dances, "");
+  assert.deepEqual([solo1, trio1, mk].map(routineOf), ["solo", "trio", "other"]);
+  assert.equal(routineOf(json("events").find(e => e.id === "acro-makeup-1029")), "other", "the built-in Acro make-up never counts as a private");
+  assert.equal(routineOf({ name: "Solo rehearsal with Ms. Brittany", dances: "Solo" }), "solo", "bookings saved before this release count as solo privates");
+  const list = [solo1, solo2, trio1, mk, { ...solo2, id: "s3", deleted: true }, { ...solo1, id: "s0", start: "2026-10-28" }];
+  assert.equal(privatesBooked(list, "2026-11", "solo"), 2, "a cancelled one doesn't count"); assert.equal(privatesBooked(list, "2026-11", "trio"), 1); assert.equal(privatesBooked(list, "2026-10", "solo"), 1);
+  assert.deepEqual(privatesStatus(list, "2026-11").map(s => [s.label, s.have, s.need, s.short]), [["Solo", 2, 2, false], ["Trio", 1, 2, true]]);
+  assert.equal(nextRehearsal([trio1], "2026-11-01"), null, "a trio private is not the solo rehearsal a checkpoint waits for");
+  const h = privatesHtml("2026-11", list); assert.ok(h.includes("November") && h.includes("December") && h.includes("✓ Solo 2/2") && h.includes("Trio 1/2"), h);
+  assert.equal(privatesHtml("2027-08", list), "", "nothing after June 2027"); assert.ok(privatesHtml("2027-06", []).includes("Solo 0/1"));
+  assert.deepEqual(Object.keys(ROUTINES), ["solo", "trio", "other"]);
+});
