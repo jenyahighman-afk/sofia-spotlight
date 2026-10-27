@@ -245,7 +245,7 @@
   <p class="small muted">Everything text-heavy lives here. Sofia sees Today, Dances, Practice, Play and Me.</p>
   <div class="hub">
     <button class="hub-btn sun" onclick="showPage('events')">🎀<span>Events</span><small>costs, notes, hotels</small></button>
-    <button class="hub-btn violet" onclick="showPage('schedule')">📅<span>Schedule</span><small>classes, calendar, .ics</small></button>
+    <button class="hub-btn violet" onclick="showPage('schedule')">📅<span>Schedule</span><small id="hubPrivates">classes, privates, calendar</small></button>
     <button class="hub-btn aqua" onclick="showPage('lists')">🧳<span>Lists</span><small>to-dos, packing</small></button>
     <button class="hub-btn coral" onclick="showPage('notes')">📝<span>Notes</span><small>notes, files, photos</small></button>
     <button class="hub-btn violet" onclick="showPage('skillcheck')">★<span>Skills &amp; awards</span><small>teacher-checked, badges</small></button>
@@ -290,8 +290,9 @@
     </ul>
   </div>
   <div class="card coral">
-    <div class="row"><h3 class="grow">One-off studio dates</h3><button class="btn sm coral" onclick="openRehearsal()">📅 Add solo rehearsal</button></div>
-    <p class="small muted">Solo rehearsals with Ms. Brittany are booked when needed, not every week. Make-up classes go here too.</p>
+    <div class="row"><h3 class="grow">Privates &amp; one-off dates</h3><button class="btn sm coral" onclick="openRehearsal()">📅 Book a private</button></div>
+    <p class="small muted">Solo and trio privates are booked when needed, not every week. Make-up classes go here too.</p>
+    <div id="privatesLine"></div>
     <div id="studioList"></div>
   </div>
   <div class="card noprint">
@@ -619,7 +620,8 @@
 <!-- ADD SOLO REHEARSAL -->
 <div class="modal" id="rehearsal" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow">📅 Add solo rehearsal</h3><button class="btn sm ghost" id="rhClose">✕</button></div>
+    <div class="row"><h3 class="grow">📅 Book a private</h3><button class="btn sm ghost" id="rhClose">✕</button></div>
+    <label class="f" for="rhFor">For</label><select id="rhFor"><option value="solo">Solo private</option><option value="trio">Trio private</option><option value="other">Make-up class / other</option></select>
     <label class="f" for="rhDate">Date</label><input type="date" id="rhDate">
     <label class="f" for="rhTime">Start time (30 minutes)</label><input type="time" id="rhTime" step="900">
     <label class="f" for="rhName">What</label><input type="text" id="rhName" maxlength="80">
