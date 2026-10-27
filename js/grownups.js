@@ -1,6 +1,9 @@
 // Grown-ups area: PIN gate (PIN in settings, default 2027, can be switched off) + the hub that links to every text-heavy screen.
 import { $, esc, toast, expose } from "./util.js";
 import { S, pin, pinOn, setSettings } from "./store.js";
+import { studioDates } from "./store.js";
+import { privatesStatus } from "./studio.js";
+import { todayStr } from "./util.js";
 import { showPage } from "./nav.js";
 
 const UNLOCK_KEY = "spotlight:grownups";
@@ -33,6 +36,8 @@ async function togglePin(){
 export function renderGrownups(){
   const el = $("#pinState"); if (el) el.textContent = pinOn() ? `PIN lock on (PIN ${"•".repeat(pin().length)})` : "PIN lock off";
   const b = $("#pinToggle"); if (b) b.textContent = pinOn() ? "Turn PIN off" : "Turn PIN on";
+  // The Schedule button says how this month's required privates stand (Solo n/2 · Trio n/2), so a short month is seen from the hub.
+  const h = $("#hubPrivates"); if (h) { const st = privatesStatus(studioDates(), todayStr().slice(0, 7)); h.textContent = st[0].need ? "privates: " + st.map(x => `${x.label} ${x.have}/${x.need}${x.short ? "" : " ✓"}`).join(" · ") : "classes, privates, calendar"; }
 }
 export function initGrownups(){
   $("#pinGo").onclick = tryPin; $("#pinIn").addEventListener("keydown", e => { if (e.key === "Enter") tryPin(); });

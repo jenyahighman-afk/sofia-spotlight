@@ -4,9 +4,9 @@ import { $, esc, todayStr, dateStr, toast, saveBlob } from "../util.js";
 import { CLASSES, HOME_DAYS, SEASON } from "../data.js";
 import { S, events, studioDates } from "../store.js";
 import { buildICS } from "../ics.js";
-import { studioOn, upcomingHtml } from "../studio.js";
+import { studioOn, upcomingHtml, privatesHtml } from "../studio.js";
 
-function renderStudio(){ const el=$("#studioList"); if(el) el.innerHTML=upcomingHtml(); }
+function renderStudio(){ const el=$("#studioList"); if(el) el.innerHTML=upcomingHtml(); const p=$("#privatesLine"); if(p) p.innerHTML=privatesHtml(); }
 function renderClasses(){ renderStudio(); const names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]; $("#classTable").innerHTML=`<thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Room</th></tr></thead><tbody>`+CLASSES.map(c=>`<tr><td>${names[c.day]}</td><td>${c.t}</td><td>${esc(c.name)}</td><td>${c.room}</td></tr>`).join("")+`</tbody>`; }
 
 let calMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
