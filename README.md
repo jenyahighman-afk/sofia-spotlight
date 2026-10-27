@@ -213,7 +213,7 @@ files/                printable documents added to "My files" on first create; a
 firestore.rules, storage.rules, firebase.json, .firebaserc
 sw.js, manifest.json, icons/    PWA
 tests/                node --test: migrations, data sanity, .ics, corrections, streak, badges+skills, smoke (every screen renders in Node)
-tools/                serve.cjs (local server), seed-manifest.cjs, make-icons.cjs, import-cues.cjs, print/Sofia-Practice-Toolkit.html (the Toolkit's source: print it to files/ with Edge, `msedge --headless=new --no-pdf-header-footer --print-to-pdf=files/Sofia-Practice-Toolkit.pdf tools/print/Sofia-Practice-Toolkit.html`, then run seed-manifest.cjs)
+tools/                serve.cjs (local server), seed-manifest.cjs, make-icons.cjs, import-cues.cjs, print/Sofia-Practice-Toolkit.html (the Toolkit's source: print it to files/ with Edge, `msedge --headless=new --no-pdf-header-footer --print-to-pdf=files/Sofia-Practice-Toolkit.pdf tools/print/Sofia-Practice-Toolkit.html`, then run seed-manifest.cjs), print/Sofia-Backstage-Pass.html (Sofia's guide to the app, the Toolkit, the Workbook and her 6-tab binder, her week and balance; printed the same way to files/Sofia-Backstage-Pass.pdf, add `?ink` to the file URL for a black-ink-only copy)
 .github/workflows/pages.yml     deploy on push to main
 ```
 

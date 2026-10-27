@@ -1,0 +1,630 @@
+<!doctype html>
+<!-- Source of files/Sofia-Backstage-Pass.pdf (9 Letter pages): Sofia's guide to the app, the Toolkit, the Workbook and her
+     binder, her week, the goal in steps, and balance, food, sleep and body care. Print with Edge, no headers/footers:
+     msedge --headless=new --no-pdf-header-footer --virtual-time-budget=8000 --print-to-pdf=files/Sofia-Backstage-Pass.pdf tools/print/Sofia-Backstage-Pass.html
+     then node tools/seed-manifest.cjs so "My files" swaps in the new copy. Add ?ink to the file URL for a black-ink-only
+     copy (Jenya's printer). Food ideas are meat-free (Sofia is pescatarian). Made Oct 26, 2026. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sofia's Backstage Pass</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: a backstage pass up top, then the season in running order, one column; colors and faces are the Spotlight app's own */
+:root{
+  --paper:#FFF7FA; --card:#FFFFFF; --ink:#4A2340; --ink-2:#7E5C74; --line:#F6DDE7; --blush:#FFE6EF;
+  --app:#FF5C93; --app-soft:#FFE1EC; --app-ink:#B8235C;
+  --kit:#E3A63A; --kit-soft:#FFF0D2; --kit-ink:#80530C;
+  --book:#8A5FD0; --book-soft:#EFE6FF; --book-ink:#5B3A99;
+  --ok:#23845B; --ok-soft:#DDF5E9; --stop:#C43A3A; --stop-soft:#FFE3E3;
+  --glow:#FFE9A8;
+  --t1:#E0457D; --t2:#B8770F; --t3:#1E8A5A; --t4:#D2533B; --t5:#2F74E0; --t6:#7B52C7;
+  --shadow:0 6px 0 rgba(74,35,64,.08);
+  --display:"Fredoka","Segoe UI",system-ui,-apple-system,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+@media screen and (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#2B1A26; --card:#3A2434; --ink:#FFF0F5; --ink-2:#E2BFD0; --line:#5A3A4E; --blush:#4A2A3E;
+  --app-soft:#5A2440; --app-ink:#FF9CC0; --kit-soft:#4A3A1E; --kit-ink:#F6D07E; --book-soft:#3B2C5A; --book-ink:#D3B8FA;
+  --ok:#74D6A8; --ok-soft:#1F4636; --stop:#FF9A9A; --stop-soft:#5A2626; --glow:#6B5520;
+  --shadow:0 6px 0 rgba(0,0,0,.25); color-scheme:dark;
+} }
+@media screen{ :root[data-theme="dark"]{
+  --paper:#2B1A26; --card:#3A2434; --ink:#FFF0F5; --ink-2:#E2BFD0; --line:#5A3A4E; --blush:#4A2A3E;
+  --app-soft:#5A2440; --app-ink:#FF9CC0; --kit-soft:#4A3A1E; --kit-ink:#F6D07E; --book-soft:#3B2C5A; --book-ink:#D3B8FA;
+  --ok:#74D6A8; --ok-soft:#1F4636; --stop:#FF9A9A; --stop-soft:#5A2626; --glow:#6B5520;
+  --shadow:0 6px 0 rgba(0,0,0,.25); color-scheme:dark;
+} }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:17px/1.55 var(--body);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.wrap{max-width:1000px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px;display:grid;gap:60px}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.12;text-wrap:balance}
+h1{font-size:clamp(2.4rem,7vw,3.8rem);letter-spacing:-.01em}
+h2{font-size:clamp(1.65rem,4.4vw,2.3rem)}
+h3{font-size:1.2rem}
+p,ul,ol{margin:0}
+ul{padding:0;list-style:none}
+b,strong{font-weight:800}
+a{color:var(--app-ink)}
+.eyebrow{font:600 .78rem/1.2 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--app-ink)}
+.lead{font-size:1.16rem;max-width:58ch}
+.sub{color:var(--ink-2);max-width:62ch}
+section{display:grid;gap:22px}
+.head{display:grid;gap:6px}
+
+/* hero + pass */
+.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:28px;align-items:center}
+.hero-text{display:grid;gap:16px;min-width:0}
+.pass-hold{position:relative;padding-top:58px;justify-self:center;width:100%;max-width:330px;overflow:hidden}
+.pass{position:relative;background:var(--card);border:3px solid var(--app);border-radius:24px;padding:40px 22px 20px;box-shadow:0 10px 0 rgba(74,35,64,.1);transform:rotate(2.5deg);display:grid;gap:10px;margin:0 10px 14px}
+.pass::before{content:"";position:absolute;top:14px;left:50%;width:58px;height:12px;margin-left:-29px;border-radius:99px;background:var(--paper);border:2px solid var(--line)}
+.strap{position:absolute;top:0;left:50%;width:30px;height:76px;margin-left:-15px;background:repeating-linear-gradient(180deg,var(--app) 0 10px,#FF8FB4 10px 20px);border-radius:4px;transform:rotate(2.5deg);transform-origin:bottom center}
+.pass-band{background:var(--app);color:#fff;font:600 .9rem/1 var(--display);letter-spacing:.2em;text-align:center;padding:9px 0;border-radius:10px}
+.pass-name{font:600 2.6rem/1 var(--display);text-align:center}
+.pass-role{text-align:center;font-weight:800;color:var(--app-ink)}
+.pass-line{display:flex;justify-content:space-between;gap:10px;font-size:.88rem;border-top:2px dashed var(--line);padding-top:8px}
+.pass-line span:first-child{color:var(--ink-2)}
+.pass-line span:last-child{font-weight:800;text-align:right}
+.barcode{height:34px;border-radius:4px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 9px,var(--ink) 9px 12px,transparent 12px 14px)}
+
+.five{background:var(--blush);border-radius:22px;padding:22px 24px;display:grid;gap:12px}
+.five ul{display:grid;gap:8px}
+.five li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px}
+.five li::before{content:"★";color:var(--app)}
+
+/* the crew */
+.crew{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.helper{background:var(--card);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;display:grid;align-content:start;border:2px solid var(--line)}
+.helper-top{background:var(--soft);padding:18px 20px 16px;display:grid;gap:6px}
+.helper-top .row{display:flex;align-items:center;gap:10px}
+.icon{width:42px;height:42px;border-radius:12px;background:var(--card);color:var(--cink);display:grid;place-items:center;flex:none}
+.icon svg{width:26px;height:26px}
+.where{font:600 .75rem/1.2 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--cink)}
+.nick{font-style:italic;color:var(--ink-2)}
+.job{font:600 1.08rem/1.3 var(--display);color:var(--cink)}
+.helper-body{padding:16px 20px 20px;display:grid;gap:8px}
+.helper-body li{padding-left:16px;position:relative}
+.helper-body li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:50%;background:var(--c)}
+.pg{font:600 .8rem/1 var(--display);color:var(--cink);margin-right:4px}
+.app{--c:var(--app);--soft:var(--app-soft);--cink:var(--app-ink)}
+.kit{--c:var(--kit);--soft:var(--kit-soft);--cink:var(--kit-ink)}
+.book{--c:var(--book);--soft:var(--book-soft);--cink:var(--book-ink)}
+
+.rule{display:flex;flex-wrap:wrap;gap:10px 12px;font:600 clamp(1.1rem,3vw,1.5rem)/1.2 var(--display)}
+.rule span{background:var(--soft);color:var(--cink);padding:10px 16px;border-radius:14px}
+.binder{display:grid;gap:14px}
+.tabs6{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 14px}
+.tabs6 li{display:grid;grid-template-rows:auto 1fr;min-width:0}
+.tab-top{justify-self:start;display:flex;align-items:center;gap:8px;background:var(--t);color:#fff;font:600 1.02rem/1 var(--display);padding:7px 14px 7px 7px;border-radius:12px 12px 0 0}
+.tn{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.28);display:grid;place-items:center;font-size:.85rem}
+.tab-body{background:var(--card);border:2px solid var(--t);border-radius:0 14px 14px 14px;padding:12px 14px;font-size:.92rem;line-height:1.4}
+.chip.aer{background:var(--t5);color:#fff}
+.note{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px 18px;display:grid;gap:6px;min-width:0}
+.note h3{font-size:1.05rem}
+.order{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.order i{font-style:normal;color:var(--ink-2)}
+
+/* what to grab */
+.grab{background:var(--card);border:2px solid var(--line);border-radius:22px;overflow:hidden}
+.grab-row{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.5fr);gap:6px 20px;padding:14px 20px;border-top:2px solid var(--line)}
+.grab-row:first-child{border-top:0}
+.grab-row .q{font-weight:800}
+.grab-row .a{display:grid;gap:6px;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;padding:3px 11px;border-radius:99px;font:600 .82rem/1.35 var(--display);background:var(--soft);color:var(--cink)}
+
+/* goal + stairs */
+.goal{background:var(--ink);color:var(--paper);border-radius:24px;padding:24px 26px;display:grid;gap:8px}
+.goal .eyebrow{color:var(--app)}
+.goal p{font:500 clamp(1.25rem,3.4vw,1.6rem)/1.3 var(--display);max-width:40ch}
+.stairs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+.step{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:6px;min-width:0}
+.step:nth-child(1){margin-top:84px}.step:nth-child(2){margin-top:56px}.step:nth-child(3){margin-top:28px}
+.step .n{font:600 2rem/1 var(--display);color:var(--app)}
+.step .d{font:600 .82rem/1.2 var(--display);color:var(--ink-2);letter-spacing:.02em}
+.here{display:none;justify-self:start;background:var(--app);color:#fff;font:600 .75rem/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-radius:99px}
+.step.now{border-color:var(--app);background:var(--app-soft)}
+.step.now .here{display:inline-block}
+.two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
+.ticks{display:grid;gap:10px}
+.ticks li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:8px}
+.ticks li::before{content:"";width:18px;height:18px;margin-top:.2em;border-radius:6px;border:2.5px solid var(--app)}
+.lines{display:grid;gap:10px}
+.lines li{display:grid;grid-template-columns:minmax(92px,auto) minmax(0,1fr);gap:12px;align-items:baseline;border-bottom:2px dashed var(--line);padding-bottom:8px}
+.lines li:last-child{border-bottom:0}
+.lines .when{font:600 .9rem/1.2 var(--display);color:var(--app-ink)}
+
+/* week */
+.legend{display:flex;flex-wrap:wrap;gap:8px}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.day{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 10px;display:grid;gap:6px;align-content:start;min-width:0}
+.day .dn{font:600 1.15rem/1 var(--display);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.day .what{font-size:.9rem;font-weight:700;line-height:1.3}
+.day .t{font-size:.8rem;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.day .extra{font-size:.8rem;color:var(--ink-2);line-height:1.35}
+.today-tag{display:none;background:var(--app);color:#fff;font:600 .65rem/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:4px 7px;border-radius:99px}
+.day.today{border-color:var(--app);box-shadow:var(--shadow)}
+.day.today .today-tag{display:inline-block}
+.tag{display:inline-block;justify-self:start;font:600 .72rem/1.3 var(--display);padding:2px 8px;border-radius:99px}
+.tag.studio{border:2px solid var(--ink-2);color:var(--ink);padding:0 7px}
+.tag.home{background:var(--kit-soft);color:var(--kit-ink)}
+.tag.mem{background:var(--app-soft);color:var(--app-ink)}
+
+/* four spotlights */
+.lights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.light{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:18px 20px;display:grid;grid-template-columns:52px minmax(0,1fr);gap:14px;align-items:start}
+.lamp{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#FFF8DC 0 18%,var(--glow) 19% 55%,transparent 56%),radial-gradient(circle,var(--kit-soft) 0 70%,transparent 71%);display:grid;place-items:center;font:600 .7rem/1 var(--display);color:var(--kit-ink)}
+.light h3{margin-bottom:4px}
+.alert{border:3px dashed var(--app);border-radius:20px;padding:18px 20px;display:grid;gap:6px;background:var(--card)}
+
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.box{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:20px;display:grid;gap:12px;align-content:start;min-width:0}
+.tips{display:grid;gap:10px}
+.tips li b{display:block;font-family:var(--display);font-weight:600;font-size:1.02rem}
+.swaps{background:var(--blush);border-radius:14px;padding:12px 14px;font-size:.95rem}
+
+/* food */
+.meals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.meal{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:6px;align-content:start;min-width:0}
+.meal .when{font:600 .78rem/1.2 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--app-ink)}
+.meal h3{font-size:1.1rem}
+.meal p{font-size:.95rem}
+.water{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;background:var(--book-soft);color:var(--ink);border-radius:18px;padding:14px 18px}
+.drop{width:34px;height:42px}
+.big-rule{background:var(--ink);color:var(--paper);border-radius:18px;padding:16px 20px;font-weight:700}
+
+/* sleep */
+.sleep{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:16px;align-items:stretch}
+.hours{background:var(--book-soft);border-radius:22px;padding:24px;display:grid;gap:6px;align-content:center}
+.hours .num{font:600 clamp(3.4rem,10vw,5rem)/.95 var(--display);color:var(--book-ink);font-variant-numeric:tabular-nums}
+.hours .unit{font:600 1.2rem/1.2 var(--display)}
+.calc{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:var(--blush);border-radius:14px;padding:12px 14px;font-weight:700}
+.calc select{font:600 1rem var(--display);color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:10px;padding:4px 8px}
+.calc select:focus-visible{outline:3px solid var(--app);outline-offset:2px}
+.calc output{font:600 1.15rem var(--display);color:var(--app-ink)}
+
+/* body */
+.sore{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.sore > div{border-radius:20px;padding:18px 20px;display:grid;gap:8px;align-content:start}
+.sore .fine{background:var(--ok-soft)}
+.sore .fine h3{color:var(--ok)}
+.sore .halt{background:var(--stop-soft)}
+.sore .halt h3{color:var(--stop)}
+.body-tips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}
+.body-tips li{padding-left:22px;position:relative}
+.body-tips li::before{content:"★";position:absolute;left:0;color:var(--app)}
+
+footer{border-top:2px dashed var(--line);padding-top:22px;display:grid;gap:10px;font-size:.92rem;color:var(--ink-2)}
+footer h3{color:var(--ink);font-size:1.05rem}
+footer ul{display:grid;gap:4px}
+
+@media (max-width:860px){
+  .crew,.meals{grid-template-columns:1fr 1fr}
+  .crew .helper:last-child{grid-column:1/-1}
+  .week{grid-template-columns:1fr}
+  .day{grid-template-columns:76px minmax(0,1fr);column-gap:12px}
+  .day .dn{grid-row:span 4;align-self:start;flex-direction:column;align-items:flex-start}
+  .tabs6{grid-template-columns:1fr 1fr}
+  .stairs{grid-template-columns:1fr}
+  .step:nth-child(n){margin-top:0}
+  .step:nth-child(2){margin-left:14px}.step:nth-child(3){margin-left:28px}.step:nth-child(4){margin-left:42px}
+}
+@media (max-width:680px){
+  .hero,.two,.lights,.pair,.sleep,.sore,.body-tips,.crew,.meals{grid-template-columns:1fr}
+  .crew .helper:last-child{grid-column:auto}
+  .grab-row{grid-template-columns:1fr}
+  .pass-hold{order:-1}
+}
+@media (prefers-reduced-motion:no-preference){
+  .pass{transition:transform .3s ease}
+  .pass:hover{transform:rotate(0deg)}
+}
+@page{size:Letter;margin:.45in}
+.print-only{display:none}
+@media print{
+  /* paper: the wide layout, block flow (no grid fragmentation), nothing that goes stale */
+  body{font-size:12.5px;background:#fff}
+  .wrap{padding:0;max-width:none;display:block}
+  .wrap > * + *{margin-top:26px}
+  section{display:block}
+  section > * + *{margin-top:14px}
+  .crew,.tabs6{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .crew .helper:last-child{grid-column:auto}
+  .meals{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .week{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .two{grid-template-columns:1fr}
+  .meal p{font-size:inherit}
+  .day{display:grid;grid-template-columns:none}
+  .day .dn{grid-row:auto;flex-direction:row;align-items:center}
+  .stairs{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .step:nth-child(n){margin-left:0}
+  .step:nth-child(1){margin-top:84px}.step:nth-child(2){margin-top:56px}.step:nth-child(3){margin-top:28px}
+  .hero,.crew,.week,.stairs,.meals,.lights,.pair,.sleep,.sore,.binder,.two,.body-tips,.helper,.box,.meal,.step,.day,.light,.goal,.five,.grab-row,.note,.sore > div,.alert,.water,.big-rule,.hours,.calc,footer{break-inside:avoid}
+  .head{break-inside:avoid}
+  .head,h2{break-after:avoid}
+  .helper,.pass,.day.today{box-shadow:none}
+  .day.today{border-color:var(--line)}
+  .day.today .today-tag,.step.now .here,.screen-only{display:none}
+  .step.now{border-color:var(--line);background:var(--card)}
+  .print-only{display:block}
+  .calc select{appearance:none;-webkit-appearance:none;border:0;padding:0;background:transparent}
+  /* black ink only (?ink on the address, for a black-only printer): every fill goes white, every color goes black,
+     shapes keep an outline */
+  :root.ink{--ink:#000;--ink-2:#333;--line:#9a9a9a;--paper:#fff;--card:#fff;--blush:#fff;--glow:#fff;
+    --app:#000;--app-soft:#fff;--app-ink:#000;--kit:#000;--kit-soft:#fff;--kit-ink:#000;--book:#000;--book-soft:#fff;--book-ink:#000;
+    --ok:#000;--ok-soft:#fff;--stop:#000;--stop-soft:#fff;--t1:#000;--t2:#000;--t3:#000;--t4:#000;--t5:#000;--t6:#000}
+  .ink .five,.ink .rule span,.ink .chip,.ink .tag,.ink .water,.ink .hours,.ink .sore > div,.ink .goal,.ink .big-rule,.ink .pass-band{border:2px solid #000}
+  .ink .swaps,.ink .calc{border:2px dashed #000}
+  .ink .goal,.ink .big-rule,.ink .pass-band,.ink .chip.aer{background:#fff;color:#000}
+  .ink .helper-top{border-bottom:2px solid #000}
+  .ink .tab-top{background:#fff;color:#000;border:2px solid #000;border-bottom:0}
+  .ink .tn{background:#fff;border:1.5px solid #000}
+  .ink .strap{background:repeating-linear-gradient(180deg,#000 0 2px,#fff 2px 8px);border:1.5px solid #000}
+  .ink .lamp{background:none;border:2.5px solid #000}
+}
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="hero-text">
+      <span class="eyebrow">For Sofia · Season 2026–27</span>
+      <h1>Your backstage pass</h1>
+      <p class="lead">This season you have three helpers: the <b>Spotlight app</b>, your <b>Practice Toolkit</b> and your <b>Season Workbook</b>. Like a stage crew, each one has its own job. Here's who does what, what to grab when, and how to keep dance, school, home and fun all feeling good.</p>
+    </div>
+    <div class="pass-hold" aria-label="Backstage pass">
+      <div class="strap" aria-hidden="true"></div>
+      <div class="pass">
+        <div class="pass-band">ALL ACCESS</div>
+        <div class="pass-name">Sofia</div>
+        <div class="pass-role">Dancer · Team PITCH</div>
+        <div class="pass-line"><span>Dances</span><span>Solo · Trio · Groups</span></div>
+        <div class="pass-line"><span>Studio</span><span>Glass House Dance</span></div>
+        <div class="pass-line"><span>Big goal</span><span>Winter Showcase ★</span></div>
+        <div class="barcode" aria-hidden="true"></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="five" aria-labelledby="five-h">
+    <h2 id="five-h" style="font-size:1.4rem">If you remember only five things</h2>
+    <ul>
+      <li><span><b>App = today. Toolkit = how. Workbook = everything else.</b></span></li>
+      <li><span>A little practice most days beats one giant practice.</span></li>
+      <li><span>A teacher's correction goes into your practice right away.</span></li>
+      <li><span>Sleep 9–12 hours. Your brain practices while you sleep.</span></li>
+      <li><span>Dance, school, home and fun each get some time every week.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="crew-h">
+    <div class="head">
+      <span class="eyebrow">Part 1</span>
+      <h2 id="crew-h">Meet your crew</h2>
+      <p class="sub">Three helpers, three different jobs. None of them does everything.</p>
+    </div>
+    <div class="crew">
+      <article class="helper app">
+        <div class="helper-top">
+          <div class="row">
+            <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10.5 18.5h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.2 8.3l4.8 3-4.8 3z" fill="currentColor"/></svg></span>
+            <div><div class="where">Phone or tablet</div><h3>Spotlight app</h3></div>
+          </div>
+          <div class="nick">The coach in your pocket</div>
+          <div class="job">Tells you what to do TODAY.</div>
+        </div>
+        <ul class="helper-body">
+          <li><b>Today:</b> the plan for today and Ms. Brittany's homework</li>
+          <li><b>▶ Start practice:</b> music, timer and every step in order</li>
+          <li><b>Your solo:</b> practice player, Cue cards, Chunks, Pause &amp; Predict</li>
+          <li><b>Sunday:</b> film your solo and send it to Coach me</li>
+          <li>Stars, streaks and games</li>
+          <li>Counts down the days to the show</li>
+        </ul>
+      </article>
+      <article class="helper kit">
+        <div class="helper-top">
+          <div class="row">
+            <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="2.3" width="6" height="3.6" rx="1.2" fill="currentColor"/><path d="M8.5 11.2l1.6 1.6 3-3M8.5 16.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <div><div class="where">Paper · 6 pages</div><h3>Practice Toolkit</h3></div>
+          </div>
+          <div class="nick">Your practice map</div>
+          <div class="job">Shows HOW to practice and how far you've come.</div>
+        </div>
+        <ul class="helper-body">
+          <li><span class="pg">p.1</span>The plan, the big checkpoints, your week</li>
+          <li><span class="pg">p.2</span>Tracker: a sticker for every home practice</li>
+          <li><span class="pg">p.3</span>How to practice + Show in your head</li>
+          <li><span class="pg">p.4</span>Solo map, your fixes, the trick ladder</li>
+          <li><span class="pg">p.5</span>Trio memory map and counts</li>
+          <li><span class="pg">p.6</span>This week: a fresh sheet every Sunday</li>
+        </ul>
+      </article>
+      <article class="helper book">
+        <div class="helper-top">
+          <div class="row">
+            <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 6.8l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" fill="currentColor"/></svg></span>
+            <div><div class="where">Paper · 6 pages</div><h3>Season Workbook</h3></div>
+          </div>
+          <div class="nick">Your dancer's handbook</div>
+          <div class="job">EVERYTHING ELSE about the season.</div>
+        </div>
+        <ul class="helper-body">
+          <li><span class="pg">p.5–6</span>Group dances: PITCH jazz + contemporary</li>
+          <li><span class="pg">p.9</span>Show day, nerves, "if it goes wrong"</li>
+          <li><span class="pg">p.10</span>Music, people, costumes</li>
+          <li><span class="pg">p.11</span>Packing lists</li>
+          <li><span class="pg">p.14</span>Count sheets</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="rule" aria-label="The rule">
+      <span class="app">App = TODAY</span><span class="kit">Toolkit = HOW</span><span class="book">Workbook = EVERYTHING ELSE</span>
+    </div>
+
+    <div class="binder">
+      <div class="head">
+        <h3>All your paper lives in one binder</h3>
+        <p class="sub">Six tabs, in this order. Each divider says what's behind it.</p>
+      </div>
+      <ol class="tabs6">
+        <li style="--t:var(--t1)"><span class="tab-top"><span class="tn">1</span>Start here</span><span class="tab-body">This guide</span></li>
+        <li style="--t:var(--t2)"><span class="tab-top"><span class="tn">2</span>My plan</span><span class="tab-body">Toolkit p.1 the plan · p.2 tracker · p.6 This week</span></li>
+        <li style="--t:var(--t3)"><span class="tab-top"><span class="tn">3</span>Practice</span><span class="tab-body">Toolkit p.3 how to practice · Workbook p.14 count sheets</span></li>
+        <li style="--t:var(--t4)"><span class="tab-top"><span class="tn">4</span>My dances</span><span class="tab-body">Toolkit p.4 solo · p.5 trio · Workbook p.5–6 group dances</span></li>
+        <li style="--t:var(--t5)"><span class="tab-top"><span class="tn">5</span>Aerial</span><span class="tab-body">Aerial Mission: the drills, the plan, the checklist</span></li>
+        <li style="--t:var(--t6)"><span class="tab-top"><span class="tn">6</span>Show time</span><span class="tab-body">Workbook p.9 show day + nerves · p.11 packing · p.10 music + people</span></li>
+      </ol>
+    </div>
+    <div class="note">
+      <h3>If two helpers say different things</h3>
+      <div class="order"><b>Your teachers</b> <i>›</i> <span class="chip app">the app</span> <i>›</i> <span class="chip kit">the Toolkit</span> <i>›</i> <span class="chip book">the Workbook</span></div>
+      <p class="sub">Teachers always win. After that, the newest helper wins, and the app is the newest.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="grab-h">
+    <div class="head">
+      <span class="eyebrow">Part 2</span>
+      <h2 id="grab-h">What do I grab?</h2>
+      <p class="sub">Find your moment on the left. The chip says which helper to grab.</p>
+    </div>
+    <div class="grab">
+      <div class="grab-row"><div class="q">What do I practice today?</div><div class="a"><div class="chips"><span class="chip app">App</span></div><p>Open Today. It shows the plan and how long it takes.</p></div></div>
+      <div class="grab-row"><div class="q">It's a home practice day</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.4</span></div><p>Tap ▶ Start practice. Keep page 4 open next to you so you can see your fixes.</p></div></div>
+      <div class="grab-row"><div class="q">I finished!</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.2</span></div><p>Tap Done in the app, then put a sticker on page 2. Three in a week = a full week ★</p></div></div>
+      <div class="grab-row"><div class="q">A part of my solo keeps slipping</div><div class="a"><div class="chips"><span class="chip app">App</span></div><p>Dances › your solo › Chunks or Cue cards. Learn one 8-count, then join it to the one before.</p></div></div>
+      <div class="grab-row"><div class="q">A teacher gave me a correction</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.6</span></div><p>Tell Mom and add it with ＋ Note on that dance. Write it on This week. It becomes your fix right away. Corrections from Saturday group rehearsal count too.</p></div></div>
+      <div class="grab-row"><div class="q">It's Sunday</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.2 + p.6</span></div><p>Film your solo and send it to Coach me. Watch it with Mom: what went well first, then ONE fix. Write the fix on page 2 and fill in a new page 6.</p></div></div>
+      <div class="grab-row"><div class="q">Group dances</div><div class="a"><div class="chips"><span class="chip book">Workbook p.5–6</span></div><p>The big groups practice at Saturday rehearsal. At home, only if you got a correction. Their pages are behind the My dances tab.</p></div></div>
+      <div class="grab-row"><div class="q">Aerial drills</div><div class="a"><div class="chips"><span class="chip aer">Aerial tab</span></div><p>Mat under you, every time. First tries happen in Monday Acro with a coach. At home, Mom films and holds the mat.</p></div></div>
+      <div class="grab-row"><div class="q">Packing for a show</div><div class="a"><div class="chips"><span class="chip book">Workbook p.11</span></div><p>Show time tab. Use the packing list and pack the night before.</p></div></div>
+      <div class="grab-row"><div class="q">Butterflies before the show</div><div class="a"><div class="chips"><span class="chip book">Workbook p.9</span></div><p>Show time tab. Do your "before you go on" routine. Then breathe: smell the flower, blow out the candle.</p></div></div>
+      <div class="grab-row"><div class="q">Show in your head (starts Nov 9)</div><div class="a"><div class="chips"><span class="chip kit">Toolkit p.3</span></div><p>Music on, screen face down, eyes closed. Dance the whole solo in your head.</p></div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="goal-h">
+    <div class="head">
+      <span class="eyebrow">Part 3</span>
+      <h2 id="goal-h">The big goal, in small steps</h2>
+    </div>
+    <div class="goal">
+      <span class="eyebrow">The big goal</span>
+      <p>Dance your solo at the Winter Showcase from memory, full out, eyes up, holding the ending to the very last note. And love doing it.</p>
+    </div>
+    <p class="sub">Four parts get you there, one after the other. Don't skip ahead.</p>
+    <div class="stairs">
+      <div class="step now"><span class="here">You are here</span><span class="n">1</span><h3>Own it</h3><span class="d">Sep 28 – Nov 8</span><p>Know every step by heart. No video, nobody to follow. Memory + knees: no new tricks yet.</p></div>
+      <div class="step"><span class="here">You are here</span><span class="n">2</span><h3>Clean it</h3><span class="d">Nov 9 – Nov 29</span><p>Make it sharp: feet, knees, arms, eyes. One fix at a time. Show in your head starts.</p></div>
+      <div class="step"><span class="here">You are here</span><span class="n">3</span><h3>Perform it</h3><span class="d">Nov 30 – Jan 3</span><p>Dance it like the real show. Full out, costume on, little audiences at home.</p></div>
+      <div class="step"><span class="here">You are here</span><span class="n">4</span><h3>Taper</h3><span class="d">Jan 4 – the show</span><p>Less work, more rest. Nothing new. Fresh legs, calm head, early nights.</p></div>
+    </div>
+    <div class="two">
+      <div class="box">
+        <h3>How big goals get done</h3>
+        <ul class="ticks">
+          <li><span><b>One 8-count at a time.</b> Learn it, then join it to the one before.</span></li>
+          <li><span><b>One fix at a time.</b> It's done when it shows on two videos in a row.</span></li>
+          <li><span><b>A short practice most days.</b> 35–40 minutes at home is plenty.</span></li>
+          <li><span><b>Never 2 days in a row without your solo.</b> On busy days, the 15-minute memory run counts.</span></li>
+          <li><span><b>Finish lines get prizes.</b> At each checkpoint, pick a reward with Mom: a movie night, a new scrunchie, choosing Saturday breakfast.</span></li>
+        </ul>
+        <p class="sub print-only">Your finish lines are on Toolkit page 1, and the app shows the next one on Today.</p>
+      </div>
+      <div class="box screen-only">
+        <h3>Your next finish lines</h3>
+        <ul class="lines">
+          <li><span class="when">Sat Oct 31</span><span>Whole trio, no video</span></li>
+          <li><span class="when">Sun Nov 1</span><span>Whole solo from memory, on the music</span></li>
+          <li><span class="when">Next solo rehearsal</span><span>Show Ms. Brittany: no missed steps</span></li>
+        </ul>
+        <p class="sub">The rest are on Toolkit page 1 and in the app.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="week-h" class="page-break">
+    <div class="head">
+      <span class="eyebrow">Part 4</span>
+      <h2 id="week-h">Your week</h2>
+      <p class="sub">The same rhythm every week, so you always know what's next.</p>
+    </div>
+    <div class="legend"><span class="tag studio">Studio</span><span class="tag home">Home practice</span><span class="tag mem">15-min memory run</span></div>
+    <div class="week">
+      <div class="day" data-dow="1"><span class="dn">Mon <span class="today-tag">Today</span></span><span class="tag studio">Studio</span><span class="what">Ballet · Acro · Jazz Tech</span><span class="t">4:30–7:30</span><span class="extra">No home practice. Homework first, early bed.</span></div>
+      <div class="day" data-dow="2"><span class="dn">Tue <span class="today-tag">Today</span></span><span class="tag studio">Studio</span><span class="what">Hip Hop · Ballroom</span><span class="t">5:30–7:30</span><span class="extra">No home practice.</span></div>
+      <div class="day" data-dow="3"><span class="dn">Wed <span class="today-tag">Today</span></span><span class="tag studio">Studio</span><span class="what">Contemporary</span><span class="t">6:30–7:30</span><span class="extra"><span class="tag mem">+ memory run</span> Solo rehearsal when one is booked.</span></div>
+      <div class="day" data-dow="4"><span class="dn">Thu <span class="today-tag">Today</span></span><span class="tag home">Home</span><span class="what">Strong + bendy + trio + solo</span><span class="t">35–40 min</span></div>
+      <div class="day" data-dow="5"><span class="dn">Fri <span class="today-tag">Today</span></span><span class="tag home">Home</span><span class="what">Technique + this week's trick + solo</span><span class="t">35–40 min</span></div>
+      <div class="day" data-dow="6"><span class="dn">Sat <span class="today-tag">Today</span></span><span class="tag studio">Studio</span><span class="what">Co Tech · PITCH rehearsal</span><span class="t">10:00–12:15</span><span class="extra">The big groups practice here.</span></div>
+      <div class="day" data-dow="0"><span class="dn">Sun <span class="today-tag">Today</span></span><span class="tag home">Home</span><span class="what">Film the solo + trio + film review</span><span class="t">35–40 min</span><span class="extra">Plan your week on Toolkit p.6.</span></div>
+    </div>
+    <p class="sub">Trio privates with Larisa happen 1–2 times a month. On any day with a class, rehearsal or make-up, home practice is the short one: the 15-minute memory run.</p>
+  </section>
+
+  <section aria-labelledby="bal-h">
+    <div class="head">
+      <span class="eyebrow">Part 5</span>
+      <h2 id="bal-h">Keep all four spotlights on</h2>
+      <p class="sub">A happy dancer has four lights. Each one gets some time every week, and none of them should go dark.</p>
+    </div>
+    <div class="lights">
+      <div class="light"><span class="lamp" aria-hidden="true"></span><div><h3>Dance</h3><p>Classes plus short home practices. That's enough. More isn't always better.</p></div></div>
+      <div class="light"><span class="lamp" aria-hidden="true"></span><div><h3>School</h3><p>Homework first on studio days. Read a little every day. Ask for help early, before it piles up.</p></div></div>
+      <div class="light"><span class="lamp" aria-hidden="true"></span><div><h3>Home</h3><p>Chores are teamwork: make your bed, pack your dance bag, help with dinner, and tidy your dance spot in 2 minutes.</p></div></div>
+      <div class="light"><span class="lamp" aria-hidden="true"></span><div><h3>Fun</h3><p>Friends, playing outside, drawing, family time, even doing nothing at all. Fun is part of the plan.</p></div></div>
+    </div>
+    <div class="alert">
+      <h3>Does it feel like too much?</h3>
+      <p>Always tired, grumpy about dance, a sore spot that won't go away, or worries at bedtime? <b>Tell Mom.</b> A lighter day is part of the plan, and the 15-minute memory run is the light version.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="time-h">
+    <div class="pair">
+      <div class="box">
+        <span class="eyebrow">Part 6</span>
+        <h2 id="time-h">Time-smart tricks</h2>
+        <ul class="tips">
+          <li><b>Same time, same place.</b> Start practice at the same time on Thu, Fri and Sun. A habit is easier than willpower.</li>
+          <li><b>Big thing first.</b> Homework, then practice, then free time.</li>
+          <li><b>Let the timer be the boss.</b> The app times each part. When it says done, you're done.</li>
+          <li><b>Plan on Sunday.</b> Fill in page 6 and look at the week: tests, parties, rehearsals.</li>
+          <li><b>Pack tonight.</b> Dance bag and water bottle by the door the night before.</li>
+          <li><b>Stuck? Do the tiniest step.</b> Put on dance clothes and start the warm-up. Starting is the hardest part.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <span class="eyebrow">Part 7</span>
+        <h2>Screen-smart</h2>
+        <ul class="tips">
+          <li><b>The app is a tool.</b> Open it, practice, close it.</li>
+          <li><b>Paper first.</b> Planning, stickers, reading your fixes and Show in your head all happen on paper or with your eyes closed.</li>
+          <li><b>Filming?</b> The phone goes on its stand at the side, not in your hand.</li>
+          <li><b>Screens off 1 hour before bed.</b> Phones and tablets sleep outside your room.</li>
+        </ul>
+        <p class="swaps"><b>Screen-free swaps:</b> draw a costume idea, read, play outside, bake with Mom, freestyle to your favorite song, build a blanket fort.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="food-h" class="page-break">
+    <div class="head">
+      <span class="eyebrow">Part 8</span>
+      <h2 id="food-h">Fuel like a dancer</h2>
+      <p class="sub">Dancing burns lots of energy, and food is your fuel. Every idea here is fish-and-veggie friendly.</p>
+    </div>
+    <div class="meals">
+      <div class="meal"><span class="when">Every morning</span><h3>Breakfast</h3><p>Oatmeal with berries, eggs and toast, yogurt with granola, or a waffle with peanut butter.</p></div>
+      <div class="meal"><span class="when">1–2 hours before class</span><h3>A small snack</h3><p>Banana + peanut butter, apple + cheese, yogurt, crackers + hummus, or trail mix.</p></div>
+      <div class="meal"><span class="when">After class</span><h3>Refuel</h3><p>Chocolate milk, Greek yogurt, eggs, a tuna or salmon sandwich, a bean-and-cheese quesadilla, or edamame.</p></div>
+      <div class="meal"><span class="when">Every day</span><h3>Build strong</h3><p>A rainbow of fruits and veggies. Milk, yogurt or cheese for strong bones. Beans, lentils, eggs, fish and spinach for energy.</p></div>
+    </div>
+    <div class="water">
+      <svg class="drop" viewBox="0 0 34 42" aria-hidden="true"><path d="M17 2C17 2 4 18 4 27a13 13 0 0 0 26 0C30 18 17 2 17 2z" fill="var(--book)"/><path d="M11 27a6 6 0 0 0 6 6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"/></svg>
+      <p><b>Water bottle at every class.</b> Sip before, during and after. Pale yellow pee means you're good. Dark means drink more.</p>
+    </div>
+    <p class="big-rule">Never skip a meal to feel lighter. Growing bodies change and need lots of food. Strong dancers eat well. On show day, eat foods you know and nothing new.</p>
+  </section>
+
+  <section aria-labelledby="sleep-h">
+    <div class="head">
+      <span class="eyebrow">Part 9</span>
+      <h2 id="sleep-h">Sleep is secret practice</h2>
+    </div>
+    <div class="sleep">
+      <div class="hours">
+        <span class="num">9–12</span>
+        <span class="unit">hours every night</span>
+        <p class="sub">That's what kids your age need. While you sleep, your brain saves the steps you practiced, and your muscles repair and grow.</p>
+      </div>
+      <div class="box">
+        <div class="calc">
+          <label for="wake">I wake up at</label>
+          <select id="wake">
+            <option value="6:30">6:30</option>
+            <option value="6:45">6:45</option>
+            <option value="7:00" selected>7:00</option>
+            <option value="7:15">7:15</option>
+            <option value="7:30">7:30</option>
+          </select>
+          <span>so lights out by</span>
+          <output id="bed" for="wake">9:00 pm</output>
+          <span>for 10 hours.</span>
+        </div>
+        <ul class="tips">
+          <li><b>Same bedtime every night,</b> weekends too.</li>
+          <li><b>Late studio nights (Mon, Tue):</b> dinner, shower, bed. Homework is already done.</li>
+          <li><b>Wind down:</b> shower, PJs, a paper book, lights out.</li>
+          <li><b>Show in your head in bed</b> is optional. It never makes bedtime later.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="body-h">
+    <div class="head">
+      <span class="eyebrow">Part 10</span>
+      <h2 id="body-h">Take care of your dancer body</h2>
+      <p class="sub">Your body is your instrument. Here's how to tell normal sore from stop-and-tell.</p>
+    </div>
+    <div class="sore">
+      <div class="fine">
+        <h3>Normal: keep going</h3>
+        <p>Muscles that burn while you work. Tired, achy legs the next day. A stretch you can feel that doesn't hurt.</p>
+      </div>
+      <div class="halt">
+        <h3>Stop and tell Mom</h3>
+        <p>Sharp or stabbing pain. Pain in a knee, ankle, wrist or your back. Swelling, limping, or pain that wakes you up or lasts more than a few days.</p>
+      </div>
+    </div>
+    <ul class="body-tips">
+      <li><b>Warm up first, always.</b> Stretch only warm muscles. A stretch, never pain. No oversplits.</li>
+      <li><b>Acro on the mat or with a spotter.</b> Kick-overs and aerials only in class.</li>
+      <li><b>Stop before you're too tired.</b> Tired teaches your body the wrong way.</li>
+      <li><b>Knees over toes</b> in every plié, lunge and landing.</li>
+      <li><b>Rest counts as training.</b> No home practice on Mon and Tue, and the taper is rest on purpose.</li>
+      <li><b>Happy feet:</b> toenails short, check for blisters, socks off for floor work.</li>
+      <li><b>Nervous?</b> Smell the flower (breathe in for 4), blow out the candle (out for 6). Three times.</li>
+      <li><b>Be kind to yourself.</b> Mistakes are how dancers learn. Say what went well first.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <h3>For Mom</h3>
+    <p>Be the stage crew, not the teacher: music, timer, filming, stickers. Ask, don't correct ("What comes next?"). Praise the work, not the talent. More on Toolkit page 3.</p>
+    <ul>
+      <li>Sleep: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4877308/" target="_blank" rel="noopener">AASM pediatric sleep consensus (2016)</a></li>
+      <li>Screens: <a href="https://www.healthychildren.org/English/fmp/Pages/MediaPlan.aspx" target="_blank" rel="noopener">AAP Family Media Plan</a></li>
+      <li>Rest and training load: <a href="https://pubmed.ncbi.nlm.nih.gov/25646361/" target="_blank" rel="noopener">Jayanthi et al. 2015</a></li>
+    </ul>
+    <p>Made Oct 26, 2026. When the plan changes, the app has the newest version.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  if (/[?&]ink\b/.test(location.search)) document.documentElement.classList.add('ink');
+  var now = new Date();
+  var day = document.querySelector('.day[data-dow="' + now.getDay() + '"]');
+  if (day) day.classList.add('today');
+  var ymd = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+  var i = ymd < 20261109 ? 0 : ymd < 20261130 ? 1 : ymd < 20270104 ? 2 : ymd <= 20270110 ? 3 : -1;
+  var steps = document.querySelectorAll('.step');
+  for (var k = 0; k < steps.length; k++) steps[k].classList.toggle('now', k === i);
+  var sel = document.getElementById('wake'), out = document.getElementById('bed');
+  function bed(){
+    var p = sel.value.split(':'), m = (+p[0] * 60 + +p[1] - 600 + 1440) % 1440;
+    var h = Math.floor(m / 60), mm = m % 60;
+    out.textContent = (h > 12 ? h - 12 : h) + ':' + (mm < 10 ? '0' : '') + mm + ' pm';
+  }
+  sel.addEventListener('change', bed); bed();
+})();
+</script>
+
+</html>

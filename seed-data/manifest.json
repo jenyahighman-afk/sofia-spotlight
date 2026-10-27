@@ -46,6 +46,14 @@
    "rev": "688700a26464"
   },
   {
+   "name": "Sofia-Backstage-Pass.pdf",
+   "path": "files/Sofia-Backstage-Pass.pdf",
+   "type": "application/pdf",
+   "size": 935132,
+   "rev": "3ca07fe85949",
+   "since": "1.41.1"
+  },
+  {
    "name": "Sofia-Memorize-Plan.pdf",
    "path": "files/Sofia-Memorize-Plan.pdf",
    "type": "application/pdf",

@@ -90,3 +90,12 @@ test("the printed Practice Toolkit (tools/print source → files/) carries the s
   const man = JSON.parse(readFileSync(new URL("../seed-data/manifest.json", import.meta.url), "utf8")).files.find(f => f.name === "Sofia-Practice-Toolkit.pdf");
   assert.equal(man.size, readFileSync(new URL("../files/Sofia-Practice-Toolkit.pdf", import.meta.url)).length, "the manifest knows the new copy");
 });
+test("Sofia's Backstage Pass (tools/print source → files/) is a printable added to My files, with meat-free food and the plan's rules", () => {
+  const html = readFileSync(new URL("../tools/print/Sofia-Backstage-Pass.html", import.meta.url), "utf8");
+  for (const s of ["App = TODAY", "Toolkit = HOW", "Workbook = EVERYTHING ELSE", "Start here", "My plan", "My dances", "Show time", "two videos in a row", "Never 2 days in a row without your solo", "9–12", "Screens off 1 hour before bed", "Acro on the mat or with a spotter", "Never skip a meal"]) assert.ok(html.includes(s), s);
+  assert.ok(!/\b(chicken|turkey|beef|pork|ham|bacon|sausage|jerky)\b/i.test(html), "Sofia is pescatarian: no meat in the food ideas");
+  assert.ok(!/Wed(nesday)?s? 3:30/.test(html), "no Wednesday rehearsal");
+  const man = JSON.parse(readFileSync(new URL("../seed-data/manifest.json", import.meta.url), "utf8")).files.find(f => f.name === "Sofia-Backstage-Pass.pdf");
+  assert.ok(man && man.since, "added once to families that don't have it");
+  assert.equal(man.size, readFileSync(new URL("../files/Sofia-Backstage-Pass.pdf", import.meta.url)).length, "the manifest knows this copy");
+});
