@@ -17,7 +17,7 @@ import { awardStars } from "./stars.js";
 import { markBite, markDrillTried } from "./habit.js";
 import { sofiaDancing, whoSuffix, pickedNames, namesLine } from "./who.js";
 
-const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸", mind:"🧠", watch:"📹", listen:"🎧" };
+const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸", mind:"🧠", watch:"📹", listen:"🎧", improv:"💃" };
 let ITEMS = [];
 // timed: on unless she picked Manual (localStorage spotlight:pmode). ask: the timer ran out and the screen asks "Did it?".
 // voice: each item is read out when it comes up (spotlight:pmvoice "off" turns it off).

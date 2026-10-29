@@ -49,6 +49,10 @@ export function buildPlan(opts){
   // Taper (from Dec 28): one core, one legs, one technique — fewer exercises, the full-out stays.
   const fewer = (k) => (comp && (k === "core" || k === "legs")) || (ses.taper && (k === "core" || k === "legs" || k === "tech"));
   for (const slot of pool.slots || []) for (const it of rotate(slot.pool, fewer(slot.kind) ? Math.min(1, slot.n) : slot.n, day, slot.kind === "tech" ? prefer : [])) items.push({ ...it, kind: slot.kind });
+  // The audition weeks (plan-spring.json weeks[].audition): the panel teaches combos on the day, runs a technique class and asks
+  // for improv — the dances aren't danced there — so every full day gets a pick-up drill and two minutes of improv (rules.audition),
+  // warm, before the fixes and the runs. Short days (the night before) stay the memory run.
+  const ad = ses.audition; if (ad) { if (ad.pickup) items.push({ id: "aud-pickup", text: ad.pickup.text, how: ad.pickup.how, secs: ad.pickup.secs, kind: "mind", pose: "pose" }); if (ad.improv) items.push({ id: "aud-improv", text: ad.improv.text, how: ad.improv.how, secs: ad.improv.secs, kind: "improv", pose: "reach" }); }
   // This week's fix, as a drill (kept in the plan all week; the same id all week so a check-off sticks per day).
   // A teacher's new correction (last 7 days) is practised right away, not saved for the cleaning weeks.
   for (const n of (opts.newNotes || []).slice(0, 2)) if (n && n.text && (!opts.weekFix || n.id !== opts.weekFix.id)) items.push({ id: "new-" + n.id, text: `New from ${n.source}: ${n.text}`, secs: 90, kind: "fix", pose: (pool.fixPoses || {})[n.tag] || "pose", tag: n.tag });

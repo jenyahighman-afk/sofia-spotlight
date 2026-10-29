@@ -1,5 +1,5 @@
 {
- "_note": "The spring plan: 23 weeks from the Monday after the Winter Showcase to the Glass House Ball (js/season15.js reads it once plan15's weeks are over; same shape as plan15.json). Between comps the loop is: the week after a comp starts with the judges' audio feedback (solo and trio) — listen with a grown-up, write the top fixes as notes on the dance — then one fix at a time until it shows on two videos in a row, full-outs and a mini audience, two clean runs on film before the next comp, and nothing new in the last days (taper weeks). School breaks are light weeks. Comp mode (js/mode.js) still takes over the seven days before each comp. Which comps the trio dances comes from data/events.json. Jenya's assumptions to confirm: same solo all season, privates continue, auditions want both dances clean on film plus the class work.",
+ "_note": "The spring plan: 23 weeks from the Monday after the Winter Showcase to the Glass House Ball (js/season15.js reads it once plan15's weeks are over; same shape as plan15.json). Between comps the loop is: the week after a comp starts with the judges' audio feedback (solo and trio) — listen with a grown-up, write the top fixes as notes on the dance — then one fix at a time until it shows on two videos in a row, full-outs and a mini audience, two clean runs on film before the next comp, and nothing new in the last days (taper weeks). School breaks are light weeks. Comp mode (js/mode.js) still takes over the seven days before each comp. Which comps the trio dances comes from data/events.json. Confirmed by Jenya (Oct 29, 2026): same solo all season, privates continue; the team auditions (Jun 4–6) are combos taught on the day, a technique class in front of the panel and improv — the solo and trio are not danced there — so the audition weeks (weeks[].audition, rules.audition) train pick-up, clean basics and improv, and nothing is filmed for the panel.",
  "start": "2027-01-11",
  "phases": [
   { "n": "After the Showcase", "from": 1, "to": 2, "d": "Jan 11 – Jan 24", "g": "Watch the Showcase video with a grown-up, pick two fixes. Press Play (Jan 15–17) is classes only. Two clean runs on film before Hollywood Connection, nothing new after Jan 19." },
@@ -7,7 +7,7 @@
   { "n": "Gravit8", "from": 8, "to": 9, "d": "Mar 1 – Mar 14", "g": "Ryze and iD notes together, two fixes, two clean runs on film, nothing new after Mar 9. Gravit8 is required for PITCH." },
   { "n": "The long stretch", "from": 10, "to": 16, "d": "Mar 15 – May 2", "g": "Rest first, then the Gravit8 fixes one at a time, Hannah's videos once more to catch drift, spring break light, then full-outs, a mini audience and the taper into Hollywood Vibe." },
   { "n": "Showstopper", "from": 17, "to": 18, "d": "May 3 – May 16", "g": "One fix from Hollywood Vibe (or Ms. Brittany's last notes), two clean runs on film, nothing new after May 11." },
-  { "n": "Auditions", "from": 19, "to": 21, "d": "May 17 – Jun 6", "g": "The season's list: what every judge said twice is what the panel will see. Both dances clean on film for Ms. Brittany by May 26, then an easy audition week." },
+  { "n": "Auditions", "from": 19, "to": 21, "d": "May 17 – Jun 6", "g": "Showstopper's notes first (they feed the Ball), then what the panel actually sees: combos taught on the day, a technique class and improv. A pick-up drill and two minutes of improv a day, the weakest trick on Fridays, then an easy audition week. The solo and trio aren't danced there." },
   { "n": "The Ball", "from": 22, "to": 23, "d": "Jun 7 – Jun 20", "g": "Costume runs, a focal point for every section, the family mini show Thu Jun 17, then one run a day. The whole season on stage." }
  ],
  "weeks": [
@@ -29,9 +29,9 @@
   { "w": 16, "of": "2027-04-26", "solo": "Two clean runs on film by Wed Apr 28; nothing new after Tue Apr 27", "trio": "One clean run on film", "fri": "Nothing new", "taper": true, "extra": "🏆 Hollywood Vibe Fri Apr 30 – Sun May 2 · PITCH; solo and trio if there is room" },
   { "w": 17, "of": "2027-05-03", "judges": "Hollywood Vibe", "solo": "🎧 Judges' feedback if the solo danced, else Ms. Brittany's last two notes: ONE fix", "trio": "ONE fix", "fri": "Weakest trick", "weakest": true },
   { "w": 18, "of": "2027-05-10", "solo": "Two clean runs on film by Wed May 12; nothing new after Tue May 11", "trio": "One clean run on film", "fri": "Nothing new", "taper": true, "extra": "🏆 Showstopper Tacoma Fri May 14 – Sun May 16" },
-  { "w": 19, "of": "2027-05-17", "judges": "Showstopper Tacoma", "solo": "🎧 Judges' feedback (solo + trio): the season's list — what every judge said twice", "trio": "Listen, write it down", "fri": "Weakest trick", "weakest": true, "extra": "Three weeks to auditions: what the judges kept saying is what the panel will see" },
-  { "w": 20, "of": "2027-05-24", "solo": "Both dances clean on film for Ms. Brittany by Wed May 26 (audition prep), plus the class combos", "trio": "Clean on film", "fri": "Weakest trick", "weakest": true, "extra": "📋 Ask Ms. Brittany what the audition panel looks for" },
-  { "w": 21, "of": "2027-05-31", "solo": "Audition week: one easy run a day, nothing new; the night before, picture it only", "trio": "One run", "fri": "Nothing new", "taper": true, "extra": "⭐ Team auditions Fri Jun 4 – Sun Jun 6 · sleep 9–12 hours" },
+  { "w": 19, "of": "2027-05-17", "judges": "Showstopper Tacoma", "solo": "🎧 Judges' feedback (solo + trio): the season's list for the Ball — what every judge said twice", "trio": "Listen, write it down", "fri": "Weakest trick", "weakest": true, "extra": "Three weeks to auditions: the panel teaches on the day, so pick-up, clean basics and improv are the prep — not the dances" },
+  { "w": 20, "of": "2027-05-24", "audition": true, "solo": "Audition prep: a pick-up drill (8 counts from a class video, once through, then from memory) and 2 minutes of improv a day; the solo stays alive with one run, nothing to film", "trio": "One run, nothing to film", "fri": "Weakest trick", "weakest": true, "extra": "📋 Ask Ms. Brittany what the audition panel looks for (Wed May 26)" },
+  { "w": 21, "of": "2027-05-31", "audition": true, "solo": "Audition week: a short pick-up drill, 2 minutes of improv, one easy solo run; nothing new. The night before: picture it only", "trio": "One run", "fri": "Nothing new", "taper": true, "extra": "⭐ Team auditions Fri Jun 4 – Sun Jun 6 · sleep 9–12 hours" },
   { "w": 22, "of": "2027-06-07", "solo": "Costume run #1 for the Ball; a focal point for every section", "trio": "Trio in costume", "fri": "Weakest trick", "weakest": true, "extra": "🎤 Family mini show Thu Jun 17" },
   { "w": 23, "of": "2027-06-14", "solo": "Taper: one run a day; family mini show Thu Jun 17", "trio": "One run", "fri": "Nothing new", "taper": true, "extra": "🎉 Glass House Ball Sat Jun 19 – Sun Jun 20: the whole season on stage · sleep 9–12 hours" }
  ],
@@ -52,7 +52,7 @@
   { "d": "2027-05-12", "t": "Two clean runs on film before Showstopper" },
   { "d": "2027-05-14", "t": "Showstopper Tacoma ★" },
   { "d": "2027-05-17", "t": "🎧 Judges' feedback: the season's list" },
-  { "d": "2027-05-26", "t": "Both dances clean on film for Ms. Brittany" },
+  { "d": "2027-05-26", "t": "📋 Ms. Brittany: what the audition panel looks for" },
   { "d": "2027-06-04", "t": "Team auditions ★" },
   { "d": "2027-06-17", "t": "Family mini show" },
   { "d": "2027-06-19", "t": "Glass House Ball ★" }
@@ -62,6 +62,7 @@
   "review": { "secs": 300, "sunday": "🎬 Sunday film review with a grown-up: what went well first, then ONE fix", "taper": "🎬 This week: at most one happy review (what went well)" },
   "fullOut": { "from": "2027-01-11", "backToBackFrom": "2027-01-11", "one": "▶ Solo: mark once, then ONE full-out, eyes up", "pair": "▶▶ Back-to-back: solo full out, 1 minute rest, full out again (or solo then trio)" },
   "judges": { "secs": 300, "solo": "🎧 Judges' feedback: solo — listen with a grown-up, then write the top 3 fixes on the solo card", "trio": "🎧 Judges' feedback: trio — listen with a grown-up, write the fixes, pick one", "how": "Play every judge's recording once through. Write what they said twice. Pick fix 1 for this week — the rest wait their turn." },
+  "audition": { "pickup": "🧠 Pick-up drill: 8 counts from a class video — watch once, phone down, dance them from memory", "pickupHow": "Any class video, or Hannah's walkthrough. Watch 8 counts once, phone down, do them back. Check, fix the one miss, once more. That's how the panel teaches: once through, then you.", "pickupSecs": 180, "improv": "💃 Improv: 2 minutes to a song, eyes up, never stop", "improvHow": "Any song, phone on the floor. Keep moving the whole 2 minutes, eyes to the judges' table; a wobble is a new move. Travel, go down to the floor and up, change speed.", "improvSecs": 120 },
   "nightBefore": ["2027-01-21", "2027-02-18", "2027-02-25", "2027-03-11", "2027-04-29", "2027-05-13", "2027-06-03", "2027-06-18"],
   "studioDays": { "1": "watch" },
   "maxGap": 2

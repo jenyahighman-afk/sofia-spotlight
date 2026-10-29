@@ -84,6 +84,21 @@ test("the daily plan in a judges' week opens with the two 🎧 items, each until
   assert.equal(buildPlan({ ...base, date: "2027-02-02", short: "memory", session: sessionRules("2027-02-02") })[0].id, "mem-warm", "other weeks: the short plan as before");
 });
 
+test("the audition weeks: the panel teaches on the day, so full days add the pick-up drill and improv, the night before stays the memory run, and nothing is filmed for the panel", () => {
+  const w20 = weekOf("2027-05-25", plan), w21 = weekOf("2027-06-02", plan); assert.ok(w20.audition && w21.audition && w21.taper && !weekOf("2027-05-18", plan).audition, "weeks 20–21 are the audition weeks, 21 the easy one");
+  assert.ok(!/clean on film/i.test(w20.solo + w20.trio + w21.solo + plan.phases[5].g), "the dances aren't asked clean on film for the panel"); assert.match(plan.phases[5].g, /combos taught on the day/); assert.match(json("phases")[9].g, /combos taught on the day/);
+  assert.ok(!plan.checkpoints.some(c => /clean on film for Ms\. Brittany/i.test(c.t))); assert.ok(plan.checkpoints.some(c => c.d === "2027-05-26" && /audition panel/.test(c.t)));
+  const s = sessionRules("2027-05-25"); assert.ok(s.audition && /8 counts/.test(s.audition.pickup.text) && s.audition.pickup.how.includes("phone down") && s.audition.pickup.secs === 180 && /2 minutes/.test(s.audition.improv.text) && s.audition.improv.secs === 120);
+  assert.equal(sessionRules("2027-05-18").audition, null, "the judges' week after Showstopper is not an audition week"); assert.equal(sessionRules("2027-06-08").audition, null, "the Ball weeks aren't either");
+  const base = { pool: json("practice-pool"), tricks: ["Calypso"], aerial: [], aerialDone: [], dances: [{ id: "solo" }, { id: "trio" }], mode: "learn", short: "", focus: null, newNotes: [] };
+  const items = buildPlan({ ...base, date: "2027-05-25", session: sessionRules("2027-05-25") }); const ids = items.map(i => i.id);
+  assert.ok(ids.includes("aud-pickup") && ids.includes("aud-improv"), "a full day in week 20 has both drills"); assert.ok(ids.indexOf("aud-pickup") < ids.indexOf("aud-improv") && ids.indexOf("aud-improv") < ids.indexOf("solo-run") && ids.indexOf("aud-pickup") > 0, "after the warm-up, before the solo run");
+  assert.equal(items.find(i => i.id === "aud-improv").kind, "improv"); assert.equal(items.find(i => i.id === "aud-pickup").kind, "mind");
+  const nb = buildPlan({ ...base, date: "2027-06-03", short: "memory", nightBefore: true, session: sessionRules("2027-06-03") }); assert.ok(!nb.some(i => i.id.startsWith("aud-")) && nb[0].id === "mem-warm", "the night before the auditions: the memory run only");
+  assert.ok(!buildPlan({ ...base, date: "2027-05-18", session: sessionRules("2027-05-18") }).some(i => i.id.startsWith("aud-")), "not in the judges' week");
+  assert.ok(read("js/pmode.js").includes('improv:"💃"')); assert.match(read("README.md"), /Audition weeks/); assert.match(read("js/version.js"), /APP_VERSION = "1\.(46\.[1-9]|4[7-9]|[5-9]\d)/);
+});
+
 test("schema 48: judgesClips on a dance — https media refs only, short names, a comp and a day, at most 10; the card's audio section and the phases list", () => {
   assert.ok(SCHEMA_VERSION >= 48);
   const d = migrateDoc("dances", "solo", { _v: 47, judgesClips: [{ url: "https://x/a.mp3", path: "families/f/music/j1", name: "n".repeat(100), at: "2027-01-25", comp: "Hollywood Connection" }, { url: "nope" }, null, { url: "https://x/b.mp3", path: "p2" }] });

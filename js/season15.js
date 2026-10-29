@@ -55,7 +55,9 @@ const firstSentence = (s) => String(s || "").split(/(?<=[.;])\s/)[0];
 // changes: { short (a light week or the night before the show: the 15-minute memory run), nightBefore, imagery: {title,
 // how, secs} | null, clips: {text, secs} | null, review: {text, secs} | null (Sundays), run: {text, secs} (the solo run
 // line), taper (fewer exercises, still one full-out: rules.taper.from, or a week flagged `taper` in the spring plan),
-// judges: {comp, solo, trio, how, secs} | null (the week after a comp: the judges' audio feedback comes first) }.
+// judges: {comp, solo, trio, how, secs} | null (the week after a comp: the judges' audio feedback comes first),
+// audition: {pickup: {text, how, secs} | null, improv: {text, how, secs} | null} | null (the audition weeks, plan-spring.json
+// weeks[].audition + rules.audition: the panel teaches on the day, so full days drill pick-up and improv, not the dances) }.
 export function sessionRules(date, plan = activePlan(date)){
   const r = (plan && plan.rules) || {}; const wk = weekOf(date, plan); const wd = new Date(date + "T00:00:00").getDay();
   const nb = Array.isArray(r.nightBefore) ? r.nightBefore : showDay(plan) ? [addDays(showDay(plan), -1)] : []; const nightBefore = nb.includes(date); const taper = !!(wk && (wk.taper || (r.taper && r.taper.from && date >= r.taper.from)));
@@ -64,7 +66,8 @@ export function sessionRules(date, plan = activePlan(date)){
   const review = r.review && wk && wd === 0 ? { text: taper ? r.review.taper : r.review.sunday, secs: r.review.secs || 300 } : null;
   const fo = r.fullOut || {}; const run = !fo.from || date < fo.from ? { text: fo.before, secs: 300 } : fo.backToBackFrom && date >= fo.backToBackFrom && wd === 0 && !taper ? { text: fo.pair, secs: 480 } : { text: fo.one, secs: 300 };
   const jg = r.judges; const judges = jg && wk && wk.judges ? { comp: String(wk.judges), solo: jg.solo, trio: jg.trio, how: jg.how || "", secs: jg.secs || 300 } : null;
-  return { short: nightBefore || !!(wk && wk.light), nightBefore, imagery, clips, review, run: run.text ? run : null, taper, judges };
+  const ad = r.audition; const audition = ad && wk && wk.audition ? { pickup: ad.pickup ? { text: ad.pickup, how: ad.pickupHow || "", secs: ad.pickupSecs || 180 } : null, improv: ad.improv ? { text: ad.improv, how: ad.improvHow || "", secs: ad.improvSecs || 120 } : null } : null;
+  return { short: nightBefore || !!(wk && wk.light), nightBefore, imagery, clips, review, run: run.text ? run : null, taper, judges, audition };
 }
 // Whole days since she last danced her solo (streak.js planDone: a logged run, the solo part of a session, a plan box or
 // a Memorize chunk — a game or a dare doesn't reset this clock), 0 = today. Infinity if never.
@@ -84,7 +87,7 @@ export function renderSeasonCard(date = todayStr()){
   el.hidden = false;
   el.innerHTML = `${wk ? `<div class="row"><b class="grow">📅 Week ${wk.w} of ${wk.total}${wk.phase ? " · " + esc(wk.phase.n) : ""}${wk.light ? " · light week" : ""}</b><span class="chip">${esc(fmt(wk.of).replace(/^\w+, /, ""))} – ${esc(fmt(wk.to).replace(/^\w+, /, ""))}</span></div>
     <div class="sw-goal">🌸 <b>Solo:</b> ${esc(wk.solo)}</div><div class="sw-goal">👯 <b>Trio:</b> ${esc(wk.trio)}</div>${fri ? `<div class="sw-goal">⭐ <b>Friday:</b> ${esc(fri)}</div>` : ""}` : ""}
-    ${wk && wk.judges ? `<div class="sw-goal">🎧 <b>Judges' week:</b> their recordings first, then the fixes they named</div>` : ""}${wk && wk.extra ? `<div class="sw-goal">${esc(wk.extra)}</div>` : ""}
+    ${wk && wk.judges ? `<div class="sw-goal">🎧 <b>Judges' week:</b> their recordings first, then the fixes they named</div>` : ""}${wk && wk.audition ? `<div class="sw-goal">🎟 <b>Audition weeks:</b> the panel teaches on the day — a pick-up drill and improv every full day, nothing to film</div>` : ""}${wk && wk.extra ? `<div class="sw-goal">${esc(wk.extra)}</div>` : ""}
     ${gapNudge(date)}
     ${next ? `<div class="sw-next">🎯 ${next.d ? `<b>${esc(fmt(next.d))}</b>${daysUntil(next.d) > 0 ? ` <span class="muted">(${daysUntil(next.d)} day${daysUntil(next.d) === 1 ? "" : "s"})</span>` : " <b>· today!</b>"}` : `<b>Book it:</b>`} ${esc(next.t)}</div>` : ""}
     ${pins.length ? `<div class="sw-pins"><div class="small"><b>📌 Ms. Brittany's homework</b></div>${pins.map(c => `<button class="fixchip pin" onclick="showMe('${c.id}')">${c.tag === "memory" ? "🧠" : "🦵"} ${esc(firstSentence(c.text))}</button>`).join("")}</div>` : ""}`;
