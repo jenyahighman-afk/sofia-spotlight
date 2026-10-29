@@ -77,7 +77,7 @@ test("the daily plan in a judges' week opens with the two 🎧 items, each until
   assert.equal(items.filter(i => i.kind === "listen").length, 0, "both done: back to the usual plan");
   assert.equal(judgesFor("2027-01-26", rules, { "2027-01-18": { done: ["judges-solo"] } }).soloDone, false, "a tick from an earlier week doesn't count");
   assert.equal(judgesFor("2027-02-02", sessionRules("2027-02-02"), {}), null, "not a judges' week");
-  const t = toolsFor({ id: "judges-solo", dance: "solo" }); assert.deepEqual(t.map(x => x.label), ["🎧 Judges' audio", "📝 Write the fixes"]); assert.ok(t[0].go.includes("judgesOpen('solo')") && t[1].go.includes("noteOpen('solo')"));
+  const t = toolsFor({ id: "judges-solo", dance: "solo" }); assert.deepEqual(t.map(x => x.label), ["🎧 Judges' feedback", "📝 Write the fixes"]); assert.ok(t[0].go.includes("judgesOpen('solo')") && t[1].go.includes("noteOpen('solo')"));
   assert.ok(toolsFor({ id: "judges-trio", dance: "trio" })[1].go.includes("noteOpen('trio')"));
   const studio = buildPlan({ ...base, date: "2027-01-26", short: "memory", session: { ...rules, judges: judgesFor("2027-01-26", rules, {}) } }); assert.deepEqual(studio.slice(0, 3).map(i => i.id), ["judges-solo", "judges-trio", "mem-warm"], "a studio day: the judges first, then the short plan");
   const monday = buildPlan({ ...base, date: "2027-01-25", short: "watch", session: { ...sessionRules("2027-01-25"), judges: judgesFor("2027-01-25", sessionRules("2027-01-25"), {}) } }); assert.deepEqual(monday.slice(0, 3).map(i => i.id), ["judges-solo", "judges-trio", "watch-walk"], "the Monday after a comp starts with the judges");
@@ -105,8 +105,9 @@ test("schema 48: judgesClips on a dance — https media refs only, short names, 
   assert.equal(d.judgesClips.length, 2); assert.equal(d.judgesClips[0].name.length, 60); assert.equal(d.judgesClips[0].at, "2027-01-25"); assert.equal(d.judgesClips[0].comp, "Hollywood Connection"); assert.deepEqual(Object.keys(d.judgesClips[1]).sort(), ["path", "url"]);
   assert.equal(migrateDoc("dances", "solo", { _v: 47, judgesClips: Array.from({ length: 14 }, (_, i) => ({ url: "https://x/" + i, path: "p" + i })) }).judgesClips.length, 10);
   assert.equal("judgesClips" in migrateDoc("dances", "trio", { _v: 47 }), false);
-  const src = read("js/views/dances.js"); for (const s of ["judgesHtml(", "async function addJudgesClip(", "function judgesOpen(", "judgesClips", "media.upload(\"music\""]) assert.ok(src.includes(s), s);
+  const src = read("js/views/dances.js"); for (const s of ["judgesHtml(", "async function addJudgesClip(", "function judgesOpen(", "judgesClips", "media.upload(video?\"videos\":\"music\"", "accept=\"video/*,audio/*", "<video controls", "JUDGES_VIDEO_MAX=300*1024*1024", "video:true"]) assert.ok(src.includes(s), s);
   assert.ok(read("js/views/dances.js").includes("expose({ lyricsFromNotes, addJudgesClip, delJudgesClip, judgesOpen })"));
+  const rules = read("storage.rules"); assert.match(rules, /function maxBytes\(kind\) \{ return kind == 'videos' \? 300 \* 1024 \* 1024 : 60 \* 1024 \* 1024; \}/); assert.match(rules, /request\.resource\.size <= maxBytes\(kind\)/); assert.ok(read("css/app.css").includes(".judge-clip video"), "the critique video has a player style");
   const ph = json("phases"); assert.deepEqual(ph.slice(4).map(p => p.n), plan.phases.map(p => p.n), "the spring phases follow the four Showcase phases"); assert.ok(!ph.some(p => p.n === "January comps"));
   assert.ok(read("sw.js").includes("./data/plan-spring.json")); assert.ok(DATA_FILES.includes("plan-spring")); assert.ok(read("README.md").includes("judges' week")); assert.ok(/APP_VERSION = "1\.(4[6-9]|[5-9]\d)/.test(read("js/version.js")));
 });

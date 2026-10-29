@@ -45,8 +45,8 @@ export function toolsFor(it, vids = {}){
   const push = (x) => { if (x) t.push(x); };
   if (id === "watch-walk") push(vid("solo", /walk/i, 0));
   else if (id === "watch-run") push(vid("solo", /run/i, 1));
-  else if (id === "judges-solo") { push({ label: "🎧 Judges' audio", go: "showPage('dances');judgesOpen('solo')" }); push({ label: "📝 Write the fixes", go: "showPage('dances');noteOpen('solo')" }); }
-  else if (id === "judges-trio") { push({ label: "🎧 Judges' audio", go: "showPage('dances');judgesOpen('trio')" }); push({ label: "📝 Write the fixes", go: "showPage('dances');noteOpen('trio')" }); }
+  else if (id === "judges-solo") { push({ label: "🎧 Judges' feedback", go: "showPage('dances');judgesOpen('solo')" }); push({ label: "📝 Write the fixes", go: "showPage('dances');noteOpen('solo')" }); }
+  else if (id === "judges-trio") { push({ label: "🎧 Judges' feedback", go: "showPage('dances');judgesOpen('trio')" }); push({ label: "📝 Write the fixes", go: "showPage('dances');noteOpen('trio')" }); }
   else if (id === "mem-chunk") { push({ label: "🧩 Chunks", go: "openMemorize('solo','chunks')" }); push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); }
   else if (id === "mem-predict") push({ label: "⏸ Pause & Predict", go: "openMemorize('solo','predict')" });
   else if (id === "film-chunk") { push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); push({ label: "🧩 Chunks", go: "openMemorize('solo','chunks')" }); }
