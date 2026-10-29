@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { installEnv } from "./_env.mjs";
 installEnv();
-const { lyricLines, normalizeLyricTimes, lyricAt, snapTime, countAt, MAX_LYRIC_LINES } = await import("../js/cues.js");
+const { lyricLines, normalizeLyricTimes, lyricAt, snapTime, countAt, MAX_LYRIC_LINES, lineKey, lyricTimesFor, normalizeLyricKeys } = await import("../js/cues.js");
 const { karaokeHtml } = await import("../js/prompter.js");
 const { migrateDoc, SCHEMA_VERSION } = await import("../js/store.js");
 const src = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
@@ -56,9 +56,32 @@ test("schema 46 normalizes lyrics, lyricTimes and lyricSnaps on dances only, nev
 
 test("the solo ships sung-line onsets (times only, ascending, inside the 2:04 track) and never the words", () => {
   const seed = JSON.parse(src("data/dances.json")); const list = Array.isArray(seed) ? seed : seed.dances || Object.values(seed);
-  const solo = list.find(d => d.id === "solo"); assert.ok(Array.isArray(solo.lyricSnaps) && solo.lyricSnaps.length >= 30);
+  const solo = list.find(d => d.id === "solo"); assert.ok(Array.isArray(solo.lyricSnaps) && solo.lyricSnaps.length >= 15);
   for (let i = 0; i < solo.lyricSnaps.length; i++) { const t = solo.lyricSnaps[i]; assert.ok(typeof t === "number" && t > 0 && t < 124, "snap " + i); if (i) assert.ok(t > solo.lyricSnaps[i - 1], "ascending at " + i); }
   for (const d of list) { assert.ok(!d.lyrics, d.id + " ships no words"); assert.equal(d.lyricTimes, undefined, d.id + " ships no line times (they are the family's)"); }
+});
+
+test("line keys: FNV-1a over the lowercased letters only, so spelling of punctuation and case don't matter; shipped times land by key, identical lines in turn, taps win", () => {
+  assert.equal(lineKey(""), "811c9dc5"); assert.equal(lineKey("a"), "e40c292c"); assert.equal(lineKey("Don't stop, now!"), lineKey("dont  stop now")); assert.equal(lineKey("it’s"), lineKey("its"));
+  assert.notEqual(lineKey("one"), lineKey("two")); assert.match(lineKey("anything"), /^[0-9a-f]{8}$/);
+  const lines = "one\ntwo\none\nthree\none"; const keys = { [lineKey("one")]: [5, 30], [lineKey("two")]: [12] };
+  assert.deepEqual(lyricTimesFor(lines, [], keys), [5, 12, 30], "three has no key and the third 'one' has no time left: untimed, trailing nulls dropped");
+  assert.deepEqual(lyricTimesFor(lines, [null, 11.5], keys), [5, 11.5, 30], "a tap on line 2 wins over its shipped time");
+  assert.deepEqual(lyricTimesFor(lines, [], null), []); assert.deepEqual(lyricTimesFor("", [], keys), []);
+  assert.deepEqual(normalizeLyricKeys({ [lineKey("one")]: [9, "3", null, -1], zzz: [1], "0123456789": [1], [lineKey("two")]: [] }), { [lineKey("one")]: [3, 9] });
+});
+
+test("schema 47 normalizes lyricKeys on dances; the solo ships keys for its sung lines (hashes and seconds, never words)", () => {
+  assert.ok(SCHEMA_VERSION >= 47);
+  const d = migrateDoc("dances", "solo", { _v: 46, lyricKeys: { [lineKey("x")]: ["4.5", 2], bad: [1] } }); assert.deepEqual(d.lyricKeys, { [lineKey("x")]: [2, 4.5] }); assert.equal(d._v, SCHEMA_VERSION);
+  assert.equal("lyricKeys" in migrateDoc("dances", "trio", { _v: 46 }), false);
+  const seed = JSON.parse(src("data/dances.json")); const list = Array.isArray(seed) ? seed : seed.dances || Object.values(seed); const solo = list.find(x => x.id === "solo");
+  const entries = Object.entries(solo.lyricKeys); assert.ok(entries.length >= 10, "a dozen distinct lines");
+  let total = 0; for (const [k, v] of entries) { assert.match(k, /^[0-9a-f]{8}$/, k); assert.ok(Array.isArray(v) && v.length >= 1, k); for (let i = 0; i < v.length; i++) { assert.ok(typeof v[i] === "number" && v[i] > 5 && v[i] < 120, k); if (i) assert.ok(v[i] > v[i - 1], k + " in order"); } total += v.length; }
+  assert.ok(total >= 15 && total <= 25, "the 2:04 cut sings about 17 lines: " + total);
+  assert.deepEqual(solo.lyricSnaps, [].concat(...entries.map(([, v]) => v)).sort((a, b) => a - b), "the tap snaps are those same starts");
+  assert.ok(src("js/views/dances.js").includes("delete d.lyricKeys"), "data-owned keys stay out of the family's copy");
+  assert.ok(src("js/player.js").includes("lyricTimesFor(lyricsOf(), PL.dance && PL.dance.lyricTimes, PL.dance && PL.dance.lyricKeys)"), "the player reads taps, then shipped times");
 });
 
 test("the wiring: the player renders the karaoke line and corner count in both views, the timer buttons exist, the editor has the words box, the README says how", () => {

@@ -3,12 +3,12 @@
 import { normalizeWorkouts, normalizeWorkout } from "./workouts-core.js";
 import { DEFAULT_DANCES, DEFAULT_EVENTS } from "./data.js";
 import { daysUntil } from "./util.js";
-import { isCueTable, applyCueTimes, normalizeLyricTimes } from "./cues.js";
+import { isCueTable, applyCueTimes, normalizeLyricTimes, normalizeLyricKeys } from "./cues.js";
 import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 46;
+export const SCHEMA_VERSION = 47;
 // Schema 44: the trick progress lineup's frames (js/lineup.js FRAMES), frozen here for the migration.
 export const FRAME_IDS = ["polaroid", "film", "star", "sparkle", "spotlight", "sticker"];
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
@@ -404,7 +404,9 @@ export const MIGRATIONS = {
     if (doc.lyricTimes !== undefined) doc.lyricTimes = normalizeLyricTimes(doc.lyricTimes);
     if (doc.lyricSnaps !== undefined) doc.lyricSnaps = normalizeLyricTimes(doc.lyricSnaps).filter(x => x !== null);
     return doc;
-  }
+  },
+  // 47 (1.45.0): dances.lyricKeys — shipped line times keyed by a hash of the line (cues.js lineKey), no words. Normalized when present.
+  47: (col, id, doc) => { if (col === "dances" && doc.lyricKeys !== undefined) doc.lyricKeys = normalizeLyricKeys(doc.lyricKeys); return doc; }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],

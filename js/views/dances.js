@@ -5,7 +5,7 @@ import { S, storeSet, dances } from "../store.js";
 import { photoTile, uploadMusic } from "./notes.js";
 import { TAGS, TAG_LABEL, TAG_EMOJI, topFixes, forDance, patterns, addCorrection, closeCorrection, reopenCorrection, removeCorrection, inferTag } from "../corrections.js";
 import { checkBadges } from "../badges.js";
-import { normalizeCues, parseCueText, formatCueText, fmtTime, fmtCueTime, isCueTable, lyricLines, normalizeLyricTimes } from "../cues.js";
+import { normalizeCues, parseCueText, formatCueText, fmtTime, fmtCueTime, isCueTable, lyricLines, lyricTimesFor } from "../cues.js";
 import { videosRow, videosEdit } from "../cuecards.js";
 import { memoDances, memoCard, bindMemo } from "../memo.js";
 
@@ -84,7 +84,7 @@ function renderDances(){
 function collectDance(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const d={...dances().find(x=>x.id===id)}; card.querySelectorAll(".dfield").forEach(el=>{ d[el.dataset.k]=el.dataset.cues?parseCueText(el.value):el.dataset.list?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value; }); if(d.bpm!==""&&d.bpm!==undefined){ const n=parseFloat(d.bpm); d.bpm=Number.isFinite(n)&&n>0?n:""; }
   // Data-owned fields stay out of the stored copy, so later data updates (Hannah's words, a new pin) still show through:
   // the pinned teacher notes, and a cue table the family hasn't overridden (nudges live in cueTimes).
-  delete d.pinned; delete d.lyricSnaps; if(isCueTable(d.cues)&&!(S.dances[id]&&S.dances[id].cues)) delete d.cues; return d; }
+  delete d.pinned; delete d.lyricSnaps; delete d.lyricKeys; if(isCueTable(d.cues)&&!(S.dances[id]&&S.dances[id].cues)) delete d.cues; return d; }
 async function saveDance(id){ await storeSet("dances",id,collectDance(id)); editDance=null; renderDances(); toast("Saved"); }
 async function delDance(id){ if(!confirm("Remove this dance from the list?")) return; await storeSet("dances",id,{...(S.dances[id]||{}),deleted:true}); editDance=null; }
 
@@ -111,7 +111,7 @@ export { renderDances, saveDance, delDance };
 expose({ danceEdit, saveDance, delDance, addMusic, noteOpen, noteCancel, noteTagSet, noteSave, noteMic, gotIt, reopenFix, removeFix });
 
 // Song words (1.44.0): how many sung lines are typed and timed; the words themselves show in the player, not on the card.
-const wordsLine=(d)=>{ const n=lyricLines(d.lyrics).length; if(!n) return ""; const t=normalizeLyricTimes(d.lyricTimes,n).filter(x=>x!==null).length; return `<div class="small muted" style="margin-top:6px">🎤 ${n} sung lines · ${t===n?"all timed ⭐":t+" timed — ⏱ Time the words in the player"}</div>`; };
+const wordsLine=(d)=>{ const n=lyricLines(d.lyrics).length; if(!n) return ""; const t=lyricTimesFor(d.lyrics,d.lyricTimes,d.lyricKeys).filter(x=>x!==null).length; return `<div class="small muted" style="margin-top:6px">🎤 ${n} sung lines · ${t===n?"all timed ⭐":t+" timed — ⏱ Time the words in the player"}</div>`; };
 // The family typed the words into Notes first: copy them into the Song words box (trim the rest, then Save).
 function lyricsFromNotes(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const n=card&&card.querySelector('.dfield[data-k="notes"]'), l=card&&card.querySelector('.dfield[data-k="lyrics"]'); if(!n||!l) return; if(!n.value.trim()) return toast("Notes are empty"); if(l.value.trim()&&!confirm("Replace the song words with the Notes text?")) return; l.value=n.value; growAll(card); l.focus(); toast("Copied — keep just the song's lines, then Save",3500); }
 expose({ lyricsFromNotes });

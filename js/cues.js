@@ -94,3 +94,17 @@ export function snapTime(t, snaps, within = 0.6){
 }
 // The 8-count at t from the dance's BPM and tapped count-1 offset: { beat, count 1–8 }, count 0 before the offset, null without a BPM.
 export function countAt(t, bpm, offset = 0){ bpm = +bpm || 0; if (!(bpm > 0)) return null; const beat = Math.floor((t - (+offset || 0)) * bpm / 60); return { beat, count: beat < 0 ? 0 : (beat % 8) + 1 }; }
+
+// Shipped line times without the words (1.45.0): data/dances.json carries lyricKeys { lineKey(line): [start, …] } — one
+// start per time that line is sung in the cut, in order, from a local alignment of the family's typed words to the final
+// track. The typed words get their times by key; identical lines (a chorus) take the times in turn; a line the cut
+// doesn't sing stays untimed (the player skips it). A tap (lyricTimes) always wins over a shipped time.
+export const lineKey = (text) => { const s = String(text || "").toLowerCase().replace(/\u2019/g, "'").replace(/'/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, "0"); };
+export function lyricTimesFor(lines, times, keys){
+  const list = lyricLines(lines); const own = normalizeLyricTimes(times, list.length); const pool = {};
+  for (const [k, v] of Object.entries(keys && typeof keys === "object" ? keys : {})) pool[k] = normalizeLyricTimes(v).filter(x => x !== null);
+  const out = list.map((text, i) => { if (own[i] !== undefined && own[i] !== null) return own[i]; const q = pool[lineKey(text)]; return q && q.length ? q.shift() : null; });
+  while (out.length && out[out.length - 1] === null) out.pop();
+  return out;
+}
+export function normalizeLyricKeys(keys){ const out = {}; for (const [k, v] of Object.entries(keys && typeof keys === "object" ? keys : {})) { if (!/^[0-9a-f]{8}$/.test(k)) continue; const t = normalizeLyricTimes(v).filter(x => x !== null).sort((a, b) => a - b); if (t.length) out[k] = t; } return out; }
