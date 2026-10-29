@@ -3,12 +3,12 @@
 import { normalizeWorkouts, normalizeWorkout } from "./workouts-core.js";
 import { DEFAULT_DANCES, DEFAULT_EVENTS } from "./data.js";
 import { daysUntil } from "./util.js";
-import { isCueTable, applyCueTimes } from "./cues.js";
+import { isCueTable, applyCueTimes, normalizeLyricTimes } from "./cues.js";
 import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 45;
+export const SCHEMA_VERSION = 46;
 // Schema 44: the trick progress lineup's frames (js/lineup.js FRAMES), frozen here for the migration.
 export const FRAME_IDS = ["polaroid", "film", "star", "sparkle", "spotlight", "sticker"];
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
@@ -394,7 +394,17 @@ export const MIGRATIONS = {
     return doc;
   },
   // 45 (1.43.0): the solo's Nov 4 checkpoint text (SOLO_V45) — see fixSolo45.
-  45: (col, id, doc) => { if (col === "dances" && id === "solo") fixSolo45(doc); return doc; }
+  45: (col, id, doc) => { if (col === "dances" && id === "solo") fixSolo45(doc); return doc; },
+  // 46 (1.44.0): song words for the karaoke line — dances.lyrics (text the family typed on the phone, ≤ 8000 chars),
+  // dances.lyricTimes (a start time per line, null = not timed), dances.lyricSnaps (data-owned onsets, numbers only).
+  // Normalized when present, never invented.
+  46: (col, id, doc) => {
+    if (col !== "dances") return doc;
+    if (doc.lyrics !== undefined) doc.lyrics = typeof doc.lyrics === "string" ? doc.lyrics.slice(0, 8000) : "";
+    if (doc.lyricTimes !== undefined) doc.lyricTimes = normalizeLyricTimes(doc.lyricTimes);
+    if (doc.lyricSnaps !== undefined) doc.lyricSnaps = normalizeLyricTimes(doc.lyricSnaps).filter(x => x !== null);
+    return doc;
+  }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],

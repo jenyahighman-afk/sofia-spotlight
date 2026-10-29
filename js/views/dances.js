@@ -5,7 +5,7 @@ import { S, storeSet, dances } from "../store.js";
 import { photoTile, uploadMusic } from "./notes.js";
 import { TAGS, TAG_LABEL, TAG_EMOJI, topFixes, forDance, patterns, addCorrection, closeCorrection, reopenCorrection, removeCorrection, inferTag } from "../corrections.js";
 import { checkBadges } from "../badges.js";
-import { normalizeCues, parseCueText, formatCueText, fmtTime, fmtCueTime, isCueTable } from "../cues.js";
+import { normalizeCues, parseCueText, formatCueText, fmtTime, fmtCueTime, isCueTable, lyricLines, normalizeLyricTimes } from "../cues.js";
 import { videosRow, videosEdit } from "../cuecards.js";
 import { memoDances, memoCard, bindMemo } from "../memo.js";
 
@@ -63,7 +63,7 @@ function renderDances(){
         ${roText("Costume",d.costume)}${roText("Shoes",d.shoes)}${roText("Hair",d.hair)}
         ${roText("Music map",d.music)}${roText("Where the big moments land",d.map)}<div class="field-lab">Cue sheet (shown in the player)</div>${cueSheetRo(d)}
         ${roText("The story (for Sofia)",d.story)}${roList("Step order (from the walkthrough)",d.steps)}${roList("Performance notes",d.performance)}${roList("What's already strong",d.strengths)}<div class="field-lab">All corrections</div>${fullList(d)}${roList("Trick drills",d.tricks)}${roList("Where do I look?",d.eyes)}
-        ${roText("Notes",d.notes)}${d.id==="solo"||d.id==="trio"?videosEdit(d):""}${d.id==="solo"?`<div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="openRehearsal('solo')">📅 Book a solo private</button><span class="small muted">Booked with Ms. Brittany? That day's home plan becomes the 15-minute memory run.</span></div>`:""}${photos}`;
+        ${roText("Notes",d.notes)}${wordsLine(d)}${d.id==="solo"||d.id==="trio"?videosEdit(d):""}${d.id==="solo"?`<div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="openRehearsal('solo')">📅 Book a solo private</button><span class="small muted">Booked with Ms. Brittany? That day's home plan becomes the 15-minute memory run.</span></div>`:""}${photos}`;
     } else {
       more=`<p class="small muted">Editing. Nothing is saved until you tap Save.</p>
       ${edText("song","Song",d.song,"Title — artist")}${edText("style","Style",d.style)}${edText("bpm","BPM (beats per minute, for the count overlay)",d.bpm,"e.g. 76")}${edText("choreo","Choreographer",d.choreo)}${edText("teacher","Teacher / class",d.teacher)}${edText("rehearsal","Rehearsal & class schedule",d.rehearsal)}
@@ -72,6 +72,7 @@ function renderDances(){
       ${edText("music","Music map",d.music)}${edText("map","Where the big moments land (m:ss timestamps become loop presets)",d.map)}${isCueTable(d.cues)?`<div class="field-lab">Cue sheet</div><p class="small muted">The checked cue table (${esc(d.cueSource||"")}). Nudge a time in Grown-ups → 🎯 Cue check.</p>`:`<label class="f">Cue sheet <span class="muted">(one per line: m:ss | words sung | move)</span></label><textarea data-k="cues" data-cues="1" class="dfield" placeholder="0:50 | words here | Cartwheel on the swell">${esc(formatCueText(d.cues))}</textarea>`}
       ${edText("story","The story (one or two lines, shown to Sofia on the card)",d.story)}${edList("steps","Step order (one step per line)",d.steps)}${edList("performance","Performance notes (face, musicality, presence)",d.performance)}${edList("strengths","What's already strong",d.strengths)}${edList("corrections","Corrections (older list — new lines become notes)",d.corrections)}${edList("tricks","Trick drills",d.tricks)}${edList("eyes","Where do I look?",d.eyes)}
       ${edText("notes","Notes",d.notes)}
+      ${edText("lyrics","Song words — one sung line per line (they stay in the family space; the player shows them karaoke-style)",d.lyrics)}<div class="row" style="margin-top:4px"><button class="btn sm ghost" onclick="lyricsFromNotes('${d.id}')">⬇ Copy the words from Notes</button><span class="small muted">Then in the player: ⏱ Time the words.</span></div>
       <div class="row" style="margin-top:10px"><button class="btn coral" onclick="saveDance('${d.id}')">Save</button><button class="btn ghost" onclick="danceEdit(null)">Cancel</button><span class="grow"></span><button class="btn sm ghost" onclick="delDance('${d.id}')">Remove dance</button></div>`;
     }
     return `<div class="card cover ${d.color||""}" data-id="${d.id}">${cover}<details class="more" ${open?"open":""} data-more="${d.id}"><summary>More ▸</summary>${more}</details></div>`;
@@ -83,7 +84,7 @@ function renderDances(){
 function collectDance(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const d={...dances().find(x=>x.id===id)}; card.querySelectorAll(".dfield").forEach(el=>{ d[el.dataset.k]=el.dataset.cues?parseCueText(el.value):el.dataset.list?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value; }); if(d.bpm!==""&&d.bpm!==undefined){ const n=parseFloat(d.bpm); d.bpm=Number.isFinite(n)&&n>0?n:""; }
   // Data-owned fields stay out of the stored copy, so later data updates (Hannah's words, a new pin) still show through:
   // the pinned teacher notes, and a cue table the family hasn't overridden (nudges live in cueTimes).
-  delete d.pinned; if(isCueTable(d.cues)&&!(S.dances[id]&&S.dances[id].cues)) delete d.cues; return d; }
+  delete d.pinned; delete d.lyricSnaps; if(isCueTable(d.cues)&&!(S.dances[id]&&S.dances[id].cues)) delete d.cues; return d; }
 async function saveDance(id){ await storeSet("dances",id,collectDance(id)); editDance=null; renderDances(); toast("Saved"); }
 async function delDance(id){ if(!confirm("Remove this dance from the list?")) return; await storeSet("dances",id,{...(S.dances[id]||{}),deleted:true}); editDance=null; }
 
@@ -108,3 +109,9 @@ async function reopenFix(id){ await reopenCorrection(id); }
 async function removeFix(id){ if(confirm("Remove this note?")) await removeCorrection(id); }
 export { renderDances, saveDance, delDance };
 expose({ danceEdit, saveDance, delDance, addMusic, noteOpen, noteCancel, noteTagSet, noteSave, noteMic, gotIt, reopenFix, removeFix });
+
+// Song words (1.44.0): how many sung lines are typed and timed; the words themselves show in the player, not on the card.
+const wordsLine=(d)=>{ const n=lyricLines(d.lyrics).length; if(!n) return ""; const t=normalizeLyricTimes(d.lyricTimes,n).filter(x=>x!==null).length; return `<div class="small muted" style="margin-top:6px">🎤 ${n} sung lines · ${t===n?"all timed ⭐":t+" timed — ⏱ Time the words in the player"}</div>`; };
+// The family typed the words into Notes first: copy them into the Song words box (trim the rest, then Save).
+function lyricsFromNotes(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const n=card&&card.querySelector('.dfield[data-k="notes"]'), l=card&&card.querySelector('.dfield[data-k="lyrics"]'); if(!n||!l) return; if(!n.value.trim()) return toast("Notes are empty"); if(l.value.trim()&&!confirm("Replace the song words with the Notes text?")) return; l.value=n.value; growAll(card); l.focus(); toast("Copied — keep just the song's lines, then Save",3500); }
+expose({ lyricsFromNotes });

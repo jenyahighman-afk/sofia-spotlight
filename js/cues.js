@@ -63,3 +63,34 @@ export function cueTimesDiff(base, edited){ const b = new Map(normalizeCues(base
 export function cuesFromMap(map){
   return normalizeCues([...String(map || "").matchAll(/(\d+:\d{2}(?:\.\d+)?)\s*([^·,;\n]*)/g)].map(m => ({ t: parseTime(m[1]), lyric: "", move: m[2].trim().replace(/^[—–-]\s*/, "").replace(/\(.*?\)/g, "").trim() })));
 }
+
+// ---- Song words (karaoke, 1.44.0) ----
+// dance.lyrics: the song's words as the family typed them on the phone (one sung line per line; family space only — the
+// repo is public and never ships lyrics). dance.lyricTimes[i]: when line i starts, seconds into the track (null = not
+// timed yet; the player's ⏱ Time the words fills it in). dance.lyricSnaps (data-owned, times only): sung-line onsets heard
+// in the run-through, which a tap snaps to. The player shows the line now with a colour wipe, the 8-count in the corner.
+export const MAX_LYRIC_LINES = 120;
+export function lyricLines(text){ const raw = Array.isArray(text) ? text : String(text || "").split("\n"); return raw.map(s => String(s == null ? "" : s).trim()).filter(Boolean).slice(0, MAX_LYRIC_LINES); }
+export function normalizeLyricTimes(times, n = MAX_LYRIC_LINES){
+  const out = (Array.isArray(times) ? times : []).slice(0, n).map(v => { const x = typeof v === "number" ? v : (v === null || v === undefined || v === "" ? NaN : parseFloat(v)); return Number.isFinite(x) && x >= 0 && x < 3600 ? Math.round(x * 100) / 100 : null; });
+  while (out.length && out[out.length - 1] === null) out.pop();
+  return out;
+}
+// What's sung at t: the last timed line that has started, how far through it (to the next timed line, or `hold` seconds),
+// the line before and the one coming. Untimed lines are skipped; with no timed line at all nothing is "now".
+export function lyricAt(lines, times, t, hold = 5){
+  const list = lyricLines(lines); const tm = normalizeLyricTimes(times, list.length);
+  const timed = list.map((text, i) => ({ i, text, t: tm[i] === undefined ? null : tm[i] })).filter(l => l.t !== null).sort((a, b) => a.t - b.t || a.i - b.i);
+  let k = -1; for (let j = 0; j < timed.length; j++) if (timed[j].t <= t) k = j;
+  const cur = k >= 0 ? timed[k] : null, next = timed[k + 1] || null, prev = k > 0 ? timed[k - 1] : null;
+  const end = cur ? (next ? next.t : cur.t + hold) : null;
+  const progress = cur ? Math.max(0, Math.min(1, (t - cur.t) / Math.max(0.3, end - cur.t))) : 0;
+  return { cur, next, prev, progress, untilNext: next ? Math.max(0, next.t - t) : null, timed: timed.length, total: list.length };
+}
+// A tap lands a little late: snap it to the nearest known onset within `within` seconds, else keep it (2 decimals).
+export function snapTime(t, snaps, within = 0.6){
+  let best = null; for (const s of normalizeLyricTimes(snaps)) if (s !== null && Math.abs(s - t) <= within && (best === null || Math.abs(s - t) < Math.abs(best - t))) best = s;
+  return Math.round((best === null ? Math.max(0, +t || 0) : best) * 100) / 100;
+}
+// The 8-count at t from the dance's BPM and tapped count-1 offset: { beat, count 1–8 }, count 0 before the offset, null without a BPM.
+export function countAt(t, bpm, offset = 0){ bpm = +bpm || 0; if (!(bpm > 0)) return null; const beat = Math.floor((t - (+offset || 0)) * bpm / 60); return { beat, count: beat < 0 ? 0 : (beat % 8) + 1 }; }

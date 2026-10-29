@@ -95,7 +95,7 @@ test("the Bunny: once the streak is safe but the solo isn't done, the one next s
 test("the trio's videos: Today's 📹 Videos, a videos row on the trio card, the solo card unchanged; the food line; the flipbook's name", () => {
   const d = src("js/views/dances.js"); assert.match(d, /d\.id==="solo"\|\|d\.id==="trio"\?videosEdit\(d\)/); assert.match(d, /isCueTable\(d\.cues\)\?tableTools\(d\):videosRow\(d\)/);
   assert.match(src("js/views/home.js"), /openVideos\(\)/); assert.match(src("js/cuecards.js"), /export function openVideos/);
-  assert.match(src("js/player.js"), /import \{ prompterHtml \} from "\.\/prompter\.js"/, "Run it with 📜 Lines on uses the prompter, so the player must import it (1.43.1)");
+  assert.match(src("js/player.js"), /import \{ prompterHtml(, \w+)* \} from "\.\/prompter\.js"/, "Run it with 📜 Lines on uses the prompter, so the player must import it (1.43.1)");
   for (const f of ["tools/print/Sofia-Backstage-Pass.html", "tools/pass/backstage.json"]) { const t = src(f); assert.doesNotMatch(t, /feel lighter/, f); assert.match(t, /Never skip a meal\. Dancers run on fuel\./, f); }
   assert.doesNotMatch(src("js/glow.js") + src("README.md") + src("data/news.json"), /Glow-Up/); assert.match(src("js/glow.js"), /Growing-up Flipbook/);
   assert.match(JSON.stringify(json("compday")), /in for 4, out for 6/); assert.match(src("js/habit.js"), /in for 4, out for 6/); assert.match(JSON.stringify(json("daily")), /nine to twelve hours/);

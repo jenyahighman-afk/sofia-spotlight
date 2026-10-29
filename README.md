@@ -153,6 +153,7 @@ On any dance, **▶ Practice** opens the player for that dance's music: the uplo
 - **A–B loop**: tap A then B while it plays. Presets come from the dance's `loops` (data/dances.json) plus every `m:ss` timestamp in "Where the big moments land" (each one loops until the next timestamp).
 - **8-count overlay**: needs the dance's BPM (More ▸ Edit; solo 76, jazz 123, trio 86 are filled in) and a one-time **Tap on count 1** while the track plays (stored as `countOffset` on the dance). Quiet, click, or spoken counts.
 - **Cue sheet** (memorizing the routine): a list of moments per dance, each with a time, the words sung there and the move or spot. While the track plays the player shows the current move big with the words under it, and the next cue counts down from 4 seconds out; the same block sits on the Run it screen. **＋ Cue here** while the track plays (it pauses, asks for the words and the move, and saves to the dance); **List** shows, edits and deletes cues, tapping a time seeks there; **🙈 Test me** hides each move until she taps it. Grown-ups can also edit the whole sheet as text under More ▸ Edit (`m:ss | words | move`, one per line) or in `data/dances.json` as `cues: [{"t":50,"lyric":"…","move":"Cartwheel"}]`. The solo, trio and jazz cards ship with moves from their music maps and blank words — type the lyrics in yourself; the app never ships song lyrics.
+- **Song words, karaoke-style (1.44.0)**: a grown-up types the song's words on the phone (Dances ▸ More ▸ Edit ▸ Song words, one sung line per line, or **⬇ Copy the words from Notes**) — they live in the family space, never in the repo (it is public). In the player **⏱ Time the words** plays the track and asks for a tap of **▼ Starts now** as each line begins (**↶ Back one** re-does a line; saved at once as `lyricTimes`, one start per line); the solo snaps each tap to the nearest sung-line onset heard in Hannah's run-through (`lyricSnaps` in data/dances.json: times only, from a local faster-whisper pass on the family computer). From then on the player and the Run it overlay show the sung line above the move with a colour wipe as it is sung, the line before dim and the next one small (`prompter.js karaokeHtml`, `cues.js lyricAt`), and the 8-count runs in the corner whenever the dance has a BPM (`cues.js countAt`; **Tap on count 1** once sets the phase). 🙈 Test me still hides the moves; the words stay — they are the cue. Schema 46 normalizes `lyrics`, `lyricTimes` and `lyricSnaps`.
 - **Run it**: 3-2-1, the whole track at 100%, then "Did you hold the ending?" / "Eyes up?" — logged to that day's `practice` record as a run. A run counts as a practice day.
 - The track is downloaded once through the service worker's media cache, so it plays offline after that.
 
@@ -399,7 +400,7 @@ Create a new key in the Anthropic console → `cd worker && npx wrangler secret 
 
 ### Still on Jenya
 - Cue-sheet times for the donut roll and calypso (＋ Cue here during a run) — until then Trick Quest and Run check can't land frames on those two.
-- Lyrics go into the cue sheets on the phone, never into the repo.
+- Song words: type them into Dances ▸ More ▸ Edit ▸ Song words on the phone (family space) and time them once in the player (⏱ Time the words). The repo ships times only (`lyricSnaps`), never the words — it is public.
 
 ## Session report — 2026-09-30 and 2026-10-01 (sessions 2A, 2B and the feedback round)
 
@@ -439,5 +440,5 @@ Everything below is live at **1.3.7**. Each item was verified in the desktop bro
 
 ### Known limits
 - Saves replace whole records: two phones saving the same card at the same moment → the later save wins. Different records never collide. Field-level merging is a contained change if several adults will edit at once.
-- Lyrics are never shipped in the data; type them into the cue sheet on the phone.
+- Lyrics are never shipped in the data (the repo is public): the family types them into Song words on the phone; `data/dances.json` carries only sung-line onset times (`lyricSnaps`).
 - Three throwaway test family spaces exist in Firestore from verification; they are unenumerable and can be deleted from the Firebase console.
