@@ -15,7 +15,7 @@ let M = {};
 before(async () => {
   const data = await import("../js/data.js"); const got = {}; for (const f of dataFiles) got[f] = JSON.parse(read("data/" + f + ".json")); data.applyData(got);
   M.store = await import("../js/store.js"); M.studio = await import("../js/studio.js"); M.util = await import("../js/util.js"); M.season15 = await import("../js/season15.js");
-  M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
+  M.data = await import("../js/data.js"); M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
   M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js"); M.along = await import("../js/games/along.js"); M.hub = await import("../js/coachhub.js");
 });
@@ -29,6 +29,8 @@ const SCREENS = () => ({
 });
 const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode, M.coach.initCoach, M.goals.initGoals, M.mirror.initMirror, M.demos.initDemos, M.along.initAlong];
 
+// What Play shows today depends on the weekday (home days gate the filler games until the plan is done) and on the Nov 9 gate.
+const playToday = () => M.play.gamesFor(M.util.todayStr(), { home: !!M.data.HOME_DAYS[new Date().getDay()], knees: M.season15.memoryKnees(M.util.todayStr()), done: false }).games;
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
@@ -76,7 +78,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(el("#whoRow").innerHTML.includes("whoPick('all')") && el("#whoRow").innerHTML.includes("💃 Sofia") && el("#meFriends").innerHTML.includes("Hannah") && el("#meFriends").innerHTML.includes("Lauren"), "the who's-dancing picker on Play and the friends card on Me");
   assert.ok(el("#drillForm").innerHTML.includes("drillAdd()") && el("#drillList").innerHTML.includes("Nothing saved yet"), "the drill box shelf on Practice");
   assert.ok(el("#badgeCase").innerHTML.includes("3-day streak"), "badge case lists locked badges");
-  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, M.season15.memoryKnees(M.util.todayStr()) ? 10 : 11, "eleven game tiles on Play (ten while Trick Quest waits for Nov 9)");
+  assert.equal((el("#gameGrid").innerHTML.match(/game-tile/g) || []).length, playToday().length, "the game tiles the gates allow today (eleven; ten while Trick Quest waits for Nov 9; the three solo games on a home day until the plan is done)");
   assert.ok(el("#alongList").innerHTML.includes("No routines yet"), "Dance Along empty state");
   assert.ok(el("#meStars").innerHTML.includes("⭐ 0") && el("#meStars").innerHTML.includes("Gold leotard"), "stars card shows the next unlock");
   assert.ok(el("#skillRings").innerHTML.includes("Acro"), "skill rings per style");
@@ -119,7 +121,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#coachHub").innerHTML.includes("Solo") && el("#coachHub").innerHTML.includes("Fixes the coach gave") && el("#coachHub").innerHTML.includes("Point your foot"), "Coach corner groups the review under its dance with the fix");
   assert.ok(el("#coachNew").innerHTML.includes("openCoach('solo')"), "Coach corner starts a review for any dance");
   assert.ok(el("#gameGrid").innerHTML.includes("playOpen('nextmove')"), "What's Next? has a tile on Play");
-  assert.equal(el("#gameGrid").innerHTML.includes("playOpen('quest')"), !M.season15.memoryKnees(M.util.todayStr()), "Trick Quest on Play once the solo is memorized (Nov 9)"); assert.ok(el("#coachTricks").innerHTML.includes("qsStart()"), "Trick Quest on Play and in the Coach corner");
+  assert.equal(el("#gameGrid").innerHTML.includes("playOpen('quest')"), playToday().some(g => g.id === "quest"), "Trick Quest on Play once the solo is memorized (Nov 9) and the day's gate allows it"); assert.ok(el("#coachTricks").innerHTML.includes("qsStart()"), "Trick Quest on Play and in the Coach corner");
   assert.ok(el("#coachNew").innerHTML.includes("Run check"), "Coach corner offers a run check");
   assert.ok(el("#modeRow").innerHTML.includes("setMode('comp')"), "Settings has the mode row");
   assert.ok(el("#bitesCard").innerHTML.includes("How are you today?") && el("#bitesCard").innerHTML.includes("biteFeel('e',1)"), "Today asks how she feels"); assert.ok(el("#paletteRow").innerHTML.includes("setPalette('ocean')"), "Me has the color schemes"); assert.ok(el("#mindCard").innerHTML.includes("mindTry()"), "Today shows this week's mind skill"); assert.ok(el("#ritualCard").innerHTML.includes("ritualToggle('shake')") && el("#ritualCard").innerHTML.includes("ritualRun()"), "Me builds the pre-stage routine"); assert.ok(el("#coachNew").innerHTML.length > 0); assert.ok(el("#teacherText").value.startsWith("Sofia — practice summary"), "teacher summary renders on Coach reviews"); assert.ok(html.includes('id="compCard"'), "Today has a comp card");
