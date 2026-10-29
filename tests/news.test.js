@@ -1,4 +1,4 @@
-// What's new: the six poll features, steps that quote real button labels, a Today row until opened (seen per phone),
+// What's new: the five Build 1 things (the six poll features before them), steps that quote real button labels, a Today row until opened (seen per phone),
 // Show me how one step at a time, Try it going to the right place.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -11,10 +11,10 @@ const { applyData, DATA_FILES } = await import("../js/data.js");
 const got = {}; for (const f of DATA_FILES) got[f] = read("data/" + f + ".json"); applyData(got);
 const { newsItems, isNew, markSeen, TRY, renderNews, renderSheet } = await import("../js/news.js");
 // A feature's code; the trick cards' photo button lives in the progress lineup (js/lineup.js) since 1.42.
-const FILES = { dares: "js/dares.js", cards: ["js/cards.js", "js/lineup.js"], costume: "js/costume.js", glow: "js/glow.js", teach: "js/games/teach.js", count: "js/games/count.js" };
+const FILES = { plan: ["js/views/home.js", "index.html"], monday: "js/views/home.js", tools: ["js/views/home.js", "js/pmode.js"], timer: "js/pmode.js", games: "js/views/play.js" };
 
-test("the six poll features, each with steps and a place to try it", () => {
-  const items = newsItems(got.news); assert.deepEqual(items.map(i => i.id), ["dares", "cards", "costume", "glow", "teach", "count"]);
+test("the five Build 1 things (1.43.0), each with steps and a place to try it", () => {
+  const items = newsItems(got.news); assert.deepEqual(items.map(i => i.id), ["plan", "monday", "tools", "timer", "games"]);
   for (const i of items) { assert.ok(i.e && i.n && i.where && i.pitch, i.id); assert.ok(i.steps.length >= 3 && i.steps.length <= 5, i.id); assert.ok(TRY[i.id], "Try it for " + i.id); assert.ok(i.steps.every(s => s.length < 110), i.id); }
 });
 
@@ -31,11 +31,11 @@ test("steps are factual: every quoted button label is a real label in that featu
 
 test("Today row until opened; opening marks it seen on this phone; Show me how steps through and back", () => {
   resetDom(); localStorage.removeItem("spotlight:news");
-  assert.equal(isNew(got.news), true); renderNews(); assert.equal(el("#newsCard").hidden, false); assert.match(el("#newsCard").innerHTML, /6 new things in your app/); assert.match(el("#newsCard").innerHTML, /openNews\(\)/);
+  assert.equal(isNew(got.news), true); renderNews(); assert.equal(el("#newsCard").hidden, false); assert.match(el("#newsCard").innerHTML, /5 new things in your app/); assert.match(el("#newsCard").innerHTML, /openNews\(\)/);
   window.openNews(); assert.equal(localStorage.getItem("spotlight:news"), got.news.id); assert.equal(isNew(got.news), false);
   assert.equal(el("#newsCard").hidden, true, "the Today row goes once she has opened it");
   const html = el("#newsArea").innerHTML; for (const i of newsItems(got.news)) { assert.ok(html.includes(`newsHow('${i.id}')`), i.id); assert.ok(html.includes(`newsTry('${i.id}')`), i.id); }
-  window.newsHow("teach"); assert.match(el("#newsArea").innerHTML, /Step 1 of 4/); assert.match(el("#newsArea").innerHTML, /Next ›/);
+  window.newsHow("plan"); assert.match(el("#newsArea").innerHTML, /Step 1 of 4/); assert.match(el("#newsArea").innerHTML, /Next ›/);
   window.newsStep(1); window.newsStep(1); window.newsStep(1); assert.match(el("#newsArea").innerHTML, /Step 4 of 4/); assert.match(el("#newsArea").innerHTML, /Try it now/);
   window.newsStep(1); assert.match(el("#newsArea").innerHTML, /Step 4 of 4/, "no step past the last");
   for (let k = 0; k < 4; k++) window.newsStep(-1); assert.match(el("#newsArea").innerHTML, /Show me how/, "back to the list");

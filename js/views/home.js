@@ -4,9 +4,10 @@ import { CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "../data.js";
 import { S, events, nextEvent, storeSet, dances, studioDates } from "../store.js";
 import { todayPick, chunkLabel, shortName } from "../memo.js";
 import { renderDayPlan } from "../dayplan.js";
-import { computeStreak, dayCounts, skipsLeft } from "../streak.js";
+import { computeStreak, dayCounts, planDone, skipsLeft } from "../streak.js";
 import { cardsFor, moveOfDay, TIRED, KNEES } from "../habit.js";
-import { renderSeasonCard, trickFocus } from "../season15.js";
+import { renderSeasonCard, trickFocus, memoryKnees } from "../season15.js";
+import { shortKind } from "../planToday.js";
 import { studioOn } from "../studio.js";
 import { openPracticeMode } from "../pmode.js";
 import { todayNudge } from "../moments.js";
@@ -27,23 +28,27 @@ const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
 function renderHome(){
   const ne=nextEvent(); const today=todayStr();
   if(ne){ const d=daysUntil(ne.start); $("#stickerDays").textContent=d<=0?"0":d; $("#stickerWhat").textContent=ne.name; }
-  // Studio day = a weekly class or a one-off date (a booked solo rehearsal, a make-up class): the home plan is the 15-minute memory run.
-  const dow=new Date().getDay(); const cls=studioOn(today,CLASSES,studioDates()); const hp=HOME_DAYS[dow];
-  const rec=S.practice[today]; const doneToday=dayCounts(rec,PRACTICE_ITEMS.length);
+  // Studio day = a weekly class or a one-off date (a booked solo rehearsal, a make-up class): the home plan is the 15-minute
+  // memory run, or on Monday (three classes) Hannah's videos and the solo in her head in the car (planToday.shortKind).
+  const dow=new Date().getDay(); const cls=studioOn(today,CLASSES,studioDates()); const hp=HOME_DAYS[dow]; const kind=cls.length?shortKind(today):"";
+  const rec=S.practice[today]; const doneToday=dayCounts(rec,PRACTICE_ITEMS.length); const pd=planDone(rec);
   let what, verb;
-  if(cls.length){ what=`<div class="today-what">🏫 Studio day</div><div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div><div class="today-sub">🏠 At home: <b>15-minute memory run</b> instead of the full session</div>`; verb="Stretch"; }
+  if(cls.length){ what=`<div class="today-what">🏫 Studio day</div><div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div><div class="today-sub">🏠 At home: ${kind==="watch"?"<b>watch Hannah's videos</b>, then picture the solo in the car. No dancing tonight.":"<b>15-minute memory run</b> instead of the full session"}</div>`; verb="Stretch"; }
   else if(hp){ what=`<div class="today-what">🏠 Home practice</div><div class="today-sub">${esc(hp)}</div>`; verb="Start"; }
   else { what=`<div class="today-what">🌙 Rest day</div><div class="today-sub">Stretch a little if you want.</div>`; verb="Stretch"; }
   const ctx={practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today}; const streak=computeStreak(ctx); const skips=skipsLeft(ctx);
-  const bites=(rec&&Array.isArray(rec.bites))?rec.bites:[]; const mp=todayPick(dances(),S.settings,today); const memo=mp?{danceId:mp.dance.id,label:mp.run?`${shortName(mp.dance)} · full run`:`${shortName(mp.dance)} · ${mp.chunk.n}`}:null; const cards=cardsFor(today,{skills:S.skills,bites,memo,focus:trickFocus(today)}); const tired=bites.includes("tired");
+  const bites=(rec&&Array.isArray(rec.bites))?rec.bites:[]; const mp=todayPick(dances(),S.settings,today); const memo=mp?{danceId:mp.dance.id,label:mp.run?`${shortName(mp.dance)} · full run`:`${shortName(mp.dance)} · ${mp.chunk.n}`}:null; const cards=cardsFor(today,{skills:S.skills,bites,memo,focus:trickFocus(today),soloOnly:!!hp&&memoryKnees(today)&&!pd}); const tired=bites.includes("tired");
   const fullDone=!!rec&&dayCounts({done:rec.done,total:rec.total},PRACTICE_ITEMS.length);
+  // Two tiers, in plain words: ⭐ Plan done (her solo danced) · ✓ Streak safe (a bite, the solo still to do) · days off left.
+  const tier=pd?`<span class="chip mint">⭐ Plan done</span>`:doneToday?`<span class="chip sun">✓ Streak safe · solo next</span>`:`<span class="chip">${skips} day${skips===1?"":"s"} off left this week</span>`;
   $("#todayCard").innerHTML=`${what}
-    <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span><span class="chip">${skips} free skip${skips===1?"":"s"} left</span><span id="todayCount"></span></div>
+    <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${tier}<span id="todayCount"></span></div>
     <div class="pick">${bites.length?"Pick another? ✨":"Pick one 👇"}</div>
     <div class="choice ${cards.length>3?"four":""}">${cards.map(c=>`<button class="choice-card ${c.done?"done":""}" onclick="${c.go}"><span class="ic">${c.done?"✅":c.ic}</span><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></button>`).join("")}</div>
     <div class="tired">${tired?`<span>😴 Rest counted. Streak safe ✓</span>`:`<span>😴 Tired today? That's allowed.</span><div class="row"><button class="btn sm ghost" onclick="habitTired('stretch')">🧘 2-min stretch</button><button class="btn sm ghost" onclick="habitTired('picture')">🎧 Picture the dance</button></div>`}</div>
     ${(()=>{ const n=todayNudge(); return n?`<div class="nudge"><span class="grow">${n.emoji} <b>${esc(n.text)}</b> Make it a moment?</span><button class="btn sm coral" onclick="openMoments('${n.key}')">📸 Yes</button><button class="lnk" onclick="mmLater().then(()=>this.closest('.nudge').remove())">later</button></div>`:""; })()}
-    <div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="showPage('practice')">${fullDone?"✅ Practice done":cls.length?"▶ 15-min memory run":(hp?"▶ Full practice":"Practice list")}</button><button class="btn sm ghost" onclick="showPage('play')">🎮 All games</button><button class="btn sm ghost" onclick="openMoments()">📸 Moment</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
+    <div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="showPage('practice')">${fullDone?"✅ Practice done":cls.length?(kind==="watch"?"▶ Watch + picture":"▶ 15-min memory run"):(hp?"▶ Full practice":"Practice list")}</button><button class="btn sm ghost" onclick="showPage('play')">🎮 All games</button><button class="btn sm ghost" onclick="openMoments()">📸 Moment</button></div>
+    <div class="row today-media"><button class="btn sm violet" onclick="openPlayer('solo')">🎵 Solo</button><button class="btn sm violet" onclick="openPlayer('trio')">🎵 Trio</button><button class="btn sm violet" onclick="openVideos()">📹 Videos</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
   renderNews(); renderPet(); renderAdvent(); renderDares(); renderGlowNudge(); renderDayPlan(); renderSeasonCard(today); renderComp(); renderBites(); renderMindCard(); applyPalette();
   if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(ne.name)}</span>`; }
   // this week's fix
@@ -59,7 +64,7 @@ function renderHome(){
     let evs=studioOn(ds,CLASSES,studioDates()).map(c=>`<div class="ev ${c.oneOff?"oneoff":""}">${esc(short(c.name))}</div>`).join("");
     if(HOME_DAYS[wd]) evs+=`<div class="ev home">Home: ${esc(HOME_DAYS[wd])}</div>`;
     events().filter(e=>ds>=e.start&&ds<=e.end).forEach(e=>evs+=`<div class="ev comp">${esc(e.name)}</div>`);
-    if(dayCounts(S.practice[ds],PRACTICE_ITEMS.length)) evs+=`<div class="ev done">✅ practiced</div>`;
+    if(planDone(S.practice[ds])) evs+=`<div class="ev done">⭐ plan done</div>`; else if(dayCounts(S.practice[ds],PRACTICE_ITEMS.length)) evs+=`<div class="ev done">✓ streak safe</div>`;
     h+=`<div class="day ${ds===today?"today":""}"><b>${names[i]} ${d.getDate()}</b>${evs}</div>`; }
   $("#homeWeek").innerHTML=h; const td=$("#homeWeek .day.today"); if(td) $("#homeWeek").scrollLeft=Math.max(0,td.offsetLeft-8);
 }

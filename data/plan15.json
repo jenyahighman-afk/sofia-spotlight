@@ -2,6 +2,8 @@
  "_note": "The 15-week plan to the Winter Showcase (js/season15.js; the printed Sofia-Practice-Toolkit.pdf page 1–2). Weeks run Monday to Sunday from `start`. fri = the Friday focus line; tricks = trick numbers from `ladder` (data/skills.json solo skills carry the same `ladder` numbers); weakest = the weakest trick that week. Until `memoryKneesUntil` the trick card says Memory + knees: no new tricks. A checkpoint with `rehearsal` is dated by the next booked solo rehearsal after `after`. rules = the session rules from the research Jenya approved Oct 26 (imagery from Nov 9, short self-chosen clips weeks 1–9, Sunday review, one full-out a session from Nov 9 and back-to-back on Sundays from Nov 30, taper from Dec 28, memory run only the night before the show, light weeks = memory run, never more than 2 days without dancing). extra = this week's mini audience / stage tape / sleep line.",
  "start": "2026-09-28",
  "memoryKneesUntil": "2026-11-09",
+ "showDay": "2027-01-08",
+ "showDayNote": "Most likely Friday; the studio hasn't confirmed the day yet. This one field drives the ★ checkpoint (show: true), the family mini show (beforeShow: 2) and the night-before rule (showDay − 1, season15.sessionRules). Change it here only.",
  "phases": [
   {
    "n": "Own it",
@@ -28,8 +30,8 @@
    "n": "Taper",
    "from": 15,
    "to": 15,
-   "d": "Jan 4 – Jan 9",
-   "g": "From Dec 28 fewer runs but still one full-out a session, same days. Nothing new, no deep stretching. Night before the show: memory run or picture it only. Sleep 9–12 hours. Show Sat Jan 9!"
+   "d": "Jan 4 – Jan 8",
+   "g": "From Dec 28 fewer runs but still one full-out a session, same days. Nothing new, no deep stretching. Night before the show: memory run or picture it only. Sleep 9–12 hours. Show day Fri Jan 8 (most likely)!"
   }
  ],
  "weeks": [
@@ -165,10 +167,10 @@
   {
    "w": 15,
    "of": "2027-01-04",
-   "solo": "Taper: one run a day; family mini show Thu Jan 7",
+   "solo": "Taper: one run a day; family mini show Wed Jan 6",
    "trio": "One run",
    "fri": "Nothing new",
-   "extra": "😴 Sleep 9–12 hours · night before the show: memory run or picture it, no full-out"
+   "extra": "😴 Sleep 9–12 hours · Thu Jan 7, the night before: memory run or picture it, no full-out"
   }
  ],
  "ladder": {
@@ -200,11 +202,11 @@
    "t": "Mandatory rehearsal (back from break)"
   },
   {
-   "d": "2027-01-07",
+   "beforeShow": 2,
    "t": "Family mini show"
   },
   {
-   "d": "2027-01-09",
+   "show": true,
    "t": "Winter Showcase ★"
   }
  ],
@@ -245,9 +247,9 @@
   "taper": {
    "from": "2026-12-28"
   },
-  "nightBefore": [
-   "2027-01-08"
-  ],
+  "studioDays": {
+   "1": "watch"
+  },
   "maxGap": 2
  }
 }

@@ -7,7 +7,7 @@
 import { $, esc, todayStr, dateStr, expose, toast } from "./util.js";
 import { S, setSettings } from "./store.js";
 import { PET, PRACTICE_ITEMS } from "./data.js";
-import { practicedDays, dayCounts } from "./streak.js";
+import { planDays, planDone } from "./streak.js";
 import { todayMode } from "./mode.js";
 import { openStage } from "./stage.js";
 
@@ -68,8 +68,8 @@ export function petSVG({ fur, outfit = null, nap = false, scale = 1 } = {}){
 // ---------- today ----------
 const yesterday = (date) => { const d = new Date(date + "T00:00:00"); d.setDate(d.getDate() - 1); return dateStr(d); };
 export function petState(date = todayStr()){
-  const total = PRACTICE_ITEMS.length; const days = practicedDays(S.practice, total);
-  const todayDone = dayCounts(S.practice[date], total), yesterdayDone = dayCounts(S.practice[yesterday(date)], total);
+  const days = planDays(S.practice); // days the plan was done (her solo danced), not just streak-safe days
+  const todayDone = planDone(S.practice[date]), yesterdayDone = planDone(S.practice[yesterday(date)]);
   const showWeek = todayMode().mode === "comp"; const mood = petMood({ todayDone, yesterdayDone, days });
   const moves = learnedMoves(days); const move = moves[moves.length - 1] || null; const ps = petSettings();
   return { ...ps, days, todayDone, showWeek, mood, level: petLevel(days), moves, move, next: nextMove(days), outfit: outfitFor(days, showWeek), learned: justLearned(days, todayDone) };

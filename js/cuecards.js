@@ -8,6 +8,7 @@ import { normalizeCues, isCueTable, fmtCueTime } from "./cues.js";
 import { media, friendlyError } from "./sync.js";
 import { VIDEO_MAX_BYTES } from "./media.js";
 import { trackUrl } from "./track.js";
+import { openStage } from "./stage.js";
 
 export const cueMediaOf = (d, n) => ((d && d.cueMedia) || {})[n] || {};
 export const cuePhoto = (d, n) => (cueMediaOf(d, n).photo || {}).url || "";
@@ -65,14 +66,22 @@ export function initCueCards(){
 }
 
 // ---- Hannah's videos (solo card) ----
+const videosLabel = (d) => d.id === "solo" ? "Hannah's videos" : "Videos";
 export function videosRow(d){
   const vs = (d.hannahVideos || []); if (!vs.length) return "";
-  return `<div class="hv-row"><span class="small muted">📹 Hannah's videos</span>${vs.map((v, i) => `<button class="btn sm violet" onclick="hvWatch('${d.id}',${i})">▶ ${esc(v.name || "Video " + (i + 1))}</button>`).join("")}</div>`;
+  return `<div class="hv-row"><span class="small muted">📹 ${videosLabel(d)}</span>${vs.map((v, i) => `<button class="btn sm violet" onclick="hvWatch('${d.id}',${i})">▶ ${esc(v.name || "Video " + (i + 1))}</button>`).join("")}</div>`;
 }
-// Grown-up controls, under More ▸ on the card.
+// 📹 Videos on Today: every dance's videos (the solo's walkthrough and run-through, the trio's run-through) one tap away.
+export function openVideos(){
+  const ds = dances().filter(d => Array.isArray(d.hannahVideos) && d.hannahVideos.length);
+  const el = document.createElement("div"); el.className = "stage-list";
+  el.innerHTML = ds.length ? ds.map(d => `<div class="card"><b>${esc(d.name)}</b>${videosRow(d)}</div>`).join("") : `<p class="small muted">No videos yet. A grown-up adds them on the solo or trio card: More ▸ → ＋ Upload a video (they stay in the family space).</p>`;
+  openStage("📹 Videos", [el], `<button class="btn ghost" onclick="closeStage()">Done</button>`);
+}
+// Grown-up controls, under More ▸ on the card (the solo's two from Hannah, the trio's run-through).
 export function videosEdit(d){
   const vs = (d.hannahVideos || []);
-  return `<div class="field-lab">Hannah's videos <span class="muted">(up to 2 · family space only)</span></div>
+  return `<div class="field-lab">${videosLabel(d)} <span class="muted">(up to 2 · family space only)</span></div>
     ${vs.map((v, i) => `<div class="check"><span class="grow">📹 <b>${esc(v.name || "Video " + (i + 1))}</b> <span class="small muted">${v.offset > 0 ? "music starts at " + v.offset + " s · chunks play on it" : "not synced to the music"}</span></span><button class="lnk" onclick="hvOffset('${d.id}',${i})">sync</button> <button class="del" onclick="hvDel('${d.id}',${i})">✕</button></div>`).join("")}
     ${vs.length < 2 ? `<div class="row" style="margin-top:6px"><label class="btn sm ghost" for="hvIn-${d.id}">＋ Upload a video</label><input type="file" id="hvIn-${d.id}" accept="video/*" hidden onchange="hvAdd(this.files[0],'${d.id}');this.value=''"><button class="btn sm ghost" onclick="hvLink('${d.id}')">＋ Paste a link</button></div><p class="small muted">Videos up to 50 MB (a phone clip of 2–3 minutes at 720p). Bigger? Paste a Google Photos or Drive link instead.</p>` : ""}`;
 }
@@ -101,4 +110,4 @@ function hvWatch(danceId, i){
 }
 function hvClose(){ const el = $("#hvVideo"); try { el.pause(); } catch (e) {} el.removeAttribute("src"); try { el.load(); } catch (e) {} $("#hvideo").hidden = true; document.body.classList.remove("modal"); }
 export function initVideos(){ $("#hvClose").onclick = hvClose; }
-expose({ openCueCards, closeCueCards, ccMusic: playMusic, ccClip: playClip, hvAdd, hvLink, hvOffset, hvDel, hvWatch });
+expose({ openCueCards, closeCueCards, ccMusic: playMusic, ccClip: playClip, hvAdd, hvLink, hvOffset, hvDel, hvWatch, openVideos });

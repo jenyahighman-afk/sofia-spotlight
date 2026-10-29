@@ -13,6 +13,7 @@ const C = await import("../js/games/count.js");
 const { S, migrateDoc, SCHEMA_VERSION, setBackend, dances } = await import("../js/store.js");
 const { starsFor } = await import("../js/stars.js");
 const { FRIEND_GAMES } = await import("../js/who.js");
+const { memoryKnees } = await import("../js/season15.js"); const { todayStr } = await import("../js/util.js");
 const play = await import("../js/views/play.js");
 
 const steadyTaps = (n, gap, start = 0, jitter = () => 0) => Array.from({ length: n }, (_, i) => start + i * gap + jitter(i));
@@ -114,7 +115,7 @@ function fresh(){ resetDom(); for (const k of Object.keys(S)) S[k] = {}; const w
 
 test("Play: a Count Along tile; the card shows the dance's real BPM, asks for music when there is none, and offers Set the beat only without a BPM", () => {
   fresh(); play.initPlay(); play.renderPlay();
-  const grid = el("#gameGrid").innerHTML; assert.ok(grid.includes("playOpen('count')") && grid.includes("Count Along"), "the tile"); assert.equal((grid.match(/game-tile/g) || []).length, 11);
+  const grid = el("#gameGrid").innerHTML; assert.ok(grid.includes("playOpen('count')") && grid.includes("Count Along"), "the tile"); assert.equal((grid.match(/game-tile/g) || []).length, memoryKnees(todayStr()) ? 10 : 11, "Trick Quest waits until the solo is memorized (Nov 9)");
   window.playOpen("count"); const setup = el("#countSetup").innerHTML;
   assert.ok(setup.includes("countMode('song')") && setup.includes("countMode('metro')"), "two modes");
   assert.ok(setup.includes('<option value="solo" selected>') && setup.includes("76 BPM from the dance card"), "the solo's own 76 BPM");

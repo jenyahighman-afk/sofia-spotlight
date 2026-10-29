@@ -21,7 +21,7 @@ test("the plan is well-formed: every day Oct 17–Nov 9, a tag, must and opt ite
 });
 
 test("the two weeks after Oct 26 carry the checkpoints on their days, on the same weekly schedule", () => {
-  const cp = { "2026-10-31": ["trio", "★ trio checkpoint"], "2026-11-01": ["solo", "★ solo checkpoint"], "2026-11-04": ["solo", "★ clean run for Ms. Brittany"], "2026-11-09": ["solo", "★ tricks start"] };
+  const cp = { "2026-10-31": ["trio", "★ trio checkpoint"], "2026-11-01": ["solo", "★ solo checkpoint"], "2026-11-04": ["solo", "★ clean run on film"], "2026-11-09": ["solo", "★ tricks start"] };
   for (const [d, [dance, label]] of Object.entries(cp)) { const p = dayPlan(d, plan); assert.equal(p.label, label, d); assert.ok(p.must.some(m => m.t.startsWith("★") || m.go === "memo:" + dance), d + " has its checkpoint as a must"); }
   const dances = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8")); const list = Array.isArray(dances) ? dances : (dances.dances || Object.values(dances));
   for (const d of list.filter(x => x && Array.isArray(x.checkpoints))) for (const c of d.checkpoints) if (c.d >= "2026-10-27" && c.d <= "2026-11-09") assert.ok(cp[c.d], d.id + " checkpoint " + c.d + " is in the plan");
@@ -40,11 +40,13 @@ test("no weekly solo rehearsal: Wednesdays are Contemporary only; the PITCH jazz
   assert.match(dayPlan("2026-11-07", plan).note, /PITCH jazz/); assert.match(dayPlan("2026-11-08", plan).note, /PITCH jazz/);
   const { fixSoloRehearsal, SOLO_V40 } = await import("../js/store.js");
   const old = { id: "solo", teacher: SOLO_V40.teacher[0], rehearsal: SOLO_V40.rehearsal[0], checkpoints: [{ d: "2026-11-01", text: "Whole solo from memory, on the music" }, { d: "2026-11-04", text: SOLO_V40.checkpoint[0] }] };
-  const m = migrateDoc("dances", "solo", { ...old, _v: 39 }); assert.equal(m.teacher, SOLO_V40.teacher[1]); assert.equal(m.rehearsal, SOLO_V40.rehearsal[1]); assert.equal(m.checkpoints[1].text, SOLO_V40.checkpoint[1]); assert.equal(m.checkpoints[1].d, "2026-11-04"); assert.equal(m.checkpoints[0].text, "Whole solo from memory, on the music"); assert.equal(m._v, SCHEMA_VERSION);
+  const m = migrateDoc("dances", "solo", { ...old, _v: 39 }); assert.equal(m.teacher, SOLO_V40.teacher[1]); assert.equal(m.rehearsal, SOLO_V40.rehearsal[1]); assert.equal(m.checkpoints[1].text, (await import("../js/store.js")).SOLO_V45.checkpoint[1], "step 40, then step 45"); assert.equal(m.checkpoints[1].d, "2026-11-04"); assert.equal(m.checkpoints[0].text, "Whole solo from memory, on the music"); assert.equal(m._v, SCHEMA_VERSION);
   const own = fixSoloRehearsal({ teacher: "Ms. Brittany, Tuesdays", rehearsal: "", checkpoints: [{ d: "2026-11-04", text: "my own goal" }] }); assert.equal(own.teacher, "Ms. Brittany, Tuesdays", "text the family typed stays"); assert.equal(own.checkpoints[0].text, "my own goal");
   assert.equal(migrateDoc("dances", "trio", { _v: 39, teacher: SOLO_V40.teacher[0] }).teacher, SOLO_V40.teacher[0], "only the solo");
   const seed = JSON.parse(readFileSync(new URL("../data/dances.json", import.meta.url), "utf8")); const solo = (Array.isArray(seed) ? seed : seed.dances || Object.values(seed)).find(x => x && x.id === "solo");
-  assert.equal(solo.teacher, SOLO_V40.teacher[1]); assert.equal(solo.rehearsal, SOLO_V40.rehearsal[1]); assert.ok(solo.checkpoints.some(c => c.text === SOLO_V40.checkpoint[1]), "the seed matches what the migration writes");
+  assert.equal(solo.teacher, SOLO_V40.teacher[1]); assert.equal(solo.rehearsal, SOLO_V40.rehearsal[1]); const { SOLO_V45, fixSolo45 } = await import("../js/store.js"); assert.ok(solo.checkpoints.some(c => c.text === SOLO_V45.checkpoint[1]), "the seed matches what the migrations write (40, then 45)");
+  assert.equal(fixSolo45({ checkpoints: [{ d: "2026-11-04", text: SOLO_V45.checkpoint[0] }, { d: "2026-11-09", text: "mine" }] }).checkpoints.map(c => c.text).join("|"), SOLO_V45.checkpoint[1] + "|mine", "schema 45 swaps the Nov 4 text once, keeps the family's own");
+  assert.equal(migrateDoc("dances", "solo", { _v: 44, checkpoints: [{ d: "2026-11-04", text: SOLO_V45.checkpoint[0] }] }).checkpoints[0].text, SOLO_V45.checkpoint[1]);
 });
 
 test("ticks save per day; a must-box makes the day count; untick removes; ▶ targets", () => {

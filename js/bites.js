@@ -7,6 +7,7 @@ import { dayNumber } from "./plan.js";
 import { planFor } from "./planToday.js";
 import { dayCounts } from "./streak.js";
 import { quickDone } from "./quick.js";
+import { memoryKnees } from "./season15.js";
 
 export const ENERGY = [[1, "😴 Low"], [2, "🙂 OK"], [3, "⚡ Lots"]], MOOD = [[1, "😕 Meh"], [2, "🙂 Fine"], [3, "😄 Great"]];
 export const pickDaily = (list, date) => (list && list.length) ? list[dayNumber(date) % list.length] : "";
@@ -24,14 +25,14 @@ export function bitesFor(level, st = {}){
   const coach = { id: "coach", text: "Run check with the coach", go: "openCoachHub()", done: !!st.reviewed };
   if (level === "easy") return [stretch, run, game];
   if (level === "normal") return [strength, practice, run];
-  return [practice, quest, st.reviewed ? run : coach];
+  return [practice, st.noQuest ? strength : quest, st.reviewed ? run : coach]; // noQuest: Memory + knees, no tricks yet
 }
 export const nextLevel = (l) => l === "easy" ? "normal" : l === "normal" ? "big" : null;
 
 function stateToday(date){
   const rec = S.practice[date] || {}; const log = (S.settings.starLog || {})[date] || {}; const solo = dances().find(d => d.id === "solo") || {};
   return { runs: Array.isArray(rec.runs) ? rec.runs.length : 0, flex: quickDone(rec, "flex"), strength: quickDone(rec, "strength"), practiced: dayCounts(rec, planFor(date).length) && (rec.done || []).length > 0,
-    played: !!log.nextmove, quested: !!log.quest, reviewed: Object.values(S.reviews || {}).some(r => r && !r.deleted && r.date === date), hasMusic: !!((solo.musicFile && solo.musicFile.url) || solo.musicUrl) };
+    played: !!log.nextmove, quested: !!log.quest, reviewed: Object.values(S.reviews || {}).some(r => r && !r.deleted && r.date === date), hasMusic: !!((solo.musicFile && solo.musicFile.url) || solo.musicUrl), noQuest: memoryKnees(date) };
 }
 export function renderBites(){
   const el = $("#bitesCard"); if (!el) return; const date = todayStr(); const rec = S.practice[date] || {}; const feel = rec.feel || null; const level = rec.level || levelFor(feel);

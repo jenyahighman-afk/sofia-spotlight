@@ -1,4 +1,4 @@
-// Glow-Up Flipbook: month keys and labels, newest photo per month, oldest-first pages, the Today nudge (days 1–7 and only
+// Growing-up Flipbook: month keys and labels, newest photo per month, oldest-first pages, the Today nudge (days 1–7 and only
 // when this month's photo is missing), the schema-37 migration, and the Me card / nudge / flipbook rendering in the fake DOM.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -72,7 +72,7 @@ test("schema 37: photos.glow kept only as YYYY-MM; settings.glowPose kept only w
 test("renders: the Me card picks a pose, then shows the pose, months and the two buttons; the nudge and the flipbook render", () => {
   resetDom(); for (const k of Object.keys(S)) S[k] = {};
   G.renderGlowCard(); let h = el("#meGlow").innerHTML;
-  assert.ok(h.includes("Glow-Up Flipbook")); for (const p of G.GLOW_POSES) assert.ok(h.includes(`glowPick('${p.id}')`), p.id);
+  assert.ok(h.includes("Growing-up Flipbook")); for (const p of G.GLOW_POSES) assert.ok(h.includes(`glowPick('${p.id}')`), p.id);
   G.renderGlowNudge(); assert.equal(el("#glowNudge").hidden, true, "no pose yet");
   const month = todayStr().slice(0, 7);
   S.settings = { glowPose: "arabesque" }; G.renderGlowCard(); h = el("#meGlow").innerHTML;

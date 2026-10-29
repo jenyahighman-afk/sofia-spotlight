@@ -1,7 +1,10 @@
 // Play tab: a grid of game tiles; tap one to open that game (one at a time), "All games" to come back.
 // Each game module wires its own globals; this renders the tiles and the idle state of the open game.
-import { $, $$, esc, expose } from "../util.js";
+import { $, $$, esc, expose, todayStr } from "../util.js";
 import { S } from "../store.js";
+import { HOME_DAYS } from "../data.js";
+import { memoryKnees } from "../season15.js";
+import { planDone } from "../streak.js";
 import { initChoreo, csRender } from "../games/choreo.js";
 import { tfRender } from "../games/trio.js";
 import "../games/oops.js";
@@ -28,12 +31,20 @@ export const GAMES = [
   { id: "along",   emoji: "🕺", name: "Dance Along",    blurb: "Learn a dance from a video",   best: () => null },
   { id: "count",   emoji: "🥁", name: "Count Along",    blurb: "Tap the beat of your music",   best: (s) => { const b = topBest(s); return b === null ? null : b + "%"; } },
 ];
+// The games that are solo work; the rest are fillers. Pure: which tiles show on `date` — Trick Quest waits until the solo is
+// memorized (Memory + knees), and on a home day during Own it the fillers wait until the plan is done (`gate`).
+export const SOLO_GAMES = ["nextmove", "along", "count"];
+export function gamesFor(date, { home = false, knees = false, done = false, games = GAMES } = {}){
+  const gate = home && knees && !done;
+  return { gate, games: games.filter(g => !(g.id === "quest" && knees) && !(gate && !SOLO_GAMES.includes(g.id))) };
+}
 let openGame = "";
 export function playOpen(id){ openGame = id; renderPlay(); if (id) { const c = document.querySelector(`.game-card[data-game="${id}"]`); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: "smooth", block: "start" }); } else window.scrollTo({ top: 0 }); }
 export function initPlay(){ initChoreo(); initTeach(); initCount(); }
 export function renderPlay(){
-  const s = S.settings; renderWho();
-  $("#gameGrid").innerHTML = GAMES.map(g => { const b = g.best(s); return `<button class="game-tile" onclick="playOpen('${g.id}')"><span class="gt-emoji">${g.emoji}</span><span class="gt-name">${esc(g.name)}</span><small>${esc(g.blurb)}</small>${b !== null ? `<small class="gt-best">Best ${esc(String(b))}</small>` : ""}</button>`; }).join("");
+  const s = S.settings; renderWho(); const today = todayStr();
+  const { gate, games } = gamesFor(today, { home: !!HOME_DAYS[new Date().getDay()], knees: memoryKnees(today), done: planDone(S.practice[today]) });
+  $("#gameGrid").innerHTML = (gate ? `<div class="game-gate"><span class="grow">🏠 Home day: the solo first. The other games open when the plan is done ⭐</span><button class="btn sm coral" onclick="showPage('practice')">▶ Start practice</button></div>` : "") + games.map(g => { const b = g.best(s); return `<button class="game-tile" onclick="playOpen('${g.id}')"><span class="gt-emoji">${g.emoji}</span><span class="gt-name">${esc(g.name)}</span><small>${esc(g.blurb)}</small>${b !== null ? `<small class="gt-best">Best ${esc(String(b))}</small>` : ""}</button>`; }).join("");
   if (openGame !== "count" && countRunning()) stopCount(); // leaving the game stops its music or clicks
   $("#gameGrid").hidden = !!openGame; $("#gameBack").hidden = !openGame;
   $$(".game-card").forEach(c => { c.hidden = c.dataset.game !== openGame; });

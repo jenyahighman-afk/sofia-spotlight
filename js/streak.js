@@ -15,6 +15,18 @@ export function dayCounts(rec, totalItems){
   const done = Array.isArray(rec.done) ? rec.done.length : 0; const total = rec.total > 0 ? rec.total : totalItems;
   return total > 0 && done / total >= PRACTICE_MIN;
 }
+// Two tiers of done. dayCounts above is "streak safe": any bite, a game, a tired stretch. planDone is "the plan is done":
+// she danced her solo (or did the studio-day version of it): a run logged from the player, a solo item of the session
+// (plan.js SOLO_ITEMS: the solo run, the memory run's top and chunk, a watch-day video, the show in her head), a must-box
+// of the dated plan, or a Memorize chunk. The pet grows, the reminder goes quiet and the 2-day clock resets on this tier.
+export const SOLO_ITEMS = ["solo-run", "mem-top", "mem-chunk", "watch-walk", "watch-run", "imagery"];
+export function planDone(rec){
+  if (!rec) return false;
+  if (Array.isArray(rec.runs) && rec.runs.length) return true;
+  if (Array.isArray(rec.done) && rec.done.some(id => SOLO_ITEMS.includes(id))) return true;
+  const bites = Array.isArray(rec.bites) ? rec.bites : []; return bites.includes("plan") || bites.includes("memo");
+}
+export function planDays(practice){ return Object.entries(practice || {}).filter(([d, r]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && planDone(r)).length; }
 const weekday = (iso) => new Date(iso + "T00:00:00").getDay();
 export const isBreak = (e) => /break/i.test(e.type || "") || /break/i.test(e.name || "");
 export function isPaused(iso, classes, events){

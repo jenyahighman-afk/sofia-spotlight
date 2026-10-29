@@ -8,7 +8,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 44;
+export const SCHEMA_VERSION = 45;
 // Schema 44: the trick progress lineup's frames (js/lineup.js FRAMES), frozen here for the migration.
 export const FRAME_IDS = ["polaroid", "film", "star", "sparkle", "spotlight", "sticker"];
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
@@ -16,7 +16,7 @@ export const FRAME_IDS = ["polaroid", "film", "star", "sparkle", "spotlight", "s
 export const TEACH_MOVE_IDS = ["pose","plie","releve","passe","arab","attitude","develop","saute","pirouette","kick","fankick","chasse","pivot","jazzsq","layout","leap","calypso","tilt","reach","contract","spiral","floor","bounce","bodyroll","wave","toprock","freeze","hold"];
 // Schema 32: the dance pet's fur colours (data/pet.json), frozen here for the migration.
 export const PET_FURS = ["cream", "pink", "lilac", "grey", "brown"];
-// Schema 37: the Glow-Up Flipbook poses (js/glow.js GLOW_POSES), frozen here for the migration.
+// Schema 37: the Growing-up Flipbook poses (js/glow.js GLOW_POSES), frozen here for the migration.
 export const GLOW_POSE_IDS = ["arabesque", "passe", "first-position", "releve", "split"];
 // Schema 36: the costume designer's option ids (data/costumes.json), frozen here for the migration. First id = default.
 const COSTUME_COLORS = ["pink", "hotpink", "blush", "coral", "red", "wine", "peach", "gold", "mint", "emerald", "aqua", "sky", "royal", "navy", "lilac", "purple", "white", "silver", "black"];
@@ -392,7 +392,9 @@ export const MIGRATIONS = {
     if (doc.taken !== undefined && !(typeof doc.taken === "string" && /^\d{4}-\d{2}-\d{2}$/.test(doc.taken))) delete doc.taken;
     if (doc.stage !== undefined && !["learning", "clean", "checked"].includes(doc.stage)) delete doc.stage;
     return doc;
-  }
+  },
+  // 45 (1.43.0): the solo's Nov 4 checkpoint text (SOLO_V45) — see fixSolo45.
+  45: (col, id, doc) => { if (col === "dances" && id === "solo") fixSolo45(doc); return doc; }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],
@@ -402,6 +404,13 @@ export const SOLO_V40 = {
 export function fixSoloRehearsal(doc){
   for (const k of ["teacher", "rehearsal"]) if (doc[k] === SOLO_V40[k][0]) doc[k] = SOLO_V40[k][1];
   if (Array.isArray(doc.checkpoints)) doc.checkpoints = doc.checkpoints.map(c => c && typeof c === "object" && c.text === SOLO_V40.checkpoint[0] ? { ...c, text: SOLO_V40.checkpoint[1] } : c);
+  return doc;
+}
+// Schema 45 (1.43.0): the Nov 4 solo checkpoint was a Wednesday-rehearsal leftover ("filmed for Ms. Brittany"); Ms. Brittany
+// sees the run at the next booked rehearsal instead. A stored solo's copy of that text is swapped once; anything the family typed stays.
+export const SOLO_V45 = { checkpoint: ["A full run with no missed steps, filmed for Ms. Brittany", "A full run with no missed steps, on film (show Ms. Brittany at the next rehearsal)"] };
+export function fixSolo45(doc){
+  if (Array.isArray(doc.checkpoints)) doc.checkpoints = doc.checkpoints.map(c => c && typeof c === "object" && c.text === SOLO_V45.checkpoint[0] ? { ...c, text: SOLO_V45.checkpoint[1] } : c);
   return doc;
 }
 // Shared by schema 38 and js/games/teach.js (which re-exports it as normalizeTeach).

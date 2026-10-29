@@ -6,6 +6,7 @@ import { checkBadges } from "./badges.js";
 import { normalizeCues, cueAt, fmtTime, fmtCueTime, isCueTable, trickAhead } from "./cues.js";
 import { srcFor, trackUrl } from "./track.js";
 import { cuePhoto } from "./cuecards.js";
+import { pingDone } from "./remind.js";
 export { srcFor };
 
 const fmtT = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
@@ -115,6 +116,7 @@ async function runEnded(){
   const ending = await ask("Did you hold the ending?"); const eyes = await ask("Eyes up?");
   const date = todayStr(); const rec = S.practice[date] || { done: [], note: "", runs: [] };
   await storeSet("practice", date, { ...rec, runs: [...(rec.runs || []), { at: new Date().toISOString(), danceId: run.danceId, speed: 100, full: true, ending, eyes }] });
+  try { pingDone(); } catch (e) {} // a logged run = the plan is done: no reminder tonight
   box.innerHTML = `<div class="run-q">${ending && eyes ? "Both! ⭐ Logged." : "Logged. Next run: " + (!ending ? "hold the ending" : "eyes up") + "."}</div><div class="row run-yn"><button class="btn coral" onclick="plRunClose()">Done</button><button class="btn ghost" onclick="plRunIt()">Again</button></div>`;
   checkBadges();
 }

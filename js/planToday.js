@@ -9,7 +9,7 @@ import { patterns, isOpen, currentWeekFix, newTeacherNotes } from "./corrections
 import { todayStr } from "./util.js";
 import { modeFor } from "./mode.js";
 import { isShortDay } from "./studio.js";
-import { trickFocus, weakestTrick, sessionRules } from "./season15.js";
+import { trickFocus, weakestTrick, sessionRules, studioKind } from "./season15.js";
 import { drillFor } from "./trickdrill.js";
 
 // "knees", "none" (a light or taper week: no trick drill), this week's trick lines (from the solo card), or null (the usual rotation).
@@ -19,13 +19,16 @@ export function focusFor(date, ds = dances()){
   const skills = f.kind === "trick" ? list.filter(s => f.ids.includes(s.id)) : f.kind === "weakest" ? [weakestTrick(S.skills)].filter(Boolean) : [];
   const lines = [...new Set(skills.map(s => drillFor(s, solo)).filter(Boolean))]; return lines.length ? lines : null;
 }
+// The short plan for `date`, or "": "watch" (a Monday: Hannah's videos, no dancing), "memory" (every other studio day, a
+// light week, the night before the show).
+export function shortKind(date = todayStr()){ if (isShortDay(date, CLASSES, studioDates())) return studioKind(date); return sessionRules(date).short ? "memory" : ""; }
 export function planFor(date = todayStr()){
   const ds = dances();
   const tricks = ds.flatMap(d => Array.isArray(d.tricks) ? d.tricks : []);
   const prefer = patterns(S.corrections, { today: date, min: 1 }).map(p => p.tag).filter(t => Object.values(S.corrections).some(c => isOpen(c) && c.tag === t)).slice(0, 3);
   const fix = date === todayStr() ? currentWeekFix(date) : null; const session = sessionRules(date);
   const base = buildPlan({ pool: PRACTICE_POOL, date, preferTags: prefer, weekFix: fix ? { id: fix.id, text: fix.text, tag: fix.tag } : null, tricks, aerial: AERIAL, aerialDone: S.settings.aerial || [], dances: ds, mode: modeFor(date, events(), S.settings).mode,
-    short: isShortDay(date, CLASSES, studioDates()) || session.short, nightBefore: session.nightBefore, focus: focusFor(date, ds), session, newNotes: newTeacherNotes(S.corrections, date) });
+    short: shortKind(date), nightBefore: session.nightBefore, focus: focusFor(date, ds), session, newNotes: newTeacherNotes(S.corrections, date) });
   return applyCustom(base, PRACTICE_POOL, (S.practice[date] || {}).custom);
 }
 export const planTotal = (date) => planFor(date).length;

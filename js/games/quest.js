@@ -1,7 +1,7 @@
 // Trick Quest: every solo trick is a boss with three bars (feet, knees, arms — the coach's checks). Three timed
 // stations (prep drill, slow five, to the music) knock the bars down; a freeze shot (camera at the trick's cue moment,
-// scored against a saved "gold shape") hits all three. Empty bars = a gem; three gems on different days = the trick's
-// circle goes to "clean". Pure parts up top (tested in Node).
+// scored against a saved "gold shape") hits all three. Empty bars = a gem; three gems on different days = "practised":
+// time to ask Ms. Brittany or a grown-up whether it's clean (a count never flips the circle itself). Pure parts up top (tested in Node).
 import { $, esc, toast, todayStr, expose } from "../util.js";
 import { SKILLS } from "../data.js";
 import { S, storeSet, setSettings, dances } from "../store.js";
@@ -16,7 +16,7 @@ import { awardStars } from "../stars.js";
 import { poseAvailable, detectImage, drawSkeleton } from "../pose.js";
 import { demoFor, demoHtml } from "../demos.js";
 import { poseFeatures, featureDistance } from "../posemath.js";
-import { findSkill, kidCycle, skillState } from "../skills.js";
+import { findSkill, skillState } from "../skills.js";
 import { drillStrip } from "../drills.js";
 
 export const BARS = ["feet", "knees", "arms"], BAR_ICON = { feet: "🦶", knees: "🦵", arms: "💪" }, FULL = 100, STATION_HIT = 15, SHOT_HIT = 25, GEMS_FOR_CLEAN = 3;
@@ -121,7 +121,7 @@ async function finish(){
   stopAll(); const rec = S.skills[Q.skill.id] || { id: Q.skill.id, style: "solo", state: "learning" }; const q = questOf(rec); let gem = false;
   if (cleared(Q.bars)) { gem = true; if (!q.gems.includes(todayStr())) q.gems.push(todayStr()); Q.bars = seedBars(lastTrickReview(S.reviews, Q.skill.n)); }
   try { await storeSet("skills", Q.skill.id, { ...rec, quest: { bars: Q.bars, gems: q.gems } }); } catch (e) { console.warn("quest save", e); }
-  if (gem && q.gems.length >= GEMS_FOR_CLEAN && skillState(S.skills, Q.skill.id) === "learning") await kidCycle(Q.skill.id);
+  if (gem && q.gems.length >= GEMS_FOR_CLEAN && skillState(S.skills, Q.skill.id) === "learning") toast(`${q.gems.length} gems! Well practised. Ask Ms. Brittany or a grown-up if ${Q.skill.n} is clean now`, 4000);
   if (gem || Q.worked) awardStars("quest", gem ? 100 : 40, "Trick Quest"); // skipping straight through earns nothing
   $("#qsArea").innerHTML = `<div class="pm-item"><div class="pm-kind">${gem ? "💎" : "⚔️"}</div><div class="pm-text">${gem ? `Gem! ${esc(Q.skill.n)} is on the ropes.` : `${esc(Q.skill.n)}: bars down. Come back tomorrow.`}</div></div>${barsHtml(Q.bars)}<p class="small muted" style="text-align:center">${q.gems.length} gem${q.gems.length === 1 ? "" : "s"} · ${GEMS_FOR_CLEAN} on different days make it clean.</p>`;
   stageActions(`<button class="btn ghost" onclick="closeStage()">Done</button><button class="btn coral big-btn grow" onclick="qsStart()">Another boss</button>`);

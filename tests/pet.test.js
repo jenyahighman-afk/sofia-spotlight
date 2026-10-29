@@ -56,9 +56,9 @@ test("the bunny SVG: closed eyes and z's when napping, the outfit drawn, sized b
 test("Today card: the pet naps after a day off, wakes up and dances when today counts, and says when it learns a move", () => {
   resetDom(); for (const k of Object.keys(S)) S[k] = {};
   S.settings = { pet: { name: "Coco", fur: "lilac" }, avatar: { name: "Sofia" } };
-  renderPet(); let h = el("#petCard").innerHTML; assert.ok(h.includes("Coco") && h.includes("pet-stage hello") && !h.includes("pet-z") && h.includes("petDance()") && h.includes("openPet()"), "a brand-new pet says hello, awake"); S.practice = { [daysAgo(3)]: { bites: ["game"] } }; renderPet(); assert.ok(el("#petCard").innerHTML.includes("pet-stage nap"), "after a day off it naps"); S.practice = {}; assert.ok(h.includes("2 more practice days to learn the Bunny hop"));
-  S.practice = { [daysAgo(1)]: { bites: ["game"] } }; renderPet(); h = el("#petCard").innerHTML; assert.ok(h.includes("pet-stage ready"), "practised yesterday: ready");
-  S.practice = { [daysAgo(1)]: { bites: ["game"] }, [daysAgo(0)]: { bites: ["trick"] } }; renderPet(); h = el("#petCard").innerHTML; assert.ok(h.includes("pet-stage danced"), "today counts: dancing"); assert.ok(h.includes("I just learned the Bunny hop! 🎉"), "day 2 is the hop");
+  renderPet(); let h = el("#petCard").innerHTML; assert.ok(h.includes("Coco") && h.includes("pet-stage hello") && !h.includes("pet-z") && h.includes("petDance()") && h.includes("openPet()"), "a brand-new pet says hello, awake"); S.practice = { [daysAgo(3)]: { bites: ["plan"] } }; renderPet(); assert.ok(el("#petCard").innerHTML.includes("pet-stage nap"), "after a day off it naps"); S.practice = {}; assert.ok(h.includes("2 more practice days to learn the Bunny hop"));
+  S.practice = { [daysAgo(1)]: { bites: ["plan"] } }; renderPet(); h = el("#petCard").innerHTML; assert.ok(h.includes("pet-stage ready"), "practised yesterday: ready");
+  S.practice = { [daysAgo(1)]: { bites: ["plan"] }, [daysAgo(0)]: { bites: ["memo"] } }; renderPet(); h = el("#petCard").innerHTML; assert.ok(h.includes("pet-stage danced"), "today counts: dancing"); assert.ok(h.includes("I just learned the Bunny hop! 🎉"), "day 2 is the hop");
   const st = petState(); assert.equal(st.days, 2); assert.equal(st.move.id, "hop"); assert.equal(st.level.n, "Tiny");
   assert.match(src("js/views/home.js"), /renderPet\(\)/, "Today renders the pet"); assert.match(src("sw.js"), /"\.\/js\/pet\.js"/); assert.match(src("sw.js"), /"\.\/data\/pet\.json"/);
   resetDom(); for (const k of Object.keys(S)) S[k] = {};

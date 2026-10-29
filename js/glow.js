@@ -1,4 +1,4 @@
-// Glow-Up Flipbook: Sofia picks one pose once (settings.glowPose) and takes one photo of it a month. Each photo is an
+// Growing-up Flipbook: Sofia picks one pose once (settings.glowPose) and takes one photo of it a month. Each photo is an
 // ordinary family-space photo doc (same upload path as Moments' keep(): resizeImage → media.upload("photos") →
 // storeSet("photos")) with `glow: "YYYY-MM"` (schema 37). Retaking this month's photo replaces it: the newest per month
 // is kept and older ones of that month are removed. The Me card shows the pose and how many months; the flipbook stage
@@ -78,7 +78,7 @@ export function renderGlowNudge(date = todayStr()){
 let picking = false;
 export function renderGlowCard(){
   const el = $("#meGlow"); if (!el) return; const pose = glowPose(); const pages = glowPages(); const month = monthKey(); const done = pages.some(p => p.month === month);
-  const head = `<div class="row"><h3 class="grow">🌱 Glow-Up Flipbook</h3>${pose ? `<span class="chip violet">${pages.length} month${pages.length === 1 ? "" : "s"}</span>` : ""}</div>`;
+  const head = `<div class="row"><h3 class="grow">🌱 Growing-up Flipbook</h3>${pose ? `<span class="chip violet">${pages.length} month${pages.length === 1 ? "" : "s"}</span>` : ""}</div>`;
   if (!pose || picking) {
     el.innerHTML = `${head}<p class="small muted">One photo a month in the same pose. Flip through later to see how much you've grown. ${pose ? "Same pose every month makes the best flipbook." : "Pick your pose:"}</p>
       <div class="glow-picks">${GLOW_POSES.map(p => `<button class="glow-pick ${pose && pose.id === p.id ? "on" : ""}" onclick="glowPick('${p.id}')"><b>${p.ic} ${esc(p.n)}</b><small>${esc(p.d)}</small></button>`).join("")}</div>
@@ -102,7 +102,7 @@ async function takePhoto(input){
   const month = monthKey(); const pose = glowPose();
   try { status("Saving…"); const { blob, w, h } = await resizeImage(f); const id = uid();
     const up = await media.upload("photos", id, blob, { contentType: "image/jpeg", name: `glow-${month}.jpg` });
-    await storeSet("photos", id, { path: up.path, url: up.url, w, h, size: blob.size, cap: `🌱 ${pose ? pose.n : "Glow-Up"} · ${monthLabel(month)}`, dance: "", glow: month, at: new Date().toISOString() });
+    await storeSet("photos", id, { path: up.path, url: up.url, w, h, size: blob.size, cap: `🌱 ${pose ? pose.n : "Growing-up"} · ${monthLabel(month)}`, dance: "", glow: month, at: new Date().toISOString() });
     for (const old of olderOfMonth(S.photos, month, id)) { const p = S.photos[old]; try { await storeDel("photos", old); if (p && p.path) await media.remove(p.path); } catch (e) { console.warn("glow retake", e); } }
     status(""); toast(`🌱 ${monthName(month)} is in your flipbook`); renderGlowCard(); renderGlowNudge(); }
   catch (e) { console.warn(e); status(""); toast("Couldn't save it: " + (e.message || e), 3500); }
@@ -111,7 +111,7 @@ async function takePhoto(input){
 // ---------- the flipbook stage ----------
 const F = { i: 0, playing: false, timer: 0, compare: false };
 function stop(){ clearInterval(F.timer); F.timer = 0; F.playing = false; }
-function openGlow(){ const pages = glowPages(); if (!pages.length) return toast("Take this month's photo first 📷"); F.i = 0; F.compare = false; renderFlip(); openStage("🌱 Glow-Up Flipbook", [$("#glowArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); if (pages.length > 1) play(); }
+function openGlow(){ const pages = glowPages(); if (!pages.length) return toast("Take this month's photo first 📷"); F.i = 0; F.compare = false; renderFlip(); openStage("🌱 Growing-up Flipbook", [$("#glowArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); if (pages.length > 1) play(); }
 export function renderFlip(){
   const el = $("#glowArea"); if (!el) return; const pages = glowPages(); const fn = firstVsNow(pages); const pose = glowPose();
   if (F.compare && fn) {

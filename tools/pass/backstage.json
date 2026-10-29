@@ -1,0 +1,163 @@
+{
+ "_note": "Sofia's Backstage Pass inside the app (js/pass.js, not built yet: this file waits here, outside data/, until Build 2 wires it): the same guide as files/Sofia-Backstage-Pass.pdf (source tools/print/Sofia-Backstage-Pass.html), in 10 short parts. Each part has lines to read and one quick check (q, a = answers, ok = the right one's index, yay = what the right answer shows, hint = what a wrong one shows). Reading a part = getting its check right: settings.pass.read[partId] = date, +1 star. Today shows the next part until all 10 are read; the Bunny asks for it and nags after 2 days without reading. tips = the Bunny's regular reminders from the pass: when = the moments a tip fits (any, morning, evening, studio = a studio day before class, after = a studio day after class, home = a home practice day, rest = Mon/Tue no home practice, sat, sun), part = the part it comes from. Food is meat-free (Sofia is pescatarian). Keep the week in step with data/classes.json and home-days.json.",
+ "title": "My Backstage Pass",
+ "parts": [
+  {
+   "id": "crew", "e": "🎭", "n": "Meet your crew", "mins": 2,
+   "lines": [
+    "You have three helpers this season. Each one has its own job, like a stage crew.",
+    "📱 Spotlight app = TODAY. It tells you what to do today: the plan, ▶ Start practice, your solo tools, Sunday filming, stars and games.",
+    "📋 Practice Toolkit = HOW. Paper, 6 pages: the plan, your sticker tracker, how to practice, your solo map, the trio and This week.",
+    "📕 Season Workbook = EVERYTHING ELSE. Group dances, show day, packing lists, music and people, count sheets.",
+    "If two helpers say different things, your teachers win. After that the app wins, because it's the newest."
+   ],
+   "check": { "q": "Where do you look to see what to do TODAY?", "a": ["The Spotlight app", "The Season Workbook", "A count sheet"], "ok": 0, "yay": "Yes! App = today 📱", "hint": "Which helper knows what day it is?" }
+  },
+  {
+   "id": "binder", "e": "🗂️", "n": "Your binder", "mins": 1,
+   "lines": [
+    "All your paper lives in one binder with 6 tabs, in this order:",
+    "1 · Start here: your Backstage Pass",
+    "2 · My plan: the plan, your sticker tracker, This week",
+    "3 · Practice: how to practice, count sheets",
+    "4 · My dances: solo, trio, PITCH jazz, PITCH contemporary",
+    "5 · Aerial: your Aerial Mission",
+    "6 · Show time: mind tools, packing lists, music and people"
+   ],
+   "check": { "q": "Your packing list is behind which tab?", "a": ["My plan", "Show time", "Practice"], "ok": 1, "yay": "Right! Show time has everything for show week 🎒", "hint": "You pack the week of a show…" }
+  },
+  {
+   "id": "grab", "e": "🎒", "n": "What do I grab?", "mins": 2,
+   "lines": [
+    "Home practice day: tap ▶ Start practice in the app. Keep Toolkit page 4 open next to you for your fixes.",
+    "Finished? Tap Done in the app, then put a sticker on Toolkit page 2.",
+    "A part of your solo keeps slipping? Dances › your solo › Chunks or Cue cards. One 8-count at a time.",
+    "A teacher gave you a correction (Saturday group rehearsal too)? Tell Mom and add it with ＋ Note. It becomes your fix right away.",
+    "Sunday: film your solo and send it to Coach me. Watch it with Mom: what went well first, then ONE fix.",
+    "Butterflies before a show? Open the Show time tab, then smell the flower, blow out the candle."
+   ],
+   "check": { "q": "A teacher gives you a correction. What now?", "a": ["Wait and see if she says it again", "Tell Mom and add it with ＋ Note", "Fix it on show day"], "ok": 1, "yay": "Yes! Teachers win, and their notes go in right away ✏️", "hint": "Teachers win, and their notes go in right away." }
+  },
+  {
+   "id": "goal", "e": "⭐", "n": "The big goal, in small steps", "mins": 2,
+   "lines": [
+    "The big goal: dance your solo at the Winter Showcase from memory, full out, eyes up, holding the ending to the very last note. And love doing it.",
+    "1 · Own it (to Nov 8): know every step by heart. Memory + knees, no new tricks yet.",
+    "2 · Clean it (Nov 9–29): feet, knees, arms, eyes. One fix at a time. Show in your head starts.",
+    "3 · Perform it (Nov 30–Jan 3): dance it like the real show. Full out, costume on, little audiences.",
+    "4 · Taper (Jan 4 to the show): less work, more rest. Nothing new.",
+    "Tiny steps win: one 8-count at a time, one fix at a time, a short practice most days, never more than 2 days without your solo."
+   ],
+   "check": { "q": "When is a fix done?", "a": ["When it shows on two videos in a row", "After one good try", "When you're tired of it"], "ok": 0, "yay": "That's it! Two videos in a row, then the next fix 🎬", "hint": "Think about your Sunday videos…" }
+  },
+  {
+   "id": "week", "e": "📅", "n": "Your week", "mins": 1,
+   "lines": [
+    "Mon · Ballet, Acro, Jazz Tech at the studio (4:30–7:30). At home: watch Hannah's two videos, and dance the solo in your head in the car. No dancing tonight.",
+    "Tue · Hip Hop, Ballroom (5:30–7:30) + the 15-minute memory run.",
+    "Wed · Contemporary (6:30–7:30) + the 15-minute memory run. Solo rehearsal when one is booked.",
+    "Thu · Home: strong + bendy + trio + solo (35–40 min).",
+    "Fri · Home: technique + this week's trick + solo (35–40 min).",
+    "Sat · Co Tech + PITCH rehearsal (10:00–12:15). The big groups practice here.",
+    "Sun · Home: film the solo + trio + film review. Plan your week on Toolkit page 6."
+   ],
+   "check": { "q": "Which days are home practice days?", "a": ["Mon, Tue, Wed", "Thu, Fri, Sun", "Every single day"], "ok": 1, "yay": "Yes! Thu, Fri and Sun at home 🏠", "hint": "Mon is videos and picturing; Tue and Wed get the short memory run." }
+  },
+  {
+   "id": "balance", "e": "🔦", "n": "Four spotlights", "mins": 2,
+   "lines": [
+    "A happy dancer keeps four lights on. Each one gets some time every week.",
+    "💃 Dance: classes plus short home practices. That's enough. More isn't always better.",
+    "📚 School: homework first on studio days. Read a little every day. Ask for help early.",
+    "🏠 Home: chores are teamwork. Make your bed, pack your dance bag, help with dinner.",
+    "🎈 Fun: friends, playing outside, drawing, family time, even doing nothing at all.",
+    "Feeling like it's too much? Always tired, grumpy about dance, a sore spot that won't go away, worries at bedtime? Tell Mom. A lighter day is part of the plan."
+   ],
+   "check": { "q": "Dance has felt like too much lately. What do you do?", "a": ["Keep it a secret", "Tell Mom", "Practice twice as much"], "ok": 1, "yay": "Yes. Tell Mom. A lighter day is allowed 💛", "hint": "Who helps you change the plan?" }
+  },
+  {
+   "id": "time", "e": "⏰", "n": "Time-smart and screen-smart", "mins": 2,
+   "lines": [
+    "Same time, same place: start practice at the same time on Thu, Fri and Sun.",
+    "Big thing first: homework, then practice, then free time.",
+    "Let the timer be the boss. When the app says done, you're done.",
+    "Plan on Sunday with Toolkit page 6. Pack your dance bag the night before.",
+    "Stuck? Do the tiniest step: put on dance clothes and start the warm-up.",
+    "The app is a tool: open it, practice, close it.",
+    "Screens off 1 hour before bed. Phones and tablets sleep outside your room."
+   ],
+   "check": { "q": "When do screens go off at night?", "a": ["Right when I get into bed", "1 hour before bed", "When I fall asleep"], "ok": 1, "yay": "Yes! 1 hour before bed 📵", "hint": "Your brain needs time to wind down." }
+  },
+  {
+   "id": "food", "e": "🍓", "n": "Fuel like a dancer", "mins": 2,
+   "lines": [
+    "Dancing burns lots of energy. Food is your fuel.",
+    "Every morning: oatmeal with berries, eggs and toast, yogurt with granola, or a waffle with peanut butter.",
+    "1–2 hours before class: banana + peanut butter, apple + cheese, yogurt, crackers + hummus, or trail mix.",
+    "After class: chocolate milk, Greek yogurt, eggs, a tuna or salmon sandwich, a bean-and-cheese quesadilla, or edamame.",
+    "Every day: a rainbow of fruits and veggies, milk or yogurt for strong bones, beans, lentils, eggs and fish for energy.",
+    "Water bottle at every class. Sip before, during and after.",
+    "Never skip a meal. Dancers run on fuel. Growing bodies change and need lots of food."
+   ],
+   "check": { "q": "What's a good snack 1–2 hours before class?", "a": ["Banana + peanut butter", "Nothing, dance hungry", "A huge dinner"], "ok": 0, "yay": "Yum, yes! 🍌 Small and easy before class.", "hint": "Not too much, not nothing." }
+  },
+  {
+   "id": "sleep", "e": "🌙", "n": "Sleep is secret practice", "mins": 1,
+   "lines": [
+    "Dancers your age need 9–12 hours of sleep every night.",
+    "While you sleep, your brain saves the steps you practiced, and your muscles repair and grow.",
+    "Same bedtime every night, weekends too. Wake up at 7:00 → lights out by 9:00.",
+    "Late studio nights (Mon, Tue): dinner, shower, bed. Homework is already done.",
+    "Wind down: shower, PJs, a paper book, lights out."
+   ],
+   "check": { "q": "How much sleep do dancers your age need?", "a": ["6 hours", "9–12 hours", "Only a lot on weekends"], "ok": 1, "yay": "Yes! 9–12 hours, every night 😴", "hint": "More than grown-ups need!" }
+  },
+  {
+   "id": "body", "e": "💪", "n": "Take care of your dancer body", "mins": 2,
+   "lines": [
+    "Normal, keep going: muscles that burn while you work, tired legs the next day, a stretch you can feel.",
+    "Stop and tell Mom: sharp pain, pain in a knee, ankle, wrist or back, swelling, limping, or pain that wakes you up.",
+    "Warm up first, always. A stretch, never pain. No oversplits.",
+    "Acro on the mat or with a spotter. Kick-overs and aerials only in class.",
+    "Stop before you're too tired. Tired teaches your body the wrong way.",
+    "Knees over toes in every plié, lunge and landing.",
+    "Nervous? Smell the flower (in for 4), blow out the candle (out for 6). Three times.",
+    "Be kind to yourself. Mistakes are how dancers learn."
+   ],
+   "check": { "q": "Sharp pain in your knee during practice. What do you do?", "a": ["Dance through it", "Stop and tell Mom", "Stretch it harder"], "ok": 1, "yay": "Yes. Sharp pain is a STOP sign 🛑", "hint": "Is sharp pain the normal kind?" }
+  }
+ ],
+ "tips": [
+  { "t": "App = today. Toolkit = how. Workbook = everything else.", "when": ["any"], "part": "crew" },
+  { "t": "Teachers win! If a teacher's note and the app don't match, the teacher is right.", "when": ["any"], "part": "crew" },
+  { "t": "Not sure what to grab? Your Backstage Pass is behind Tab 1 in your binder.", "when": ["any"], "part": "binder" },
+  { "t": "One 8-count at a time, then join it to the one before 🧩", "when": ["any", "home"], "part": "goal" },
+  { "t": "One fix at a time. It's done when it shows on two videos in a row 🎬", "when": ["any", "sun"], "part": "goal" },
+  { "t": "Four spotlights: dance, school, home, fun. Is any light dark this week? 🔦", "when": ["any"], "part": "balance" },
+  { "t": "Fun is part of the plan! Play outside, draw, hang out with friends 🎈", "when": ["any", "rest"], "part": "balance" },
+  { "t": "Feeling like it's too much? Tell Mom. A lighter day is allowed 💛", "when": ["any"], "part": "balance" },
+  { "t": "Never skip a meal. Dancers run on fuel. Strong dancers eat well 🍓", "when": ["any"], "part": "food" },
+  { "t": "Sharp pain is a STOP sign 🛑 Tell Mom right away.", "when": ["any", "home"], "part": "body" },
+  { "t": "Acro only on the mat or with a spotter 🤸", "when": ["any", "home"], "part": "body" },
+  { "t": "Nervous? Smell the flower, blow out the candle. Three times 🌸", "when": ["any"], "part": "body" },
+  { "t": "Be kind to yourself. Mistakes are how dancers learn 💛", "when": ["any"], "part": "body" },
+  { "t": "Same time, same place makes practice easy. Is it practice o'clock? ⏰", "when": ["home"], "part": "time" },
+  { "t": "Keep Toolkit page 4 open while you practice. Your fixes are right there 👀", "when": ["home"], "part": "grab" },
+  { "t": "Finished practice? Tap Done, then a sticker on Toolkit page 2 ⭐", "when": ["home"], "part": "grab" },
+  { "t": "Warm up first, always. Then the bendy stuff 🧘", "when": ["home"], "part": "body" },
+  { "t": "Stop before you're too tired. Tired teaches your body the wrong way.", "when": ["home"], "part": "body" },
+  { "t": "Studio day! Is your water bottle in the bag? 💧", "when": ["studio"], "part": "food" },
+  { "t": "A small snack 1–2 hours before class: banana + peanut butter, or apple + cheese 🍎", "when": ["studio"], "part": "food" },
+  { "t": "Got a correction in class? Tell Mom and add it with ＋ Note. It's your fix right away ✏️", "when": ["studio", "after"], "part": "grab" },
+  { "t": "Refuel after class: chocolate milk, yogurt, eggs or a tuna sandwich 🥪", "when": ["after"], "part": "food" },
+  { "t": "Group rehearsal today! Any correction from your teacher goes in with ＋ Note ✏️", "when": ["sat"], "part": "grab" },
+  { "t": "Sunday is film day 🎬 Watch with Mom: what went well first, then ONE fix.", "when": ["sun"], "part": "grab" },
+  { "t": "Sunday plan time 📋 Fill in a fresh This week sheet (Toolkit page 6).", "when": ["sun"], "part": "time" },
+  { "t": "No home practice today, so homework first and an early bed 📚", "when": ["rest"], "part": "balance" },
+  { "t": "Breakfast is dancer fuel 🥣 Oatmeal, eggs, yogurt… what's yours?", "when": ["morning"], "part": "food" },
+  { "t": "Screens off 1 hour before bed 📵 Phones and tablets sleep outside your room.", "when": ["evening"], "part": "time" },
+  { "t": "Sleep is secret practice 🌙 Your brain saves your steps while you sleep.", "when": ["evening"], "part": "sleep" },
+  { "t": "Pack your dance bag tonight. Morning-you will say thank you 🎒", "when": ["evening"], "part": "time" },
+  { "t": "Same bedtime every night, even on weekends 😴", "when": ["evening"], "part": "sleep" }
+ ]
+}

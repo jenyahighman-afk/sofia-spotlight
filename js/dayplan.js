@@ -40,7 +40,7 @@ export function renderDayPlan(date = todayStr()){
   el.hidden = false; el.innerHTML = `<div class="row dp-head"><b class="grow">📋 Today's plan</b><span class="chip ${mustN ? "mint" : ""}">${TAGS[p.tag]}${p.label ? " · " + esc(p.label) : ""}</span></div>
     ${p.classes ? `<div class="small muted dp-classes">📍 ${esc(p.classes)}</div>` : ""}
     <div class="dp-list">${p.must.map(row).join("")}${p.opt.map(row).join("")}</div>
-    <div class="small muted dp-foot">⏱ ${p.mins[0]} min must · +${p.mins[1]} min if there's time${mustN ? " · ✓ today counts" : " · one must-box done = today counts"}</div>${p.note ? `<div class="small dp-note">${esc(p.note)}</div>` : ""}${booked.length && p.tag === "home" ? `<div class="small dp-note">🏫 ${booked.map(b => esc(`${b.name}${b.t ? " " + b.t : ""}`)).join(" · ")} today, so do the short version: the 15-minute memory run (Practice → ▶ Start practice).</div>` : ""}`;
+    <div class="small muted dp-foot">⏱ ${p.mins[0]} min · +${p.mins[1]} if there's time${mustN ? " · ⭐ plan done" : " · tick a solid box = plan done ⭐"}</div>${p.note ? `<div class="small dp-note">${esc(p.note)}</div>` : ""}${booked.length && p.tag === "home" ? `<div class="small dp-note">🏫 ${booked.map(b => esc(`${b.name}${b.t ? " " + b.t : ""}`)).join(" · ")} today, so do the short version: the 15-minute memory run (Practice → ▶ Start practice).</div>` : ""}`;
 }
 async function dpTick(id){
   const date = todayStr(); const p = dayPlan(date); if (!p) return; const { rec, on, mustDone } = tickPlan(S.practice[date], p, id);

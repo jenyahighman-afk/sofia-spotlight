@@ -7,6 +7,7 @@ import { SKILLS, PRACTICE_POOL } from "./data.js";
 import { dayNumber } from "./plan.js";
 import { skillState } from "./skills.js";
 import { pingDone } from "./remind.js";
+import { planDone } from "./streak.js";
 
 export const BITES = BITE_IDS;
 // Games that make sense as a quick daily pick (no camera clip needed, finished in a few minutes).
@@ -40,8 +41,9 @@ export const KNEES = { title: "🦵 Memory + knees", items: [
   { id: "knees-releve", text: "Slow relevés ×10: knees straight, ankles don't roll", secs: 45, pose: "releve", kind: "tech" },
   { id: "knees-memo", text: "Say the solo from the top, move by move, as far as you know", secs: 60, pose: "pose", kind: "tech" },
 ] };
-export function cardsFor(date, { skills = {}, bites = [], ladder, pool, memo = null, focus = null } = {}){
-  const m = moveOfDay(date, pool), g = gameOfDay(date); const done = new Set(Array.isArray(bites) ? bites : []);
+// `soloOnly` (a home day during Own it, before the plan is done): the game card is What's Next? — solo work — not a filler game.
+export function cardsFor(date, { skills = {}, bites = [], ladder, pool, memo = null, focus = null, soloOnly = false } = {}){
+  const m = moveOfDay(date, pool), g = soloOnly ? ["nextmove", "What's Next?", "🧠"] : gameOfDay(date); const done = new Set(Array.isArray(bites) ? bites : []);
   const extra = memo && memo.danceId ? [{ id: "memo", ic: "🧠", title: "Memorize it", sub: memo.label || "A chunk", go: `showPage('dances');memoFocus('${memo.danceId}')`, done: done.has("memo") }] : [];
   return [...[
     trickCard(date, { skills, ladder, focus, done: done.has("trick") }),
@@ -51,13 +53,14 @@ export function cardsFor(date, { skills = {}, bites = [], ladder, pool, memo = n
 }
 // Tired-day options: short, lying down, and they count. "Picture the dance" is mental rehearsal (see Mind skills).
 export const TIRED = {
-  stretch: { title: "🧘 2-minute stretch", items: [{ id: "tired-breathe", text: "Lie on your back. Breathe in for 4, out for 4", secs: 60, pose: "hollow", kind: "flex" }, { id: "tired-cobra", text: "Cobra, then seal. Slow and easy", secs: 60, pose: "cobra", kind: "flex" }] },
+  stretch: { title: "🧘 2-minute stretch", items: [{ id: "tired-breathe", text: "Lie on your back. Breathe in for 4, out for 6", secs: 60, pose: "hollow", kind: "flex" }, { id: "tired-cobra", text: "Cobra, then seal. Slow and easy", secs: 60, pose: "cobra", kind: "flex" }] },
   picture: { title: "🎧 Picture the dance", items: [{ id: "tired-picture", text: "Lie down, eyes closed. Dance the whole solo in your head, counts and all", secs: 90, pose: "hollow", kind: "flex" }] },
 };
-// Add a bite to today's record (once). Returns true when it was new.
+// Add a bite to today's record (once). Returns true when it was new. The reminder goes quiet only once the plan is done
+// (streak.js planDone): a plan box or a Memorize chunk does it, a game or a dare keeps the streak but not the nudge.
 export async function markBite(id, date = todayStr()){
   if (!BITES.includes(id)) return false; const rec = S.practice[date] || { done: [], note: "", runs: [] }; const have = Array.isArray(rec.bites) ? rec.bites : [];
-  if (have.includes(id)) return false; await storeSet("practice", date, { ...rec, bites: [...have, id] }); try { pingDone(); } catch (e) {}
+  if (have.includes(id)) return false; const next = { ...rec, bites: [...have, id] }; await storeSet("practice", date, next); if (planDone(next)) try { pingDone(); } catch (e) {}
   try { document.dispatchEvent(new CustomEvent("bitedone", { detail: id })); } catch (e) {} // the helper (buddy.js) says well done + what's next
   return true;
 }

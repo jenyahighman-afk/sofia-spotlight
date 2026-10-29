@@ -2,35 +2,29 @@
   "_note": "The talking helper (js/buddy.js): her dance pet pops up with ONE next step. A message = an opener + the step for the situation + sometimes a true fact. Every {placeholder} is filled from the app's own data (her name, the pet's name, today's plan item, streak, skips, stars, events). Keep lines short, kind, funny; never invent facts.",
   "openers": [
     "Psst, {name}! 🐰",
-    "Boing boing! It's me, {pet}!",
-    "*wiggles ears dramatically*",
-    "Hi {name}! I ate a carrot and now I'm READY. 🥕",
+    "Hi {name}! {pet} here.",
     "{pet} reporting for dance duty! 🫡",
-    "Knock knock! (It's me. I'm the knock.)",
-    "Did somebody say DANCE? No? Well, I did.",
-    "I tried a pirouette. I fell over. Your turn! 😅",
     "Hey superstar ✨",
-    "Fun fact: bunnies can't point their toes. You can!",
-    "*peeks out from behind the screen* 👀",
-    "Ta-daaa! 🎉 Okay, I'll be serious for one second.",
-    "Hop hop! Important bunny business:",
-    "I practised my jazz hands. Look! 🙌 …they're paws.",
+    "Hop hop! Here's the one thing for today:",
     "Ahem. Bunny announcement! 📣",
-    "You're back! I was SO bored. I counted my whiskers. Twice.",
-    "{name}! {name}! {name}! Okay, hi. 🐰",
-    "Guess what? You're awesome. Also:"
+    "You're back! I saved you a spot.",
+    "Guess what? You're awesome. Also:",
+    "Okay {name}, one thing, then it's yours:",
+    "Quick one from me, {pet}:",
+    "I checked the plan. Here's where we are:",
+    "Ready when you are, {name} 🌸"
   ],
   "steps": {
     "plan": [
-      "Today's plan says: {item}. Do that and today counts ✅",
+      "Today's plan says: {item}. Do that and the plan is done ⭐",
       "Mission of the day 📋: {item}. Tick the box and we're golden.",
-      "Grown-up plan alert! {item}. One box ticked = the day counts.",
+      "Today's plan: {item}. Tick the box when it's done ⭐",
       "The plan whispered to me 🤫: {item}. I think it's a good one."
     ],
     "plan-more": [
-      "Today already counts 🎉 One more from your plan? {item}",
+      "Plan done ⭐ One more from your list? {item}",
       "You did it! Bonus box if you're up for it: {item} ⭐",
-      "Streak safe ✅ Next on your plan: {item}. No pressure. Some pressure. Okay, no pressure."
+      "Nice ⭐ Next on your plan: {item}. No pressure."
     ],
     "trick": [
       "Today's trick is {trick}. Five careful tries, then tap it done!",
@@ -42,8 +36,13 @@
       "Show me a move: {move}. I'll watch. I'm very good at watching. 👀",
       "Technique time ✨ {move}. Pointy toes, proud chest!"
     ],
+    "solo": [
+      "Streak safe ✅ Now the solo: 15 minutes and the plan is done ⭐",
+      "The streak is safe. The solo isn't done yet: ▶ Start practice and it is ⭐",
+      "Games are for after the solo. Your solo misses you 🌸"
+    ],
     "game": [
-      "Quick game today: {game}. It counts as practice AND it's fun. Sneaky! 🎮",
+      "Quick game today: {game}. Keeps your streak, and it's fun 🎮",
       "How about {game}? Practice in disguise 🥸"
     ],
     "memo": [
@@ -67,10 +66,10 @@
       "I missed you! Let's start a fresh streak. Just one bite today 🐰"
     ],
     "just-done": [
-      "Yesss! That counts for today ✅",
-      "WOOHOO! 🎉 Today counts!",
-      "Look at you go! ✅ Done for today.",
-      "*does a happy hop* That's today's practice! 🐰"
+      "Yesss! Streak safe ✅",
+      "WOOHOO! 🎉 That one is in the book.",
+      "Look at you go! ✅",
+      "*does a happy hop* 🐰"
     ],
     "dare": [
       "Today's dare is waiting 🎯 Are you brave enough? (You are.)",

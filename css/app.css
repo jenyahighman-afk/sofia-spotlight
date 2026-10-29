@@ -277,6 +277,9 @@ body.modal{overflow:hidden}
 .pm-item{text-align:center;padding:6px 10px} .pm-kind{font-size:2.2rem;line-height:1} .pm-text{font-family:Fredoka;font-size:1.5rem;line-height:1.2;margin-top:4px} .pm-how{margin:8px auto 0;max-width:34rem;color:var(--ink-2);line-height:1.4}
 .pm-timer{text-align:center} .pm-clock{font-family:Fredoka;font-size:3.4rem;line-height:1;color:#FF5C93} .pm-clock.paused{color:var(--ink-2)}
 .pm-mode{justify-content:center}
+.pm-tools{justify-content:center;margin-top:6px} .pm-tools:empty{display:none}
+.today-media{margin-top:6px}
+.game-gate{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card);border:2px dashed var(--line);border-radius:14px;padding:10px 12px}
 .coach-line{font-family:Fredoka;font-size:1.2rem;margin:4px 0 10px}
 .coach-pick{display:grid;gap:10px} .coach-busy{text-align:center;padding:20px 0}
 .thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0} .thumb img,.small-thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:var(--line)} .thumb small{display:block;text-align:center;font-size:.65rem;color:var(--ink-2)}

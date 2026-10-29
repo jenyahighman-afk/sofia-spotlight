@@ -5,7 +5,8 @@ export const esc=(s)=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;
 export const fmt=(d)=>new Date(d+"T00:00:00").toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
 export const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
 export const dateStr=(d)=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-export const daysUntil=(d)=>Math.ceil((new Date(d+"T00:00:00")-new Date(todayStr()+"T00:00:00"))/86400000);
+// Whole days to a date; rounded, not ceiled, so the DST change (a 23- or 25-hour day) can't add a day to the countdown.
+export const daysUntil=(d)=>Math.round((new Date(d+"T00:00:00")-new Date(todayStr()+"T00:00:00"))/86400000);
 export function grow(el){ el.style.height="auto"; el.style.height=(el.scrollHeight+2)+"px"; }
 export function growAll(root){ (root||document).querySelectorAll("textarea").forEach(t=>{ grow(t); t.oninput=()=>grow(t); }); }
 export const roText=(lab,v)=>`<div class="field-lab">${lab}</div><div class="ro">${esc(v||"")}</div>`;

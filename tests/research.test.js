@@ -42,8 +42,8 @@ test("taper from Dec 28: fewer exercises (one core, one legs, one technique) and
   assert.equal(sessionRules("2026-12-27").taper, false); assert.equal(sessionRules("2026-12-28").taper, true);
   for (const k of ["core", "legs", "tech"]) { assert.ok(count(before, k) >= 2, k); assert.equal(count(taper, k), 1, k); }
   assert.match(taper.find(i => i.id === "solo-run").text, /ONE full-out/);
-  const night = sessionRules("2027-01-08"); assert.equal(night.short, true); assert.equal(night.nightBefore, true);
-  const mr = buildPlan({ ...base, date: "2027-01-08", short: true, nightBefore: true, session: night }); assert.match(mr.find(i => i.id === "mem-top").text, /no full-out tonight/); assert.ok(!mr.some(i => /full out/i.test(i.text) && !/no full-out/.test(i.text)));
+  const night = sessionRules("2027-01-07"); assert.equal(night.short, true); assert.equal(night.nightBefore, true);
+  const mr = buildPlan({ ...base, date: "2027-01-07", short: true, nightBefore: true, session: night }); assert.match(mr.find(i => i.id === "mem-top").text, /no full-out tonight/); assert.ok(!mr.some(i => /full out/i.test(i.text) && !/no full-out/.test(i.text)));
 });
 test("a light week (Thanksgiving, Nov 23) is the memory run, not strength and stretching", () => {
   for (const d of ["2026-11-23", "2026-11-26", "2026-11-29"]) assert.equal(sessionRules(d).short, true, d); assert.equal(sessionRules("2026-11-30").short, false);
@@ -67,14 +67,14 @@ test("one fix at a time: it moves on once it shows on two videos in a row; 'Not 
   await fixOnVideo("f1", true, "2026-11-15"); const r = await fixOnVideo("f1", true, "2026-11-22"); assert.equal(S.corrections.f1.status, "done"); assert.equal(r.moved.id, "f2", "straight on to the next fix"); assert.equal(S.settings.weekFix.id, "f2"); assert.equal("f1" in S.settings.fixSeen, false);
   S.settings = {}; S.corrections = {};
 });
-test("never 2 days without dancing: days since the last practice of any kind", () => {
-  const p = { "2026-10-20": { bites: ["memo"] }, "2026-10-22": { done: [], runs: [] }, "2026-10-23": { plan: ["warm"] } };
-  assert.equal(daysSinceDance(p, "2026-10-23"), 0); assert.equal(daysSinceDance(p, "2026-10-25"), 2); assert.equal(daysSinceDance({}, "2026-10-25"), Infinity);
+test("never more than 2 days without the solo: days since the plan was last done (a game or a dare doesn't reset the clock)", () => {
+  const p = { "2026-10-20": { bites: ["memo"] }, "2026-10-22": { done: [], runs: [] }, "2026-10-23": { bites: ["plan"] }, "2026-10-24": { bites: ["game", "dare"] } };
+  assert.equal(daysSinceDance(p, "2026-10-23"), 0); assert.equal(daysSinceDance(p, "2026-10-24"), 1); assert.equal(daysSinceDance(p, "2026-10-25"), 2); assert.equal(daysSinceDance({}, "2026-10-25"), Infinity);
   assert.equal(plan.rules.maxGap, 2);
 });
 test("mini audiences in weeks 10–14, the stage tape once, sleep in the last two weeks; the phase texts say the new rules", () => {
   const ex = (d) => weekOf(d).extra || ""; assert.match(ex("2026-12-01"), /Mini audience #1/); assert.match(ex("2026-12-15"), /Tape out the stage size/); assert.match(ex("2026-12-15"), /Mini audience #2/); assert.match(ex("2026-12-22"), /Mini audience #3/);
-  assert.match(ex("2026-12-29"), /Sleep 9–12 hours/); assert.match(ex("2027-01-05"), /night before the show/); assert.equal(ex("2026-11-02"), "");
+  assert.match(ex("2026-12-29"), /Sleep 9–12 hours/); assert.match(ex("2027-01-05"), /the night before/); assert.equal(ex("2026-11-02"), "");
   const g = Object.fromEntries(plan.phases.map(p => [p.n, p.g])); assert.match(g["Own it"], /teacher's new correction right away/); assert.match(g["Clean it"], /two videos in a row/); assert.match(g["Perform it"], /one full-out every session/); assert.match(g["Taper"], /Night before the show/);
   assert.match(json("phases").find(p => p.n === "Clean it").g, /two videos in a row/);
 });
@@ -84,7 +84,7 @@ test("schema 42: settings.fixSeen keeps real dates only, the last two, sorted", 
 });
 test("the printed Practice Toolkit (tools/print source → files/) carries the same rules", () => {
   const html = readFileSync(new URL("../tools/print/Sofia-Practice-Toolkit.html", import.meta.url), "utf8");
-  for (const s of ["two videos in a row", "Show in your head", "Stand in your opening pose", "never let it push bedtime later", "one full-out", "two back to back on Sundays", "Night before: memory run only", "tape out the stage size", "mini audience #3", "Sleep 9–12 hours", "practise it right away", "Never 2 days in a row without the solo", "2 Heel stretch", "0:48–2:04 from memory", "head ALL the way back. Don't tuck the chin"]) assert.ok(html.includes(s), s);
+  for (const s of ["two videos in a row", "Show in your head", "Stand in your opening pose", "never let it push bedtime later", "one full-out", "two back to back on Sundays", "Night before: memory run only", "tape out the stage size", "mini audience #3", "Sleep 9–12 hours", "practise it right away", "Never more than 2 days without the solo", "2 Heel stretch", "0:48–2:04 from memory", "head ALL the way back. Don't tuck the chin"]) assert.ok(html.includes(s), s);
   assert.ok(!/ONE SHOULDER|chin tucked/i.test(html), "Hannah's donut roll, not over the shoulder");
   assert.ok(!/<img|https?:\/\/fonts\./.test(html), "no pictures, no web font: prints the same every time");
   const man = JSON.parse(readFileSync(new URL("../seed-data/manifest.json", import.meta.url), "utf8")).files.find(f => f.name === "Sofia-Practice-Toolkit.pdf");
@@ -92,7 +92,7 @@ test("the printed Practice Toolkit (tools/print source → files/) carries the s
 });
 test("Sofia's Backstage Pass (tools/print source → files/) is a printable added to My files, with meat-free food and the plan's rules", () => {
   const html = readFileSync(new URL("../tools/print/Sofia-Backstage-Pass.html", import.meta.url), "utf8");
-  for (const s of ["App = TODAY", "Toolkit = HOW", "Workbook = EVERYTHING ELSE", "Start here", "My plan", "My dances", "Show time", "two videos in a row", "Never 2 days in a row without your solo", "9–12", "Screens off 1 hour before bed", "Acro on the mat or with a spotter", "Never skip a meal"]) assert.ok(html.includes(s), s);
+  for (const s of ["App = TODAY", "Toolkit = HOW", "Workbook = EVERYTHING ELSE", "Start here", "My plan", "My dances", "Show time", "two videos in a row", "Never more than 2 days without your solo", "9–12", "Screens off 1 hour before bed", "Acro on the mat or with a spotter", "Never skip a meal"]) assert.ok(html.includes(s), s);
   assert.ok(!/\b(chicken|turkey|beef|pork|ham|bacon|sausage|jerky)\b/i.test(html), "Sofia is pescatarian: no meat in the food ideas");
   assert.ok(!/Wed(nesday)?s? 3:30/.test(html), "no Wednesday rehearsal");
   const man = JSON.parse(readFileSync(new URL("../seed-data/manifest.json", import.meta.url), "utf8")).files.find(f => f.name === "Sofia-Backstage-Pass.pdf");

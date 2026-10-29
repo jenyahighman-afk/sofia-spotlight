@@ -11,6 +11,13 @@ import { openStage, closeStage } from "./stage.js";
 const KEY = "spotlight:news";
 // Where "▶ Try it" goes for each item: the page, then the feature's own opener when it has one.
 export const TRY = {
+  // 1.43.0 (Build 1 from the Oct 28 review)
+  plan: { page: "home", scroll: "#todayCard" },
+  monday: { page: "home", scroll: "#todayCard" },
+  tools: { page: "home", scroll: "#todayCard" },
+  timer: { page: "practice" },
+  games: { page: "play" },
+  // 1.30 (the poll features; kept so an old link still goes somewhere)
   dares: { page: "home", scroll: "#dareCard" },
   cards: { page: "me", call: "openCards" },
   costume: { page: "me", call: "openCostumes" },
