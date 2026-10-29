@@ -596,3 +596,5 @@ body.modal{overflow:hidden}
 .kcount{position:absolute;top:6px;right:10px;font-family:Fredoka;font-size:1.5rem;line-height:1;color:#B98BEF;min-width:24px} .kcount.one{color:#FF5C93}
 .run-overlay .kara-box{width:100%;background:transparent;border:0;padding:0 46px;margin:0} .run-overlay .kara .kl.now{font-size:2rem} .run-overlay .kara .kl.next{font-size:1.1rem} .run-overlay .kcount{font-size:2.6rem;top:-4px}
 .timing{text-align:center} .timing .tl-now{font-family:Fredoka;font-size:1.4rem;line-height:1.2;margin-top:4px} .timing .tl-next{opacity:.7;margin-top:2px} .timing .tl-btn{font-size:1.3rem;padding:16px 28px;margin-top:10px}
+/* Judges' audio on the solo and trio cards (js/views/dances.js judgesHtml) */
+.judge-clip{margin:4px 0 8px} .judge-clip audio{margin-top:2px}

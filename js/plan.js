@@ -37,9 +37,13 @@ export const KNEE_DRILL = { id: "knees-block", text: "Memory + knees: pliés in 
 //   focus: "knees" (KNEE_DRILL instead of a trick) | "none" (no trick drill) | [trick lines] (this week's tricks only) }
 export function buildPlan(opts){
   const { pool, date } = opts; const day = dayNumber(date); const wd = weekday(date); const items = [];
-  if (opts.short === "watch") return WATCH_DAY.map(it => ({ ...it }));
-  if (opts.short) return MEMORY_RUN.map(it => it.id === "mem-top" && opts.nightBefore ? { ...it, text: "Night before the show · From the top, marking it with the music: no full-out tonight" } : { ...it });
   const ses = opts.session || {};
+  // The week after a comp (plan-spring.json weeks[].judges): the judges' audio feedback comes first, solo then trio, each
+  // once that week (planToday marks the one already ticked this week as done), with "write the fixes" one tap away.
+  // Listening is no extra dancing, so it also opens the short plans: the Monday after a comp starts with the judges.
+  const jg = ses.judges; if (jg) { if (!jg.soloDone) items.push({ id: "judges-solo", text: jg.solo, how: jg.how, secs: jg.secs, kind: "listen", pose: "hold", dance: "solo" }); if (!jg.trioDone) items.push({ id: "judges-trio", text: jg.trio, how: jg.how, secs: jg.secs, kind: "listen", pose: "hold", dance: "trio" }); }
+  if (opts.short === "watch") return [...items, ...WATCH_DAY.map(it => ({ ...it }))];
+  if (opts.short) return [...items, ...MEMORY_RUN.map(it => it.id === "mem-top" && opts.nightBefore ? { ...it, text: "Night before the show · From the top, marking it with the music: no full-out tonight" } : { ...it })];
   const prefer = opts.preferTags || [];
   const comp = opts.mode === "comp"; // comp week: one core, one legs, no trick drills or aerial missions — clean runs instead
   // Taper (from Dec 28): one core, one legs, one technique — fewer exercises, the full-out stays.

@@ -8,7 +8,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 47;
+export const SCHEMA_VERSION = 48;
 // Schema 44: the trick progress lineup's frames (js/lineup.js FRAMES), frozen here for the migration.
 export const FRAME_IDS = ["polaroid", "film", "star", "sparkle", "spotlight", "sticker"];
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
@@ -406,7 +406,14 @@ export const MIGRATIONS = {
     return doc;
   },
   // 47 (1.45.0): dances.lyricKeys — shipped line times keyed by a hash of the line (cues.js lineKey), no words. Normalized when present.
-  47: (col, id, doc) => { if (col === "dances" && doc.lyricKeys !== undefined) doc.lyricKeys = normalizeLyricKeys(doc.lyricKeys); return doc; }
+  47: (col, id, doc) => { if (col === "dances" && doc.lyricKeys !== undefined) doc.lyricKeys = normalizeLyricKeys(doc.lyricKeys); return doc; },
+  // 48 (1.46.0): dances.judgesClips — the judges' recordings a comp sends (family Storage refs): https url + path, name and
+  // comp ≤ 60 chars, at = YYYY-MM-DD; junk dropped, at most 10. Normalized when present, never invented.
+  48: (col, id, doc) => {
+    if (col !== "dances" || doc.judgesClips === undefined) return doc;
+    doc.judgesClips = (Array.isArray(doc.judgesClips) ? doc.judgesClips : []).map(c => { const r = mediaRef(c); if (!r) return null; const o = { ...r }; if (c.name) o.name = String(c.name).slice(0, 60); if (c.comp) o.comp = String(c.comp).slice(0, 60); if (typeof c.at === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.at)) o.at = c.at; return o; }).filter(Boolean).slice(0, 10);
+    return doc;
+  }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],

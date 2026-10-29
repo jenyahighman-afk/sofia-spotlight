@@ -5,11 +5,11 @@
 import { PRACTICE_POOL, AERIAL, CLASSES, SKILLS } from "./data.js";
 import { S, dances, events, studioDates } from "./store.js";
 import { buildPlan, applyCustom } from "./plan.js";
-import { patterns, isOpen, currentWeekFix, newTeacherNotes } from "./corrections.js";
+import { patterns, isOpen, currentWeekFix, newTeacherNotes, shiftDate } from "./corrections.js";
 import { todayStr } from "./util.js";
 import { modeFor } from "./mode.js";
 import { isShortDay } from "./studio.js";
-import { trickFocus, weakestTrick, sessionRules, studioKind } from "./season15.js";
+import { trickFocus, weakestTrick, sessionRules, studioKind, weekOf } from "./season15.js";
 import { drillFor } from "./trickdrill.js";
 
 // "knees", "none" (a light or taper week: no trick drill), this week's trick lines (from the solo card), or null (the usual rotation).
@@ -22,11 +22,17 @@ export function focusFor(date, ds = dances()){
 // The short plan for `date`, or "": "watch" (a Monday: Hannah's videos, no dancing), "memory" (every other studio day, a
 // light week, the night before the show).
 export function shortKind(date = todayStr()){ if (isShortDay(date, CLASSES, studioDates())) return studioKind(date); return sessionRules(date).short ? "memory" : ""; }
+// The judges' feedback items (the week after a comp) stay on the plan until each has been ticked once that week.
+export function judgesFor(date, session, practice = S.practice){
+  const j = session && session.judges; if (!j) return null; const wk = weekOf(date); const from = wk ? wk.of : date;
+  const done = (id) => { for (let d = from; d <= date; d = shiftDate(d, 1)) { const rec = practice[d]; if (rec && Array.isArray(rec.done) && rec.done.includes(id)) return true; } return false; };
+  return { ...j, soloDone: done("judges-solo"), trioDone: done("judges-trio") };
+}
 export function planFor(date = todayStr()){
   const ds = dances();
   const tricks = ds.flatMap(d => Array.isArray(d.tricks) ? d.tricks : []);
   const prefer = patterns(S.corrections, { today: date, min: 1 }).map(p => p.tag).filter(t => Object.values(S.corrections).some(c => isOpen(c) && c.tag === t)).slice(0, 3);
-  const fix = date === todayStr() ? currentWeekFix(date) : null; const session = sessionRules(date);
+  const fix = date === todayStr() ? currentWeekFix(date) : null; const rules = sessionRules(date); const session = { ...rules, judges: judgesFor(date, rules) };
   const base = buildPlan({ pool: PRACTICE_POOL, date, preferTags: prefer, weekFix: fix ? { id: fix.id, text: fix.text, tag: fix.tag } : null, tricks, aerial: AERIAL, aerialDone: S.settings.aerial || [], dances: ds, mode: modeFor(date, events(), S.settings).mode,
     short: shortKind(date), nightBefore: session.nightBefore, focus: focusFor(date, ds), session, newNotes: newTeacherNotes(S.corrections, date) });
   return applyCustom(base, PRACTICE_POOL, (S.practice[date] || {}).custom);

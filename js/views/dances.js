@@ -1,7 +1,8 @@
 // Dances tab: one "cover" card per dance — art, song, ▶ Practice, the top three fixes as chips (tap = Show me), a quick
 // "＋ Note from class", and everything text-heavy under "More ▸" (collapsed). Edit mode lives inside More.
-import { $, esc, growAll, toast, uid, expose, roText, roList, edText, edList } from "../util.js";
-import { S, storeSet, dances } from "../store.js";
+import { $, esc, growAll, toast, uid, expose, roText, roList, edText, edList, todayStr } from "../util.js";
+import { S, storeSet, dances, events } from "../store.js";
+import { media, friendlyError } from "../sync.js";
 import { photoTile, uploadMusic } from "./notes.js";
 import { TAGS, TAG_LABEL, TAG_EMOJI, topFixes, forDance, patterns, addCorrection, closeCorrection, reopenCorrection, removeCorrection, inferTag } from "../corrections.js";
 import { checkBadges } from "../badges.js";
@@ -63,7 +64,7 @@ function renderDances(){
         ${roText("Costume",d.costume)}${roText("Shoes",d.shoes)}${roText("Hair",d.hair)}
         ${roText("Music map",d.music)}${roText("Where the big moments land",d.map)}<div class="field-lab">Cue sheet (shown in the player)</div>${cueSheetRo(d)}
         ${roText("The story (for Sofia)",d.story)}${roList("Step order (from the walkthrough)",d.steps)}${roList("Performance notes",d.performance)}${roList("What's already strong",d.strengths)}<div class="field-lab">All corrections</div>${fullList(d)}${roList("Trick drills",d.tricks)}${roList("Where do I look?",d.eyes)}
-        ${roText("Notes",d.notes)}${wordsLine(d)}${d.id==="solo"||d.id==="trio"?videosEdit(d):""}${d.id==="solo"?`<div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="openRehearsal('solo')">📅 Book a solo private</button><span class="small muted">Booked with Ms. Brittany? That day's home plan becomes the 15-minute memory run.</span></div>`:""}${photos}`;
+        ${roText("Notes",d.notes)}${wordsLine(d)}${d.id==="solo"||d.id==="trio"?judgesHtml(d):""}${d.id==="solo"||d.id==="trio"?videosEdit(d):""}${d.id==="solo"?`<div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="openRehearsal('solo')">📅 Book a solo private</button><span class="small muted">Booked with Ms. Brittany? That day's home plan becomes the 15-minute memory run.</span></div>`:""}${photos}`;
     } else {
       more=`<p class="small muted">Editing. Nothing is saved until you tap Save.</p>
       ${edText("song","Song",d.song,"Title — artist")}${edText("style","Style",d.style)}${edText("bpm","BPM (beats per minute, for the count overlay)",d.bpm,"e.g. 76")}${edText("choreo","Choreographer",d.choreo)}${edText("teacher","Teacher / class",d.teacher)}${edText("rehearsal","Rehearsal & class schedule",d.rehearsal)}
@@ -114,4 +115,17 @@ expose({ danceEdit, saveDance, delDance, addMusic, noteOpen, noteCancel, noteTag
 const wordsLine=(d)=>{ const n=lyricLines(d.lyrics).length; if(!n) return ""; const t=lyricTimesFor(d.lyrics,d.lyricTimes,d.lyricKeys).filter(x=>x!==null).length; return `<div class="small muted" style="margin-top:6px">🎤 ${n} sung lines · ${t===n?"all timed ⭐":t+" timed — ⏱ Time the words in the player"}</div>`; };
 // The family typed the words into Notes first: copy them into the Song words box (trim the rest, then Save).
 function lyricsFromNotes(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const n=card&&card.querySelector('.dfield[data-k="notes"]'), l=card&&card.querySelector('.dfield[data-k="lyrics"]'); if(!n||!l) return; if(!n.value.trim()) return toast("Notes are empty"); if(l.value.trim()&&!confirm("Replace the song words with the Notes text?")) return; l.value=n.value; growAll(card); l.focus(); toast("Copied — keep just the song's lines, then Save",3500); }
-expose({ lyricsFromNotes });
+// Judges' audio (1.46.0): the critiques a comp sends after the weekend, kept in the family space (music kind) on the solo
+// and trio cards and played right there; the daily plan's 🎧 item jumps here (judgesOpen). A grown-up adds the files.
+const JUDGES_MAX_BYTES=60*1024*1024, JUDGES_MAX=10;
+const judgesHtml=(d)=>{ const clips=Array.isArray(d.judgesClips)?d.judgesClips:[]; return `<div class="judges" id="judges-${d.id}"><div class="field-lab">🎧 Judges' audio${clips.length?` · ${clips.length}`:""}</div>${clips.length?clips.map((c,i)=>`<div class="judge-clip"><div class="row"><span class="small grow">${esc(c.comp||"")}${c.comp&&c.at?" · ":""}${esc(c.at||"")}${c.name?` · <span class="muted">${esc(c.name)}</span>`:""}</span><button class="btn sm ghost" onclick="delJudgesClip('${d.id}',${i})">✕</button></div><audio controls preload="none" src="${esc(c.url)}" style="width:100%"></audio></div>`).join(""):`<div class="small muted">After a comp, add each judge's recording here; then listen with Sofia and write the fixes as a note.</div>`}<div class="row" style="margin-top:4px"><label class="btn sm ghost" for="djudge-${d.id}">＋ Add judges' audio</label><input type="file" id="djudge-${d.id}" accept="audio/*,.m4a,.mp3,.wav,.aac" multiple hidden onchange="addJudgesClip(this.files,'${d.id}');this.value=''"></div></div>`; };
+// The comp a recording belongs to: the latest competition or showcase that has started (events.json type), by name.
+function lastComp(){ const today=todayStr(); const past=events().filter(e=>/compet|showcase/i.test(e.type||"")&&!/convention only/i.test(e.type||"")&&e.start<=today).sort((a,b)=>b.start.localeCompare(a.start)); return past[0]?String(past[0].name).slice(0,60):""; }
+async function addJudgesClip(files,danceId){ const list=[...(files||[])]; if(!list.length) return; const comp=lastComp(); const d=dances().find(x=>x.id===danceId); const cur=Array.isArray(d&&d.judgesClips)?[...d.judgesClips]:[];
+  for(const file of list){ if(file.size>JUDGES_MAX_BYTES){ toast("Too big — audio up to 60 MB",3000); continue; } if(!/^(audio|video)\//.test(file.type)&&!/\.(mp3|m4a|aac|wav|ogg|oga|flac|mp4|webm)$/i.test(file.name)){ toast("That doesn't look like an audio file",3000); continue; }
+    try{ toast("Uploading…",8000); const id="judges-"+uid(); const {path,url}=await media.upload("music",id,file,{contentType:file.type||"audio/mpeg",name:file.name}); cur.push({path,url,name:String(file.name).slice(0,60),at:todayStr(),comp}); }
+    catch(e){ console.warn(e); toast("Upload failed: "+friendlyError(e),3500); } }
+  await storeSet("dances",danceId,{...(S.dances[danceId]||{}),id:danceId,judgesClips:cur.slice(-JUDGES_MAX)}); moreOpen.add(danceId); renderDances(); toast("Saved to the family space ✓"); }
+async function delJudgesClip(danceId,i){ const d=dances().find(x=>x.id===danceId); const clips=Array.isArray(d&&d.judgesClips)?[...d.judgesClips]:[]; const c=clips[i]; if(!c||!confirm("Remove this recording?")) return; clips.splice(i,1); await storeSet("dances",danceId,{...(S.dances[danceId]||{}),id:danceId,judgesClips:clips}); try{ if(c.path) await media.remove(c.path); }catch(e){ console.warn(e); } renderDances(); }
+function judgesOpen(id){ moreOpen.add(id); renderDances(); setTimeout(()=>{ const el=$("#judges-"+id); if(el) el.scrollIntoView({behavior:"smooth",block:"center"}); },60); }
+expose({ lyricsFromNotes, addJudgesClip, delJudgesClip, judgesOpen });
