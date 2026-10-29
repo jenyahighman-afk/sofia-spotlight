@@ -5,7 +5,7 @@
 import { PRACTICE_POOL, AERIAL, CLASSES, SKILLS } from "./data.js";
 import { S, dances, events, studioDates } from "./store.js";
 import { buildPlan, applyCustom } from "./plan.js";
-import { patterns, isOpen, currentWeekFix, newTeacherNotes, shiftDate } from "./corrections.js";
+import { patterns, isOpen, weekFixOrPick, newTeacherNotes, shiftDate } from "./corrections.js";
 import { todayStr } from "./util.js";
 import { modeFor } from "./mode.js";
 import { isShortDay } from "./studio.js";
@@ -32,8 +32,9 @@ export function planFor(date = todayStr()){
   const ds = dances();
   const tricks = ds.flatMap(d => Array.isArray(d.tricks) ? d.tricks : []);
   const prefer = patterns(S.corrections, { today: date, min: 1 }).map(p => p.tag).filter(t => Object.values(S.corrections).some(c => isOpen(c) && c.tag === t)).slice(0, 3);
-  const fix = date === todayStr() ? currentWeekFix(date) : null; const rules = sessionRules(date); const session = { ...rules, judges: judgesFor(date, rules) };
-  const base = buildPlan({ pool: PRACTICE_POOL, date, preferTags: prefer, weekFix: fix ? { id: fix.id, text: fix.text, tag: fix.tag } : null, tricks, aerial: AERIAL, aerialDone: S.settings.aerial || [], dances: ds, mode: modeFor(date, events(), S.settings).mode,
+  // This week's fix (picked on the first open of a new week: corrections.weekFixOrPick), its source for the drill's "whose words".
+  const fix = date === todayStr() ? weekFixOrPick(date) : null; const rules = sessionRules(date); const session = { ...rules, judges: judgesFor(date, rules) };
+  const base = buildPlan({ pool: PRACTICE_POOL, date, preferTags: prefer, weekFix: fix ? { id: fix.id, text: fix.text, tag: fix.tag, source: fix.source || "", pinned: !!fix.pinned } : null, tricks, aerial: AERIAL, aerialDone: S.settings.aerial || [], dances: ds, mode: modeFor(date, events(), S.settings).mode,
     short: shortKind(date), nightBefore: session.nightBefore, focus: focusFor(date, ds), session, newNotes: newTeacherNotes(S.corrections, date) });
   return applyCustom(base, PRACTICE_POOL, (S.practice[date] || {}).custom);
 }

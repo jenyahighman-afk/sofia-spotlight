@@ -151,6 +151,7 @@ body.gated{overflow:hidden}
 .choice.four{grid-template-columns:repeat(2,1fr)} .choice.four .choice-card{min-height:90px;padding:10px 8px 8px} .choice.four .choice-card small{font-size:.74rem}
 /* Memorize it (js/memo.js): the fold under a dance's cover actions */
 details.memo{margin-top:6px;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.5)} details.memo>summary{display:flex;align-items:center;gap:8px;font-family:Fredoka;font-size:1rem;color:var(--ink)} details.memo>summary .chip{margin-left:auto}
+.memo-via-sheet>details.memo:not([open]){display:none} /* the solo's five steps: one door (🧠 Memorize); the sheet's "📋 Five steps" opens the fold here, closing it puts it away */
 .memo-chips{gap:6px;margin:6px 0 8px;flex-wrap:wrap} .memo-chips .chip{cursor:pointer;border:0;font:inherit;font-weight:700;font-size:.78rem}
 .dayplan .dp-head{align-items:center;gap:8px} .dayplan .dp-head b{font-family:Fredoka;font-size:1.1rem} .dp-classes{margin:4px 0 6px} .dp-list{display:flex;flex-direction:column}
 .dp-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-top:1px dashed var(--line);font-size:.95rem;line-height:1.3} .dp-item input{width:22px;height:22px;flex:none;margin-top:1px;accent-color:#FF5C93} .dp-item.opt{color:var(--ink-2)} .dp-item.opt input{opacity:.6} .dp-item.on{opacity:.6;text-decoration:line-through} .dp-item .lnk{flex:none;font-size:1rem}

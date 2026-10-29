@@ -1,7 +1,8 @@
 {
   "id": "build3-1.48",
-  "title": "5 new things in your app!",
-  "intro": "Build 3 from Mom's review: the Sunday film review is a little sheet in the app, Mom gets her own week card, your dance-time nudge knows what kind of day it is (and can nudge once more in the evening), Dance Along learns from Hannah's videos, and the doors, dares and costumes live on Play. Tap 👀 Show me how for the steps, or ▶ Try it to jump straight in.",
+  "title": "3 new things in your app!",
+  "intro": "On Sundays the film review is a little sheet: what went well, did your fix show, one note. Dance Along knows Hannah's videos now, so the whole solo fits. And the doors, the dare and the costume designer live on Play, after the plan.",
+  "mom": "New for Mom: this card is yours — the week, last Sunday's sheet, the fix, privates, the next checkpoint. The dance-time nudge now names the kind of day, and a second one comes at 8 pm on home days only if the plan isn't done (Me → ⏰ My dance time).",
   "items": [
     {
       "id": "sunday",
@@ -14,30 +15,6 @@
         "Watch the last run together, then tap “Watched it ›”.",
         "Say what went well. Mom types one word. Then “✓ It showed” or “Not yet” for this week's fix.",
         "A note if you want, then “✅ Done”. The plan item ticks itself."
-      ]
-    },
-    {
-      "id": "mom",
-      "e": "👩",
-      "n": "This week, for Mom",
-      "where": "Grown-ups",
-      "pitch": "One card with the week in a glance: the plan week, the Sunday sheet, the fix, privates, the next checkpoint, the mini audience.",
-      "steps": [
-        "Grown-ups (the PIN) → the card “👩 This week, for Mom” sits under the buttons.",
-        "Pink lines are the ones that need a hand: a Sunday sheet not filled, a private to book, a checkpoint to tick.",
-        "Ms. Brittany's homework closes in Skills & awards (“✓ Checked off”) once it showed on two videos in a row."
-      ]
-    },
-    {
-      "id": "remind",
-      "e": "⏰",
-      "n": "Nudges that know the day",
-      "where": "Me",
-      "pitch": "Your dance-time nudge says what today is: a watch day, a memory run or home practice. A second one in the evening if the plan isn't done.",
-      "steps": [
-        "Me → “⏰ My dance time”: the nudge comes on plan days, with the day's kind.",
-        "“🌙 A second nudge” comes later in the evening only if the plan still isn't done. The button turns it “Off”.",
-        "Plan done ⭐ means no nudge at all that day."
       ]
     },
     {

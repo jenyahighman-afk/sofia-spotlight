@@ -43,7 +43,9 @@ test("open-correction tags steer the technique picks; the week's fix becomes a d
   const eyes = buildPlan({ ...base, date: "2026-10-05", preferTags: ["eyes"] });
   assert.ok(eyes.filter(i => i.kind === "tech").every(i => (i.tags || []).includes("eyes")), eyes.filter(i => i.kind === "tech").map(i => i.id).join());
   const fix = buildPlan({ ...base, date: "2026-10-05", weekFix: { id: "c1", text: "Point your foot on the kick", tag: "feet" } });
-  const f = fix.find(i => i.kind === "fix"); assert.equal(f.id, "fix-c1"); assert.ok(f.text.includes("Point your foot on the kick")); assert.equal(f.pose, "pike");
+  // Build 4: the tag's drill is the item, the note's own words sit under it (`how`); a tag with no drill keeps the words as the item
+  const f = fix.find(i => i.kind === "fix"); assert.equal(f.id, "fix-c1"); assert.ok(f.text.startsWith("This week's fix · Feet drill:")); assert.equal(f.how, "The note: Point your foot on the kick"); assert.equal(f.pose, "pike");
+  const o = buildPlan({ ...base, date: "2026-10-05", weekFix: { id: "c2", text: "Smile at the ending", tag: "other", source: "Hannah" } }).find(i => i.kind === "fix"); assert.equal(o.text, "This week's fix: Smile at the ending"); assert.equal("how" in o, false);
 });
 
 test("aerial mission steps join the plan on home days only: two strength steps Thursday, one drill Friday, none on studio days", () => {
@@ -53,7 +55,7 @@ test("aerial mission steps join the plan on home days only: two strength steps T
   assert.equal(buildPlan({ ...base, date: "2026-10-05" }).filter(i => i.kind === "aerial").length, 0, "Monday is a studio day");
   const allDone = buildPlan({ ...base, date: "2026-10-01", aerialDone: aerial.map(a => a.id) }); assert.equal(allDone.filter(i => i.kind === "aerial").length, 0, "checked steps drop out");
   assert.ok(!thu.some(i => i.kind === "aerial" && /20 in a row|spotted|unspotted|teacher/i.test(i.text)), "in-class-only steps never appear at home");
-  assert.ok([...ae, ...af].every(i => i.how && i.how === aerial.find(a => a.id === i.aerialId).how), "aerial plan items carry the step's how-to");
+  assert.ok([...ae, ...af].every(i => { const a = aerial.find(x => x.id === i.aerialId); return i.how && i.how.startsWith(a.how) && (!a.wrong || i.how.endsWith("⚠ Watch for: " + a.wrong)); }), "aerial plan items carry the step's how-to and its watch-for text (Build 4)");
 });
 
 test("rotate: deterministic window over the pool, preferred tags first, no duplicates", () => {

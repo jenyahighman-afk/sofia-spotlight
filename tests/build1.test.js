@@ -89,7 +89,7 @@ test("the Bunny: once the streak is safe but the solo isn't done, the one next s
   assert.equal(B.pickStep({ ...ctx, plan: { must: [{ id: "a", t: "Solo chunk", go: "memo:solo" }] } }).key, "plan", "a plan box comes first");
   for (const t of [...lines.steps["just-done"], ...lines.steps.plan, ...lines.steps.game, ...lines.openers]) assert.doesNotMatch(t, /today counts|Grown-up plan alert|carrot|whiskers|Knock knock/i, t);
   const home = src("js/views/home.js"); assert.match(home, /⭐ Plan done/); assert.match(home, /Streak safe · solo next/); assert.match(home, /off left this week/); assert.doesNotMatch(home, /free skip/);
-  assert.match(src("js/dayplan.js"), /tick a solid box = plan done/);
+  assert.match(src("js/dayplan.js"), /ticked is the day's "plan" bite/); // the tick rule stays; Build 4 took the box list off Today (tests/build4a.test.js)
 });
 
 test("the trio's videos: Today's 📹 Videos, a videos row on the trio card, the solo card unchanged; the food line; the flipbook's name", () => {

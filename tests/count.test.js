@@ -13,9 +13,11 @@ const C = await import("../js/games/count.js");
 const { S, migrateDoc, SCHEMA_VERSION, setBackend, dances } = await import("../js/store.js");
 const { starsFor } = await import("../js/stars.js");
 const { FRIEND_GAMES } = await import("../js/who.js");
-const { memoryKnees } = await import("../js/season15.js"); const { todayStr } = await import("../js/util.js"); const { HOME_DAYS } = await import("../js/data.js");
-// What Play shows today depends on the weekday (home days gate the filler games until the plan is done) and on the Nov 9 gate.
-const tilesToday = () => play.gamesFor(todayStr(), { home: !!HOME_DAYS[new Date().getDay()], knees: memoryKnees(todayStr()), done: false }).games.length;
+const { memoryKnees } = await import("../js/season15.js"); const { todayStr } = await import("../js/util.js"); const { dayKindNow } = await import("../js/daykind.js"); const { doorsFor, showEvent } = await import("../js/advent.js");
+// What Play shows today depends on the kind of day (a home day with nothing booked gates the filler games and the extras until the
+// plan is done; daykind.js, Build 4) and on the Nov 9 gate — the tiles are the games plus the ✨ Extras (the doors while the countdown runs, the costumes).
+const tilesToday = () => { const today = todayStr(); const ev = showEvent(); const doors = doorsFor(); const doorsOn = !!ev && doors.length > 0 && today >= doors[0].date && today <= (ev.end || ev.start);
+  return play.playSections(today, { home: dayKindNow(today) === "home", knees: memoryKnees(today), done: false, doors: doorsOn }).sections.reduce((n, s) => n + s.games.length, 0); };
 const play = await import("../js/views/play.js");
 
 const steadyTaps = (n, gap, start = 0, jitter = () => 0) => Array.from({ length: n }, (_, i) => start + i * gap + jitter(i));

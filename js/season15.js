@@ -110,14 +110,19 @@ export function daysSinceDance(practice, today){
 // ---- DOM (Today) ----
 // Never more than 2 days without the solo: after two days without it the card asks for the memory run today.
 function gapNudge(date){ const max = ((activePlan(date).rules || {}).maxGap) || 2; const gap = daysSinceDance(S.practice, date); return Number.isFinite(gap) && gap >= max ? `<div class="sw-next sw-gap">🧠 ${gap} days without your solo: do the 15-minute memory run today <button class="btn sm coral" onclick="showPage('practice')">▶ Go</button></div>` : ""; }
-// One checkpoint row on the season card: a ✓ to tick it (a passed one asks "did you make it?"), undo on a ticked one,
-// a Book a private button on the undated rehearsal one.
+// A checkpoint can be ticked once its day is here or gone (Build 4: never ahead of time — the Showcase and the Ball are not
+// "made" in October), and cpTick asks once before saving. Pure.
+export const canTick = (state) => state === "today" || state === "passed";
+export const CP_CONFIRM = "Did you really make it?";
+// One checkpoint row on the season card: ✓ Made it on today's or a passed one (a passed one asks "did you make it?"), undo
+// on a ticked one, a Book a private button on the undated rehearsal one, the date alone on one still to come.
 export function cpRow(c, date = todayStr()){
   const when = c.d ? `<b>${esc(fmt(c.d))}</b>${c.state === "today" ? " <b>· today!</b>" : c.state === "next" ? ` <span class="muted">(${daysUntil(c.d)} day${daysUntil(c.d) === 1 ? "" : "s"})</span>` : ""}` : "";
   if (c.state === "done") return `<div class="sw-next cp cp-done"><span class="grow">✅ <b>${esc(fmt(c.done))}</b> · ${esc(c.t)}</span><button class="lnk" onclick="cpTick('${c.id}',false)">undo</button></div>`;
   if (c.state === "book") return `<div class="sw-next cp cp-book"><span class="grow">📅 <b>Book it:</b> ${esc(c.t)}</span><button class="btn sm coral" onclick="openRehearsal('solo')">📅 Book a private</button></div>`;
   if (c.state === "passed") return `<div class="sw-next cp cp-passed"><span class="grow">🎯 ${when} · ${esc(c.t)}<div class="small muted">Did you make it?</div></span><button class="btn sm coral" onclick="cpTick('${c.id}',true)">✓ Made it</button></div>`;
-  return `<div class="sw-next cp"><span class="grow">🎯 ${when} · ${esc(c.t)}</span><button class="btn sm ghost" onclick="cpTick('${c.id}',true)">✓ Made it</button></div>`;
+  if (c.state === "today") return `<div class="sw-next cp"><span class="grow">🎯 ${when} · ${esc(c.t)}</span><button class="btn sm ghost" onclick="cpTick('${c.id}',true)">✓ Made it</button></div>`;
+  return `<div class="sw-next cp"><span class="grow">🎯 ${when} · ${esc(c.t)}</span></div>`;
 }
 export function renderSeasonCard(date = todayStr()){
   const el = $("#seasonCard"); if (!el) return; const wk = weekOf(date);
@@ -138,12 +143,13 @@ export async function tickCheckpoint(id, on = true, date = todayStr()){
   const ticks = { ...checkpointTicks() }; if (on) ticks[id] = { ...(ticks[id] || {}), done: date }; else delete ticks[id];
   await setSettings({ checkpoints: ticks }); return ticks;
 }
-async function cpTick(id, on){ await tickCheckpoint(id, on); toast(on ? "Made it! ✅" : "Okay, not yet"); renderSeasonCard(); renderByWhen(); try { document.dispatchEvent(new CustomEvent("checkpoint", { detail: { id, on } })); } catch (e) {} }
-// 📍 By when: every checkpoint of this plan and the next, with its ✓, so "did she make Nov 1?" has an answer.
+// A tick asks once (CP_CONFIRM) before it is saved; undo never asks.
+async function cpTick(id, on){ if (on && !confirm(CP_CONFIRM)) return; await tickCheckpoint(id, on); toast(on ? "Made it! ✅" : "Okay, not yet"); renderSeasonCard(); renderByWhen(); try { document.dispatchEvent(new CustomEvent("checkpoint", { detail: { id, on } })); } catch (e) {} }
+// 📍 By when: every checkpoint of this plan and the next, with its ✓ (once its day is here or gone), so "did she make Nov 1?" has an answer.
 function renderByWhen(){
   const el = $("#byWhenArea"); if (!el) return; const date = todayStr(); const ticks = checkpointTicks();
   el.innerHTML = plansFrom(date).map(plan => `<div class="card"><h3>${esc(planLabel(plan))}</h3>${allCheckpoints(plan, studioDates(), date).map(c => { const done = tickedOn(ticks, c.id); const st = done ? "done" : !c.d ? "book" : c.d < date ? "passed" : c.d === date ? "today" : "next";
-    return `<div class="bw-row ${st}"><span class="bw-when">${done ? "✅" : st === "passed" ? "⬜" : st === "today" ? "🎯" : "○"} ${c.d ? esc(fmt(c.d).replace(/^\w+, /, "")) : "not booked"}</span><span class="grow">${esc(c.t)}${done ? `<div class="small muted">made it ${esc(fmt(done))}</div>` : ""}</span>${done ? `<button class="lnk" onclick="cpTick('${c.id}',false)">undo</button>` : st === "book" ? `<button class="btn sm ghost" onclick="closeStage();openRehearsal('solo')">📅 Book</button>` : `<button class="btn sm ${st === "passed" ? "coral" : "ghost"}" onclick="cpTick('${c.id}',true)">✓</button>`}</div>`; }).join("")}</div>`).join("");
+    return `<div class="bw-row ${st}"><span class="bw-when">${done ? "✅" : st === "passed" ? "⬜" : st === "today" ? "🎯" : "○"} ${c.d ? esc(fmt(c.d).replace(/^\w+, /, "")) : "not booked"}</span><span class="grow">${esc(c.t)}${done ? `<div class="small muted">made it ${esc(fmt(done))}</div>` : ""}</span>${done ? `<button class="lnk" onclick="cpTick('${c.id}',false)">undo</button>` : st === "book" ? `<button class="btn sm ghost" onclick="closeStage();openRehearsal('solo')">📅 Book</button>` : canTick(st) ? `<button class="btn sm ${st === "passed" ? "coral" : "ghost"}" onclick="cpTick('${c.id}',true)">✓</button>` : ""}</div>`; }).join("")}</div>`).join("");
 }
 export function openByWhen(){ renderByWhen(); openStage("📍 By when", [$("#byWhenArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); }
 export function initSeason(){ document.addEventListener("stageclosed", () => { const a = $("#byWhenArea"); if (a) a.style.display = "none"; }); }

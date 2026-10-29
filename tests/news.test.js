@@ -1,5 +1,6 @@
-// What's new: the five Build 3 things (the four Build 2 things, the five Build 1 things and the six poll features before them),
-// steps that quote real button labels, a Today row until opened (seen per phone), Show me how one step at a time, Try it going to the right place.
+// What's new: the three Build 3 kid things (Build 4 moved Mom's two to one line on her hub card: tests/build4b.test.js; the four
+// Build 2 things, the five Build 1 things and the six poll features before them), steps that quote real button labels, a Today
+// row until opened (seen per phone), Show me how one step at a time, Try it going to the right place.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -13,8 +14,9 @@ const { newsItems, isNew, markSeen, TRY, renderNews, renderSheet } = await impor
 // A feature's code; the trick cards' photo button lives in the progress lineup (js/lineup.js) since 1.42.
 const FILES = { sunday: ["js/sunday.js", "js/pmode.js"], mom: ["js/momweek.js", "js/views/skillcheck.js", "index.html"], remind: ["js/remind.js"], along: ["js/games/along.js", "index.html"], play: ["js/views/play.js"], today: ["js/views/home.js", "index.html"], checkpoints: ["js/season15.js"], ready: ["js/views/home.js", "js/ready.js"], pass: ["js/pass.js"], plan: ["js/views/home.js", "index.html"], monday: "js/views/home.js", tools: ["js/views/home.js", "js/pmode.js"], timer: "js/pmode.js", games: "js/views/play.js" };
 
-test("the five Build 3 things (1.48.0), each with steps and a place to try it", () => {
-  const items = newsItems(got.news); assert.deepEqual(items.map(i => i.id), ["sunday", "mom", "remind", "along", "play"]);
+test("the three Build 3 kid things (1.48.0), each with steps and a place to try it; Mom's line beside them", () => {
+  const items = newsItems(got.news); assert.deepEqual(items.map(i => i.id), ["sunday", "along", "play"]);
+  assert.ok(got.news.mom && got.news.mom.length < 300 && /8 pm/.test(got.news.mom), "Mom's items are one line for the Grown-ups hub");
   for (const i of items) { assert.ok(i.e && i.n && i.where && i.pitch, i.id); assert.ok(i.steps.length >= 3 && i.steps.length <= 5, i.id); assert.ok(TRY[i.id], "Try it for " + i.id); assert.ok(i.steps.every(s => s.length < 110), i.id); }
 });
 
@@ -31,7 +33,7 @@ test("steps are factual: every quoted button label is a real label in that featu
 
 test("Today row until opened; opening marks it seen on this phone; Show me how steps through and back", () => {
   resetDom(); localStorage.removeItem("spotlight:news");
-  assert.equal(isNew(got.news), true); renderNews(); assert.equal(el("#newsCard").hidden, false); assert.match(el("#newsCard").innerHTML, /5 new things in your app/); assert.match(el("#newsCard").innerHTML, /openNews\(\)/);
+  assert.equal(isNew(got.news), true); renderNews(); assert.equal(el("#newsCard").hidden, false); assert.match(el("#newsCard").innerHTML, /3 new things in your app/); assert.match(el("#newsCard").innerHTML, /openNews\(\)/);
   window.openNews(); assert.equal(localStorage.getItem("spotlight:news"), got.news.id); assert.equal(isNew(got.news), false);
   assert.equal(el("#newsCard").hidden, true, "the Today row goes once she has opened it");
   const html = el("#newsArea").innerHTML; for (const i of newsItems(got.news)) { assert.ok(html.includes(`newsHow('${i.id}')`), i.id); assert.ok(html.includes(`newsTry('${i.id}')`), i.id); }

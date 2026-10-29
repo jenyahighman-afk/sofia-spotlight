@@ -10,6 +10,7 @@ import { $, esc, todayStr, daysUntil, expose, toast } from "./util.js";
 import { speakBunny, stopSpeaking, nextVoice, canSpeak } from "./voice.js";
 import { S, events, dances } from "./store.js";
 import { BUDDY, CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "./data.js";
+import { dayKindNow } from "./daykind.js";
 import { dayCounts, planDone, planDays, computeStreak, skipsLeft } from "./streak.js";
 import { cardsFor } from "./habit.js";
 import { dayPlan, planTicks, goFor } from "./dayplan.js";
@@ -21,7 +22,7 @@ import { showNudge } from "./glow.js";
 import { cardList, cardCounts } from "./cards.js";
 import { nextUnlock, totalStars } from "./stars.js";
 import { petState, petSVG, furFor } from "./pet.js";
-import { nudgeFor as passNudge, todayTip, tipSaidToday, markTipSaid } from "./pass.js";
+import { nudgeFor as passNudge, todayTip, tipSaidToday, markTipSaid, clockHour } from "./pass.js";
 
 const KEY = "spotlight:buddy";
 const KID_PAGES = ["home", "dances", "practice", "play", "me"];
@@ -103,16 +104,17 @@ export function buddyContext(date = todayStr()){
     dayDone: planDone(rec), safe: dayCounts(rec, total), fullDone: !!rec && dayCounts({ done: rec.done, total: rec.total }, total),
     streak: computeStreak(ctxS), skips: skipsLeft(ctxS), petDays: planDays(S.practice),
     comp: compWeekend(date, evs), compMode: todayMode().mode === "comp",
-    plan, ticks: planTicks(rec), classes, restDay: !classes.length && !HOME_DAYS[dow] && !plan,
+    // The dated box lists no items since 1.49.0 (the one card is the step), so the plan's must boxes are not offered.
+    plan: plan && { ...plan, must: [] }, ticks: planTicks(rec), classes, restDay: !classes.length && !HOME_DAYS[dow] && !plan,
     // On a home day before the plan is done the game card is What's Next? (solo work), never a filler game (Build 3).
-    cards: cardsFor(date, { skills: S.skills, bites, memo, soloOnly: !!HOME_DAYS[dow] && !planDone(rec) }),
+    cards: cardsFor(date, { skills: S.skills, bites, memo, soloOnly: dayKindNow(date) === "home" && !planDone(rec) }),
     dare: shownDare(date) ? dareDoneOn(date) : null,
     door: door && showEvent() ? openedDates().includes(date) : null,
     glow: showNudge(date), cardsEarned: cc.earned,
     starsLeft: nu ? nu[2] - totalStars() : 0, unlock: nu ? nu[3] : "",
     event: ev ? { name: short(ev.name), days: daysUntil(ev.start) } : null,
     passPart: (() => { const p = passNudge(S.settings, date); return p ? `${p.e || ""} ${p.n}`.trim() : ""; })(),
-    tip: tipSaidToday(date) ? "" : String(((todayTip(date) || {}).t) || ""),
+    tip: tipSaidToday(date) ? "" : String(((todayTip(date, clockHour()) || {}).t) || ""),
   };
 }
 

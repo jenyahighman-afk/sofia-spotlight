@@ -8,7 +8,35 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 50;
+export const SCHEMA_VERSION = 51;
+// Schema 51 (Build 4, Part A of the Oct 29 audit): the week's fix and the Sunday sheet are keyed by the PLAN week — Monday →
+// Sunday, the film review on its own Sunday (corrections.planWeekKey = the week's Monday) — instead of the streak's Sunday →
+// Saturday week (its Sunday). Re-keyed here, nothing invented, nothing dropped:
+// · settings.sunday: an old key K is the Sunday on or before the day the sheet was touched. Whether that was Sunday K itself or
+//   a weekday after it, the sheet reviews Sunday K, and Sunday K closes the plan week that starts on Monday K − 6 → new key
+//   K − 6. A key that is already a Monday (written by this schema) stays; two records landing on one key merge, the finished one
+//   leading, so a sheet filled on its Sunday keeps that Sunday's plan week.
+// · settings.weekFix.week: a fix picked on Sunday K belongs to the week ending that Sunday (K − 6); one picked Mon–Sat after K
+//   to the week starting K + 1. pickedAt tells which (its own week's Monday); without it the Sunday rule (K − 6) applies — a
+//   stale key only means the fix is picked again on the next open, and chooseWeekFix picks the same top note.
+const weekdayOfIso = (iso) => new Date(iso + "T00:00:00").getDay();
+const shiftIso = (iso, n) => { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+export const mondayOf = (iso) => shiftIso(iso, -((weekdayOfIso(iso) + 6) % 7));
+// An old Sunday key → the Monday of the plan week it closes (K − 6); a Monday stays; anything else is left alone.
+export const sundayKeyToPlanWeek = (k) => DATE_RE.test(String(k)) && weekdayOfIso(k) === 0 ? shiftIso(k, -6) : k;
+export function rekeySunday(v){
+  const src = normalizeSunday(v); const out = {};
+  for (const k of Object.keys(src).sort()) { const nk = sundayKeyToPlanWeek(k); const r = src[k]; const have = out[nk];
+    if (!have) { out[nk] = r; continue; }
+    const [a, b] = r.done && !have.done ? [r, have] : [have, r]; // the finished one leads; the other fills what it left empty
+    out[nk] = { went: a.went || b.went, fix: a.fix || b.fix, fixId: a.fixId || b.fixId, note: a.note || b.note, done: a.done || b.done }; }
+  return out;
+}
+export function rekeyWeekFix(w){
+  if (!w || typeof w !== "object" || Array.isArray(w)) return w; const week = String(w.week || ""); if (!DATE_RE.test(week) || weekdayOfIso(week) !== 0) return w;
+  const at = typeof w.pickedAt === "string" && DATE_RE.test(w.pickedAt) ? w.pickedAt : "";
+  return { ...w, week: at ? mondayOf(at) : shiftIso(week, -6) };
+}
 // Schema 50 (1.48.0, Build 3 of the Oct 28 review): settings.sunday = { [the week's Sunday]: { went, fix: "yes" | "no" | "",
 // fixId, note, done } } — the Sunday film-review sheet, one record per week (js/sunday.js); settings.reminder gains second
 // (the second nudge later in the evening, on unless turned off), h2, m2; a Dance Along routine (choreo, kind "along") may
@@ -455,7 +483,10 @@ export const MIGRATIONS = {
     }
     if (col === "choreo" && doc.kind === "along" && doc.from !== undefined) { const f = typeof doc.from === "string" ? doc.from.trim().slice(0, 300) : ""; if (f) doc.from = f; else delete doc.from; }
     return doc;
-  }
+  },
+  // 51 (Build 4, Part A): settings.sunday and settings.weekFix.week re-keyed from the Sunday → Saturday week to the plan week's
+  // Monday (the rule is in the schema-51 note up top). Only when present; other documents untouched.
+  51: (col, id, doc) => { if (col === "settings") { if (doc.sunday !== undefined) doc.sunday = rekeySunday(doc.sunday); if (doc.weekFix !== undefined) doc.weekFix = rekeyWeekFix(doc.weekFix); } return doc; }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],

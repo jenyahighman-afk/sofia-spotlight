@@ -14,7 +14,7 @@ const dataFiles = ["dances","events","classes","home-days","practice-items","pha
 let M = {};
 before(async () => {
   const data = await import("../js/data.js"); const got = {}; for (const f of dataFiles) got[f] = JSON.parse(read("data/" + f + ".json")); data.applyData(got);
-  M.store = await import("../js/store.js"); M.studio = await import("../js/studio.js"); M.util = await import("../js/util.js"); M.season15 = await import("../js/season15.js");
+  M.store = await import("../js/store.js"); M.studio = await import("../js/studio.js"); M.util = await import("../js/util.js"); M.season15 = await import("../js/season15.js"); M.daykind = await import("../js/daykind.js"); M.advent = await import("../js/advent.js");
   M.data = await import("../js/data.js"); M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
   M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js"); M.along = await import("../js/games/along.js"); M.hub = await import("../js/coachhub.js");
@@ -30,7 +30,9 @@ const SCREENS = () => ({
 const inits = () => [M.nav.initNav, M.dances.initDances, M.events.initEvents, M.schedule.initSchedule, M.practice.initPractice, M.notes.initNotes, M.lists.initLists, M.play.initPlay, M.me.initMe, M.skillcheck.initSkillCheck, M.settings.initSettings, M.grownups.initGrownups, M.showme.initShowMe, M.player.initPlayer, M.reports.installReportLinks, M.stage.initStage, M.pmode.initPracticeMode, M.coach.initCoach, M.goals.initGoals, M.mirror.initMirror, M.demos.initDemos, M.along.initAlong];
 
 // What Play shows today depends on the weekday (home days gate the filler games until the plan is done) and on the Nov 9 gate.
-const playToday = () => M.play.gamesFor(M.util.todayStr(), { home: !!M.data.HOME_DAYS[new Date().getDay()], knees: M.season15.memoryKnees(M.util.todayStr()), done: false }).games;
+// Build 4: "home" is the kind of day as Play reads it (daykind.js); the tiles are the games plus the ✨ Extras when the gate is open.
+const playToday = () => { const today = M.util.todayStr(); const ev = M.advent.showEvent(); const doors = M.advent.doorsFor(); const doorsOn = !!ev && doors.length > 0 && today >= doors[0].date && today <= (ev.end || ev.start);
+  return M.play.playSections(today, { home: M.daykind.dayKindNow(today) === "home", knees: M.season15.memoryKnees(today), done: false, doors: doorsOn }).sections.flatMap(s => s.games); };
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
@@ -62,18 +64,18 @@ test("every screen initialises and renders with an empty family space (no throw,
   assert.ok(el("#danceList").innerHTML.includes('data-memo="solo"') && el("#danceList").innerHTML.includes('data-memo="trio"'), "the solo and the trio get a Memorize card");
   assert.ok(el("#danceList").innerHTML.includes("Today's chunk:") && el("#danceList").innerHTML.includes("memoPlay('trio','test')"), "the card names today's chunk and opens Test me");
   assert.ok(!el("#danceList").innerHTML.includes('data-memo="wf-tap"'), "a dance without chunks gets none");
-  { const dl = el("#danceList").innerHTML; assert.ok(/<details class="more memo" data-memo="solo" >/.test(dl), "Memorize it starts folded");
+  { const dl = el("#danceList").innerHTML; assert.ok(/<div class="memo-via-sheet"><details class="more memo" data-memo="solo" >/.test(dl), "the solo's Memorize it starts folded and out of view: the sheet's Five steps opens it (Build 4)"); assert.ok(/<details class="more memo" data-memo="trio" >/.test(dl), "the trio's fold stays in view");
     const cards = (dl.match(/data-memo="/g) || []).length; assert.ok(cards >= 2);
     assert.equal((dl.match(/class="memo-how"/g) || []).length, cards * 6, "each of the five steps and the full run explain themselves behind How?, on every Memorize card");
     assert.equal((dl.match(/memo-how memo-rule/g) || []).length, cards, "the rules sit behind How does this work?"); assert.ok(dl.includes("“"), "the story itself stays in view"); }
   assert.match(read("js/views/dances.js"), /Google Photos/, "the links field says Google Photos albums go there");
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > (shortDay() ? 5 : 10), "checklist rows rendered");
-  if (shortDay()) assert.ok(el("#practiceChecklist").innerHTML.includes("15-minute memory run"), "a studio day has the memory run");
+  if (shortDay()) assert.ok(el("#practiceChecklist").innerHTML.includes("Solo from the top · 5 min"), "a studio day has the memory run (its run item is 'Solo from the top · 5 min' since Build 4)");
   assert.ok(html.includes('<details class="more plan-fold" id="planFold">') && html.indexOf('id="planFold"') < html.indexOf('id="practiceChecklist"'), "the exercise list sits inside a closed fold on Practice");
   assert.match(el("#planCount").textContent, /^\d+ of \d+ done$/, "the fold's summary counts today's exercises");
   assert.ok(html.includes('<body class="pg-home">'), "the body starts on Today");
-  { const { dayPlan, renderDayPlan } = await import("../js/dayplan.js"); assert.ok(dayPlan("2026-10-17"), "the dated plan loaded from data/plan10.json"); renderDayPlan("2026-10-22"); const dp = el("#dayPlan"); assert.equal(dp.hidden, false); assert.ok(dp.innerHTML.includes("dpTick('warm')") && dp.innerHTML.includes("if there's time") && dp.innerHTML.includes("memoFocus('trio')"), "Today's plan lists the day's boxes with ▶ links"); renderDayPlan("2027-05-01"); assert.equal(el("#dayPlan").hidden, true, "no entry → no card"); }
+  { const { dayPlan, renderDayPlan } = await import("../js/dayplan.js"); assert.ok(dayPlan("2026-10-17"), "the dated plan loaded from data/plan10.json"); renderDayPlan("2026-10-22"); const dp = el("#dayPlan"); assert.equal(dp.hidden, false); assert.ok(dp.innerHTML.includes("📋 strength + flex + solo run") && !dp.innerHTML.includes("dpTick(") && !dp.innerHTML.includes("if there's time"), "the dated box is its headline only — no item list under the one card (Build 4)"); renderDayPlan("2027-05-01"); assert.equal(el("#dayPlan").hidden, true, "no entry → no card"); }
   M.nav.showPage("practice"); assert.equal(document.body.classList.contains("pg-home"), false, "off Today the banner shrinks");
   M.nav.showPage("home"); assert.equal(document.body.classList.contains("pg-home"), true);
   assert.ok(el("#whoRow").innerHTML.includes("whoPick('all')") && el("#whoRow").innerHTML.includes("💃 Sofia") && el("#meFriends").innerHTML.includes("Hannah") && el("#meFriends").innerHTML.includes("Lauren"), "the who's-dancing picker on Play and the friends card on Me");
@@ -92,7 +94,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   resetDom(); for (const k of Object.keys(M.store.S)) M.store.S[k] = {};
   const S = M.store.S; const today = new Date(); const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); const t = iso(today);
   S.corrections = { a: { id: "a", danceId: "solo", text: "Point your foot", tag: "feet", status: "working", date: t, source: "Hannah" }, b: { id: "b", danceId: "solo", text: "Eyes up", tag: "eyes", status: "working", date: t, source: "Mom" }, c: { id: "c", danceId: "trio", text: "Point the foot", tag: "feet", status: "working", date: t, source: "Larisa" }, d: { id: "d", danceId: "pitch-jazz", text: "Feet!", tag: "feet", status: "done", date: t, source: "me" } };
-  S.settings = { pin: "2027", pinOn: true, weekFix: { id: "a", week: M.corrections.weekKey(t) }, gameBest: 1350 };
+  S.settings = { pin: "2027", pinOn: true, weekFix: { id: "a", week: M.corrections.planWeekKey(t) }, gameBest: 1350 }; // the plan week's Monday since Build 4
   S.practice = { [t]: { done: ["warmup"], runs: [{ at: t, danceId: "solo", speed: 100, full: true, ending: true, eyes: true }] } };
   S.badges = { fix1: { key: "fix1", label: "First fix closed", emoji: "✅", at: t } };
   S.skills = { "a-cartwheel": { state: "checked", teacher: "Hannah" }, "a-onehand": { state: "learning" } };

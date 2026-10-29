@@ -44,34 +44,53 @@ const local = () => { try { return JSON.parse(localStorage.getItem(KEY) || "{}")
 const save = (patch) => { try { localStorage.setItem(KEY, JSON.stringify({ ...local(), ...patch })); } catch (e) {} };
 export const tipSaidToday = (today = todayStr()) => local().tipDay === today;
 export function markTipSaid(today = todayStr()){ save({ tipDay: today }); }
-export function todayTip(date = todayStr(), hour = new Date().getHours()){
+// The hour is the caller's: pass clockHour() for "now" (Build 4: this function never reads the clock itself, so a test can
+// pin a morning or an evening; with no hour the tip is a midday one, momentsFor's default).
+export const clockHour = () => new Date().getHours();
+export function todayTip(date = todayStr(), hour){
   const studio = studioOn(date, CLASSES, studioDates()).length > 0; const home = !!HOME_DAYS[new Date(date + "T00:00:00").getDay()];
-  return tipFor(date, momentsFor(date, { studio, home, hour }));
+  return tipFor(date, momentsFor(date, { studio, home, ...(Number.isFinite(hour) ? { hour } : {}) }));
+}
+// The parts she missed once on this phone (localStorage, beside the tip day): a part missed before earns no star later.
+export const missedParts = () => new Set(Array.isArray(local().missed) ? local().missed : []);
+export function markMissed(id){ const m = missedParts(); m.add(id); save({ missed: [...m].slice(-40) }); }
+// What a tap earns (pure, Build 4): right on the first try → the part is read and a star; right after a miss (now, or on an
+// earlier day on this phone) → read, no star, a kind line; right again on a read part → nothing to save; wrong → the hint.
+export function passOutcome({ right, read = false, missed = false, check = {} }){
+  if (!right) return { save: false, star: false, msg: "🤔 " + ((check && check.hint) || "Try again.") };
+  if (read) return { save: false, star: false, msg: "⭐ Still right!" };
+  if (missed) return { save: true, star: false, msg: "✓ Right! Next part tomorrow earns the star." };
+  return { save: true, star: true, msg: "⭐ " + ((check && check.yay) || "Yes!") };
 }
 const tipLine = (tip) => tip ? `<div class="pass-tip small">🐰 <b>Tip of the day:</b> ${esc(tip.t)}</div>` : "";
 // The card on Today: the next part to read (part n of 10, its minutes), or "all read" with the day's tip.
 export function renderPassCard(){
   const el = $("#passCard"); if (!el) return; const ps = parts(); if (!ps.length) { el.hidden = true; el.innerHTML = ""; return; }
-  const next = nextPart(); const n = readCount(); const tip = todayTip(); el.hidden = false;
+  const next = nextPart(); const n = readCount(); const tip = todayTip(todayStr(), clockHour()); el.hidden = false;
   if (next) el.innerHTML = `<div class="row pass-head"><span class="pass-ic">🎟</span><div class="grow"><b>My Backstage Pass</b><div class="small muted">Part ${n + 1} of ${ps.length} · ${esc(next.e || "")} ${esc(next.n)} · ${next.mins || 1} min</div></div><button class="btn sm coral" onclick="openPass('${next.id}')">Read it ▶</button></div>${tipLine(tip)}`;
   else el.innerHTML = `<div class="row pass-head"><span class="pass-ic">🎟</span><div class="grow"><b>Backstage Pass: all ${ps.length} read ⭐</b></div><button class="btn sm ghost" onclick="openPass()">Read again</button></div>${tipLine(tip)}`;
 }
-// The sheet: the parts as chips (✓ once read), the open part's lines, its check; a star the first time it's right.
-let cur = ""; const picked = {}; // picked[partId] = { i, right } for this open sheet
+// The sheet: the parts as chips (✓ once read), the open part's lines, its check; a star when it's right on the first try.
+let cur = ""; const picked = {}; // picked[partId] = { i, right, msg } for this open sheet
 function renderPass(){
   const el = $("#passArea"); if (!el) return; const ps = parts(); const p = ps.find(x => x.id === cur) || ps[0]; if (!p) return; const read = isRead(S.settings, p.id); const st = picked[p.id] || null; const q = p.check;
   const nav = `<div class="pass-nav">${ps.map(x => `<button class="chip ${x.id === p.id ? "coral" : isRead(S.settings, x.id) ? "mint" : ""}" onclick="passGo('${x.id}')" aria-label="${esc(x.n)}">${isRead(S.settings, x.id) ? "✓ " : ""}${esc(x.e || "")}</button>`).join("")}</div>`;
   const body = `<div class="pass-part"><div class="today-what">${esc(p.e || "")} ${esc(p.n)}</div><div class="small muted">Part ${ps.indexOf(p) + 1} of ${ps.length} · ${p.mins || 1} min${read ? " · read ✓" : ""}</div>${p.lines.map(l => `<p class="pass-line">${esc(l)}</p>`).join("")}</div>`;
-  const quiz = `<div class="pass-q"><div class="pass-qt">${esc(q.q)}</div>${q.a.map((a, i) => `<button class="btn ${st && st.i === i ? (st.right ? "coral" : "ghost wrong") : "ghost"} pass-a" onclick="passAnswer(${i})">${esc(a)}</button>`).join("")}<div class="pass-msg small">${!st ? (read ? "You've read this one. Try the check again?" : "Quick check: tap the right answer.") : st.right ? "⭐ " + esc(q.yay || "Yes!") : "🤔 " + esc(q.hint || "Try again.")}</div></div>`;
+  const quiz = `<div class="pass-q"><div class="pass-qt">${esc(q.q)}</div>${q.a.map((a, i) => `<button class="btn ${st && st.i === i ? (st.right ? "coral" : "ghost wrong") : "ghost"} pass-a" onclick="passAnswer(${i})">${esc(a)}</button>`).join("")}<div class="pass-msg small">${!st ? (read ? "You've read this one. Try the check again?" : "Quick check: tap the right answer.") : esc(st.msg)}</div></div>`;
   const next = ps[ps.indexOf(p) + 1];
   el.innerHTML = nav + body + quiz + (st && st.right && next ? `<div class="row" style="margin-top:8px"><button class="btn sm coral" onclick="passGo('${next.id}')">Next part › ${esc(next.e || "")} ${esc(next.n)}</button></div>` : "");
 }
 export function openPass(id = ""){ const ps = parts(); if (!ps.length) return; cur = id && ps.some(p => p.id === id) ? id : (nextPart() || ps[0]).id; for (const k of Object.keys(picked)) delete picked[k]; renderPass(); openStage("🎟 " + (PASS.title || "My Backstage Pass"), [$("#passArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); }
 function go(id){ cur = id; renderPass(); const b = $("#stageBody"); if (b) b.scrollTop = 0; }
+// A tap: a wrong one shows the hint and is remembered on this phone; the first right one marks the part read — with the star
+// only when nothing was missed on it (passOutcome).
 async function answer(i){
-  const p = parts().find(x => x.id === cur); if (!p) return; const right = checkAnswer(p, i); picked[p.id] = { i, right };
-  if (right && !isRead(S.settings, p.id)) { await setSettings({ pass: { read: { ...readMap(S.settings), [p.id]: todayStr() } } }); awardStars("pass", 1, "Backstage Pass: " + p.n); renderPassCard(); }
-  else if (right) toast("⭐ Still right!"); renderPass();
+  const p = parts().find(x => x.id === cur); if (!p) return; const right = checkAnswer(p, i);
+  const o = passOutcome({ right, read: isRead(S.settings, p.id), missed: missedParts().has(p.id) || !!(picked[p.id] && !picked[p.id].right), check: p.check }); picked[p.id] = { i, right, msg: o.msg };
+  if (!right) markMissed(p.id);
+  if (o.save) { await setSettings({ pass: { read: { ...readMap(S.settings), [p.id]: todayStr() } } }); if (o.star) awardStars("pass", 1, "Backstage Pass: " + p.n); else toast(o.msg, 2600); renderPassCard(); }
+  else if (right) toast(o.msg);
+  renderPass();
 }
 export function initPass(){ document.addEventListener("stageclosed", () => { const a = $("#passArea"); if (a) a.style.display = "none"; }); }
 expose({ openPass, passGo: go, passAnswer: answer });

@@ -1,7 +1,7 @@
 // Corrections tracker: one record per note {danceId, text, source, date, tag, status}.
 // Pure helpers up top (tested in Node); the store-touching functions at the bottom.
 import { S, storeSet, setSettings, settled, dances } from "./store.js";
-import { DEFAULT_DANCES } from "./data.js";
+import { DEFAULT_DANCES, PLAN15, PLAN_SPRING } from "./data.js";
 import { todayStr } from "./util.js";
 
 export const TAGS = ["feet","knees","eyes","arms","memory","timing","spacing","energy","other"];
@@ -62,8 +62,21 @@ export function patterns(corrections, { today = todayStr(), days = 60, min = 3, 
 }
 export function shiftDate(iso, delta){ const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + delta); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
 
-// The Sunday that starts the week containing `iso` (weeks run Sunday → Saturday, matching the Sunday film review).
+// The Sunday that starts the streak's week containing `iso` (streak.js counts its free skips Sunday → Saturday). Not the
+// plan's week: the week's fix and the Sunday sheet are keyed by planWeekKey below (Build 4, Part A).
 export function weekKey(iso){ const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() - d.getDay()); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+const ymd = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const dayNum = (iso) => Math.round(new Date(iso + "T00:00:00").getTime() / 86400000);
+// The Monday on or before `iso`.
+export function mondayKey(iso){ const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return ymd(d); }
+// The plan week `iso` falls in — Monday → Sunday, the Sunday film review closing it — as its Monday: season15.weekOf(date).of
+// for the plan the date is in (plan15.json, then plan-spring.json; read here straight from the plan files so this module
+// stays free of season15's imports), the Monday on or before the date outside any plan. The key of settings.weekFix.week and
+// of the Sunday sheet's record (sunday.js sundayOf), since schema 51.
+export function planWeekKey(iso, plans = [PLAN15, PLAN_SPRING]){
+  for (const p of plans) { if (!p || !p.start || !Array.isArray(p.weeks) || !p.weeks.length || iso < p.start) continue; const wk = p.weeks[Math.floor((dayNum(iso) - dayNum(p.start)) / 7)]; if (wk && wk.of) return wk.of; }
+  return mondayKey(iso);
+}
 
 // Exactly one open correction becomes the week's fix: the one whose tag repeats most (60 days), oldest first. Null when nothing is open.
 export function chooseWeekFix(corrections, today = todayStr()){
@@ -128,12 +141,24 @@ export async function closeCorrection(id){ const c = S.corrections[id]; if (!c |
 export async function reopenCorrection(id){ const c = S.corrections[id]; if (!c) return; await storeSet("corrections", id, { ...c, status: "working", doneAt: "" }); }
 export async function removeCorrection(id){ const c = S.corrections[id]; if (!c) return; await storeSet("corrections", id, { ...c, deleted: true }); }
 
-// This week's fix (settings.weekFix = {id, week}). pickWeekFix chooses one when the week has none; the id is what Today shows all week.
+// This week's fix (settings.weekFix = {id, week, pickedAt, auto?}; `week` = the plan week's Monday, planWeekKey). pickWeekFix
+// chooses one when the week has none; the id is what Today shows all week, the Sunday film review included (the week ends on it).
 // While a teacher's pinned note is open it is the week's fix, whatever was picked before it arrived.
-export function currentWeekFix(today = todayStr()){ const pins = pinnedOpen(S.corrections); const w = S.settings.weekFix; const c = w && w.week === weekKey(today) ? S.corrections[w.id] : null; if (pins.length && !(c && c.pinned && isOpen(c))) return pins[0]; return c && !c.deleted ? c : null; }
+export function currentWeekFix(today = todayStr()){ const pins = pinnedOpen(S.corrections); const w = S.settings.weekFix; const c = w && w.week === planWeekKey(today) ? S.corrections[w.id] : null; if (pins.length && !(c && c.pinned && isOpen(c))) return pins[0]; return c && !c.deleted ? c : null; }
 export async function pickWeekFix(today = todayStr()){
   const c = chooseWeekFix(S.corrections, today); if (!c) return null;
-  await setSettings({ weekFix: { id: c.id, week: weekKey(today), pickedAt: today } }); return c;
+  await setSettings({ weekFix: { id: c.id, week: planWeekKey(today), pickedAt: today } }); return c;
+}
+// The week's fix, picked on the first open of a new week (Build 4, Part A): what Today's plan, the Sunday sheet and Mom's
+// card read for today. Nothing picked for this plan week and a note open → chooseWeekFix's pick is saved (auto: true) and
+// returned at once (the store updates in memory before the cloud write, so the same render already shows it). Waits for the
+// family space to have answered (settled), so a half-loaded tracker never picks. Never touches a week that has its fix.
+export function weekFixOrPick(today = todayStr()){
+  const c = currentWeekFix(today); if (c) return c;
+  if (!settled("corrections") || !settled("settings")) return null;
+  const pick = chooseWeekFix(S.corrections, today); if (!pick) return null;
+  setSettings({ weekFix: { id: pick.id, week: planWeekKey(today), pickedAt: today, auto: true } }).catch(e => console.warn("weekFix", e));
+  return pick;
 }
 // A teacher's new notes (the last 7 days, open, not pinned, not typed by Mom / Sofia / the AI coach): practised right away
 // in the daily plan, not saved for the cleaning weeks. Newest first.

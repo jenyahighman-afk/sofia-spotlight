@@ -76,9 +76,10 @@ async function registerSW(){
     reg.addEventListener("updatefound", () => { const w = reg.installing; if (!w) return; w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) offer(reg.waiting || w); }); });
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") reg.update().catch(() => {}); });
   } catch (e) { console.warn("service worker registration failed", e); }
-  const seen = localStorage.getItem(VERSION_KEY);
+  // The last version seen is per phone (localStorage); private mode or a full phone may refuse it, and that's no reason to stop.
+  let seen = null; try { seen = localStorage.getItem(VERSION_KEY); } catch (e) {}
   if (seen && seen !== self.APP_VERSION) toast("Updated ✨ v" + self.APP_VERSION, 3000);
-  localStorage.setItem(VERSION_KEY, self.APP_VERSION);
+  try { localStorage.setItem(VERSION_KEY, self.APP_VERSION); } catch (e) {}
 }
 
 function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.classList.add("gated"); ["gateHome","gateJoin","gateCreated","gateBusy"].forEach(x => { $("#" + x).hidden = true; }); $("#gateMsg").textContent = msg; $("#gateMsg").style.color = "#FF5C93"; }

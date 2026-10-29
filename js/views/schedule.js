@@ -1,10 +1,11 @@
 // Schedule tab: weekly classes table, one-off studio dates (booked solo rehearsals, make-up classes), month calendar,
 // the printable week view, and the .ics export.
 import { $, esc, todayStr, dateStr, toast, saveBlob } from "../util.js";
-import { CLASSES, HOME_DAYS, SEASON } from "../data.js";
+import { CLASSES, SEASON } from "../data.js";
 import { S, events, studioDates } from "../store.js";
 import { buildICS } from "../ics.js";
 import { studioOn, upcomingHtml, privatesHtml } from "../studio.js";
+import { homeLineNow } from "../daykind.js";
 
 function renderStudio(){ const el=$("#studioList"); if(el) el.innerHTML=upcomingHtml(); const p=$("#privatesLine"); if(p) p.innerHTML=privatesHtml(); }
 function renderClasses(){ renderStudio(); const names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]; $("#classTable").innerHTML=`<thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Room</th></tr></thead><tbody>`+CLASSES.map(c=>`<tr><td>${names[c.day]}</td><td>${c.t}</td><td>${esc(c.name)}</td><td>${c.room}</td></tr>`).join("")+`</tbody>`; }
@@ -19,9 +20,10 @@ function renderCal(){
   const y=calMonth.getFullYear(), m=calMonth.getMonth(); const first=new Date(y,m,1); const startDow=(first.getDay()+6)%7; const dim=new Date(y,m+1,0).getDate();
   let h=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(n=>`<div class="hd">${n}</div>`).join("");
   for(let i=0;i<startDow;i++) h+=`<div class="d off"></div>`;
-  for(let day=1;day<=dim;day++){ const d=new Date(y,m,day); const ds=y+"-"+String(m+1).padStart(2,"0")+"-"+String(day).padStart(2,"0"); const wd=d.getDay(); let ev="";
+  for(let day=1;day<=dim;day++){ const ds=y+"-"+String(m+1).padStart(2,"0")+"-"+String(day).padStart(2,"0"); let ev="";
     studioOn(ds,CLASSES,studioDates()).forEach(c=>ev+=`<div class="ev ${c.oneOff?"oneoff":""}">${esc(c.name.replace(/Mini\/Jr |Mini /,""))}</div>`);
-    if(HOME_DAYS[wd]) ev+=`<div class="ev home">Home practice</div>`;
+    // A home weekday with a class booked is a studio day: its home line is the memory run, not the full practice (daykind).
+    const hl=homeLineNow(ds); if(hl) ev+=`<div class="ev home">${hl==="15-min memory run"?"Home: 15-min memory run":"Home practice"}</div>`;
     events().filter(e=>ds>=e.start&&ds<=e.end).forEach(e=>ev+=`<div class="ev comp">${esc(e.name)}</div>`);
     Object.values(S.todos).filter(t=>t.due===ds).forEach(t=>ev+=`<div class="ev other">${esc(t.text)}</div>`);
     h+=`<div class="d ${ds===todayStr()?"today":""}"><b>${day}</b>${ev}</div>`; }
@@ -33,9 +35,9 @@ function renderWeek(){
   const end=new Date(weekStart); end.setDate(end.getDate()+6);
   const opt={month:"short",day:"numeric"}; $("#calLabel").textContent=weekStart.toLocaleDateString(undefined,opt)+" – "+end.toLocaleDateString(undefined,{...opt,year:"numeric"});
   const names=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]; let h="";
-  for(let i=0;i<7;i++){ const d=new Date(weekStart); d.setDate(weekStart.getDate()+i); const ds=dateStr(d); const wd=d.getDay(); let items="";
+  for(let i=0;i<7;i++){ const d=new Date(weekStart); d.setDate(weekStart.getDate()+i); const ds=dateStr(d); let items="";
     studioOn(ds,CLASSES,studioDates()).forEach(c=>items+=`<div class="ev ${c.oneOff?"oneoff":""}"><b>${esc(c.t)}</b> ${esc(c.name)}${c.room?` <span class="muted">· ${esc(c.room)}</span>`:""}</div>`);
-    if(HOME_DAYS[wd]) items+=`<div class="ev home">Home: ${esc(HOME_DAYS[wd])}</div>`;
+    const hl=homeLineNow(ds); if(hl) items+=`<div class="ev home">Home: ${esc(hl)}</div>`;
     events().filter(e=>ds>=e.start&&ds<=e.end).forEach(e=>items+=`<div class="ev comp">${esc(e.name)}</div>`);
     Object.values(S.todos).filter(t=>t.due===ds&&!t.done).forEach(t=>items+=`<div class="ev other">To-do: ${esc(t.text)}</div>`);
     h+=`<div class="wd ${ds===todayStr()?"today":""}"><b>${names[i]} <span class="muted">${d.getDate()}</span></b>${items||`<div class="muted small">—</div>`}</div>`; }

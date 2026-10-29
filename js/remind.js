@@ -2,16 +2,19 @@
 // needs the app on the Home Screen). The worker sends it (worker/src/remind.js) unless the plan was already done that
 // day (pingDone). Build 3: the nudge follows the plan's days — every weekday with a plan (a home day, Monday's watch day,
 // the memory-run studio days: planWeekdays) with a line for that kind of day — and a second nudge later in the evening
-// (settings.reminder.second / h2 / m2, on unless turned off, schema 50) goes out only if the plan still isn't done.
+// (settings.reminder.second / h2 / m2, on unless turned off, schema 50) goes out only if the plan still isn't done — on home
+// days only since Build 4 (the worker skips watch and memory-run kinds), at 8:00 pm unless the family set a time (classes end
+// at 7:30, so 7:30 landed in the car).
 // Pure parts up top (tested in Node).
 import { $, esc, toast, expose, todayStr } from "./util.js";
 import { S, setSettings } from "./store.js";
-import { CLASSES, HOME_DAYS, PLAN15 } from "./data.js";
+import { CLASSES, HOME_DAYS } from "./data.js";
+import { activePlan } from "./season15.js";
 import { sync } from "./sync.js";
 import { coachConfig } from "./firebase-config.js";
 import { pushConfig } from "./push-config.js";
 
-export const DEFAULT_TIME = { h: 16, m: 30 }, DEFAULT_SECOND = { h: 19, m: 30 };
+export const DEFAULT_TIME = { h: 16, m: 30 }, DEFAULT_SECOND = { h: 20, m: 0 };
 export const timeParts = (s) => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(s || "").trim()); if (!m) return null; const h = +m[1], mi = +m[2]; return h >= 0 && h <= 23 && mi >= 0 && mi <= 59 ? { h, m: mi } : null; };
 export const timeValue = (t) => `${String(t.h).padStart(2, "0")}:${String(t.m).padStart(2, "0")}`;
 export const timeLabel = (t) => { const h12 = t.h % 12 || 12; return `${h12}:${String(t.m).padStart(2, "0")} ${t.h < 12 ? "am" : "pm"}`; };
@@ -20,9 +23,10 @@ const num = (v, max, d) => Number.isInteger(v) && v >= 0 && v <= max ? v : d;
 export const reminderOf = (settings) => { const r = (settings || {}).reminder; const o = r && typeof r === "object" ? r : {}; return { on: !!o.on, h: num(o.h, 23, DEFAULT_TIME.h), m: num(o.m, 59, DEFAULT_TIME.m), second: o.second !== false, h2: num(o.h2, 23, DEFAULT_SECOND.h), m2: num(o.m2, 59, DEFAULT_SECOND.m) }; };
 export const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export const KIND_ICON = { watch: "📹", memory: "🧠", home: "🏠" };
-// The weekdays a nudge makes sense on — every day with a plan: a studio day (Monday = the watch day, plan15 rules.studioDays;
+// The weekdays a nudge makes sense on — every day with a plan: a studio day (Monday = the watch day, the plan's rules.studioDays;
 // the memory run otherwise) or a home day (data/home-days.json). { days: [weekday numbers], kinds: { weekday: "watch" | "memory" | "home" } }.
-export function planWeekdays(classes = CLASSES, homeDays = HOME_DAYS, plan = PLAN15){
+// The plan is the one today falls in (season15.activePlan: plan15, then the spring plan), not plan15 for ever (Build 4).
+export function planWeekdays(classes = CLASSES, homeDays = HOME_DAYS, plan = activePlan(todayStr())){
   const kinds = {}; const sd = ((plan || {}).rules || {}).studioDays || {};
   for (let wd = 0; wd < 7; wd++) { if ((classes || []).some(c => c && c.day === wd)) kinds[wd] = sd[String(wd)] === "watch" ? "watch" : "memory"; else if (homeDays && homeDays[wd]) kinds[wd] = "home"; }
   return { days: Object.keys(kinds).map(Number), kinds };
@@ -58,7 +62,7 @@ export function renderReminder(){
     <div class="row"><input type="time" id="rmTime" value="${timeValue(r)}" step="900" style="max-width:150px" ${block ? "disabled" : ""}>
       ${block ? `<span class="small muted">${esc(block)}</span>` : here ? `<button class="btn sm ghost" onclick="rmOff()">Turn off on this phone</button><button class="btn sm ghost" onclick="rmTest()">Send a test</button>` : `<button class="btn sm coral" onclick="rmOn()">Remind me on this phone</button>`}</div>
     <div class="small muted rm-days">Plan days: ${esc(daysLabel(pw)) || "none right now"}</div>
-    <div class="rm-second"><div class="row"><span class="grow">🌙 A second nudge at <b>${esc(timeLabel({ h: r.h2, m: r.m2 }))}</b> if the plan isn't done yet</span><button class="btn sm ${r.second ? "coral" : "ghost"}" onclick="rmSecond()">${r.second ? "On" : "Off"}</button></div>
+    <div class="rm-second"><div class="row"><span class="grow">🌙 A second nudge at <b>${esc(timeLabel({ h: r.h2, m: r.m2 }))}</b> on home days if the plan isn't done yet</span><button class="btn sm ${r.second ? "coral" : "ghost"}" onclick="rmSecond()">${r.second ? "On" : "Off"}</button></div>
       ${r.second ? `<div class="row" style="margin-top:6px"><input type="time" id="rmTime2" value="${timeValue({ h: r.h2, m: r.m2 })}" step="900" style="max-width:150px" ${block ? "disabled" : ""}><span class="small muted">Never more than two a day.</span></div>` : ""}</div>
     ${r.on && !here && !block ? `<p class="small muted">Reminders are on for the family. Tap the button to get them on this phone too.</p>` : ""}`;
   const t = $("#rmTime"); if (t) t.onchange = () => { const p = timeParts(t.value); if (!p) return; setSettings({ reminder: { ...r, ...p } }).then(() => { if (subscribedHere()) subscribe(reminderOf(S.settings)).catch(e => toast(e.message, 3000)); renderReminder(); }); };

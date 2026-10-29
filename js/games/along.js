@@ -26,6 +26,12 @@ export function hannahRoutines(ds = [], choreo = {}){
   return out;
 }
 const routines = () => Object.entries(S.choreo).filter(([, c]) => c && c.kind === "along" && !c.deleted).map(([id, c]) => ({ id, ...c })).sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+// Pure: the line under Hannah's videos — the ＋ Learn it hint only when there is a video to learn; with none uploaded yet the
+// card used to point "above" at an empty box (the Oct 29 audit), so it asks for them instead.
+export const hannahHint = (hv = []) => hv.length ? "Hannah's videos from the solo and trio cards: ＋ Learn it, no picking from Photos." : "Ask Mom to add Hannah's videos on the solo card — then they show here with ＋ Learn it.";
+// The two per-phone toggles live in localStorage, which Safari's private mode or a full phone can refuse: read with a default, write and shrug.
+const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 
 const say = (t, speak = true) => { $("#alSay").textContent = t; if (speak && A.speak) speakOut(t); };
 function speakOut(t){ try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t).replace(/[^\p{L}\p{N} ,.!?'-]/gu, "")); u.rate = 1.05; u.pitch = 1.1; speechSynthesis.speak(u); } catch (e) {} }
@@ -36,7 +42,7 @@ export function renderAlong(){
   el.innerHTML = (list.length ? list.map(r => `<div class="check"><span class="chip violet">🕺</span><span class="grow"><b>${esc(r.name)}</b><br><span class="small muted">${Math.round(r.duration || 0)} s · best ${r.best || 0}</span></span><button class="btn sm coral" onclick="alongPlay('${r.id}')">▶ Dance</button><button class="del" onclick="alongDel('${r.id}')">✕</button></div>`).join("") : `<p class="small muted">No routines yet. Add a clip of a dance you want to learn.</p>`);
   const st = $("#alongStatus"); if (st) st.textContent = "";
   const hv = hannahRoutines(dances(), S.choreo); const he = $("#alongHannah");
-  if (he) he.innerHTML = hv.length ? `<div class="field-lab">📹 Hannah's videos</div>${hv.map(v => `<div class="check"><span class="chip violet">🌸</span><span class="grow"><b>${esc(v.danceName)} · ${esc(v.name)}</b><br><span class="small muted">${v.learned ? "in your list ✓" : "already in the family space: no picking from Photos"}</span></span>${v.learned ? "" : `<button class="btn sm coral" onclick="alongLearn('${esc(v.dance)}','${encodeURIComponent(v.path)}')">＋ Learn it</button>`}</div>`).join("")}` : "";
+  if (he) he.innerHTML = (hv.length ? `<div class="field-lab">📹 Hannah's videos</div>${hv.map(v => `<div class="check"><span class="chip violet">🌸</span><span class="grow"><b>${esc(v.danceName)} · ${esc(v.name)}</b><br><span class="small muted">${v.learned ? "in your list ✓" : "already in the family space: no picking from Photos"}</span></span>${v.learned ? "" : `<button class="btn sm coral" onclick="alongLearn('${esc(v.dance)}','${encodeURIComponent(v.path)}')">＋ Learn it</button>`}</div>`).join("")}` : "") + `<p class="small muted along-hint">${esc(hannahHint(hv))}</p>`;
 }
 // ＋ Learn it on one of the dances' videos: the file is fetched from the family space and read like a picked clip.
 async function learnVideo(danceId, pathEnc){
@@ -79,7 +85,7 @@ async function delRoutine(id){ const r = S.choreo[id]; if (!r || !confirm(`Remov
 export async function playAlong(id){
   const r = S.choreo[id]; if (!r || r.kind !== "along") return toast("That dance isn't here");
   if (!poseAvailable() || !navigator.mediaDevices) return toast("Dance Along needs a camera and a newer phone");
-  A.routine = { ...r, frames: routineFrames(r) }; A.score = 0; A.hits = { perfect: 0, good: 0, miss: 0 }; A.lastJudged = -1; A.speak = localStorage.getItem("spotlight:alongVoice") !== "off";
+  A.routine = { ...r, frames: routineFrames(r) }; A.score = 0; A.hits = { perfect: 0, good: 0, miss: 0 }; A.lastJudged = -1; A.speak = lsGet("spotlight:alongVoice") !== "off";
   $("#along").hidden = false; document.body.classList.add("modal"); $("#alScore").textContent = "0"; $("#alTitle").textContent = r.name; $("#alJudge").textContent = ""; $("#alVoice").textContent = A.speak ? "🔊" : "🔇";
   $("#alActions").innerHTML = `<button class="btn ghost" onclick="stopAlong()">✕ Stop</button>`;
   const v = $("#alVideo"); v.src = r.url; v.muted = false; v.currentTime = 0;
@@ -94,7 +100,7 @@ export async function playAlong(id){
   A.on = true; v.onended = finishAlong; loop();
 }
 export function stopAlong(){ A.on = false; cancelAnimationFrame(A.raf); const v = $("#alVideo"); try { v.pause(); v.onended = null; } catch (e) {} if (A.stream) { A.stream.getTracks().forEach(t => t.stop()); A.stream = null; } $("#along").hidden = true; document.body.classList.remove("modal"); try { speechSynthesis.cancel(); } catch (e) {} }
-function toggleVoice(){ A.speak = !A.speak; localStorage.setItem("spotlight:alongVoice", A.speak ? "on" : "off"); $("#alVoice").textContent = A.speak ? "🔊" : "🔇"; }
+function toggleVoice(){ A.speak = !A.speak; lsSet("spotlight:alongVoice", A.speak ? "on" : "off"); $("#alVoice").textContent = A.speak ? "🔊" : "🔇"; }
 
 async function loop(){
   if (!A.on) return; const v = $("#alVideo"), cam = $("#alCam"), cv = $("#alCanvas");

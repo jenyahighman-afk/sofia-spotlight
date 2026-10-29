@@ -38,7 +38,7 @@ function drawTarget(key, extra = {}){
 
 export async function startMirror(){
   if (!poseAvailable() || !navigator.mediaDevices) return toast("The mirror needs a camera and a newer phone");
-  $("#mirror").hidden = false; document.body.classList.add("modal"); M.speak = localStorage.getItem("spotlight:mirrorVoice") !== "off"; $("#mgVoice").textContent = M.speak ? "🔊" : "🔇"; seen(""); M.score = 0; $("#mgScore").textContent = "0"; say("Loading the mirror…"); meter(0); drawTarget("up"); $("#mgActions").innerHTML = `<button class="btn ghost" onclick="stopMirror()">✕ Stop</button>`; $("#mgRound").textContent = "";
+  $("#mirror").hidden = false; document.body.classList.add("modal"); try { M.speak = localStorage.getItem("spotlight:mirrorVoice") !== "off"; } catch (e) { M.speak = true; } /* private mode / a full phone: voice on */ $("#mgVoice").textContent = M.speak ? "🔊" : "🔇"; seen(""); M.score = 0; $("#mgScore").textContent = "0"; say("Loading the mirror…"); meter(0); drawTarget("up"); $("#mgActions").innerHTML = `<button class="btn ghost" onclick="stopMirror()">✕ Stop</button>`; $("#mgRound").textContent = "";
   try {
     M.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 } }, audio: false });
     const v = $("#mgVideo"); v.srcObject = M.stream; await v.play(); await videoDetector();
@@ -89,5 +89,5 @@ async function loop(){
   }
   M.raf = requestAnimationFrame(loop);
 }
-export function initMirror(){ $("#mgClose").onclick = stopMirror; $("#mgVoice").onclick = () => { M.speak = !M.speak; localStorage.setItem("spotlight:mirrorVoice", M.speak ? "on" : "off"); $("#mgVoice").textContent = M.speak ? "🔊" : "🔇"; }; }
+export function initMirror(){ $("#mgClose").onclick = stopMirror; $("#mgVoice").onclick = () => { M.speak = !M.speak; try { localStorage.setItem("spotlight:mirrorVoice", M.speak ? "on" : "off"); } catch (e) {} $("#mgVoice").textContent = M.speak ? "🔊" : "🔇"; }; }
 expose({ startMirror, stopMirror });

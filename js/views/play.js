@@ -2,7 +2,7 @@
 // Each game module wires its own globals; this renders the tiles and the idle state of the open game.
 import { $, $$, esc, expose, todayStr } from "../util.js";
 import { S } from "../store.js";
-import { HOME_DAYS } from "../data.js";
+import { dayKindNow } from "../daykind.js";
 import { memoryKnees } from "../season15.js";
 import { planDone } from "../streak.js";
 import { initChoreo, csRender } from "../games/choreo.js";
@@ -62,7 +62,8 @@ export function initPlay(){ initChoreo(); initTeach(); initCount(); }
 export function renderPlay(){
   const s = S.settings; renderWho(); const today = todayStr();
   const ev = showEvent(); const doors = doorsFor(); const doorsOn = !!ev && doors.length > 0 && today >= doors[0].date && today <= (ev.end || ev.start);
-  const { gate, sections } = playSections(today, { home: !!HOME_DAYS[new Date().getDay()], knees: memoryKnees(today), done: planDone(S.practice[today]), doors: doorsOn });
+  // The kind of day is Today's own answer (daykind.js): a home weekday with a class booked is a studio day, so nothing is gated.
+  const { gate, sections } = playSections(today, { home: dayKindNow(today) === "home", knees: memoryKnees(today), done: planDone(S.practice[today]), doors: doorsOn });
   const tile = (g) => { const b = g.best ? g.best(s) : null; return `<button class="game-tile" onclick="${g.go || `playOpen('${g.id}')`}"><span class="gt-emoji">${g.emoji}</span><span class="gt-name">${esc(g.name)}</span><small>${esc(g.blurb)}</small>${b !== null ? `<small class="gt-best">Best ${esc(String(b))}</small>` : ""}</button>`; };
   $("#gameGrid").innerHTML = (gate ? `<div class="game-gate"><span class="grow">🏠 Home day: the solo first. The other games open when the plan is done ⭐</span><button class="btn sm coral" onclick="showPage('practice')">▶ Start practice</button></div>` : "")
     + sections.map(sec => `<div class="game-sec" data-sec="${sec.id}"><b>${sec.title}</b><small>${esc(sec.sub)}</small></div>` + sec.games.map(tile).join("")).join("");

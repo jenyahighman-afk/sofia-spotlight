@@ -20,7 +20,12 @@ function emitStatus(){ statusListeners.forEach(fn => { try { fn(sync); } catch (
 window.addEventListener("online", () => { sync.online = true; emitStatus(); });
 window.addEventListener("offline", () => { sync.online = false; emitStatus(); });
 
-export const getFamilyId = () => { const v = localStorage.getItem(FAMILY_KEY) || ""; return FAMILY_RE.test(v) ? v : null; };
+// The family code lives in localStorage, which Safari's private mode or a full phone can refuse to open: no code then (the
+// join screen), and a code that can't be kept still works for this visit (the write is a shrug, not a crash).
+const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { console.warn("could not keep", k, e); } };
+const lsDel = (k) => { try { localStorage.removeItem(k); } catch (e) {} };
+export const getFamilyId = () => { const v = lsGet(FAMILY_KEY) || ""; return FAMILY_RE.test(v) ? v : null; };
 export const normalizeFamilyId = (s) => String(s || "").toUpperCase().replace(/[^A-Z2-9]/g, "");
 export const isValidFamilyId = (s) => FAMILY_RE.test(normalizeFamilyId(s));
 export function newFamilyId(){ const a = new Uint8Array(24); crypto.getRandomValues(a); return [...a].map(b => ALPHABET[b % 32]).join(""); }
@@ -78,7 +83,7 @@ export async function createFamily(){
   if (!sync.online) throw new Error("You need to be online to create a family space.");
   const id = newFamilyId();
   await withTimeout(setDoc(famDoc(id), { createdAt: Date.now(), schema: SCHEMA_VERSION, app: "sofia-spotlight" }), 20000, "Couldn't reach the cloud. Check the connection and try again.");
-  localStorage.setItem(FAMILY_KEY, id);
+  lsSet(FAMILY_KEY, id);
   return id;
 }
 export async function markSeeded(id){ try { await setDoc(famDoc(id), { seededAt: Date.now() }, { merge: true }); } catch (e) { console.warn(e); } }
@@ -93,13 +98,13 @@ export async function joinFamily(code){
     if (e.code === "no-family" || e.code === "permission-denied") throw e;
     console.warn("join: couldn't verify the code now, joining anyway", e); // offline: the data arrives once we're back online
   }
-  localStorage.setItem(FAMILY_KEY, id);
+  lsSet(FAMILY_KEY, id);
   return id;
 }
 
 // Forget the code on this device and drop the local cache. Cloud data stays where it is.
 export async function leaveFamily(){
-  stopWatching(); localStorage.removeItem(FAMILY_KEY);
+  stopWatching(); lsDel(FAMILY_KEY);
   try { await terminate(sync.db); await clearIndexedDbPersistence(sync.db); } catch (e) { console.warn("could not clear local cache", e); }
   location.replace(location.pathname);
 }

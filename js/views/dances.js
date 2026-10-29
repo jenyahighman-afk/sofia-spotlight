@@ -44,6 +44,11 @@ function noteForm(d){
 // cue cards, the words, the five steps, What's Next? and Hannah's videos one tap inside it) — the how-to, the videos, and
 // the four readiness bars (ready.js) folded under the card.
 const tableTools=(d)=>`<div class="row table-tools"><button class="btn sm violet" onclick="openMemorize('${d.id}','chunks')">🧠 Memorize</button><button class="btn sm ghost" onclick="openHowto()">📖 How to practice</button></div>${videosRow(d)}${d.id==="solo"?readyFold():""}`;
+// The "🧠 Memorize it n/5" fold (memo.js): the five daily steps for a dance with chunks. A dance with a cue table (the solo)
+// already has the 🧠 Memorize door above, so its fold sat 60 px under it as a second door (the Oct 29 audit) — now it is
+// wrapped in .memo-via-sheet, shown only while open: the Memorize sheet's "📋 Five steps" (memorize.js moreWays → memoFocus)
+// opens it right there, and closing it puts it away. The trio and the PITCH jazz keep the fold in view as before.
+const memoFold=(d)=>!memoDances([d]).length?"":isCueTable(d.cues)?`<div class="memo-via-sheet">${memoCard(d)}</div>`:memoCard(d);
 const cueSheetRo=(d)=>{ const list=normalizeCues(d.cues); if(!list.length) return `<div class="ro"></div>`; const tbl=isCueTable(d.cues); return `<div class="ro">${tbl&&d.cueSource?`<div class="small muted">Times: ${esc(d.cueSource)}${d.cueCheckedAt?" · nudged in Cue check "+esc(d.cueCheckedAt):""}</div>`:""}<ul>${list.map(c=>`<li${c.trick?' class="trick"':""}><b>${tbl?fmtCueTime(c.t)+"–"+fmtCueTime(c.end):fmtTime(c.t)}</b> ${c.trick?"★ ":""}${esc(c.move)}${c.lyric?` <span class="muted">“${esc(c.lyric)}”</span>`:""}</li>`).join("")}</ul></div>`; };
 function fullList(d){
   const all=forDance(S.corrections,d.id); if(!all.length) return `<div class="ro"></div>`;
@@ -56,7 +61,7 @@ function renderDances(){
   $("#danceList").innerHTML=list.map(d=>{
     const editing=editDance===d.id; const open=moreOpen.has(d.id);
     const cover=`<div class="cover-top"><div class="cover-art ${d.color||""}">${coverArt(d)}</div><div class="grow"><h3>${esc(d.name)}</h3><div class="small muted">${esc(d.song||"song TBD")}</div>${d.story?`<div class="story">🎭 ${esc(d.story)}</div>`:""}</div></div>
-      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}')">▶ Practice</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>${isCueTable(d.cues)?tableTools(d):videosRow(d)}${memoDances([d]).length?memoCard(d):""}
+      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}')">▶ Practice</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>${isCueTable(d.cues)?tableTools(d):videosRow(d)}${memoFold(d)}
       ${noteFor===d.id?noteForm(d):""}${chips(d)}${patternLine(d)}`;
     const mapbar=d.id==="solo"?`<div class="mapbar" style="margin:8px 0"><div class="soft">soft 0:00–0:48</div><div class="loud">full 0:48–1:52</div><div class="fade">fade</div></div>`:"";
     const photos=`<div class="field-lab">Photos for this dance</div><div class="photos" style="margin-top:6px">${Object.entries(S.photos).filter(([,p])=>p.dance===d.id).map(([pid,p])=>`<div class="ph">${photoTile(p)}${p.cap?`<div class="cap">${esc(p.cap)}</div>`:""}<button class="del" onclick="delPhoto('${pid}')">✕</button></div>`).join("")}</div>

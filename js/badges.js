@@ -49,7 +49,7 @@ export function context(today = todayStr()){
   return {
     streak: computeStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today }),
     closed: closedCount(S.corrections), aerialPct: AERIAL.length ? Math.round(100 * aerialDone / AERIAL.length) : 0,
-    settings: S.settings, practice: S.practice, weekFixPicked: !!(S.settings.weekFix && S.settings.weekFix.id), fullRun, quickCount, gems,
+    settings: S.settings, practice: S.practice, weekFixPicked: !!(S.settings.weekFix && S.settings.weekFix.id && !S.settings.weekFix.auto), fullRun, quickCount, gems,
   };
 }
 

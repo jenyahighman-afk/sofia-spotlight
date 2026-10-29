@@ -41,11 +41,15 @@ export function localClock(now, tz){
 }
 // Which nudge is due now, if any: { slot: 1 | 2, date } — 1 = the dance time (stamped in lastSent), 2 = the second nudge
 // (h2 / m2, stamped in lastSent2), each within its window, once a local day. A subscription with `days` only fires on those weekdays.
+// Build 4: the second nudge goes out on home kinds only — a watch day (Monday: no dancing at home) or a memory-run day (classes
+// end at 7:30, the run is 15 minutes) never gets it, so it doesn't land in the car after three classes. A day without a kind
+// (an older subscription) keeps it.
+export const secondSlotFor = (kind) => kind !== "watch" && kind !== "memory";
 export function dueSlot(sub, now = new Date(), window = WINDOW_MIN){
   const { date, minutes } = localClock(now, sub.tz); if (Array.isArray(sub.days) && sub.days.length && !sub.days.includes(weekdayOf(date))) return null;
   const inWin = (h, m) => { const t = (+h || 0) * 60 + (+m || 0); return minutes >= t && minutes < t + window; };
   if (sub.lastSent !== date && inWin(sub.h, sub.m)) return { slot: 1, date };
-  if (Number.isInteger(sub.h2) && Number.isInteger(sub.m2) && sub.lastSent2 !== date && inWin(sub.h2, sub.m2)) return { slot: 2, date };
+  if (Number.isInteger(sub.h2) && Number.isInteger(sub.m2) && sub.lastSent2 !== date && secondSlotFor((sub.kinds || {})[weekdayOf(date)]) && inWin(sub.h2, sub.m2)) return { slot: 2, date };
   return null;
 }
 // The local date to stamp when the dance-time nudge should fire now, else null (the first slot of dueSlot).

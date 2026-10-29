@@ -41,6 +41,14 @@ export const seenId = () => { try { return localStorage.getItem(KEY) || ""; } ca
 export const isNew = (news = NEWS) => !!(news && news.id && newsItems(news).length && seenId() !== news.id);
 export function markSeen(news = NEWS){ try { if (news && news.id) localStorage.setItem(KEY, news.id); } catch (e) {} }
 const firstName = () => String(((S.settings || {}).avatar || {}).name || "").trim() || "Sofia";
+// Mom's line of the edition (data/news.json `mom`, Build 4): the grown-up items of a release in one line, shown on the
+// Grown-ups hub's "This week, for Mom" card (momweek.js renderMomWeek) until she taps Got it on that phone (spotlight:momnews).
+const MOM_KEY = "spotlight:momnews";
+export const momNews = (news = NEWS) => news && news.id && typeof news.mom === "string" && news.mom.trim() ? { id: news.id, text: news.mom.trim() } : null;
+export const momSeenId = () => { try { return localStorage.getItem(MOM_KEY) || ""; } catch (e) { return ""; } };
+export const momNewsFor = (news = NEWS) => { const m = momNews(news); return m && momSeenId() !== m.id ? m : null; };
+export function momNewsHtml(news = NEWS){ const m = momNewsFor(news); return m ? `<div class="mom-line mom-news"><span class="mom-ic">🎁</span><div class="grow"><div>${esc(m.text)}</div></div><button class="lnk" onclick="momNewsGotIt()">Got it</button></div>` : ""; }
+function momGotIt(){ const m = momNews(); try { if (m) localStorage.setItem(MOM_KEY, m.id); } catch (e) {} if (typeof window.renderMomWeek === "function") window.renderMomWeek(); }
 
 // ---------- Today row ----------
 export function renderNews(){
@@ -79,4 +87,4 @@ function tryIt(id){
   if (t.scroll) { const e = $(t.scroll); if (e && e.scrollIntoView) setTimeout(() => { try { e.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (x) {} }, 50); }
 }
 export function initNews(){ document.addEventListener("stageclosed", () => { const a = $("#newsArea"); if (a) a.style.display = "none"; }); }
-expose({ openNews, newsHow: how, newsStep: stepBy, newsTry: tryIt });
+expose({ openNews, newsHow: how, newsStep: stepBy, newsTry: tryIt, momNewsGotIt: momGotIt });

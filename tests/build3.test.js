@@ -31,24 +31,25 @@ const MEM = { id: "p2", danceId: "solo", text: "Timing + memorize every step.", 
 const clearS = () => { for (const k of Object.keys(S)) S[k] = {}; };
 
 test("schema 50: settings.sunday, the reminder's second nudge and a routine's `from` are normalized when present, never invented", () => {
-  assert.equal(SCHEMA_VERSION, 50);
+  assert.ok(SCHEMA_VERSION >= 50);
   assert.deepEqual(normalizeSunday({ "2026-11-01": { went: "  arms  ", fix: "yes", fixId: "c-solo-1", note: " n ", done: "2026-11-01" }, "2026-11-08": { fix: "maybe", fixId: "bad id!" }, "2026-11-15": { went: "ok" }, nope: { went: "x" }, "2026-11-22": "x" }),
     { "2026-11-01": { went: "arms", fix: "yes", fixId: "c-solo-1", note: "n", done: "2026-11-01" }, "2026-11-15": { went: "ok", fix: "", fixId: "", note: "", done: "" } }, "a record with nothing in it is dropped; junk fields go");
   assert.deepEqual(normalizeSunday(null), {}); assert.deepEqual(normalizeSunday([1]), {});
   const many = {}; for (let i = 0; i < 70; i++) many[`2027-${String(1 + (i % 12)).padStart(2, "0")}-${String(1 + Math.floor(i / 12)).padStart(2, "0")}`] = { went: "x" }; assert.equal(Object.keys(normalizeSunday(many)).length, 60, "the last 60 weeks");
   const d = migrateDoc("settings", "main", { _v: 49, sunday: { "2026-11-01": { went: "arms", done: "2026-11-01" }, bad: 1 }, reminder: { on: true, h: 16, m: 30, second: 0, h2: "19", m2: 99 } });
-  assert.equal(d._v, SCHEMA_VERSION); assert.deepEqual(d.sunday, { "2026-11-01": { went: "arms", fix: "", fixId: "", note: "", done: "2026-11-01" } }); assert.deepEqual(d.reminder, { on: true, h: 16, m: 30, second: false, h2: 19 });
+  assert.equal(d._v, SCHEMA_VERSION); assert.deepEqual(d.sunday, { "2026-10-26": { went: "arms", fix: "", fixId: "", note: "", done: "2026-11-01" } }, "normalized by 50, then re-keyed to the plan week's Monday by 51 (tests/build4b.test.js)"); assert.deepEqual(d.reminder, { on: true, h: 16, m: 30, second: false, h2: 19 });
   const u = migrateDoc("settings", "main", { _v: 49, stars: 3 }); assert.equal("sunday" in u, false); assert.equal("reminder" in u, false);
   assert.equal(migrateDoc("choreo", "a", { _v: 49, kind: "along", from: " videos/x " }).from, "videos/x"); assert.equal("from" in migrateDoc("choreo", "b", { _v: 49, kind: "along", from: 5 }), false); assert.equal(migrateDoc("choreo", "c", { _v: 49, kind: "studio", from: 5 }).from, 5, "other choreo docs are left alone");
 });
 
 test("the Sunday sheet, pure: the week's key, its state, the practice item's 🎬 button, and what a pinned note has earned", () => {
-  assert.equal(SU.sundayOf("2026-11-04"), "2026-11-01"); assert.equal(SU.sundayOf("2026-11-01"), "2026-11-01"); assert.equal(SU.sundayOf("2026-11-07"), "2026-11-01"); assert.equal(SU.sundayOf("2026-11-08"), "2026-11-08");
+  // Build 4: the key is the plan week's Monday (the week Sunday Nov 1 closes starts Oct 26); a weekday is still last Sunday's sheet
+  assert.equal(SU.sundayOf("2026-11-04"), "2026-10-26"); assert.equal(SU.sundayOf("2026-11-01"), "2026-10-26"); assert.equal(SU.sundayOf("2026-11-07"), "2026-10-26"); assert.equal(SU.sundayOf("2026-11-08"), "2026-11-02");
   assert.equal(SU.isSunday("2026-11-01"), true); assert.equal(SU.isSunday("2026-11-02"), false);
-  const st = SU.sundayState({ sunday: { "2026-11-01": { went: "arms", fix: "yes", fixId: "p1", note: "", done: "2026-11-01" } } }, "2026-11-04");
-  assert.equal(st.key, "2026-11-01"); assert.equal(st.done, true); assert.match(st.label, /^done /); assert.deepEqual(st.bits, ["went well: “arms”", "the fix showed ✓"]);
-  assert.deepEqual(SU.sundayState({}, "2026-11-04"), { key: "2026-11-01", rec: null, done: false, started: false, label: "not yet", bits: [] });
-  assert.equal(SU.sundayState({ sunday: { "2026-11-01": { went: "arms" } } }, "2026-11-02").label, "started");
+  const st = SU.sundayState({ sunday: { "2026-10-26": { went: "arms", fix: "yes", fixId: "p1", note: "", done: "2026-11-01" } } }, "2026-11-04");
+  assert.equal(st.key, "2026-10-26"); assert.equal(st.sunday, "2026-11-01"); assert.equal(st.done, true); assert.match(st.label, /^done /); assert.deepEqual(st.bits, ["went well: “arms”", "the fix showed ✓"]);
+  assert.deepEqual(SU.sundayState({}, "2026-11-04"), { key: "2026-10-26", sunday: "2026-11-01", rec: null, done: false, started: false, label: "not yet", bits: [] });
+  assert.equal(SU.sundayState({ sunday: { "2026-10-26": { went: "arms" } } }, "2026-11-02").label, "started");
   assert.deepEqual(toolsFor({ id: "film-review" }, { solo: ["Walkthrough", "Run-through"] }).map(t => [t.label, t.go]), [["🎬 Sunday sheet", "openSunday()"], ["🎵 Solo music", "openPlayer('solo')"]], "the review item opens the sheet, the music a tap away");
   assert.deepEqual(toolsFor({ id: "solo-run", dance: "solo" }, {}).map(t => t.label), ["🎵 Solo music"], "the other solo items unchanged");
   const o = SU.pinOffers([PIN, MEM, { ...PIN, id: "p3", status: "done" }], { seen: { p1: ["2026-11-01", "2026-11-08"] }, known: { of: 28, known: 28 } });
@@ -64,9 +65,9 @@ test("the Sunday sheet in the fake DOM: Today's card on a Sunday only, the four 
   SU.renderSundayCard("2026-11-01"); const card = el("#sundayCard"); assert.equal(card.hidden, false);
   assert.match(card.innerHTML, /🎬 Sunday film review/); assert.match(card.innerHTML, /not yet/); assert.match(card.innerHTML, /This week's fix:/); assert.match(card.innerHTML, /📌 Ms\. Brittany/); assert.match(card.innerHTML, /0 of 2 in a row/); assert.match(card.innerHTML, /fixVideo\('p1',true\)/); assert.match(card.innerHTML, /fixVideo\('p1',false\)/); assert.match(card.innerHTML, /openSunday\(\)/);
   SU.renderSundayCard("2026-11-02"); assert.equal(card.hidden, true, "Monday: no card"); SU.renderSundayCard("2026-11-07"); assert.equal(card.hidden, true);
-  S.settings = { sunday: { "2026-11-01": { went: "arms", fix: "yes", fixId: "p1", note: "", done: "2026-11-01" } } }; SU.renderSundayCard("2026-11-01"); assert.match(card.innerHTML, /✅ done/); assert.match(card.innerHTML, /went well: “arms”/); assert.match(card.innerHTML, /Open the Sunday sheet/);
+  S.settings = { sunday: { "2026-10-26": { went: "arms", fix: "yes", fixId: "p1", note: "", done: "2026-11-01" } } }; SU.renderSundayCard("2026-11-01"); assert.match(card.innerHTML, /✅ done/); assert.match(card.innerHTML, /went well: “arms”/); assert.match(card.innerHTML, /Open the Sunday sheet/);
   S.settings = {}; const today = todayStr(); const key = SU.sundayOf(today);
-  window.openSunday(); assert.equal(el("#stage").hidden, false); assert.match(el("#stageTitle").textContent, /Sunday sheet/); const area = el("#sundayArea");
+  window.openSunday(); assert.equal(el("#stage").hidden, false); assert.match(el("#stageTitle").textContent, SU.isSunday(today) ? /Sunday sheet/ : /Last Sunday \(/, "Build 4: on a weekday the sheet is last Sunday's"); const area = el("#sundayArea");
   assert.match(area.innerHTML, /Step 1 of 4/); assert.match(area.innerHTML, /Watch the last run together/); assert.match(area.innerHTML, /openPlayer\('solo'\)/); assert.match(area.innerHTML, /Watched it ›/);
   window.sdStep(2); assert.match(area.innerHTML, /What went well\?/); assert.match(area.innerHTML, /Mom types one word/); el("#sdWent").value = "  arms  ";
   await window.sdWent(); assert.equal(S.settings.sunday[key].went, "arms", "saved as it goes"); assert.match(area.innerHTML, /Step 3 of 4/); assert.match(area.innerHTML, /Did the fix show on the video\?/); assert.match(area.innerHTML, /Knee alignment/); assert.match(area.innerHTML, /sdFix\(true\)/);
@@ -95,21 +96,21 @@ test("This week, for Mom: the week, the Sunday sheet, the fix's video count, pri
   const by = (lines, k) => lines.find(l => l.k === k);
   const a = momWeekLines("2026-11-04", {}); assert.deepEqual(a.map(l => l.k), ["week", "sunday", "fix", "privates", "checkpoint", "script", "mini"]);
   assert.match(by(a, "week").text, /^Week 6 of 15 · Own it$/); assert.match(by(a, "week").sub, /^Solo: Whole solo ×2/);
-  assert.match(by(a, "sunday").text, /Sunday sheet: not filled this week/); assert.equal(by(a, "sunday").warn, true); assert.equal(by(a, "sunday").go, "openSunday()");
+  assert.match(by(a, "sunday").text, /^Last Sunday's sheet \(.*Nov 1\): not filled$/, "Build 4: a weekday is about last Sunday's sheet"); assert.equal(by(a, "sunday").warn, true); assert.equal(by(a, "sunday").go, "openSunday()");
   assert.equal(by(a, "fix").text, "No fix picked this week"); assert.equal(by(a, "fix").warn, true);
   assert.match(by(a, "privates").text, /^Privates in November: Solo 0\/2 · Trio 0\/2$/); assert.equal(by(a, "privates").warn, true); assert.match(by(a, "privates").sub, /No solo private booked/); assert.equal(by(a, "privates").go, "openRehearsal('solo')");
   assert.match(by(a, "checkpoint").text, /Whole trio, no video/); assert.equal(by(a, "checkpoint").warn, true, "Oct 31 passed and unticked: asked first");
   assert.match(by(a, "script").text, /^From .*Nov 9.*: read the Show-in-your-head script aloud$/); assert.match(by(a, "mini").text, /^Next mini audience: .*Dec 6.* \(32 days\)$/); assert.match(by(a, "mini").sub, /Mini audience #1/); assert.equal(by(a, "mini").warn, false);
-  const sunday = { "2026-11-01": { went: "arms", fix: "yes", fixId: "p1", note: "film the second half", done: "2026-11-01" } };
+  const sunday = { "2026-10-26": { went: "arms", fix: "yes", fixId: "p1", note: "film the second half", done: "2026-11-01" } };
   const booked = [bookingRecord("2026-11-10", "3:30–4:00 PM", "Solo rehearsal with Ms. Brittany", "GHD", "r1"), bookingRecord("2026-11-17", "3:30–4:00 PM", "Solo rehearsal with Ms. Brittany", "GHD", "r2"), bookingRecord("2026-11-12", "4:00–4:30 PM", "Trio private", "GHD", "r3", "trio"), bookingRecord("2026-11-19", "4:00–4:30 PM", "Trio private", "GHD", "r4", "trio")];
   const ticks = { [cpId(plan15, { t: "Whole trio, no video" })]: { done: "2026-10-31" }, [cpId(plan15, { t: "Whole solo from memory, on the music" })]: { done: "2026-11-01" } };
   const b = momWeekLines("2026-11-04", { sunday, fix: PIN, seen: { p1: ["2026-11-01", "2026-11-03"] }, oneOffs: booked, ticks });
-  assert.match(by(b, "sunday").text, /^Sunday sheet: done /); assert.equal(by(b, "sunday").warn, undefined); assert.match(by(b, "sunday").sub, /went well: “arms” · the fix showed ✓ · note: film the second half/);
+  assert.match(by(b, "sunday").text, /^Last Sunday's sheet \(.*Nov 1\): done$/); assert.equal(by(b, "sunday").warn, undefined); assert.match(by(b, "sunday").sub, /went well: “arms” · the fix showed ✓ · note: film the second half/);
   assert.match(by(b, "fix").text, /^This week's fix: Knee alignment/); assert.match(by(b, "fix").sub, /on video 2 of 2 in a row · 📌 Ms\. Brittany · ready to check off/); assert.equal(by(b, "fix").warn, true); assert.equal(by(b, "fix").go, "showPage('skillcheck')");
   assert.match(by(b, "privates").text, /Solo 2\/2 ✓ · Trio 2\/2 ✓/); assert.equal(by(b, "privates").warn, false); assert.match(by(b, "privates").sub, /Next solo private: .*Nov 10.* 3:30–4:00 PM/);
   assert.match(by(b, "checkpoint").text, /^Next checkpoint: .*Nov 10.* \(6 days\) · Next solo rehearsal/, "both passed ones ticked, the rehearsal booked: the next dated one");
   const c = momWeekLines("2026-11-04", { ticks }); assert.match(by(c, "checkpoint").text, /^Book it: Next solo rehearsal/); assert.equal(by(c, "checkpoint").go, "openRehearsal('solo')");
-  assert.match(by(momWeekLines("2026-11-01", {}), "sunday").text, /^Sunday sheet: today$/); assert.match(by(momWeekLines("2026-11-01", { sunday: { "2026-11-01": { went: "arms" } } }), "sunday").sub, /started, not finished/);
+  assert.match(by(momWeekLines("2026-11-01", {}), "sunday").text, /^Sunday sheet: today$/); assert.match(by(momWeekLines("2026-11-01", { sunday: { "2026-10-26": { went: "arms" } } }), "sunday").sub, /started, not finished/);
   assert.match(by(momWeekLines("2026-11-04", { fix: { id: "x", text: "Eyes up", tag: "eyes" }, seen: { x: ["2026-11-03"] } }), "fix").sub, /^📹 on video 1 of 2 in a row$/);
   // the script: a grown-up reads it aloud from Nov 9 for 14 days, so until Nov 23; after that she does it herself
   assert.match(by(momWeekLines("2026-11-13", {}), "script").text, /^Read the Show-in-your-head script aloud, until .*Nov 23$/); assert.equal(by(momWeekLines("2026-11-13", {}), "script").warn, true);
@@ -131,7 +132,7 @@ test("the reminder follows the plan's days — Monday the watch day, the other s
   assert.equal(RM.daysLabel(pw), "📹 Mon · 🧠 Tue, Wed, Sat · 🏠 Sun, Thu, Fri"); assert.equal(RM.daysLabel({ kinds: {} }), "");
   assert.deepEqual(RM.reminderOf({ reminder: { on: true, h: 16, m: 30, second: false, h2: 20, m2: 0 } }), { on: true, h: 16, m: 30, second: false, h2: 20, m2: 0 }); assert.equal(RM.reminderOf({ reminder: { on: true, h: 16, m: 30 } }).second, true, "on unless turned off");
   const r = RM.reminderOf({ reminder: { on: true, h: 16, m: 30 } }); const base = { familyId: "F", endpoint: "https://e", keys: { p256dh: "p", auth: "a" }, tz: "America/Los_Angeles" };
-  const body = RM.subscribeBody(r, base); assert.deepEqual(body, { ...base, h: 16, m: 30, days: pw.days, kinds: pw.kinds, h2: 19, m2: 30 });
+  const body = RM.subscribeBody(r, base); assert.deepEqual(body, { ...base, h: 16, m: 30, days: pw.days, kinds: pw.kinds, h2: 20, m2: 0 }, "the second nudge defaults to 8:00 pm since Build 4");
   assert.equal("h2" in RM.subscribeBody({ ...r, second: false }, base), false, "second off: the worker is told nothing about it");
   // the worker: the request, the two slots, the plan days, the lines
   const good = { familyId: "ABCDEFGHJKLMNPQRSTUVWXYZ", endpoint: "https://web.push.apple.com/QAbcdefghijklmnop", keys: { p256dh: "B".repeat(87), auth: "a".repeat(22) }, h: 16, m: 30, tz: "America/Los_Angeles" };
@@ -148,7 +149,7 @@ test("the reminder follows the plan's days — Monday the watch day, the other s
   for (const [t, b] of [...Object.values(W.KIND_LINES), ...W.SECOND_LINES]) assert.ok(t.length <= 30 && b.length <= 60, t);
   const wr = src("worker/src/remind.js"); assert.match(wr, /dueSlot\(sub, now\)/); assert.match(wr, /lastSent2/); assert.match(wr, /payloadFor\(sub, date, slot\)/);
   // the Me card: the plan days, the second nudge and its switch; the permission flow is the same
-  resetDom(); clearS(); S.settings = {}; RM.renderReminder(); const h = el("#meReminder").innerHTML; assert.match(h, /Plan days: 📹 Mon · 🧠 Tue, Wed, Sat · 🏠 Sun, Thu, Fri/); assert.match(h, /A second nudge at <b>7:30 pm<\/b>/); assert.match(h, /rmSecond\(\)">On</); assert.match(h, /id="rmTime2"/);
+  resetDom(); clearS(); S.settings = {}; RM.renderReminder(); const h = el("#meReminder").innerHTML; assert.match(h, /Plan days: 📹 Mon · 🧠 Tue, Wed, Sat · 🏠 Sun, Thu, Fri/); assert.match(h, /A second nudge at <b>8:00 pm<\/b> on home days/); assert.match(h, /rmSecond\(\)">On</); assert.match(h, /id="rmTime2"/);
   S.settings = { reminder: { on: true, h: 16, m: 30, second: false } }; RM.renderReminder(); const h2 = el("#meReminder").innerHTML; assert.match(h2, /rmSecond\(\)">Off</); assert.doesNotMatch(h2, /id="rmTime2"/); resetDom(); clearS();
   const rj = src("js/remind.js"); assert.match(rj, /Notification\.requestPermission\(\)/); assert.match(rj, /pushBlocker\(env\(\)\)/); assert.match(rj, /subscribeBody\(r, \{ familyId: sync\.familyId/);
 });
@@ -171,13 +172,14 @@ test("the extras on Play: three sections (solo work, weekend games, extras), the
   const later = PL.playSections("2026-11-12", { home: true, knees: false, done: false, doors: true }); assert.equal(later.gate, false); assert.ok(later.sections[0].games.some(g => g.id === "quest"), "after Own it Trick Quest is solo work"); assert.equal(later.sections.length, 3);
   assert.deepEqual(PL.EXTRAS.map(e => e.go), ["openAdvent()", "openCostumes()"]); assert.deepEqual(PL.gamesFor("2026-11-05", { home: true, knees: true, done: false }).games.map(g => g.id), PL.SOLO_GAMES, "the Build 1 gate is unchanged");
   assert.equal(extrasOpen({ pd: false, kind: "home" }), false); assert.equal(extrasOpen({ pd: true, kind: "home" }), true); assert.equal(extrasOpen({ pd: false, kind: "rest" }), true, "a rest day has no plan to finish"); assert.equal(extrasOpen({ pd: false, kind: "memory" }), false);
-  const home = src("js/views/home.js"); assert.match(home, /gateExtras\(extrasOpen\(\{pd,kind\}\)\)/); assert.match(home, /They're on Play too/); assert.ok(html.includes('id="extrasGate"') && html.includes('id="playExtras"') && html.includes('id="playDare"'));
-  assert.match(src("js/dares.js"), /\["#dareCard", "#playDare"\]/); assert.match(src("js/buddy.js"), /soloOnly: !!HOME_DAYS\[dow\] && !planDone\(rec\)/);
+  const home = src("js/views/home.js"); assert.match(home, /gateExtras\(extrasOpen\(\{pd,kind\}\),!playGate\)/); assert.match(home, /They're on Play too/); assert.ok(html.includes('id="extrasGate"') && html.includes('id="playExtras"') && html.includes('id="playDare"'));
+  assert.match(src("js/dares.js"), /\["#dareCard", "#playDare"\]/); assert.match(src("js/buddy.js"), /soloOnly: dayKindNow\(date\) === "home" && !planDone\(rec\)/);
   const ctx = { name: "Sofia", pet: "Bun-Bun", dayDone: false, safe: false, fullDone: false, streak: 2, skips: 2, petDays: 3, comp: null, compMode: false, plan: null, ticks: [], classes: [], restDay: false, cards: [{ id: "trick", sub: "Leap", go: "a", done: false }, { id: "game", sub: "What's Next?", go: "b", done: false }], dare: false, door: false, glow: true, cardsEarned: 3, starsLeft: 2, unlock: "Gold", event: null };
   const keys = new Set(); for (let i = 0; i < 40; i++) keys.add(B.pickStep(ctx, () => i / 40).key); for (const k of keys) assert.ok(["trick", "game"].includes(k), "before the plan is done, never the fun tier: " + k);
   // the pages in the fake DOM: Play's sections (the extras only when today's gate is open), the dare on Play
   resetDom(); clearS(); const { memoryKnees } = await import("../js/season15.js"); const { planDone } = await import("../js/streak.js"); const today = todayStr();
-  const gate = PL.gamesFor(today, { home: !!data.HOME_DAYS[new Date(today + "T00:00:00").getDay()], knees: memoryKnees(today), done: planDone(S.practice[today]) }).gate;
+  const { dayKindNow } = await import("../js/daykind.js"); // Build 4: Play's "home" is the kind of day (a class booked on a home weekday is a studio day)
+  const gate = PL.gamesFor(today, { home: dayKindNow(today) === "home", knees: memoryKnees(today), done: planDone(S.practice[today]) }).gate;
   PL.renderPlay(); const grid = el("#gameGrid").innerHTML; assert.match(grid, /🌸 Solo work/); assert.equal(/✨ Extras/.test(grid), !gate, "the extras follow the same gate as the weekend games"); assert.equal(/🎉 Weekend games/.test(grid), !gate); assert.equal(el("#playExtras").hidden, gate);
   const DR = await import("../js/dares.js"); DR.renderDares(); assert.equal(el("#playDare").hidden, false); assert.equal(el("#playDare").innerHTML, el("#dareCard").innerHTML, "the same dare card on Play and Today");
   resetDom(); clearS();

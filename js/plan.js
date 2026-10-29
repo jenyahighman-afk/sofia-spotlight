@@ -13,12 +13,15 @@ export function rotate(pool, n, day, prefer = []){
   const out = []; for (const it of order) { if (!out.some(x => x.id === it.id)) out.push(it); if (out.length >= n) break; }
   return out;
 }
-const firstSentence = (s) => String(s || "").split(/(?<=[.!?])\s/)[0].slice(0, 110).trim();
+// A card line split into the item and the rest (Build 4: nothing is cut any more — the first sentence is the item's `text`,
+// the sentences after it its `how`, which practice mode shows under the text and the checklist folds under "How to do it").
+export function splitLine(s){ const m = String(s || "").replace(/\s+/g, " ").trim(); const i = m.search(/(?<=[.!?])\s/); return i < 0 ? { text: m, how: "" } : { text: m.slice(0, i).trim(), how: m.slice(i).trim() }; }
 
-// A studio class or rehearsal day: the short version, a 15-minute memory run (the toolkit's rule).
+// A studio class or rehearsal day: the short version, a 15-minute memory run (the toolkit's rule). The run itself is the
+// 5-minute "Solo from the top" item; the whole list is the 15 minutes.
 export const MEMORY_RUN = [
   { id: "mem-warm", text: "Warm up 3 min: jumping jacks, arm circles, leg swings", secs: 180, pose: "jacks", kind: "warm" },
-  { id: "mem-top", text: "15-minute memory run · From the top: the solo as far as you know, with the music, Lines off", secs: 300, pose: "hold", kind: "run" },
+  { id: "mem-top", text: "Solo from the top · 5 min: the solo as far as you know, with the music, Lines off", secs: 300, pose: "hold", kind: "run" },
   { id: "mem-chunk", text: "This week's chunk: Again, Next, From the top (🧠 Memorize → Chunks)", secs: 240, pose: "reach", kind: "run" },
   { id: "mem-predict", text: "Pause & Predict with a grown-up: what comes next?", secs: 180, pose: "pose", kind: "run" },
   { id: "mem-picture", text: "Picture it: eyes closed, the whole solo in your head, counts and all", secs: 60, pose: "hold", kind: "run" },
@@ -31,7 +34,21 @@ export const WATCH_DAY = [
   { id: "watch-picture", text: "In the car: eyes closed, dance the whole solo in your head, counts and all", secs: 120, pose: "hollow", kind: "mind" },
 ];
 export const KNEE_DRILL = { id: "knees-block", text: "Memory + knees: pliés in 1st and 2nd facing the mirror 2×8, knees over toes · slow lunges 2×5 each side · relevés. Tricks wait until the solo is memorized.", secs: 300, kind: "trick", pose: "plie" };
-// opts: { pool, date, preferTags, weekFix: {id,text,tag}|null, tricks: [string], aerial: [{id,section,text}], aerialDone: Set|array, dances: [{id,...}],
+// This week's fix as a drill (Build 4): the tag's two-minute drill is the item (the pattern of KNEE_DRILL and pool.fixPoses),
+// the note's own words sit under it as `how`. A tag with no drill ("other") keeps the words as the item.
+export const FIX_DRILLS = {
+  feet: "Feet drill: sit tall, legs long — point and flex 2×8, the toes last to leave and first to come back · relevés 2×8, toes gripping · then the fix's move 4 times slow, pointed all the way down",
+  knees: "Knee drill: pliés in 1st and 2nd facing the mirror 2×8, knees over the toes · slow lunges 2×5 each side · then the fix's move 4 times slow, the knee straight (or soft on purpose), never in between",
+  eyes: "Eyes drill: pick a spot on the wall at eye height · the fix's section 4 times with the eyes on the spot, never the mirror · then once with the music",
+  arms: "Arms drill: facing the mirror, long arms overhead 2×8 with the shoulders down · the fix's shape 4 times slow, fingers reaching past the ends · then once with the music",
+  memory: "Memory drill: the chunk 3 times with the music, once with the music off, once with the eyes closed · say the next move out loud before it comes",
+  timing: "Timing drill: count the section out loud with the music twice · then dance it twice, still counting · every shape lands ON its number",
+  spacing: "Spacing drill: tape the start spot · the section 4 times, finishing on the tape · the same height and the same travel each time",
+  energy: "Energy drill: the section twice marking, then twice FULL OUT · hit the shape, freeze for 2 counts, then go on",
+};
+// Whose words sit under the drill: the teacher's name, "Mom's note", or "The note" for her own, the card's and the coach's lines.
+export const fixWho = (source) => { const w = String(source || "").trim(); return !w || /^(me|notes|ai coach)$/i.test(w) ? "The note" : /^mom$/i.test(w) ? "Mom's note" : w; };
+// opts: { pool, date, preferTags, weekFix: {id,text,tag,source?,pinned?}|null, tricks: [string], aerial: [{id,section,text,how?,wrong?}], aerialDone: Set|array, dances: [{id,...}],
 //   session: season15.sessionRules(date) (imagery, clips, review, run, taper), newNotes: [{id, text, source, tag}] (a teacher's notes from the last 7 days),
 //   short: true | "memory" on a studio day, a light week or the night before the show (MEMORY_RUN only; nightBefore: no full-out), "watch" on a Monday (WATCH_DAY),
 //   focus: "knees" (KNEE_DRILL instead of a trick) | "none" (no trick drill) | [trick lines] (this week's tricks only) }
@@ -56,18 +73,19 @@ export function buildPlan(opts){
   // This week's fix, as a drill (kept in the plan all week; the same id all week so a check-off sticks per day).
   // A teacher's new correction (last 7 days) is practised right away, not saved for the cleaning weeks.
   for (const n of (opts.newNotes || []).slice(0, 2)) if (n && n.text && (!opts.weekFix || n.id !== opts.weekFix.id)) items.push({ id: "new-" + n.id, text: `New from ${n.source}: ${n.text}`, secs: 90, kind: "fix", pose: (pool.fixPoses || {})[n.tag] || "pose", tag: n.tag });
-  if (opts.weekFix && opts.weekFix.text) items.push({ id: "fix-" + opts.weekFix.id, text: "This week's fix: " + opts.weekFix.text, secs: 120, kind: "fix", pose: (pool.fixPoses || {})[opts.weekFix.tag] || "pose", tag: opts.weekFix.tag });
-  // One trick drill from the dance cards, rotating daily.
-  const tricks = (Array.isArray(opts.focus) && opts.focus.length ? opts.focus : opts.tricks || []).map(firstSentence).filter(Boolean);
+  if (opts.weekFix && opts.weekFix.text) { const f = opts.weekFix; const drill = FIX_DRILLS[f.tag] || ""; items.push({ id: "fix-" + f.id, text: drill ? "This week's fix · " + drill : "This week's fix: " + f.text, ...(drill ? { how: `${f.pinned ? "📌 " : ""}${fixWho(f.source)}: ${f.text}` } : {}), secs: 120, kind: "fix", pose: (pool.fixPoses || {})[f.tag] || "pose", tag: f.tag }); }
+  // One trick drill from the dance cards, rotating daily: the card line's first sentence is the item, the rest its `how`.
+  const tricks = (Array.isArray(opts.focus) && opts.focus.length ? opts.focus : opts.tricks || []).map(splitLine).filter(t => t.text);
   if (opts.focus === "knees" && !comp) items.push({ ...KNEE_DRILL });
-  else if (tricks.length && !comp && opts.focus !== "none") { const t = tricks[day % tricks.length]; items.push({ id: "trick-" + (day % tricks.length), text: "Trick drill: " + t, secs: 120, kind: "trick", pose: /calypso/i.test(t) ? "calypso" : /scorpion|needle/i.test(t) ? "arab" : /cartwheel/i.test(t) ? "cartwheel" : /walkover|handstand/i.test(t) ? "handstand" : /turn|passé|passe/i.test(t) ? "pirouette" : /kick/i.test(t) ? "kick" : /donut|bridge|back/i.test(t) ? "bridge" : /extension|attitude/i.test(t) ? "develop" : "reach" }); }
+  else if (tricks.length && !comp && opts.focus !== "none") { const { text: t, how } = tricks[day % tricks.length]; items.push({ id: "trick-" + (day % tricks.length), text: "Trick drill: " + t, ...(how ? { how } : {}), secs: 120, kind: "trick", pose: /calypso/i.test(t) ? "calypso" : /scorpion|needle/i.test(t) ? "arab" : /cartwheel/i.test(t) ? "cartwheel" : /walkover|handstand/i.test(t) ? "handstand" : /turn|passé|passe/i.test(t) ? "pirouette" : /kick/i.test(t) ? "kick" : /donut|bridge|back/i.test(t) ? "bridge" : /extension|attitude/i.test(t) ? "develop" : "reach" }); }
   // Aerial mission: unchecked steps from the drill/strength sections, on the weekdays the pool says (home days), in the
   // mission's own order (each step builds on the one before). Not during Memory + knees: no acro at home until the solo is memorized.
   const nAerial = (pool.aerialByWeekday || {})[String(wd)] || 0;
   if (nAerial && !comp && opts.focus !== "knees") { const done = new Set(opts.aerialDone || []); const open = (opts.aerial || []).filter(a => !done.has(a.id) && a.section !== "In class only");
     const want = wd === 4 ? (a) => a.section === "Strength" : (a) => a.section.startsWith("Drills");
     const picks = open.filter(want).slice(0, nAerial); if (picks.length < nAerial) picks.push(...open.filter(a => !want(a) && !picks.includes(a)).slice(0, nAerial - picks.length));
-    for (const a of picks) items.push({ id: "aerial-" + a.id, text: "Aerial mission: " + a.text, secs: 90, kind: "aerial", pose: (pool.aerialPoses || {})[a.section] || "cartwheel", aerialId: a.id, ...(a.how ? { how: a.how } : {}) }); }
+    // The step's how-to and its watch-for text (aerial.json `wrong`) travel as `how`, so practice mode shows both under the step.
+    for (const a of picks) { const how = [a.how, a.wrong ? "⚠ Watch for: " + a.wrong : ""].filter(Boolean).join(" "); items.push({ id: "aerial-" + a.id, text: "Aerial mission: " + a.text, secs: 90, kind: "aerial", pose: (pool.aerialPoses || {})[a.section] || "cartwheel", aerialId: a.id, ...(how ? { how } : {}) }); } }
   // Runs: only dances that exist (built-in or added) and aren't deleted.
   const have = new Set((opts.dances || []).map(d => d.id));
   for (const r of pool.runs || []) if (!r.dance || have.has(r.dance)) items.push({ ...r, ...(r.id === "solo-run" && ses.run ? { text: ses.run.text, secs: ses.run.secs } : {}), kind: "run" });
