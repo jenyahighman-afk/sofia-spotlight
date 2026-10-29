@@ -15,6 +15,7 @@
     <ellipse cx="0" cy="8" rx="34" ry="30" fill="#E0246F"/>
     <ellipse cx="-6" cy="0" rx="14" ry="10" fill="#FF8FB8" opacity=".8"/>
   </g>
+  
   <circle cx="96" cy="120" r="9" fill="#7FD3FF"/><circle cx="120" cy="400" r="8" fill="#B9F18C"/><circle cx="414" cy="130" r="10" fill="#F4C86A"/><circle cx="404" cy="404" r="8" fill="#C9A7F5"/><circle cx="70" cy="260" r="6" fill="#FF8A3D"/><circle cx="446" cy="260" r="6" fill="#7FD3FF"/></g>
   <circle cx="256" cy="256" r="248" fill="none" stroke="#7FD3FF" stroke-width="12"/>
 </svg>

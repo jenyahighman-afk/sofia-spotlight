@@ -65,3 +65,18 @@ test("every theme has its button (SVG + an opaque 180 px PNG), the default too, 
   assert.match(src("css/app.css"), /html\[data-season\] header\.hero\{background:var\(--season-hero\)\}/); assert.match(src("css/app.css"), /prefers-reduced-motion:reduce\)\{\.season-shower\{display:none\}/);
   assert.ok(!/\d{4}-\d{2}-\d{2}/.test(JSON.stringify(Object.values(THEMES))), "no family date in the repo's theme table");
 });
+
+test("Halloween everywhere (1.51.0): webs, spiders, bats and witch hats on every screen, decoration only, calm with reduced motion", async () => {
+  const { decoHtml } = await import("../js/seasons.js");
+  const h = decoHtml("halloween"); assert.equal((h.match(/class="hw-bat /g) || []).length, 3, "three bats"); assert.match(h, /class="hw-witch"/, "and a little witch on her broom");
+  for (const id of Object.keys(THEMES)) if (id !== "halloween") assert.equal(decoHtml(id), "", id + ": no fliers");
+  for (const f of ["web", "web-light", "web-hero", "spider", "spider-light", "bat", "bat-light", "hat", "witch", "strand", "night", "pattern"]) {
+    assert.ok(existsSync(new URL(`../icons/season/halloween/${f}.svg`, import.meta.url)), f + ".svg"); assert.ok(src("sw.js").includes(`"./icons/season/halloween/${f}.svg"`), f + " is precached");
+  }
+  const css = src("css/app.css"); const H = 'html[data-season="halloween"]';
+  for (const sel of [`${H} header.hero{background:url(`, `${H} .wrap{background-image:`, `${H} .card:before`, `${H} .card h3:after`, `${H} nav.tabs:before`, `${H} nav.tabs:after`, `${H} nav.tabs button:last-child:before`, `${H} .buddy-pet:before`, `${H} .pet-stage:before`, `${H} .stage,${H} .gate{background-image`, `${H} .stage-top:before`]) assert.ok(css.includes(sel), sel);
+  const block = css.slice(css.indexOf("/* Halloween everywhere")); const rules = block.match(/:(before|after)\{content:""[^}]*\}/g) || [];
+  assert.ok(rules.length >= 10 && rules.every(r => r.includes("pointer-events:none") || r.includes("display:inline-block")), "every decoration lets taps through");
+  assert.match(css, /prefers-reduced-motion:reduce\)\{\.season-deco\{display:none\}/); assert.match(css, /body\.modal \.season-deco\{display:none\}/);
+  const btn = src("icons/season/halloween.svg"); assert.ok(btn.includes("#FF5C93") && btn.includes("#4B2A6E") && btn.includes("#B79BE6"), "the button wears the witch hat with her pink band, and the lavender spider");
+});

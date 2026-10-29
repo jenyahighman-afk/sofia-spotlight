@@ -642,3 +642,49 @@ html[data-season="aprilfools"] header.hero.fixed h1{transform:none}
 .season-peek{flex-wrap:wrap;gap:6px}
 .season-peek .chip{min-width:38px;justify-content:center}
 .season-bday{margin-left:8px}
+
+/* Halloween everywhere (1.51.0, Sofia loves Halloween): webs, spiders, bats and witch hats on every screen. Decoration
+   only: nothing to tap (pointer-events:none), nothing taller; her pink stays on every card. Drawn by tools/season-deco.cjs. */
+html[data-season="halloween"] header.hero{background:url(../icons/season/halloween/night.svg) right 58px bottom -8px/176px auto no-repeat,var(--season-hero)}
+html[data-season="halloween"] header.hero:before{content:"";position:absolute;left:0;top:0;width:70px;height:70px;background:url(../icons/season/halloween/web-hero.svg) no-repeat top right/contain;transform:scaleX(-1);opacity:.6;pointer-events:none}
+html[data-season="halloween"] .wrap{background-image:url(../icons/season/halloween/pattern.svg);background-size:200px 200px;background-attachment:local}
+html[data-season="halloween"] .card,html[data-season="halloween"] .modal-card{position:relative}
+html[data-season="halloween"] .card:before,html[data-season="halloween"] .modal-card:before{content:"";position:absolute;top:0;right:0;width:46px;height:46px;background:url(../icons/season/halloween/web.svg) no-repeat top right/contain;border-top-right-radius:16px;opacity:.8;pointer-events:none}
+html[data-season="halloween"] .card:nth-child(even):before{right:auto;left:0;transform:scaleX(-1)}
+html[data-season="halloween"] .card:nth-child(4n+1):after,html[data-season="halloween"] .modal-card:after{content:"";position:absolute;top:0;right:34px;width:20px;height:35px;background:url(../icons/season/halloween/spider.svg) no-repeat top center/contain;pointer-events:none;animation:hw-bob 2.8s ease-in-out infinite alternate}
+html[data-season="halloween"] .card:nth-child(4n+3):after{content:"";position:absolute;top:0;left:30px;width:16px;height:28px;background:url(../icons/season/halloween/spider.svg) no-repeat top center/contain;pointer-events:none;animation:hw-bob 3.6s ease-in-out infinite alternate-reverse}
+html[data-season="halloween"] .card h3:after,html[data-season="halloween"] .modal-card h3:after{content:"";display:inline-block;width:26px;height:10px;margin-left:7px;vertical-align:middle;background:url(../icons/season/halloween/bat.svg) no-repeat center/contain}
+html[data-season="halloween"] nav.tabs{position:relative}
+html[data-season="halloween"] nav.tabs:before{content:"";position:absolute;left:0;right:0;top:-1px;height:20px;background:url(../icons/season/halloween/strand.svg) no-repeat top/100% 20px;pointer-events:none}
+html[data-season="halloween"] nav.tabs:after{content:"";position:absolute;top:6px;left:calc(40% - 9px);width:18px;height:32px;background:url(../icons/season/halloween/spider.svg) no-repeat top center/contain;pointer-events:none;animation:hw-bob 3.2s ease-in-out infinite alternate}
+html[data-season="halloween"] nav.tabs button:last-child{position:relative}
+html[data-season="halloween"] nav.tabs button:last-child:before{content:"";position:absolute;top:-12px;left:50%;width:34px;height:24px;margin-left:-12px;background:url(../icons/season/halloween/hat.svg) no-repeat center/contain;transform:rotate(-14deg);pointer-events:none;z-index:1}
+html[data-season="halloween"] .buddy-pet{position:relative;overflow:visible}
+html[data-season="halloween"] .buddy-pet:before{content:"";position:absolute;top:-22px;left:50%;width:46px;height:32px;margin-left:-20px;background:url(../icons/season/halloween/hat.svg) no-repeat center/contain;transform:rotate(-14deg);pointer-events:none}
+html[data-season="halloween"] .pet-stage{position:relative;overflow:visible}
+html[data-season="halloween"] .pet-stage:before{content:"";position:absolute;top:-14px;left:50%;width:58px;height:40px;margin-left:-24px;background:url(../icons/season/halloween/hat.svg) no-repeat center/contain;transform:rotate(-12deg);pointer-events:none;z-index:1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"])[data-season="halloween"] .card:before,html[data-season="halloween"] .modal-card:before{background-image:url(../icons/season/halloween/web-light.svg)}} :root[data-theme="dark"][data-season="halloween"] .card:before,html[data-season="halloween"] .modal-card:before{background-image:url(../icons/season/halloween/web-light.svg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"])[data-season="halloween"] .card:nth-child(4n+1):after,html[data-season="halloween"] .card:nth-child(4n+3):after,html[data-season="halloween"] .modal-card:after,html[data-season="halloween"] nav.tabs:after{background-image:url(../icons/season/halloween/spider-light.svg)}} :root[data-theme="dark"][data-season="halloween"] .card:nth-child(4n+1):after,html[data-season="halloween"] .card:nth-child(4n+3):after,html[data-season="halloween"] .modal-card:after,html[data-season="halloween"] nav.tabs:after{background-image:url(../icons/season/halloween/spider-light.svg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"])[data-season="halloween"] .card h3:after{background-image:url(../icons/season/halloween/bat-light.svg)}} :root[data-theme="dark"][data-season="halloween"] .card h3:after{background-image:url(../icons/season/halloween/bat-light.svg)}
+html[data-season="halloween"] .stage,html[data-season="halloween"] .gate{background-image:url(../icons/season/halloween/pattern.svg);background-size:200px 200px}
+html[data-season="halloween"] .stage:before,html[data-season="halloween"] .gate:before{content:"";position:absolute;left:0;bottom:0;width:96px;height:96px;background:url(../icons/season/halloween/web.svg) no-repeat top right/contain;transform:rotate(180deg);opacity:.8;pointer-events:none}
+html[data-season="halloween"] .stage:after,html[data-season="halloween"] .gate:after{content:"";position:absolute;top:calc(env(safe-area-inset-top,0px) + 50px);right:62px;width:22px;height:38px;background:url(../icons/season/halloween/spider.svg) no-repeat top center/contain;pointer-events:none;animation:hw-bob 3s ease-in-out infinite alternate}
+html[data-season="halloween"] .stage-top{position:relative}
+html[data-season="halloween"] .stage-top:before{content:"";position:absolute;top:0;right:0;width:58px;height:58px;background:url(../icons/season/halloween/web.svg) no-repeat top right/contain;opacity:.7;pointer-events:none}
+html[data-season="halloween"] .gate:after{right:auto;left:30px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"])[data-season="halloween"] .stage:before,:root:not([data-theme="light"])[data-season="halloween"] .gate:before,:root:not([data-theme="light"])[data-season="halloween"] .stage-top:before{background-image:url(../icons/season/halloween/web-light.svg)} :root:not([data-theme="light"])[data-season="halloween"] .stage:after,:root:not([data-theme="light"])[data-season="halloween"] .gate:after{background-image:url(../icons/season/halloween/spider-light.svg)}}
+:root[data-theme="dark"][data-season="halloween"] .stage:before,:root[data-theme="dark"][data-season="halloween"] .gate:before,:root[data-theme="dark"][data-season="halloween"] .stage-top:before{background-image:url(../icons/season/halloween/web-light.svg)} :root[data-theme="dark"][data-season="halloween"] .stage:after,:root[data-theme="dark"][data-season="halloween"] .gate:after{background-image:url(../icons/season/halloween/spider-light.svg)}
+@keyframes hw-bob{from{transform:translateY(-5px)}to{transform:translateY(5px)}}
+/* The fliers (js/seasons.js decoHtml): bats crossing now and then, and a little witch on her broom. */
+.season-deco{position:fixed;inset:0;pointer-events:none;z-index:35;overflow:hidden}
+.hw-bat{position:absolute;left:-70px;width:44px;height:15px;animation:hw-cross 18s linear infinite}
+.hw-bat:before{content:"";position:absolute;inset:0;pointer-events:none;background:url(../icons/season/halloween/bat.svg) no-repeat center/contain;animation:hw-flap .22s ease-in-out infinite alternate}
+.hw-bat.b1{top:16%;animation-delay:1.5s}
+.hw-bat.b2{top:44%;width:32px;height:11px;animation-duration:24s;animation-delay:8s}
+.hw-bat.b3{top:70%;width:38px;height:13px;animation-duration:29s;animation-delay:15s}
+.hw-witch{position:absolute;top:8%;left:-140px;width:112px;height:50px;background:url(../icons/season/halloween/witch.svg) no-repeat center/contain;animation:hw-broom 40s linear infinite;animation-delay:5s}
+@keyframes hw-cross{0%{transform:translate(0,0)}20%{transform:translate(28vw,-16px)}40%{transform:translate(56vw,10px)}60%{transform:translate(84vw,-10px)}75%,100%{transform:translate(calc(100vw + 160px),0)}}
+@keyframes hw-broom{0%{transform:translate(0,0) rotate(-4deg)}12%{transform:translate(50vw,-12px) rotate(3deg)}25%,100%{transform:translate(calc(100vw + 280px),6px) rotate(-4deg)}}
+@keyframes hw-flap{from{transform:scaleY(1)}to{transform:scaleY(.55)}}
+@media (prefers-reduced-motion:reduce){.season-deco{display:none}html[data-season="halloween"] .card:after,html[data-season="halloween"] .modal-card:after,html[data-season="halloween"] nav.tabs:after,html[data-season="halloween"] .stage:after,html[data-season="halloween"] .gate:after{animation:none}}
+body.modal .season-deco{display:none}

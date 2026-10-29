@@ -35,10 +35,15 @@ const sun = (x, y, r) => { let s = ""; for (let i = 0; i < 10; i++) { const a = 
 const holly = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0 C-14 -10 -30 -6 -44 -18 C-40 -6 -46 2 -40 10 C-28 4 -14 12 0 0 Z" fill="#2F8F5B"/><path d="M0 0 C14 -10 30 -6 44 -18 C40 -6 46 2 40 10 C28 4 14 12 0 0 Z" fill="#257A4C"/>${dots([[-6, -4, 8, "#D62839"], [7, -6, 8, "#E63946"], [0, 7, 8, "#C1121F"]])}</g>`;
 
 const PINK = { main: "#FF5C93", light: "#FF8FB8", tail: "#FF3D8A", knot: "#E0246F" };
+// Halloween's extras: a corner web, a friendly spider and a witch hat with her pink band (as in tools/season-deco.cjs).
+function webTL(size, stroke){ const rays = [0, 22, 45, 68, 90].map(a => a * Math.PI / 180); let s = ""; for (const a of rays) s += `<line x1="0" y1="0" x2="${(size * Math.cos(a)).toFixed(1)}" y2="${(size * Math.sin(a)).toFixed(1)}"/>`; for (const k of [.34, .6, .86]) { let d = ""; rays.forEach((a, i) => { const x = size * k * Math.cos(a), y = size * k * Math.sin(a); if (!i) d += `M${x.toFixed(1)} ${y.toFixed(1)}`; else { const pa = rays[i - 1]; d += ` Q${(size * k * .86 * Math.cos((a + pa) / 2)).toFixed(1)} ${(size * k * .86 * Math.sin((a + pa) / 2)).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`; } }); s += `<path d="${d}"/>`; } return `<g stroke="${stroke}" stroke-width="3" fill="none" stroke-linecap="round">${s}</g>`; }
+const spiderAt = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><g stroke="#B79BE6" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M-6 -2 Q-14 -10 -19 -4"/><path d="M-7 1 Q-16 -2 -20 4"/><path d="M-7 4 Q-15 6 -18 12"/><path d="M-5 6 Q-11 12 -12 17"/><path d="M6 -2 Q14 -10 19 -4"/><path d="M7 1 Q16 -2 20 4"/><path d="M7 4 Q15 6 18 12"/><path d="M5 6 Q11 12 12 17"/></g><ellipse cx="0" cy="2" rx="9" ry="10" fill="#B79BE6"/><circle cx="-3.4" cy="0" r="3" fill="#fff"/><circle cx="3.4" cy="0" r="3" fill="#fff"/><circle cx="-3" cy=".6" r="1.4" fill="#1A0F29"/><circle cx="3.8" cy=".6" r="1.4" fill="#1A0F29"/><ellipse cx="-5.6" cy="5" rx="1.8" ry="1.1" fill="#FF5C93"/><ellipse cx="5.6" cy="5" rx="1.8" ry="1.1" fill="#FF5C93"/></g>`;
+const witchHat = (x, y, s) => `<g transform="translate(${x} ${y}) rotate(-12 40 28) scale(${s})"><path d="M8 46 Q40 38 72 46 Q40 54 8 46 Z" fill="#1A0F29"/><path d="M22 44 L36 6 Q38 0 44 4 L52 14 Q46 12 44 16 L58 44 Q40 48 22 44 Z" fill="#4B2A6E"/><path d="M24 38 Q40 42 56 38 L58 44 Q40 48 22 44 Z" fill="#FF5C93"/><rect x="35" y="37.5" width="10" height="7" rx="1.5" fill="none" stroke="#F4C86A" stroke-width="2"/><path d="M36 6 Q38 0 44 4 L52 14 Q46 12 44 16 Z" fill="#1A0F29"/><circle cx="51" cy="13" r="2.2" fill="#F4C86A"/></g>`;
 const T = {
   default:    { bg: "#FFF7FA", ring: "#FFD1E1", c: PINK, extra: star4(406, 122, 26, "#F4C86A") + star4(90, 372, 18, "#C9A7F5") },
   halloween:  { bg: "#2E1B45", ring: "#FF8A3D", c: PINK,
-                pre: `<circle cx="386" cy="126" r="58" fill="#FFE7A3"/>` + bat(380, 128, 1.15, "#2E1B45") + dots([[110, 120, 4, "#FFE7A3"], [150, 86, 3, "#FFE7A3"], [80, 180, 3, "#FFE7A3"]]),
+                pre: `<circle cx="386" cy="126" r="58" fill="#FFE7A3"/>` + bat(380, 128, 1.15, "#2E1B45") + webTL(150, "#C9B6E8") + `<line x1="176" y1="10" x2="176" y2="92" stroke="#C9B6E8" stroke-width="2.5"/>` + spiderAt(176, 108, 1.9),
+                post: witchHat(172, 150, 2.1),
                 extra: pumpkin(112, 398, 1.05) + bat(410, 300, .7, "#9A7BD0") },
   fall:       { bg: "#FFF3E0", ring: "#F2A65A", c: PINK,
                 extra: leaf(110, 118, 1.15, -30, "#F59F00", "#B8730A") + leaf(404, 132, 1.0, 35, "#D9480F", "#8A2D08") + leaf(400, 392, .9, 150, "#A63A12", "#5E1F08") + leaf(104, 400, .8, -140, "#E8A33D", "#9C6512") },
@@ -74,6 +79,7 @@ for (const [id, t] of Object.entries(T)) {
   <g clip-path="url(#c)">${t.pre || ""}
   <g transform="translate(256 ${t.flip ? 250 : 268}) scale(.86)${t.flip ? " rotate(180)" : ""}">${bow(t.c)}
   </g>
+  ${t.post || ""}
   ${t.extra || ""}</g>
   <circle cx="256" cy="256" r="248" fill="none" stroke="${t.ring}" stroke-width="12"/>
 </svg>

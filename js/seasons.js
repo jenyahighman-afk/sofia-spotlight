@@ -77,6 +77,8 @@ export function pickSeason(date, { settings = {}, peek = null } = {}){
   return seasonFor(date, { birthday: settings.birthday });
 }
 export const iconFor = (id) => `icons/season/${THEMES[id] ? id : "default"}-180.png`;
+// The fliers a theme adds over every screen (Halloween: three bats and a little witch on her broom), or "".
+export function decoHtml(id){ return id === "halloween" ? '<span class="hw-bat b1"></span><span class="hw-bat b2"></span><span class="hw-bat b3"></span><span class="hw-witch"></span>' : ""; }
 
 // ---- DOM ----
 const PEEK = "spotlight:seasonpeek", SHOWER = "spotlight:seasonshower";
@@ -94,8 +96,10 @@ export function applySeason(date = todayStr()){
   const touch = document.querySelector('link[rel="apple-touch-icon"]'); if (touch) touch.setAttribute("href", iconFor(id));
   const fav = document.querySelector('link[rel="icon"]'); if (fav) fav.setAttribute("href", `icons/season/${t ? id : "default"}.svg`);
   const hero = document.querySelector("header.hero"); if (hero) { hero.classList.remove("fixed"); if (id === "aprilfools" && !hero.dataset.fools) { hero.dataset.fools = "1"; hero.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("button")) return; if (document.documentElement.getAttribute("data-season") !== "aprilfools" || hero.classList.contains("fixed")) return; hero.classList.add("fixed"); toast("April Fools! 🙃"); }); } }
+  ensureDeco(id);
   if (t) showerOnce(id, date);
 }
+function ensureDeco(id){ let el = document.getElementById("seasonDeco"); const html = decoHtml(id); if (!html) { if (el) el.remove(); return; } if (!el) { el = document.createElement("div"); el.id = "seasonDeco"; el.className = "season-deco"; el.setAttribute("aria-hidden", "true"); document.body.appendChild(el); } if (el.dataset.id !== id) { el.dataset.id = id; el.innerHTML = html; } }
 // A short emoji shower the first time the app opens on a theme day (this phone), and on a peek. Never with reduced motion.
 function showerOnce(id, date, force = false){
   const key = `${date}:${id}`; if (!force && lsGet(SHOWER) === key) return; lsSet(SHOWER, key);

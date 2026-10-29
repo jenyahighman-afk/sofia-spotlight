@@ -15,6 +15,7 @@
     <ellipse cx="0" cy="8" rx="34" ry="30" fill="#E0246F"/>
     <ellipse cx="-6" cy="0" rx="14" ry="10" fill="#FF8FB8" opacity=".8"/>
   </g>
+  
   <path d="M84 412 Q106 394 128 412 T172 412 T216 412 T260 412 T304 412 T348 412 T392 412 T430 410" stroke="#38B6D9" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M120 446 Q142 428 164 446 T208 446 T252 446 T296 446 T340 446 T392 444" stroke="#7FD3FF" stroke-width="10" fill="none" stroke-linecap="round"/></g>
   <circle cx="256" cy="256" r="248" fill="none" stroke="#FFC94D" stroke-width="12"/>
 </svg>
