@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { LINES, lineFor, localClock, isDue, validateSubscribe, payloadFor, subKey, doneKey, WINDOW_MIN } from "../worker/src/remind-core.js";
 import { installEnv } from "./_env.mjs";
 installEnv();
-const { timeParts, timeValue, timeLabel, reminderOf, urlB64ToBytes, pushBlocker, postError, OLD_WORKER_MSG, DEFAULT_TIME } = await import("../js/remind.js");
+const { timeParts, timeValue, timeLabel, reminderOf, urlB64ToBytes, pushBlocker, postError, OLD_WORKER_MSG, DEFAULT_TIME, DEFAULT_SECOND } = await import("../js/remind.js");
 const { migrateDoc, SCHEMA_VERSION } = await import("../js/store.js");
 const { pushConfig } = await import("../js/push-config.js");
 import { readFileSync } from "node:fs";
@@ -41,7 +41,9 @@ test("subscribe requests need the family id, an https endpoint, plausible keys a
 test("app side: time helpers, settings shape, key decoding, and why reminders can't turn on", () => {
   assert.deepEqual(timeParts("16:30"), { h: 16, m: 30 }); assert.deepEqual(timeParts("7:05"), { h: 7, m: 5 }); assert.equal(timeParts("25:00"), null); assert.equal(timeParts(""), null);
   assert.equal(timeValue({ h: 7, m: 5 }), "07:05"); assert.equal(timeLabel({ h: 16, m: 30 }), "4:30 pm"); assert.equal(timeLabel({ h: 0, m: 0 }), "12:00 am"); assert.equal(timeLabel({ h: 12, m: 15 }), "12:15 pm");
-  assert.deepEqual(reminderOf({}), { on: false, ...DEFAULT_TIME }); assert.deepEqual(reminderOf({ reminder: { on: true, h: 17, m: 0 } }), { on: true, h: 17, m: 0 }); assert.deepEqual(reminderOf({ reminder: { on: 1, h: 99 } }), { on: true, h: 16, m: 30 });
+  // Build 3: the second nudge rides along (on unless turned off, 7:30 pm unless set); see tests/build3.test.js for its own checks.
+  const sec = { second: true, h2: DEFAULT_SECOND.h, m2: DEFAULT_SECOND.m };
+  assert.deepEqual(reminderOf({}), { on: false, ...DEFAULT_TIME, ...sec }); assert.deepEqual(reminderOf({ reminder: { on: true, h: 17, m: 0 } }), { on: true, h: 17, m: 0, ...sec }); assert.deepEqual(reminderOf({ reminder: { on: 1, h: 99 } }), { on: true, h: 16, m: 30, ...sec });
   const bytes = urlB64ToBytes(pushConfig.publicKey); assert.equal(bytes.length, 65); assert.equal(bytes[0], 4, "an uncompressed P-256 point");
   const toml = readFileSync(new URL("../worker/wrangler.toml", import.meta.url), "utf8"); assert.ok(toml.includes(`VAPID_PUBLIC_KEY = "${pushConfig.publicKey}"`), "the worker and the app hold the same public key");
   assert.ok(/\[vars\][\s\S]*VAPID_PUBLIC_KEY[\s\S]*\[triggers\]/.test(toml), "the key sits inside [vars], before the next table");

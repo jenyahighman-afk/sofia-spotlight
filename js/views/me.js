@@ -19,6 +19,7 @@ import { renderCardsCard } from "../cards.js";
 import { lineupCounts } from "../lineup.js";
 import { renderCostumeCard } from "../costume.js";
 import { renderGlowCard } from "../glow.js";
+import { PIN_MSG } from "../sunday.js";
 
 let styleOpen = null;
 const ring = (pct, ic) => { const r = 26, c = 2 * Math.PI * r; return `<svg viewBox="0 0 64 64" class="mini-ring"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" transform="rotate(-90 32 32)" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/><text x="32" y="32" class="ring-ic">${ic}</text></svg>`; };
@@ -57,7 +58,7 @@ function renderMe(){
 }
 function meStyle(k){ styleOpen = styleOpen === k ? null : k; renderMe(); }
 async function meSkill(id){ const next = await kidCycle(id); if (next === "checked") toast("Teacher-checked ★ stays"); }
-async function meGotIt(id){ const c = await closeCorrection(id); if (c) toast("Got it! ✅"); checkBadges(); }
+async function meGotIt(id){ const p = S.corrections[id]; if (p && p.pinned) { toast(PIN_MSG, 3200); openGrownups("skillcheck"); return; } const c = await closeCorrection(id); if (c) toast("Got it! ✅"); checkBadges(); }
 
 // Long-press on the avatar opens Grown-ups; a short tap opens the customizer.
 export function initMe(){

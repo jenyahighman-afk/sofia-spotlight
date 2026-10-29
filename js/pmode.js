@@ -50,8 +50,10 @@ export function toolsFor(it, vids = {}){
   else if (id === "mem-chunk") { push({ label: "🧩 Chunks", go: "openMemorize('solo','chunks')" }); push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); }
   else if (id === "mem-predict") push({ label: "⏸ Pause & Predict", go: "openMemorize('solo','predict')" });
   else if (id === "film-chunk") { push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); push({ label: "🧩 Chunks", go: "openMemorize('solo','chunks')" }); }
+  // The Sunday film review (Build 3): the sheet — the last run, what went well, ✓ It showed / Not yet, a note — one tap away.
+  else if (id === "film-review") { push({ label: "🎬 Sunday sheet", go: "openSunday()" }); push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); }
   else if (id === "trio-mark" || dance === "trio") { push({ label: "🎵 Trio music", go: "openPlayer('trio')" }); push(vid("trio", /run/i, 0)); }
-  else if (dance === "solo" || /^(solo-run|mem-top|imagery|film-review|tired-picture|watch-picture|knees-memo)$/.test(id)) push({ label: "🎵 Solo music", go: "openPlayer('solo')" });
+  else if (dance === "solo" || /^(solo-run|mem-top|imagery|tired-picture|watch-picture|knees-memo)$/.test(id)) push({ label: "🎵 Solo music", go: "openPlayer('solo')" });
   return t;
 }
 const videoNames = () => { const out = {}; for (const d of dances()) if (Array.isArray(d.hannahVideos) && d.hannahVideos.length) out[d.id] = d.hannahVideos.map(v => v.name || ""); return out; };

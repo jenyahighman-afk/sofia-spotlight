@@ -50,6 +50,7 @@ import { initStudio } from "./studio.js";
 import { initReady } from "./ready.js";
 import { initPass } from "./pass.js";
 import { initSeason } from "./season15.js";
+import { initSunday } from "./sunday.js";
 
 const VERSION_KEY = "spotlight:version";
 
@@ -60,7 +61,7 @@ const renders = [
   guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("coach", renderCoachHub), guard("grownups", renderGrownups), guard("settings", renderSettings), guard("buddy", renderBuddy), guard("cuecheck", renderCueCheck),
 ];
 function renderAll(){ renders.forEach(r => r()); }
-function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initBuddy(); initCostume(); initGlow(); initCueCards(); initVideos(); initCueCheck(); initMemorize(); initHowto(); initStudio(); initReady(); initPass(); initSeason(); installReportLinks(); }
+function initViews(){ initNav(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initBuddy(); initCostume(); initGlow(); initCueCards(); initVideos(); initCueCheck(); initMemorize(); initHowto(); initStudio(); initReady(); initPass(); initSeason(); initSunday(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
 async function registerSW(){

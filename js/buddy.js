@@ -104,7 +104,8 @@ export function buddyContext(date = todayStr()){
     streak: computeStreak(ctxS), skips: skipsLeft(ctxS), petDays: planDays(S.practice),
     comp: compWeekend(date, evs), compMode: todayMode().mode === "comp",
     plan, ticks: planTicks(rec), classes, restDay: !classes.length && !HOME_DAYS[dow] && !plan,
-    cards: cardsFor(date, { skills: S.skills, bites, memo }),
+    // On a home day before the plan is done the game card is What's Next? (solo work), never a filler game (Build 3).
+    cards: cardsFor(date, { skills: S.skills, bites, memo, soloOnly: !!HOME_DAYS[dow] && !planDone(rec) }),
     dare: shownDare(date) ? dareDoneOn(date) : null,
     door: door && showEvent() ? openedDates().includes(date) : null,
     glow: showNudge(date), cardsEarned: cc.earned,

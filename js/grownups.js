@@ -5,6 +5,7 @@ import { studioDates } from "./store.js";
 import { privatesStatus } from "./studio.js";
 import { todayStr } from "./util.js";
 import { showPage } from "./nav.js";
+import { renderMomWeek } from "./momweek.js";
 
 const UNLOCK_KEY = "spotlight:grownups";
 const UNLOCK_MS = 20 * 60 * 1000; // stay unlocked for 20 minutes
@@ -37,6 +38,7 @@ export function renderGrownups(){
   const el = $("#pinState"); if (el) el.textContent = pinOn() ? `PIN lock on (PIN ${"•".repeat(pin().length)})` : "PIN lock off";
   const b = $("#pinToggle"); if (b) b.textContent = pinOn() ? "Turn PIN off" : "Turn PIN on";
   // The Schedule button says how this month's required privates stand (Solo n/2 · Trio n/2), so a short month is seen from the hub.
+  renderMomWeek();
   const h = $("#hubPrivates"); if (h) { const st = privatesStatus(studioDates(), todayStr().slice(0, 7)); h.textContent = st[0].need ? "privates: " + st.map(x => `${x.label} ${x.have}/${x.need}${x.short ? "" : " ✓"}`).join(" · ") : "classes, privates, calendar"; }
 }
 export function initGrownups(){

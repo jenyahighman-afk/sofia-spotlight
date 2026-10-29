@@ -35,14 +35,16 @@ export function donePatch(date, settings = S.settings){
 }
 
 // ---------- Today card ----------
+// The card: on Today (#dareCard, once the plan is done — home.js gateExtras) and on Play (#playDare, Build 3), the same.
 export function renderDares(){
-  const el = $("#dareCard"); if (!el) return; const today = todayStr(); const d = shownDare(today);
-  if (!d) { el.hidden = true; el.innerHTML = ""; return; }
-  el.hidden = false; const done = doneOn(today); const n = doneCount(); const canReroll = !done && !rerolledOn(today);
+  const today = todayStr(); const d = shownDare(today); const done = doneOn(today); const n = doneCount(); const canReroll = !done && !rerolledOn(today);
+  for (const sel of ["#dareCard", "#playDare"]) { const el = $(sel); if (!el) continue;
+  if (!d) { el.hidden = true; el.innerHTML = ""; continue; }
+  el.hidden = !!(el.dataset && el.dataset.gated === "1"); // Today's copy waits for the plan (home.js gateExtras); Play's never
   el.className = `card dare-card ${done ? "done" : ""}`;
   el.innerHTML = `<div class="row dare-head"><span class="dare-ic">${esc(d.e || "🎯")}</span><div class="grow"><div class="small muted">${done ? "✅ Dare done!" : "🎯 Today's dance dare"}</div><div class="dare-text">${esc(d.text)}</div></div></div>
     ${done ? `<div class="small muted dare-count">🎯 ${n} dare${n === 1 ? "" : "s"} done. New dare tomorrow!</div>`
-    : `<div class="row dare-btns"><button class="btn sm coral" onclick="dareDone()">I did it! 🎉</button>${canReroll ? `<button class="btn sm ghost" onclick="dareReroll()">🎲 Try another</button>` : `<span class="small muted">That's today's dare 💪</span>`}${n ? `<span class="grow"></span><span class="small muted">🎯 ${n}</span>` : ""}</div>`}`;
+    : `<div class="row dare-btns"><button class="btn sm coral" onclick="dareDone()">I did it! 🎉</button>${canReroll ? `<button class="btn sm ghost" onclick="dareReroll()">🎲 Try another</button>` : `<span class="small muted">That's today's dare 💪</span>`}${n ? `<span class="grow"></span><span class="small muted">🎯 ${n}</span>` : ""}</div>`}`; }
 }
 async function dareDone(){
   const today = todayStr(); const before = totalStars(); const patch = donePatch(today); if (!patch) return renderDares();

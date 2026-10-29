@@ -2,8 +2,12 @@
 // phone) → the dancer's moves are read from it on-device at 8 frames a second → the clip is kept in the family space.
 // Play: the video (with its own music) beside the camera; her moves are compared to the clip's, Perfect / Good / Miss
 // as it goes, a score and stars at the end. Nothing is recorded; the camera feed never leaves the phone.
+// Build 3: the cap is 130 s (the solo is 2:04 plus the 4.98 s lead-in on Hannah's run-through), and the dances' uploaded
+// videos (dances.hannahVideos, the family space) are offered as routines — ＋ Learn it reads the moves off the file already
+// there, no re-picking from Photos; such a routine remembers its source (`from` = the video's path, schema 50) and never
+// deletes the dance's file.
 import { $, esc, toast, uid, expose } from "../util.js";
-import { S, storeSet, storeDel, setSettings } from "../store.js";
+import { S, storeSet, storeDel, setSettings, dances } from "../store.js";
 import { media, friendlyError } from "../sync.js";
 import { VIDEO_MAX_BYTES } from "../media.js";
 import { imageDetector, videoDetector, detectVideoFrame, drawSkeleton, poseAvailable } from "../pose.js";
@@ -12,8 +16,15 @@ import { awardStars } from "../stars.js";
 import { sofiaDancing, recordFriendScore, withFriends, pickedNames, namesLine } from "../who.js";
 import { openClip, seekTo, isBlank } from "../videoframes.js";
 
-export const FPS = 8, MAX_SEC = 120;
+export const FPS = 8, MAX_SEC = 130;
 const A = { on: false, stream: null, raf: 0, routine: null, video: null, score: 0, hits: { perfect: 0, good: 0, miss: 0 }, lastJudged: -1, speak: true, synth: null };
+// Pure: the dances' uploaded videos as routines to learn — [{ dance, danceName, name, url, path, offset, learned }]; a linked
+// (pasted) video has no path and can't be read, so it isn't offered. `learned` = a routine already carries that path as `from`.
+export function hannahRoutines(ds = [], choreo = {}){
+  const learned = new Set(Object.values(choreo || {}).filter(c => c && c.kind === "along" && !c.deleted && c.from).map(c => c.from));
+  const out = []; for (const d of ds || []) for (const v of (Array.isArray(d && d.hannahVideos) ? d.hannahVideos : [])) { if (!v || !v.path || !v.url) continue; out.push({ dance: d.id, danceName: String(d.name || "").split("·")[0].trim(), name: String(v.name || "Video"), url: v.url, path: v.path, offset: +v.offset || 0, learned: learned.has(v.path) }); }
+  return out;
+}
 const routines = () => Object.entries(S.choreo).filter(([, c]) => c && c.kind === "along" && !c.deleted).map(([id, c]) => ({ id, ...c })).sort((a, b) => (b.at || "").localeCompare(a.at || ""));
 
 const say = (t, speak = true) => { $("#alSay").textContent = t; if (speak && A.speak) speakOut(t); };
@@ -24,10 +35,21 @@ export function renderAlong(){
   const el = $("#alongList"); if (!el) return; const list = routines();
   el.innerHTML = (list.length ? list.map(r => `<div class="check"><span class="chip violet">🕺</span><span class="grow"><b>${esc(r.name)}</b><br><span class="small muted">${Math.round(r.duration || 0)} s · best ${r.best || 0}</span></span><button class="btn sm coral" onclick="alongPlay('${r.id}')">▶ Dance</button><button class="del" onclick="alongDel('${r.id}')">✕</button></div>`).join("") : `<p class="small muted">No routines yet. Add a clip of a dance you want to learn.</p>`);
   const st = $("#alongStatus"); if (st) st.textContent = "";
+  const hv = hannahRoutines(dances(), S.choreo); const he = $("#alongHannah");
+  if (he) he.innerHTML = hv.length ? `<div class="field-lab">📹 Hannah's videos</div>${hv.map(v => `<div class="check"><span class="chip violet">🌸</span><span class="grow"><b>${esc(v.danceName)} · ${esc(v.name)}</b><br><span class="small muted">${v.learned ? "in your list ✓" : "already in the family space: no picking from Photos"}</span></span>${v.learned ? "" : `<button class="btn sm coral" onclick="alongLearn('${esc(v.dance)}','${encodeURIComponent(v.path)}')">＋ Learn it</button>`}</div>`).join("")}` : "";
 }
-async function addRoutine(file){
+// ＋ Learn it on one of the dances' videos: the file is fetched from the family space and read like a picked clip.
+async function learnVideo(danceId, pathEnc){
+  const path = decodeURIComponent(String(pathEnc || "")); const v = hannahRoutines(dances(), S.choreo).find(x => x.dance === danceId && x.path === path); if (!v) return toast("That video isn't here");
+  if (v.learned) return toast("Already in your list ✓"); if (!poseAvailable()) return toast("Needs a newer phone");
+  const st = $("#alongStatus"); if (st) st.textContent = "Getting the video from the family space…";
+  let blob; try { const r = await fetch(v.url); if (!r.ok) throw new Error("HTTP " + r.status); blob = await r.blob(); } catch (e) { console.warn(e); if (st) st.textContent = ""; return toast("Couldn't get the video: " + (e.message || e), 3500); }
+  await addRoutine(blob, { name: `${v.danceName} · ${v.name}`, keep: { url: v.url, path: v.path }, from: v.path });
+}
+// opts.keep = { url, path }: the file is already in the family space (one of Hannah's videos), so nothing is uploaded; opts.from = its path.
+async function addRoutine(file, opts = {}){
   if (!poseAvailable()) return toast("Needs a newer phone");
-  if (file.size > VIDEO_MAX_BYTES) return toast("Clips up to 50 MB — trim it first", 3000);
+  if (!opts.keep && file.size > VIDEO_MAX_BYTES) return toast("Clips up to 50 MB — trim it first", 3000);
   const st = $("#alongStatus"); const status = (t) => { if (st) st.textContent = t; };
   let clip = null;
   try {
@@ -43,14 +65,15 @@ async function addRoutine(file){
       if (i % 8 === 0) status(`Learning the moves… ${Math.round(100 * i / n)}%`);
     }
     if (found < n * 0.4) throw new Error("I couldn't see a dancer clearly in most of the clip. Try one where the whole body is in view.");
-    status("Saving the clip…"); const id = uid(); const up = await media.upload("videos", id, file, { contentType: file.type || "video/mp4", name: file.name });
-    const name = prompt("Name this dance", file.name.replace(/\.[a-z0-9]+$/i, "").slice(0, 40)) || "My dance";
-    await storeSet("choreo", id, { kind: "along", name, path: up.path, url: up.url, size: file.size, duration, fps: FPS, frames: packFrames(frames), fdim: FDIM, at: new Date().toISOString(), best: 0, style: "along", seq: [] });
+    status(opts.keep ? "Saving…" : "Saving the clip…"); const id = uid(); const up = opts.keep ? opts.keep : await media.upload("videos", id, file, { contentType: file.type || "video/mp4", name: file.name });
+    const name = opts.name ? String(opts.name).slice(0, 60) : (prompt("Name this dance", String(file.name || "").replace(/\.[a-z0-9]+$/i, "").slice(0, 40)) || "My dance");
+    await storeSet("choreo", id, { kind: "along", name, path: up.path, url: up.url, size: file.size, duration, fps: FPS, frames: packFrames(frames), fdim: FDIM, at: new Date().toISOString(), best: 0, style: "along", seq: [], ...(opts.from ? { from: String(opts.from) } : {}) });
     toast("Ready to dance! 🕺"); renderAlong();
   } catch (e) { console.warn(e); status(""); toast(e.message && !e.code ? e.message : "Couldn't add it: " + friendlyError(e), 4000); }
   finally { if (clip) clip.close(); }
 }
-async function delRoutine(id){ const r = S.choreo[id]; if (!r || !confirm(`Remove "${r.name}"?`)) return; await storeDel("choreo", id); if (r.path) { try { await media.remove(r.path); } catch (e) { console.warn(e); } } renderAlong(); }
+// A routine learned from a dance's video (`from`) shares that file with the dance card: removing the routine keeps the video.
+async function delRoutine(id){ const r = S.choreo[id]; if (!r || !confirm(`Remove "${r.name}"?`)) return; await storeDel("choreo", id); if (r.path && !r.from) { try { await media.remove(r.path); } catch (e) { console.warn(e); } } renderAlong(); }
 
 // ---------- play ----------
 export async function playAlong(id){
@@ -103,4 +126,4 @@ async function finishAlong(){
   $("#alActions").innerHTML = `<span class="chip sun">${chip}</span><button class="btn coral" onclick="alongPlay('${r.id}')">▶ Again</button><button class="btn ghost" onclick="stopAlong()">Done</button>`;
 }
 export function initAlong(){ $("#alClose").onclick = stopAlong; $("#alVoice").onclick = toggleVoice; $("#alongFile").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) addRoutine(f); }; }
-expose({ alongPlay: playAlong, stopAlong, alongDel: delRoutine });
+expose({ alongPlay: playAlong, stopAlong, alongDel: delRoutine, alongLearn: learnVideo });

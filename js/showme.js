@@ -5,6 +5,9 @@ import { avatarSVG } from "./avatar.js";
 import { S } from "./store.js";
 import { closeCorrection, TAG_LABEL } from "./corrections.js";
 import { checkBadges } from "./badges.js";
+import { openGrownups } from "./grownups.js";
+import { PIN_MSG } from "./sunday.js";
+import { toast } from "./util.js";
 
 const SECOND = { el:[-40,-40], er:[40,-40], hl:[-66,-30], hr:[66,-30] };
 const UP = { el:[-22,-70], er:[22,-70], hl:[-14,-100], hr:[14,-100] };
@@ -35,6 +38,6 @@ export function showMe(corrId, tag){
   $("#showme").hidden = false; document.body.classList.add("modal");
 }
 export function hideShowMe(){ $("#showme").hidden = true; document.body.classList.remove("modal"); current = null; }
-async function showmeGotIt(){ if (!current) return hideShowMe(); await closeCorrection(current); hideShowMe(); checkBadges(); }
+async function showmeGotIt(){ if (!current) return hideShowMe(); const p = S.corrections[current]; if (p && p.pinned) { hideShowMe(); toast(PIN_MSG, 3200); openGrownups("skillcheck"); return; } await closeCorrection(current); hideShowMe(); checkBadges(); }
 export function initShowMe(){ $("#showmeClose").onclick = hideShowMe; $("#showmeGot").onclick = showmeGotIt; $("#showme").addEventListener("click", e => { if (e.target === $("#showme")) hideShowMe(); }); }
 expose({ showMe, hideShowMe });

@@ -10,6 +10,8 @@ import { normalizeCues, parseCueText, formatCueText, fmtTime, fmtCueTime, isCueT
 import { videosRow, videosEdit } from "../cuecards.js";
 import { memoDances, memoCard, bindMemo } from "../memo.js";
 import { readyFold } from "../ready.js";
+import { PIN_MSG } from "../sunday.js";
+import { openGrownups } from "../grownups.js";
 
 const STYLE_EMOJI = { lyrical:"🌸", jazz:"⚡", contemporary:"🌊", "hip hop":"🎧", hiphop:"🎧", ballet:"🩰", acro:"🤸", ballroom:"💃", tap:"👟" };
 export const danceEmoji = (d) => STYLE_EMOJI[String(d.style || "").toLowerCase().trim()] || "🎵";
@@ -108,7 +110,8 @@ function noteMic(id){
   rec.onend=()=>{ rec=null; if(btn) btn.classList.remove("coral"); const i=$("#noteText-"+id); if(i&&i.value&&noteTag==="other") noteTag=inferTag(i.value); };
   try{ rec.start(); toast("Listening… say the note",2000); }catch(e){ toast("Voice didn't start"); stopMic(); }
 }
-async function gotIt(id){ const c=await closeCorrection(id); if(c) toast("Got it! ✅"); checkBadges(); }
+// A pinned teacher note isn't closed from the kid's screens: a grown-up checks it off in Skills & awards (Build 3).
+async function gotIt(id){ const p=S.corrections[id]; if(p&&p.pinned){ toast(PIN_MSG,3200); openGrownups("skillcheck"); return; } const c=await closeCorrection(id); if(c) toast("Got it! ✅"); checkBadges(); }
 async function reopenFix(id){ await reopenCorrection(id); }
 async function removeFix(id){ if(confirm("Remove this note?")) await removeCorrection(id); }
 export { renderDances, saveDance, delDance };

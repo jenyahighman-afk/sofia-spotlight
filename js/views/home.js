@@ -29,8 +29,16 @@ import { renderAdvent } from "../advent.js";
 import { renderDares } from "../dares.js";
 import { renderNews } from "../news.js";
 import { renderGlowNudge } from "../glow.js";
+import { renderSundayCard } from "../sunday.js";
 
 const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
+// Build 3: the countdown doors and the dare moved to Play; on Today they show only once the plan is done (a rest day has
+// no plan to finish, so they stay open there). Pure.
+export const extrasOpen = ({ pd = false, kind = "" } = {}) => !!pd || kind === "rest";
+function gateExtras(open){
+  for (const id of ["#adventCard", "#dareCard"]) { const e = $(id); if (!e) continue; if (e.dataset) e.dataset.gated = open ? "" : "1"; if (!open) e.hidden = true; } // renderDares (Play too) reads the flag
+  const g = $("#extrasGate"); if (g) { g.hidden = open; g.innerHTML = open ? "" : `🎁 The countdown door and today's dare open here once the plan is done ⭐ <button class="lnk" onclick="showPage('play')">They're on Play too</button>`; }
+}
 // Pure: the one action for the day. kind = "watch" | "memory" (a studio day) | "home" | "rest"; nDone / total = today's
 // session progress; mins = its length. Returns { label, go, ghost } for the big button.
 export function startButton({ kind, mins = 0, nDone = 0, total = 0 }){
@@ -67,7 +75,7 @@ function renderHome(){
     ${soloLine}${cpLine}
     <div class="row today-media"><button class="btn sm violet" onclick="openPlayer('solo')">🎵 Solo</button><button class="btn sm violet" onclick="openPlayer('trio')">🎵 Trio</button><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="openMemorize('solo','chunks')">🧠 Memorize</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
   renderHabit(today,{rec,hp,pd,cls});
-  renderNews(); renderPet(); renderAdvent(); renderDares(); renderGlowNudge(); renderDayPlan(); renderSeasonCard(today); renderComp(); renderBites(); renderMindCard(); renderPassCard(); applyPalette();
+  renderNews(); renderPet(); renderAdvent(); renderDares(); gateExtras(extrasOpen({pd,kind})); renderGlowNudge(); renderDayPlan(); renderSundayCard(today); renderSeasonCard(today); renderComp(); renderBites(); renderMindCard(); renderPassCard(); applyPalette();
   if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(ne.name)}</span>`; }
   // this week's fix
   const fix=currentWeekFix(today); const open=Object.values(S.corrections).some(c=>!c.deleted&&c.status!=="done");

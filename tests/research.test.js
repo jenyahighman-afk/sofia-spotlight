@@ -84,7 +84,7 @@ test("schema 42: settings.fixSeen keeps real dates only, the last two, sorted", 
 });
 test("the printed Practice Toolkit (tools/print source → files/) carries the same rules", () => {
   const html = readFileSync(new URL("../tools/print/Sofia-Practice-Toolkit.html", import.meta.url), "utf8");
-  for (const s of ["two videos in a row", "Show in your head", "Stand in your opening pose", "never let it push bedtime later", "one full-out", "two back to back on Sundays", "Night before: memory run only", "tape out the stage size", "mini audience #3", "Sleep 9–12 hours", "practise it right away", "Never more than 2 days without the solo", "2 Heel stretch", "0:48–2:04 from memory", "head ALL the way back. Don't tuck the chin"]) assert.ok(html.includes(s), s);
+  for (const s of ["two videos in a row", "Show in your head", "Stand in your opening pose", "never let it push bedtime later", "one full-out", "two back to back on Sundays", "Night before: memory run only", "tape out the stage size", "mini audience #3", "Sleep 9–12 hours", "practise it right away", "Never more than 2 days without the solo", "Heel stretch", "0:48–2:04 from memory", "head ALL the way back. Don't tuck the chin"]) assert.ok(html.includes(s), s);
   assert.ok(!/ONE SHOULDER|chin tucked/i.test(html), "Hannah's donut roll, not over the shoulder");
   assert.ok(!/<img|https?:\/\/fonts\./.test(html), "no pictures, no web font: prints the same every time");
   const man = JSON.parse(readFileSync(new URL("../seed-data/manifest.json", import.meta.url), "utf8")).files.find(f => f.name === "Sofia-Practice-Toolkit.pdf");

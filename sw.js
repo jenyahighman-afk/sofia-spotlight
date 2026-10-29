@@ -14,7 +14,7 @@ const APP_FILES = [
   "./js/costume.js",
   "./js/glow.js", "./js/lineup.js",
   "./js/track.js", "./js/cuecards.js", "./js/cuecheck.js", "./js/memorize.js", "./js/season15.js", "./js/studio.js", "./js/howto.js", "./js/trickdrill.js", "./js/dancer.js", "./js/habit.js", "./js/moments.js",
-  "./js/ready.js", "./js/pass.js",
+  "./js/ready.js", "./js/pass.js", "./js/sunday.js", "./js/momweek.js",
   "./js/games/choreo.js", "./js/games/oops.js", "./js/games/nextmove.js", "./js/games/quest.js", "./js/games/trio.js", "./js/games/compday.js", "./js/games/sparkle.js",
   "./js/games/teach.js", "./js/games/count.js",
   "./js/views/home.js", "./js/views/dances.js", "./js/views/events.js", "./js/views/schedule.js", "./js/views/practice.js", "./js/views/notes.js", "./js/views/play.js", "./js/views/lists.js", "./js/views/settings.js", "./js/views/me.js", "./js/views/skillcheck.js",

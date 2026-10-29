@@ -8,7 +8,22 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 49;
+export const SCHEMA_VERSION = 50;
+// Schema 50 (1.48.0, Build 3 of the Oct 28 review): settings.sunday = { [the week's Sunday]: { went, fix: "yes" | "no" | "",
+// fixId, note, done } } — the Sunday film-review sheet, one record per week (js/sunday.js); settings.reminder gains second
+// (the second nudge later in the evening, on unless turned off), h2, m2; a Dance Along routine (choreo, kind "along") may
+// carry `from` = the Storage path of the dance video it was learned from (the dance owns that file). Normalized when present.
+const SUNDAY_MAX = 60;
+export function normalizeSunday(v){
+  const out = {}; const str = (x, n) => String(x == null ? "" : x).replace(/\s+/g, " ").trim().slice(0, n);
+  for (const [k, x] of Object.entries(v && typeof v === "object" && !Array.isArray(v) ? v : {})) {
+    if (!DATE_RE.test(String(k)) || !x || typeof x !== "object" || Array.isArray(x)) continue;
+    const r = { went: str(x.went, 60), fix: x.fix === "yes" || x.fix === "no" ? x.fix : "", fixId: /^[\w-]{1,80}$/.test(String(x.fixId || "")) ? String(x.fixId) : "", note: str(x.note, 200), done: typeof x.done === "string" && DATE_RE.test(x.done) ? x.done : "" };
+    if (r.went || r.fix || r.note || r.done) out[k] = r;
+  }
+  const keys = Object.keys(out).sort(); for (const k of keys.slice(0, Math.max(0, keys.length - SUNDAY_MAX))) delete out[k];
+  return out;
+}
 // Schema 49 (1.47.0, Build 2 of the Oct 28 review): settings.checkpoints = { [id]: { done: "YYYY-MM-DD", note? } } — the
 // plan's checkpoints ticked from Today (id = season15.cpId: the plan's start + a hash of the text) — and settings.pass =
 // { read: { [partId]: "YYYY-MM-DD" } }, the parts of the in-app Backstage Pass she has read. Junk dropped, nothing invented.
@@ -430,7 +445,17 @@ export const MIGRATIONS = {
     return doc;
   },
   // 49 (1.47.0): settings.checkpoints (the plan's checkpoints ticked done) and settings.pass (the Backstage Pass parts read). Normalized when present.
-  49: (col, id, doc) => { if (col === "settings") { if (doc.checkpoints !== undefined) doc.checkpoints = normalizeCheckpoints(doc.checkpoints); if (doc.pass !== undefined) doc.pass = normalizePass(doc.pass); } return doc; }
+  49: (col, id, doc) => { if (col === "settings") { if (doc.checkpoints !== undefined) doc.checkpoints = normalizeCheckpoints(doc.checkpoints); if (doc.pass !== undefined) doc.pass = normalizePass(doc.pass); } return doc; },
+  // 50 (1.48.0, Build 3): settings.sunday (the Sunday sheet, one record per week), settings.reminder.second / h2 / m2 (the
+  // second nudge), choreo.from on a Dance Along routine learned from a dance's own video. Normalized when present, never invented.
+  50: (col, id, doc) => {
+    if (col === "settings") {
+      if (doc.sunday !== undefined) doc.sunday = normalizeSunday(doc.sunday);
+      if (doc.reminder !== undefined && doc.reminder && typeof doc.reminder === "object") { const r = { ...doc.reminder }; if (r.second !== undefined) r.second = !!r.second; for (const k of ["h2", "m2"]) if (r[k] !== undefined) { const n = parseInt(r[k], 10); if (n >= 0 && n <= (k === "h2" ? 23 : 59)) r[k] = n; else delete r[k]; } doc.reminder = r; }
+    }
+    if (col === "choreo" && doc.kind === "along" && doc.from !== undefined) { const f = typeof doc.from === "string" ? doc.from.trim().slice(0, 300) : ""; if (f) doc.from = f; else delete doc.from; }
+    return doc;
+  }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],
