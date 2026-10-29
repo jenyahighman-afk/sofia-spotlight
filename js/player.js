@@ -7,6 +7,7 @@ import { normalizeCues, cueAt, fmtTime, fmtCueTime, isCueTable, trickAhead } fro
 import { srcFor, trackUrl } from "./track.js";
 import { cuePhoto } from "./cuecards.js";
 import { pingDone } from "./remind.js";
+import { prompterHtml } from "./prompter.js";
 export { srcFor };
 
 const fmtT = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
