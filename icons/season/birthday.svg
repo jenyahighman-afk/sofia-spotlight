@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Sofia's Spotlight button, birthday theme (tools/season-icons.cjs) -->
+  <defs><clipPath id="c"><circle cx="256" cy="256" r="244"/></clipPath></defs>
+  <circle cx="256" cy="256" r="248" fill="#FFF7FA"/>
+  <g clip-path="url(#c)"><g transform="translate(104 120) scale(1.15)"><path d="M0 40 Q-8 70 4 96" stroke="#B48AA0" stroke-width="3" fill="none"/><ellipse cx="0" cy="0" rx="30" ry="38" fill="#7FD3FF"/><path d="M-6 36 L6 36 L0 44 Z" fill="#7FD3FF"/><ellipse cx="-10" cy="-14" rx="7" ry="11" fill="#FFFFFF" opacity=".7"/></g><g transform="translate(410 112) scale(1.05)"><path d="M0 40 Q-8 70 4 96" stroke="#B48AA0" stroke-width="3" fill="none"/><ellipse cx="0" cy="0" rx="30" ry="38" fill="#F4C86A"/><path d="M-6 36 L6 36 L0 44 Z" fill="#F4C86A"/><ellipse cx="-10" cy="-14" rx="7" ry="11" fill="#FFFFFF" opacity=".7"/></g><g transform="translate(424 230) scale(0.8)"><path d="M0 40 Q-8 70 4 96" stroke="#B48AA0" stroke-width="3" fill="none"/><ellipse cx="0" cy="0" rx="30" ry="38" fill="#C9A7F5"/><path d="M-6 36 L6 36 L0 44 Z" fill="#C9A7F5"/><ellipse cx="-10" cy="-14" rx="7" ry="11" fill="#FFFFFF" opacity=".7"/></g>
+  <g transform="translate(256 268) scale(.86)">
+    <path d="M-28 30 L-88 168 L-40 150 L-8 60 Z" fill="#FF3D8A"/>
+    <path d="M28 30 L88 168 L40 150 L8 60 Z" fill="#FF3D8A"/>
+    <path d="M-28 30 L-60 128 L-40 150 L-8 60 Z" fill="#E0246F" opacity=".55"/>
+    <path d="M28 30 L60 128 L40 150 L8 60 Z" fill="#E0246F" opacity=".55"/>
+    <path d="M-10 0 C-70 -110 -190 -110 -178 -20 C-170 40 -80 60 -10 20 Z" fill="#FF5C93"/>
+    <path d="M10 0 C70 -110 190 -110 178 -20 C170 40 80 60 10 20 Z" fill="#FF5C93"/>
+    <path d="M-30 -6 C-70 -70 -140 -80 -150 -30 C-146 10 -80 30 -30 12 Z" fill="#FF8FB8" opacity=".7"/>
+    <path d="M30 -6 C70 -70 140 -80 150 -30 C146 10 80 30 30 12 Z" fill="#FF8FB8" opacity=".7"/>
+    <ellipse cx="0" cy="8" rx="34" ry="30" fill="#E0246F"/>
+    <ellipse cx="-6" cy="0" rx="14" ry="10" fill="#FF8FB8" opacity=".8"/>
+  </g>
+  <circle cx="90" cy="330" r="6" fill="#FF8A3D"/><circle cx="130" cy="420" r="6" fill="#B9F18C"/><circle cx="380" cy="420" r="6" fill="#7FD3FF"/><circle cx="430" cy="330" r="5" fill="#FF5C93"/><circle cx="256" cy="456" r="5" fill="#C9A7F5"/></g>
+  <circle cx="256" cy="256" r="248" fill="none" stroke="#FF5C93" stroke-width="12"/>
+</svg>

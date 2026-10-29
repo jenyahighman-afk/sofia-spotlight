@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Sofia's Spotlight button, summer theme (tools/season-icons.cjs) -->
+  <defs><clipPath id="c"><circle cx="256" cy="256" r="244"/></clipPath></defs>
+  <circle cx="256" cy="256" r="248" fill="#FFF8DB"/>
+  <g clip-path="url(#c)"><line x1="453.0" y1="120.0" x2="470.6" y2="120.0" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><line x1="442.5" y1="152.3" x2="456.7" y2="162.7" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><line x1="415.0" y1="172.3" x2="420.4" y2="189.0" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><line x1="381.0" y1="172.3" x2="375.6" y2="189.0" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><line x1="353.5" y1="152.3" x2="339.3" y2="162.7" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><line x1="343.0" y1="120.0" x2="325.4" y2="120.0" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><line x1="353.5" y1="87.7" x2="339.3" y2="77.3" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><line x1="381.0" y1="67.7" x2="375.6" y2="51.0" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><line x1="415.0" y1="67.7" x2="420.4" y2="51.0" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><line x1="442.5" y1="87.7" x2="456.7" y2="77.3" stroke="#FFB627" stroke-width="9" stroke-linecap="round"/><circle cx="398" cy="120" r="44" fill="#FFC94D"/>
+  <g transform="translate(256 268) scale(.86)">
+    <path d="M-28 30 L-88 168 L-40 150 L-8 60 Z" fill="#FF3D8A"/>
+    <path d="M28 30 L88 168 L40 150 L8 60 Z" fill="#FF3D8A"/>
+    <path d="M-28 30 L-60 128 L-40 150 L-8 60 Z" fill="#E0246F" opacity=".55"/>
+    <path d="M28 30 L60 128 L40 150 L8 60 Z" fill="#E0246F" opacity=".55"/>
+    <path d="M-10 0 C-70 -110 -190 -110 -178 -20 C-170 40 -80 60 -10 20 Z" fill="#FF5C93"/>
+    <path d="M10 0 C70 -110 190 -110 178 -20 C170 40 80 60 10 20 Z" fill="#FF5C93"/>
+    <path d="M-30 -6 C-70 -70 -140 -80 -150 -30 C-146 10 -80 30 -30 12 Z" fill="#FF8FB8" opacity=".7"/>
+    <path d="M30 -6 C70 -70 140 -80 150 -30 C146 10 80 30 30 12 Z" fill="#FF8FB8" opacity=".7"/>
+    <ellipse cx="0" cy="8" rx="34" ry="30" fill="#E0246F"/>
+    <ellipse cx="-6" cy="0" rx="14" ry="10" fill="#FF8FB8" opacity=".8"/>
+  </g>
+  <path d="M84 412 Q106 394 128 412 T172 412 T216 412 T260 412 T304 412 T348 412 T392 412 T430 410" stroke="#38B6D9" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M120 446 Q142 428 164 446 T208 446 T252 446 T296 446 T340 446 T392 444" stroke="#7FD3FF" stroke-width="10" fill="none" stroke-linecap="round"/></g>
+  <circle cx="256" cy="256" r="248" fill="none" stroke="#FFC94D" stroke-width="12"/>
+</svg>

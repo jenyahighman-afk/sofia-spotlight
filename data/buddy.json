@@ -5,14 +5,14 @@
     "Hi {name}! {pet} here.",
     "{pet} reporting for dance duty! 🫡",
     "Hey superstar ✨",
-    "Hop hop! Here's the one thing for today:",
     "Ahem. Bunny announcement! 📣",
     "You're back! I saved you a spot.",
-    "Guess what? You're awesome. Also:",
     "Okay {name}, one thing, then it's yours:",
     "Quick one from me, {pet}:",
     "I checked the plan. Here's where we are:",
-    "Ready when you are, {name} 🌸"
+    "Ready when you are, {name} 🌸",
+    "Next up, {name}:",
+    "Here's your one next step:"
   ],
   "steps": {
     "plan": [
@@ -81,7 +81,7 @@
     ],
     "glow": [
       "New month = new flipbook photo! 📷 Same pose as last time.",
-      "Glow-up time 🌱 Take this month's photo for your flipbook."
+      "Growing-up photo 🌱 Take this month's picture for your flipbook."
     ],
     "full": [
       "Got 10 more minutes? Your full practice list is ready ⭐",
@@ -121,7 +121,7 @@
   "facts": {
     "event": ["{eventDays} days to {event}! 🏆", "{event} is in {eventDays} days. We're getting ready! ✨"],
     "streak": ["🔥 {streak}-day streak. Don't tell the other bunnies, they'll be jealous.", "🔥 {streak} days in a row! That's a lot of hops."],
-    "skips": ["Heads up: {skips} free skip left this week. One bite keeps the 🔥 going."],
+    "skips": ["Heads up: days off left this week: {skips}. A bite of practice keeps the 🔥 going."],
     "class": ["Studio today: {class} at {time} 🏫"],
     "pet": ["We've danced together on {petDays} days 🐰💕"],
     "tip": ["🎟 Backstage Pass tip: {tip}", "From your Backstage Pass: {tip}"]

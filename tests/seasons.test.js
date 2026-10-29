@@ -1,0 +1,67 @@
+// Seasonal themes (1.50.0): the schedule for 2026–27 and the next year, the birthday week from the family's setting,
+// the hello on the day itself, the peek and the off switch, the button files, and the wiring. Fixed dates only.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
+import { installEnv } from "./_env.mjs";
+installEnv();
+const src = (f) => readFileSync(new URL("../" + f, import.meta.url), "utf8");
+const { THEMES, PRIORITY, seasonFor, helloFor, nextSeason, pickSeason, thanksgiving, windows, validBirthday, iconFor } = await import("../js/seasons.js");
+
+test("the schedule, 2026–27: Halloween all October, fall to the Sunday after Thanksgiving, Christmas, New Year's across January, winter, Valentine's, Women's Day, April Fools, summer around the 4th of July", () => {
+  const cases = { "2026-09-30": "", "2026-10-01": "halloween", "2026-10-29": "halloween", "2026-10-31": "halloween", "2026-11-01": "fall", "2026-11-26": "fall", "2026-11-29": "fall", "2026-11-30": "",
+    "2026-12-01": "christmas", "2026-12-25": "christmas", "2026-12-26": "christmas", "2026-12-27": "newyear", "2026-12-31": "newyear", "2027-01-01": "newyear", "2027-01-02": "newyear", "2027-01-03": "winter", "2027-01-08": "winter",
+    "2027-02-06": "winter", "2027-02-07": "valentines", "2027-02-14": "valentines", "2027-02-15": "winter", "2027-03-06": "winter", "2027-03-07": "womensday", "2027-03-08": "womensday", "2027-03-09": "womensday", "2027-03-10": "",
+    "2027-03-31": "", "2027-04-01": "aprilfools", "2027-04-02": "", "2027-06-14": "", "2027-06-15": "summer", "2027-06-30": "summer", "2027-07-01": "july4", "2027-07-04": "july4", "2027-07-05": "july4", "2027-07-06": "summer", "2027-08-31": "summer", "2027-09-01": "" };
+  for (const [d, want] of Object.entries(cases)) assert.equal(seasonFor(d), want, d);
+  assert.equal(thanksgiving(2026), "2026-11-26"); assert.equal(thanksgiving(2027), "2027-11-25"); assert.equal(seasonFor("2027-11-28"), "fall"); assert.equal(seasonFor("2027-11-29"), "", "the next year follows its own Thanksgiving");
+  assert.deepEqual([...PRIORITY].sort(), Object.keys(THEMES).sort(), "every theme has a place in the order");
+});
+
+test("the birthday week is the day ±3 from the family's setting, wins over any season, and crosses the year", () => {
+  assert.equal(validBirthday("05-14"), "05-14"); assert.equal(validBirthday("13-01"), ""); assert.equal(validBirthday("2017-05-14"), ""); assert.equal(validBirthday(undefined), "");
+  const b = { birthday: "05-14" };
+  for (const d of ["2027-05-11", "2027-05-14", "2027-05-17"]) assert.equal(seasonFor(d, b), "birthday", d);
+  assert.equal(seasonFor("2027-05-10", b), ""); assert.equal(seasonFor("2027-05-18", b), "");
+  assert.equal(seasonFor("2026-10-30", { birthday: "10-31" }), "birthday", "a Halloween birthday: the birthday week wins");
+  assert.equal(seasonFor("2027-01-01", { birthday: "12-30" }), "birthday", "a week that crosses New Year's");
+  assert.equal(seasonFor("2026-12-30", { birthday: "01-02" }), "birthday", "a January birthday starts its week in December"); assert.equal(seasonFor("2026-12-29", { birthday: "01-02" }), "newyear");
+  assert.equal(windows(2027, "").birthday.length, 0, "no birthday set: no week");
+  assert.equal(seasonFor("2027-05-14"), "", "and nothing without the setting");
+});
+
+test("hello on the day itself only; the header line otherwise", () => {
+  assert.match(helloFor("2026-10-31", "halloween"), /Happy Halloween, Sofia/); assert.equal(helloFor("2026-10-29", "halloween"), "");
+  assert.match(helloFor("2026-11-26", "fall"), /Thanksgiving/); assert.equal(helloFor("2026-11-25", "fall"), "");
+  assert.ok(helloFor("2026-12-24", "christmas") && helloFor("2026-12-25", "christmas")); assert.ok(helloFor("2026-12-31", "newyear") && helloFor("2027-01-01", "newyear"));
+  assert.ok(helloFor("2027-02-14", "valentines")); assert.ok(helloFor("2027-03-08", "womensday")); assert.ok(helloFor("2027-04-01", "aprilfools")); assert.ok(helloFor("2027-07-04", "july4"));
+  assert.match(helloFor("2027-05-14", "birthday", { birthday: "05-14" }), /Happy birthday, Sofia/); assert.equal(helloFor("2027-05-13", "birthday", { birthday: "05-14" }), "");
+  assert.equal(helloFor("2027-01-20", "winter"), ""); assert.equal(helloFor("2027-07-20", "summer"), "");
+  for (const [id, t] of Object.entries(THEMES)) { assert.ok(t.n && t.e && t.motif && t.hero.startsWith("linear-gradient(") && t.ring && t.line && t.shower.length >= 4, id); }
+});
+
+test("what's next, the peek and the off switch", () => {
+  assert.deepEqual(nextSeason("2026-10-29"), { id: "fall", from: "2026-11-01" });
+  assert.deepEqual(nextSeason("2026-11-29"), { id: "christmas", from: "2026-12-01" });
+  assert.deepEqual(nextSeason("2027-03-10"), { id: "aprilfools", from: "2027-04-01" });
+  assert.equal(pickSeason("2026-10-29", { settings: {} }), "halloween");
+  assert.equal(pickSeason("2026-10-29", { settings: { seasons: "off" } }), "", "off: the everyday look");
+  assert.equal(pickSeason("2026-10-29", { settings: { seasons: "off" }, peek: { id: "winter", date: "2026-10-29" } }), "winter", "a peek works even when off");
+  assert.equal(pickSeason("2026-10-30", { settings: {}, peek: { id: "winter", date: "2026-10-29" } }), "halloween", "a peek lasts one day");
+  assert.equal(pickSeason("2026-10-29", { settings: {}, peek: { id: "", date: "2026-10-29" } }), "", "peek at the everyday look");
+  assert.equal(pickSeason("2026-10-29", { settings: {}, peek: { id: "nope", date: "2026-10-29" } }), "halloween", "an unknown peek is ignored");
+});
+
+test("every theme has its button (SVG + an opaque 180 px PNG), the default too, and the page points at them", () => {
+  for (const id of [...Object.keys(THEMES), "default"]) {
+    assert.ok(existsSync(new URL(`../icons/season/${id}.svg`, import.meta.url)), id + ".svg");
+    const png = readFileSync(new URL(`../icons/season/${id}-180.png`, import.meta.url));
+    assert.equal(png.readUInt32BE(16), 180, id + " width"); assert.equal(png.readUInt32BE(20), 180, id + " height");
+    assert.equal(png[25], 2, id + ": RGB with no alpha, so the iPhone shows no black corners");
+  }
+  assert.equal(iconFor("halloween"), "icons/season/halloween-180.png"); assert.equal(iconFor(""), "icons/season/default-180.png");
+  const html = src("index.html"); assert.match(html, /rel="apple-touch-icon" href="icons\/season\/default-180\.png"/); assert.match(html, /id="seasonRow"/);
+  assert.ok(src("sw.js").includes('"./js/seasons.js"')); assert.match(src("js/palette.js"), /applySeason\(\)/); assert.match(src("js/palette.js"), /renderSeasonRow\(\)/);
+  assert.match(src("css/app.css"), /html\[data-season\] header\.hero\{background:var\(--season-hero\)\}/); assert.match(src("css/app.css"), /prefers-reduced-motion:reduce\)\{\.season-shower\{display:none\}/);
+  assert.ok(!/\d{4}-\d{2}-\d{2}/.test(JSON.stringify(Object.values(THEMES))), "no family date in the repo's theme table");
+});

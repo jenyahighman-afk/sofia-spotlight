@@ -15,7 +15,7 @@ import { studioOn } from "../studio.js";
 import { dayKindNow, homeLineNow, weekdayOf } from "../daykind.js";
 import { gamesFor } from "./play.js";
 import { openPracticeMode } from "../pmode.js";
-import { todayNudge } from "../moments.js";
+import { todayNudge, shortEventName } from "../moments.js";
 import { isCueTable } from "../cues.js";
 import { readinessNow } from "../ready.js";
 import { renderPassCard } from "../pass.js";
@@ -55,7 +55,7 @@ export function startButton({ kind, mins = 0, nDone = 0, total = 0 }){
 }
 function renderHome(){
   const ne=nextEvent(); const today=todayStr();
-  if(ne){ const d=daysUntil(ne.start); $("#stickerDays").textContent=d<=0?"0":d; $("#stickerWhat").textContent=ne.name; }
+  if(ne){ const d=daysUntil(ne.start); $("#stickerDays").textContent=d<=0?"0":d; $("#stickerWhat").textContent=shortEventName(ne.name); } // "Winter Showcase", not "(Winter Formal)" too
   // Studio day = a weekly class or a one-off date (a booked solo rehearsal, a make-up class): the home plan is the 15-minute
   // memory run, or on Monday (three classes) Hannah's videos and the solo in her head in the car. The kind of day comes from
   // daykind.js (the same answer Play, the week strip and the Schedule use), from the date string, never the clock (Build 4).
@@ -83,7 +83,7 @@ function renderHome(){
     <div class="row today-media"><button class="btn sm violet" onclick="openPlayer('solo')">🎵 Solo</button><button class="btn sm violet" onclick="openPlayer('trio')">🎵 Trio</button><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="openMemorize('solo','chunks')">🧠 Memorize</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
   renderHabit(today,{rec,home,pd});
   renderNews(); renderPet(); renderAdvent(); renderDares(); gateExtras(extrasOpen({pd,kind}),!playGate); renderGlowNudge(); renderDayPlan(today); renderSundayCard(today); renderSeasonCard(today); renderComp(); renderBites(); renderMindCard(); renderPassCard(); applyPalette();
-  if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(ne.name)}</span>`; }
+  if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(shortEventName(ne.name))}</span>`; }
   // this week's fix
   const fix=currentWeekFix(today); const open=Object.values(S.corrections).some(c=>!c.deleted&&c.status!=="done");
   if(fix) $("#weekFix").innerHTML=`<div class="row"><span class="chip violet">${TAG_EMOJI[fix.tag]||"✨"} This week's fix${fix.pinned?" · 📌 "+esc(fix.source||"teacher"):""}</span><span class="grow"></span><button class="btn sm ghost" onclick="showMe('${fix.id}')">Show me</button></div><div class="fix-text">${esc(fix.text)}</div>${videoRow(fix)}`;
@@ -96,7 +96,7 @@ function renderHome(){
   for(let i=0;i<7;i++){ const d=new Date(monday); d.setDate(monday.getDate()+i); const ds=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
     let evs=studioOn(ds,CLASSES,studioDates()).map(c=>`<div class="ev ${c.oneOff?"oneoff":""}">${esc(short(c.name))}</div>`).join("");
     const hl=homeLineNow(ds); if(hl) evs+=`<div class="ev home">Home: ${esc(hl)}</div>`;
-    events().filter(e=>ds>=e.start&&ds<=e.end).forEach(e=>evs+=`<div class="ev comp">${esc(e.name)}</div>`);
+    events().filter(e=>ds>=e.start&&ds<=e.end).forEach(e=>evs+=`<div class="ev comp">${esc(shortEventName(e.name))}</div>`);
     if(planDone(S.practice[ds])) evs+=`<div class="ev done">⭐ plan done</div>`; else if(dayCounts(S.practice[ds],PRACTICE_ITEMS.length)) evs+=`<div class="ev done">✓ streak safe</div>`;
     h+=`<div class="day ${ds===today?"today":""}"><b>${names[i]} ${d.getDate()}</b>${evs}</div>`; }
   $("#homeWeek").innerHTML=h; const td=$("#homeWeek .day.today"); if(td) $("#homeWeek").scrollLeft=Math.max(0,td.offsetLeft-8);

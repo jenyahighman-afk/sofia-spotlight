@@ -27,11 +27,14 @@ export function stickersFor(ctx = {}){
   if (bites.includes("tired")) out.push({ key: "rest", emoji: "😴", text: "Rest day. Still here." });
   if (ctx.drillTried) out.push({ key: "drill", emoji: "📎", text: "Tried it from a clip" });
   if (bites.includes("trick") && !ctx.drillTried) out.push({ key: "trick", emoji: "⚔️", text: "Trick Quest day" });
-  const ev = String(ctx.eventName || "").replace(/\s*\([^)]*\)/g, "").trim(); // "Winter Showcase (Winter Formal)" → "Winter Showcase"
+  const ev = shortEventName(ctx.eventName);
   if (ev && ctx.eventDays >= 0) out.push({ key: "event", emoji: "🎀", text: ctx.eventDays === 0 ? `${ev} day!` : `${ctx.eventDays} days to ${ev}` });
   out.push({ key: "dance", emoji: "💃", text: "Dance day" });
   return out;
 }
+// An event's name without the part in brackets, for a sticker or a chip: "Winter Showcase (Winter Formal)" → "Winter Showcase".
+// Shared with Today's countdown sticker and chip (views/home.js).
+export const shortEventName = (name) => String(name || "").replace(/\s*\([^)]*\)/g, "").trim();
 export const nudgeFor = (stickers) => (stickers || []).find(s => s.big) || null;
 // The source rect of an iw×ih image that fills a w×h box edge to edge (centre crop).
 export function coverRect(iw, ih, w, h){ const s = Math.max(w / iw, h / ih); const cw = w / s, ch = h / s; return { sx: (iw - cw) / 2, sy: (ih - ch) / 2, sw: cw, sh: ch }; }

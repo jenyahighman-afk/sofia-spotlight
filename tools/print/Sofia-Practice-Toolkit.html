@@ -2,7 +2,9 @@
 <!-- Source of files/Sofia-Practice-Toolkit.pdf (8 Letter pages: 1, 2, 2b, 2c, 3-6). Print with Edge or Chrome, no headers/footers:
      msedge --headless=new --no-pdf-header-footer --virtual-time-budget=8000 --print-to-pdf=files/Sofia-Practice-Toolkit.pdf tools/print/Sofia-Practice-Toolkit.html
      then node tools/seed-manifest.cjs so "My files" swaps in the new copy. Updated Oct 26 with the research rules. Oct 29: page 2 rebuilt for 13 mm stickers (15 mm cells, mm units, nothing under 10 pt)
-     and pages 2b (the 75-day countdown + rewards) and 2c (a blank My week) added; print at Actual size (100 %), never Fit to page. -->
+     and pages 2b (the 75-day countdown + rewards) and 2c (a blank My week) added; print at Actual size (100 %), never Fit to page.
+     Oct 29 re-audit: the sticker rule follows the app's ⭐ Plan done, Saturday's memory run on p.1, trick 4 "Kick-overs and aerials only in class",
+     pause-and-predict in Sofia's voice, every footer "updated Oct 29". -->
 <html lang="en"><head><meta charset="utf-8">
 <title>Sofia's Practice Toolkit</title>
 <style>
@@ -67,6 +69,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
 .stk td.fix { padding: 0 1.5mm; }
 .stk td.fix .rl { height: 7.2mm; border-bottom: 0.25mm solid #777; }
 .stk td.fix .rl + .rl { height: 6.8mm; }
+.tx { font-family: "Segoe UI Symbol", "Segoe UI", sans-serif; font-size: 1.2em; line-height: 0; } /* ⭐ as a one-colour glyph: the printer is black ink only */
 .sbox { border: 0.3mm solid #111; border-radius: 2.5mm; padding: 1.5mm 2.5mm; margin-top: 2.5mm; font-size: 10pt; line-height: 1.17; }
 .cut { float: right; width: 28mm; height: 11mm; margin: 0.3mm 0 0 3mm; border: 0.35mm dashed #111; border-radius: 1.5mm; display: flex; align-items: center; justify-content: center; gap: 1.5mm; font-weight: 800; font-size: 10pt; }
 .cd tr > td { height: 14mm; }
@@ -129,7 +132,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
         <tr><td><b>Wed</b></td><td>Contemporary · solo rehearsal with Ms. Brittany when booked · <b>15-minute memory run</b></td></tr>
         <tr><td><b>Thu</b></td><td>HOME: strong + bendy + trio section + solo</td></tr>
         <tr><td><b>Fri</b></td><td>HOME: technique + this week's trick + solo</td></tr>
-        <tr><td><b>Sat</b></td><td>Co Tech · PITCH rehearsal</td></tr>
+        <tr><td><b>Sat</b></td><td>Co Tech · PITCH rehearsal + the <b>15-minute memory run</b></td></tr>
         <tr><td><b>Sun</b></td><td>HOME: FILM the solo + trio section + film review</td></tr>
       </table>
       <div class="small muted" style="margin-top:4px">Trio privates with Larisa 1–2× a month. Home sessions are 35–40 minutes; from Nov 9 each one ends with <b style="color:#111">Show in your head</b> (page 3). <b style="color:#111">Never more than 2 days without the solo:</b> on a class, rehearsal or make-up day, the 15-minute memory run (Monday: Hannah's videos).</div>
@@ -140,12 +143,12 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
     Press Play Jan 15–17 (classes only) → Hollywood Connection Jan 22–24 → Ryze Feb 19–21 → iD Feb 26–28 → Gravit8 Mar 12–14 → Hollywood Vibe Apr 30–May 2 → Showstopper May 14–16 → Glass House Ball Jun 19–20. Then the plan restarts: own it, clean it, perform it, in shorter loops between comps.
   </div>
   <div class="box dash"><div class="slogan">Point. Straighten. Eyes up. Long arms. Hit the beat. Hold the end.</div></div>
-  <div class="foot">Sofia's Practice Toolkit · page 1 · the plan · updated Oct 26</div>
+  <div class="foot">Sofia's Practice Toolkit · page 1 · the plan · updated Oct 29</div>
 </section>
 
 <!-- PAGE 2 · TRACKER (rebuilt Oct 29 for stickers: 15 mm cells, nothing under 10 pt, mm units, print at 100 %) -->
 <section class="page mm">
-  <div class="hero"><div><h1>My 15-week tracker</h1><div class="sub">A sticker for every home practice. Sunday: write your ONE fix for next week.</div></div><div class="side">Home days: <b>Thu · Fri · Sun</b></div></div>
+  <div class="hero"><div><h1>My 15-week tracker</h1><div class="sub">A sticker when the app says <span class="tx">⭐</span> Plan done. Sunday: write your ONE fix for next week.</div></div><div class="side">Home days: <b>Thu · Fri · Sun</b></div></div>
   <table class="stk">
     <colgroup><col style="width:17mm"><col style="width:46mm"><col style="width:15mm"><col style="width:15mm"><col style="width:15mm"><col style="width:14mm"><col style="width:60mm"><col style="width:9mm"></colgroup>
     <tr><th>Wk</th><th>Solo goal</th><th>Thu</th><th>Fri</th><th>Sun</th><th>Full<br>week ★</th><th>My one fix</th><th><svg width="5mm" height="3mm" viewBox="0 0 100 60"><polygon points="2,30 40,4 40,20 98,20 98,40 40,40 40,56" fill="#111"/></svg></th></tr>
@@ -165,7 +168,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
     <tr class="wk"><td class="wk"><div class="n">14</div><div class="d">Dec 28</div></td><td class="goal">Costume run #2 · fewer runs · sleep 9–12 h</td><td class="day"><span class="dn">31</span></td><td class="day"><span class="dn">Jan 1</span></td><td class="day"><span class="dn">3</span></td><td class="star"><svg class="faint" width="9mm" height="9mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#999" stroke-width="3.9" stroke-linejoin="round"/></svg></td><td class="fix"><div class="rl"></div><div class="rl"></div></td><td class="tab"></td></tr>
     <tr class="wk phase"><td class="wk"><div class="n">15</div><div class="d">Jan 4</div></td><td class="goal"><b>Taper:</b> one run a day · mini show Wed · SHOW Fri Jan 8</td><td class="day"><span class="dn">7</span><div class="mr">memory run</div></td><td class="day show"><span class="dn">8</span><div class="sh">SHOW</div><svg class="st" width="7mm" height="7mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="6.4" stroke-linejoin="round"/></svg></td><td class="day off"></td><td class="star"><svg class="faint" width="9mm" height="9mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#999" stroke-width="3.9" stroke-linejoin="round"/></svg></td><td class="fix"><div class="rl"></div><div class="rl"></div></td><td class="tab"></td></tr>
   </table>
-  <div class="sbox"><div class="cut"><svg width="8mm" height="5mm" viewBox="0 0 100 60"><polygon points="2,30 40,4 40,20 98,20 98,40 40,40 40,56" fill="#111"/></svg><span>THIS WEEK</span></div><b>Sticker rule.</b> A sticker for every home practice. <b>3 in a week = full week ★</b>: a big sticker in the star box. Every ☆ on the next page: pick a reward with Mom. <b>The arrow:</b> tape it to a paper clip; Mom moves it to this week's row on Sunday. <b>A new correction?</b> practise it right away.</div>
+  <div class="sbox"><div class="cut"><svg width="8mm" height="5mm" viewBox="0 0 100 60"><polygon points="2,30 40,4 40,20 98,20 98,40 40,40 40,56" fill="#111"/></svg><span>THIS WEEK</span></div><b>Sticker rule.</b> A sticker when the app says <span class="tx">⭐</span> Plan done. <b>3 in a week = full week ★</b>: a big sticker in the star box. Every ☆ on the next page: pick a reward with Mom. <b>The arrow:</b> tape it to a paper clip; Mom moves it down a row on Sunday. <b>A new correction?</b> practise it right away.</div>
   <div class="foot">Sofia's Practice Toolkit · page 2 · sticker tracker · updated Oct 29 · stickers go on Thu · Fri · Sun · print at 100 %</div>
 </section>
 
@@ -191,14 +194,14 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
     <div class="rh">My rewards · at every ☆ pick one with Mom: a movie night, a scrunchie, Saturday breakfast…</div>
     <div class="rgrid"><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Sat Oct 31</b> · Whole trio, no video</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Sun Nov 1</b> · Whole solo from memory, on the music</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Next solo rehearsal</b> · Show Ms. Brittany: no missed steps</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Sun Nov 29</b> · Every solo fix clean on two videos in a row</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Sun Dec 6</b> · Mini audience #1: grandparents on a video call</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Sun Dec 20</b> · Costume run #1 on the taped-out stage</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Sun Dec 20</b> · Mini audience #2</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Sun Dec 27</b> · Mini audience #3: one run for a friend or two</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Sat Jan 2</b> · Mandatory rehearsal, back from break</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Wed Jan 6</b> · Family mini show</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>Fri Jan 8</b> · Winter Showcase ★</div><div class="rl">My reward:</div></div><div class="rw"><div class="rt"><svg class="" width="4.5mm" height="4.5mm" viewBox="0 0 100 100"><polygon points="50.0,2.0 61.8,33.8 95.7,35.2 69.0,56.2 78.2,88.8 50.0,70.0 21.8,88.8 31.0,56.2 4.3,35.2 38.2,33.8" fill="none" stroke="#111" stroke-width="10.0" stroke-linejoin="round"/></svg><b>After the show</b> · We celebrate with…</div><div class="rl">My reward:</div></div></div>
   </div>
-  <div class="foot">Sofia's Practice Toolkit · page 2b · countdown + rewards · Oct 26 → Jan 8, 2027 (show day to be confirmed) · print at 100 %</div>
+  <div class="foot">Sofia's Practice Toolkit · page 2b · countdown + rewards · updated Oct 29 · show day to be confirmed · print at 100 %</div>
 </section>
 
 <!-- PAGE 2c · MY WEEK, blank to decorate (new Oct 29) -->
 <section class="page mm">
   <div class="hero"><div><h1>My week</h1><div class="sub">This one is yours: draw it, colour it, sticker it. What does each day look like?</div></div><div class="side">Sofia's week<br>2026–27</div></div>
   <div class="wgrid"><div class="dbox"><div class="dname">Monday</div></div><div class="dbox"><div class="dname">Tuesday</div></div><div class="dbox"><div class="dname">Wednesday</div></div><div class="dbox"><div class="dname">Thursday</div></div><div class="dbox"><div class="dname">Friday</div></div><div class="dbox"><div class="dname">Saturday</div></div><div class="dbox"><div class="dname">Sunday</div></div></div>
-  <div class="foot">Sofia's Practice Toolkit · page 2c · my week · decorate it</div>
+  <div class="foot">Sofia's Practice Toolkit · page 2c · my week · decorate it · updated Oct 29</div>
 </section>
 
 <!-- PAGE 3 · HOW TO PRACTICE -->
@@ -227,7 +230,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
           <li><b>No help.</b> Turn away from the video and the mirror. Do it alone.</li>
           <li><b>Say it.</b> Say the move names out loud while you mark. Words are a second memory.</li>
           <li><b>Chain it.</b> Add the chunk to the one before it, then run both.</li>
-          <li><b>Pause-and-predict.</b> Mom pauses the video anywhere. Sofia says and shows what comes next. When she never has to guess, the step is learned.</li>
+          <li><b>Pause-and-predict.</b> Ask a grown-up to pause the video anywhere: you say and show what comes next. When you never have to guess, the step is learned.</li>
           <li><b>From the top.</b> Every session: start at the beginning, go as far as you know, then add ONE new chunk.</li>
         </ol>
       </div>
@@ -281,7 +284,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
       </div>
     </div>
   </div>
-  <div class="foot">Sofia's Practice Toolkit · page 3 · how to practice · updated Oct 26</div>
+  <div class="foot">Sofia's Practice Toolkit · page 3 · how to practice · updated Oct 29</div>
 </section>
 
 <!-- PAGE 4 · SOLO -->
@@ -351,14 +354,14 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
       <tr><td><b>1 · Side-sit leg reach</b> 0:10.5</td><td>Sit on one hip, hand on the floor. Leg straight up: 4 counts up, hold 2, 4 down. 6 each side. Arm slides up the leg. <i>"Push the floor, reach the toe."</i></td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
       <tr><td><b>2 · Heel stretch</b> 0:31.5</td><td>Développé side at a counter: 4 up, hold 2, 4 down ×6. Side-lying leg lifts 2×12. Standing heel down.</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
       <tr><td><b>3 · Leap + cartwheel</b> 0:48 · 0:49.5</td><td>Leap ON the swell, then cartwheel: reach, look, place. Cartwheel over a tape line, legs straight. Play from 0:44 ×5.</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
-      <tr><td><b>4 · Walkover to knees</b> 1:07.75 + handstand 1:28.5</td><td>Wrists first. Wall handstand 3×10–15s. Kick up to vertical ×5, split at the top ×5. Kick-overs only with a spotter.</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
+      <tr><td><b>4 · Walkover to knees</b> 1:07.75 + handstand 1:28.5</td><td>Wrists first. Wall handstand 3×10–15s. Kick up to vertical ×5, split at the top ×5. Kick-overs and aerials only in class.</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
       <tr><td><b>5 · Floor kick</b> 1:40.75</td><td>8 slow kicks each side, 4 up, 4 down, pointed at the top. Kick from the hip, back long.</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
       <tr><td><b>6 · Passé turns</b> 1:49.5</td><td>Passé balance on relevé 10s. Quarter ×8, half ×8, singles ×10. Spot a sticker.</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
       <tr><td><b>7 · The ending</b> 2:00.5</td><td>Last 15 seconds of the real track ×5. Hold, breathe, count 8 more after you think it's over.</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
       <tr><td><b>8 · Donut roll</b> 1:18.25</td><td>Mat only. Cobra + seal 20s first. Kneeling backbend, hands to heels 3×5s; bridge holds 3×10s. Then the donut shape: arms down, knees bent, chest open, head ALL the way back. Don't tuck the chin (Hannah).</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
     </table>
   </div>
-  <div class="foot">Sofia's Practice Toolkit · page 4 · solo</div>
+  <div class="foot">Sofia's Practice Toolkit · page 4 · solo · updated Oct 29</div>
 </section>
 
 <!-- PAGE 5 · TRIO -->
@@ -413,7 +416,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
       <tr style="height:22px"><td class="c" style="border-right:1px solid #c8c8c8"><b>4</b></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
     </table>
   </div>
-  <div class="foot">Sofia's Practice Toolkit · page 5 · trio</div>
+  <div class="foot">Sofia's Practice Toolkit · page 5 · trio · updated Oct 29</div>
 </section>
 
 <!-- PAGE 6 · THIS WEEK -->
@@ -494,6 +497,6 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
     <h2>Trio private with Larisa (if this week)</h2>
     <table><tr><th style="width:70px">Date</th><th>What Larisa fixed</th><th style="width:34%">Practice this at home</th></tr><tr style="height:20px"><td></td><td></td><td></td></tr><tr style="height:20px"><td></td><td></td><td></td></tr></table>
   </div>
-  <div class="foot">Sofia's Practice Toolkit · page 6 · print every week</div>
+  <div class="foot">Sofia's Practice Toolkit · page 6 · print every week · updated Oct 29</div>
 </section>
 </body></html>

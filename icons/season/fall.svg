@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Sofia's Spotlight button, fall theme (tools/season-icons.cjs) -->
+  <defs><clipPath id="c"><circle cx="256" cy="256" r="244"/></clipPath></defs>
+  <circle cx="256" cy="256" r="248" fill="#FFF3E0"/>
+  <g clip-path="url(#c)">
+  <g transform="translate(256 268) scale(.86)">
+    <path d="M-28 30 L-88 168 L-40 150 L-8 60 Z" fill="#FF3D8A"/>
+    <path d="M28 30 L88 168 L40 150 L8 60 Z" fill="#FF3D8A"/>
+    <path d="M-28 30 L-60 128 L-40 150 L-8 60 Z" fill="#E0246F" opacity=".55"/>
+    <path d="M28 30 L60 128 L40 150 L8 60 Z" fill="#E0246F" opacity=".55"/>
+    <path d="M-10 0 C-70 -110 -190 -110 -178 -20 C-170 40 -80 60 -10 20 Z" fill="#FF5C93"/>
+    <path d="M10 0 C70 -110 190 -110 178 -20 C170 40 80 60 10 20 Z" fill="#FF5C93"/>
+    <path d="M-30 -6 C-70 -70 -140 -80 -150 -30 C-146 10 -80 30 -30 12 Z" fill="#FF8FB8" opacity=".7"/>
+    <path d="M30 -6 C70 -70 140 -80 150 -30 C146 10 80 30 30 12 Z" fill="#FF8FB8" opacity=".7"/>
+    <ellipse cx="0" cy="8" rx="34" ry="30" fill="#E0246F"/>
+    <ellipse cx="-6" cy="0" rx="14" ry="10" fill="#FF8FB8" opacity=".8"/>
+  </g>
+  <g transform="translate(110 118) rotate(-30) scale(1.15)"><path d="M0 -40 C26 -26 30 10 0 40 C-30 10 -26 -26 0 -40 Z" fill="#F59F00"/><line x1="0" y1="-34" x2="0" y2="46" stroke="#B8730A" stroke-width="4" stroke-linecap="round"/><line x1="0" y1="-6" x2="14" y2="-18" stroke="#B8730A" stroke-width="3"/><line x1="0" y1="8" x2="-14" y2="-4" stroke="#B8730A" stroke-width="3"/></g><g transform="translate(404 132) rotate(35) scale(1)"><path d="M0 -40 C26 -26 30 10 0 40 C-30 10 -26 -26 0 -40 Z" fill="#D9480F"/><line x1="0" y1="-34" x2="0" y2="46" stroke="#8A2D08" stroke-width="4" stroke-linecap="round"/><line x1="0" y1="-6" x2="14" y2="-18" stroke="#8A2D08" stroke-width="3"/><line x1="0" y1="8" x2="-14" y2="-4" stroke="#8A2D08" stroke-width="3"/></g><g transform="translate(400 392) rotate(150) scale(0.9)"><path d="M0 -40 C26 -26 30 10 0 40 C-30 10 -26 -26 0 -40 Z" fill="#A63A12"/><line x1="0" y1="-34" x2="0" y2="46" stroke="#5E1F08" stroke-width="4" stroke-linecap="round"/><line x1="0" y1="-6" x2="14" y2="-18" stroke="#5E1F08" stroke-width="3"/><line x1="0" y1="8" x2="-14" y2="-4" stroke="#5E1F08" stroke-width="3"/></g><g transform="translate(104 400) rotate(-140) scale(0.8)"><path d="M0 -40 C26 -26 30 10 0 40 C-30 10 -26 -26 0 -40 Z" fill="#E8A33D"/><line x1="0" y1="-34" x2="0" y2="46" stroke="#9C6512" stroke-width="4" stroke-linecap="round"/><line x1="0" y1="-6" x2="14" y2="-18" stroke="#9C6512" stroke-width="3"/><line x1="0" y1="8" x2="-14" y2="-4" stroke="#9C6512" stroke-width="3"/></g></g>
+  <circle cx="256" cy="256" r="248" fill="none" stroke="#F2A65A" stroke-width="12"/>
+</svg>

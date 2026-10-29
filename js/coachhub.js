@@ -1,12 +1,16 @@
 // Coach corner: one place (opened from Practice) to start a coach review for any dance or skill, and to look back —
 // reviews grouped by dance or skill, how feet/knees/eyes/arms have checked out over time, and what happened to each fix.
-import { $, esc, expose } from "./util.js";
+import { $, esc, expose, todayStr, fmt } from "./util.js";
 import { S, dances } from "./store.js";
 import { showPage } from "./nav.js";
 import { reviewCard, coachReady, openCoach } from "./coach.js";
 import { allSkills, skillState, kidCycle, STATE_EMOJI, STATE_LABEL } from "./skills.js";
 import { SKILLS } from "./data.js";
 import { TAG_EMOJI, TAG_LABEL } from "./corrections.js";
+import { gamesFor } from "./views/play.js";
+import { memoryKnees, activePlan } from "./season15.js";
+import { dayKindNow } from "./daykind.js";
+import { planDone } from "./streak.js";
 
 export const CHECKS = ["feet", "knees", "eyes", "arms"];
 const ok = (v) => !v || /^\s*✓/.test(String(v));
@@ -35,14 +39,19 @@ export function fixStatus(r, corrections){
   if (!c || c.deleted) return "noted"; return c.status === "done" ? "done" : "working";
 }
 
+// Trick Quest takes Play's own gate (views/play.js gamesFor): while the solo is still being memorized (Memory + knees, until
+// Nov 9 on the Showcase plan) Play hides it, and so does the Coach corner, so it is never a back door. Pure.
+export const questOpen = (date, { home = false, knees = memoryKnees(date), done = false } = {}) => gamesFor(date, { home, knees, done }).games.some(g => g.id === "quest");
 // Latest review for a named trick (reviews started from a trick chip carry its name).
 export function lastTrickReview(reviews, name){ return Object.values(reviews || {}).filter(r => r && !r.deleted && r.review && r.trick === name).sort((a, b) => (b.at || b.date || "").localeCompare(a.at || a.date || ""))[0] || null; }
 function tricksCard(){
   const st = (SKILLS.styles || {}).solo; if (!st) return "";
   const done = st.skills.filter(k => ["clean", "checked"].includes(skillState(S.skills, k.id))).length;
+  const today = todayStr(); const knees = memoryKnees(today); const until = (activePlan(today) || {}).memoryKneesUntil || "";
+  const quest = questOpen(today, { home: dayKindNow(today) === "home", knees, done: planDone(S.practice[today]) });
   return `<div class="card sun"><div class="row"><h3 class="grow">${st.ic} ${esc(st.n)}</h3><span class="chip sun">${done}/${st.skills.length} clean</span></div>
     <p class="small muted">Tap the circle: learning → clean. A grown-up adds the ★ when the teacher has checked it.</p>
-    <button class="btn sm coral" onclick="showPage('play');playOpen('quest');qsStart()">⚔️ Trick Quest</button>
+    ${quest ? `<button class="btn sm coral" onclick="showPage('play');playOpen('quest');qsStart()">⚔️ Trick Quest</button>` : knees ? `<p class="small muted">⚔️ Trick Quest opens ${until ? esc(fmt(until)) : "soon"}, once the solo is memorized.</p>` : ""}
     ${st.skills.map(k => { const state = skillState(S.skills, k.id); const rec = S.skills[k.id] || {}; const rv = lastTrickReview(S.reviews, k.n);
       return `<div class="trick-row"><button class="trick-state ${state}" onclick="hubSkill('${k.id}')" title="${STATE_LABEL[state]}">${STATE_EMOJI[state]}</button><div class="grow"><b>${esc(k.n)}</b> <span class="small muted">${STATE_LABEL[state]}${state === "checked" && rec.teacher ? " · " + esc(rec.teacher) + " " + esc(rec.checkedAt || "") : ""}</span>
         <div class="small">${rv ? `🎬 ${esc(rv.date || "")}: ${esc(rv.review.fix)}` : `<span class="muted">${esc(k.tip || "")}</span>`}</div></div><button class="btn sm coral" onclick="openCoach('solo','${esc(k.n).replace(/'/g, "&#39;")}')">🎬</button></div>`; }).join("")}</div>`;

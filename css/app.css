@@ -622,3 +622,23 @@ body.modal{overflow:hidden}
 .habit-card .choice{margin-top:8px}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .season .cp-done{background:#2E5A45;color:var(--ink)} :root:not([data-theme="light"]) .bw-row.done .bw-when{color:#7FE0A8} }
 :root[data-theme="dark"] .season .cp-done{background:#2E5A45;color:var(--ink)} :root[data-theme="dark"] .bw-row.done .bw-when{color:#7FE0A8}
+
+/* Seasonal themes (js/seasons.js, 1.50.0): a theme dresses the header only (gradient, sticker emoji, motif row); her
+   palette keeps every card, button and line. The emoji shower runs once a day and never with reduced motion. */
+html[data-season] header.hero{background:var(--season-hero)}
+html[data-season] header.hero:after{content:var(--season-motif);color:rgba(255,255,255,.8);letter-spacing:.2em}
+html[data-season] .sticker{border-color:var(--season-ring)}
+html[data-season] .sticker:before{content:var(--season-e)}
+html[data-season="halloween"] header.hero h1,html[data-season="newyear"] header.hero h1{text-shadow:0 3px 0 rgba(20,10,40,.35)}
+html[data-season="aprilfools"] header.hero h1{display:inline-block;transform:rotate(180deg);transition:transform .6s ease}
+html[data-season="aprilfools"] header.hero.fixed h1{transform:none}
+.season-shower{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden}
+.season-shower span{position:absolute;top:-48px;animation-name:season-fall;animation-timing-function:linear;animation-fill-mode:forwards;will-change:transform}
+@keyframes season-fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(112vh) rotate(var(--r,180deg))}}
+@media (prefers-reduced-motion:reduce){.season-shower{display:none}}
+.season-row{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+.season-now{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.season-btn{width:56px;height:56px;border-radius:14px;flex:none;box-shadow:var(--shadow)}
+.season-peek{flex-wrap:wrap;gap:6px}
+.season-peek .chip{min-width:38px;justify-content:center}
+.season-bday{margin-left:8px}

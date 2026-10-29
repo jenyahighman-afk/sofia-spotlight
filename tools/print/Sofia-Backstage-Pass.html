@@ -1,9 +1,12 @@
 <!doctype html>
-<!-- Source of files/Sofia-Backstage-Pass.pdf (9 Letter pages): Sofia's guide to the app, the Toolkit, the Workbook and her
+<!-- Source of files/Sofia-Backstage-Pass.pdf (10 Letter pages, color and ?ink alike: Part 10 and the For Mom box are page 10): Sofia's guide to the app, the Toolkit, the Workbook and her
      binder, her week, the goal in steps, and balance, food, sleep and body care. Print with Edge, no headers/footers:
      msedge --headless=new --no-pdf-header-footer --virtual-time-budget=8000 --print-to-pdf=files/Sofia-Backstage-Pass.pdf tools/print/Sofia-Backstage-Pass.html
      then node tools/seed-manifest.cjs so "My files" swaps in the new copy. Add ?ink to the file URL for a black-ink-only
-     copy (Jenya's printer). Food ideas are meat-free (Sofia is pescatarian). Made Oct 26, 2026. -->
+     copy (Jenya's printer). Food ideas are meat-free (Sofia is pescatarian). Made Oct 26, 2026. Updated Oct 29 (Build 4, Part B):
+     the Memorize door, the Sunday sheet, ✓ Made it and the finish lines, How ready?, plan first on Play, the sticker on
+     ★ Plan done, the 8-page Toolkit, the Saturday memory run; same words as data/pass.json where the two overlap, and
+     tests/pass-coverage.test.js keeps the page count and the six dividers in step. No color emoji on paper (black ink). -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Sofia's Backstage Pass</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -318,8 +321,8 @@ footer ul{display:grid;gap:4px}
         <ul class="helper-body">
           <li><b>Today:</b> the plan for today and Ms. Brittany's homework</li>
           <li><b>▶ Start practice:</b> music, timer and every step in order</li>
-          <li><b>Your solo:</b> practice player, Cue cards, Chunks, Pause &amp; Predict</li>
-          <li><b>Sunday:</b> film your solo and send it to Coach me</li>
+          <li><b>Your solo:</b> practice player and Memorize (Chunks, Pause &amp; Predict, Cue cards)</li>
+          <li><b>Sunday:</b> film your solo, then the Sunday sheet with Mom</li>
           <li>Stars, streaks and games</li>
           <li>Counts down the days to the show</li>
         </ul>
@@ -328,14 +331,16 @@ footer ul{display:grid;gap:4px}
         <div class="helper-top">
           <div class="row">
             <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="2.3" width="6" height="3.6" rx="1.2" fill="currentColor"/><path d="M8.5 11.2l1.6 1.6 3-3M8.5 16.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <div><div class="where">Paper · 6 pages</div><h3>Practice Toolkit</h3></div>
+            <div><div class="where">Paper · 8 pages</div><h3>Practice Toolkit</h3></div>
           </div>
           <div class="nick">Your practice map</div>
           <div class="job">Shows HOW to practice and how far you've come.</div>
         </div>
         <ul class="helper-body">
           <li><span class="pg">p.1</span>The plan, the big checkpoints, your week</li>
-          <li><span class="pg">p.2</span>Tracker: a sticker for every home practice</li>
+          <li><span class="pg">p.2</span>Sticker tracker: Thu, Fri, Sun, My one fix, the ◀ THIS WEEK clip</li>
+          <li><span class="pg">p.2b</span>The countdown and My rewards</li>
+          <li><span class="pg">p.2c</span>My week</li>
           <li><span class="pg">p.3</span>How to practice + Show in your head</li>
           <li><span class="pg">p.4</span>Solo map, your fixes, the trick ladder</li>
           <li><span class="pg">p.5</span>Trio memory map and counts</li>
@@ -346,7 +351,7 @@ footer ul{display:grid;gap:4px}
         <div class="helper-top">
           <div class="row">
             <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 6.8l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" fill="currentColor"/></svg></span>
-            <div><div class="where">Paper · 6 pages</div><h3>Season Workbook</h3></div>
+            <div><div class="where">Paper · 16 pages, 6 in your binder</div><h3>Season Workbook</h3></div>
           </div>
           <div class="nick">Your dancer's handbook</div>
           <div class="job">EVERYTHING ELSE about the season.</div>
@@ -372,7 +377,7 @@ footer ul{display:grid;gap:4px}
       </div>
       <ol class="tabs6">
         <li style="--t:var(--t1)"><span class="tab-top"><span class="tn">1</span>Start here</span><span class="tab-body">This guide</span></li>
-        <li style="--t:var(--t2)"><span class="tab-top"><span class="tn">2</span>My plan</span><span class="tab-body">Toolkit p.1 the plan · p.2 tracker · p.6 This week</span></li>
+        <li style="--t:var(--t2)"><span class="tab-top"><span class="tn">2</span>My plan</span><span class="tab-body">Toolkit p.1 the plan · p.2 tracker · p.2b countdown + rewards · p.2c My week · p.6 This week</span></li>
         <li style="--t:var(--t3)"><span class="tab-top"><span class="tn">3</span>Practice</span><span class="tab-body">Toolkit p.3 how to practice · Workbook p.14 count sheets</span></li>
         <li style="--t:var(--t4)"><span class="tab-top"><span class="tn">4</span>My dances</span><span class="tab-body">Toolkit p.4 solo · p.5 trio · Workbook p.5–6 group dances</span></li>
         <li style="--t:var(--t5)"><span class="tab-top"><span class="tn">5</span>Aerial</span><span class="tab-body">Aerial Mission: the drills, the plan, the checklist</span></li>
@@ -395,10 +400,10 @@ footer ul{display:grid;gap:4px}
     <div class="grab">
       <div class="grab-row"><div class="q">What do I practice today?</div><div class="a"><div class="chips"><span class="chip app">App</span></div><p>Open Today. It shows the plan and how long it takes.</p></div></div>
       <div class="grab-row"><div class="q">It's a home practice day</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.4</span></div><p>Tap ▶ Start practice. Keep page 4 open next to you so you can see your fixes.</p></div></div>
-      <div class="grab-row"><div class="q">I finished!</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.2</span></div><p>Tap Done in the app, then put a sticker on page 2. Three in a week = a full week ★</p></div></div>
-      <div class="grab-row"><div class="q">A part of my solo keeps slipping</div><div class="a"><div class="chips"><span class="chip app">App</span></div><p>Dances › your solo › Chunks or Cue cards. Learn one 8-count, then join it to the one before.</p></div></div>
+      <div class="grab-row"><div class="q">I finished!</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.2</span></div><p>When the app says ★ Plan done, put a sticker on page 2. Three in a week = a full week ★</p></div></div>
+      <div class="grab-row"><div class="q">A part of my solo keeps slipping</div><div class="a"><div class="chips"><span class="chip app">App</span></div><p>Dances, your solo, Memorize. Chunks plays one piece at a time, Pause &amp; Predict asks what comes next. One 8-count at a time, then join it to the one before.</p></div></div>
       <div class="grab-row"><div class="q">A teacher gave me a correction</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.6</span></div><p>Tell Mom and add it with ＋ Note on that dance. Write it on This week. It becomes your fix right away. Corrections from Saturday group rehearsal count too.</p></div></div>
-      <div class="grab-row"><div class="q">It's Sunday</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.2 + p.6</span></div><p>Film your solo and send it to Coach me. Watch it with Mom: what went well first, then ONE fix. Write the fix on page 2 and fill in a new page 6.</p></div></div>
+      <div class="grab-row"><div class="q">It's Sunday</div><div class="a"><div class="chips"><span class="chip app">App</span><span class="chip kit">Toolkit p.2 + p.6</span></div><p>Film your solo, then open the Sunday sheet on Today. It walks you and Mom through it: watch the last run, say what went well, then ✓ It showed or Not yet for your one fix. Write the fix on page 2 and fill in a new page 6.</p></div></div>
       <div class="grab-row"><div class="q">Group dances</div><div class="a"><div class="chips"><span class="chip book">Workbook p.5–6</span></div><p>The big groups practice at Saturday rehearsal. At home, only if you got a correction. Their pages are behind the My dances tab.</p></div></div>
       <div class="grab-row"><div class="q">Aerial drills</div><div class="a"><div class="chips"><span class="chip aer">Aerial tab</span></div><p>Mat under you, every time. First tries happen in Monday Acro with a coach. At home, Mom films and holds the mat.</p></div></div>
       <div class="grab-row"><div class="q">Packing for a show</div><div class="a"><div class="chips"><span class="chip book">Workbook p.11</span></div><p>Show time tab. Use the packing list and pack the night before.</p></div></div>
@@ -431,18 +436,26 @@ footer ul{display:grid;gap:4px}
           <li><span><b>One fix at a time.</b> It's done when it shows on two videos in a row.</span></li>
           <li><span><b>A short practice most days.</b> 35–40 minutes at home is plenty.</span></li>
           <li><span><b>Never more than 2 days without your solo.</b> On busy days, the 15-minute memory run counts (and on Monday, Hannah's videos and picturing it).</span></li>
-          <li><span><b>Finish lines get prizes.</b> At each checkpoint, pick a reward with Mom: a movie night, a new scrunchie, choosing Saturday breakfast.</span></li>
+          <li><span><b>Finish lines get prizes.</b> Your finish lines are on Today's season card and on Toolkit page 1. When you make one, tap ✓ Made it with Mom, then pick a reward and write it on Toolkit page 2b: a movie night, a new scrunchie, choosing Saturday breakfast.</span></li>
+          <li><span><b>How ready?</b> Tap How ready? on Today to see four bars for your solo. Pause &amp; Predict fills Know, fixes that showed fill Clean, your eight tricks fill Tricks, full runs and Sunday films fill Perform.</span></li>
         </ul>
-        <p class="sub print-only">Your finish lines are on Toolkit page 1, and the app shows the next one on Today.</p>
       </div>
       <div class="box screen-only">
-        <h3>Your next finish lines</h3>
+        <h3>Your finish lines</h3>
         <ul class="lines">
           <li><span class="when">Sat Oct 31</span><span>Whole trio, no video</span></li>
           <li><span class="when">Sun Nov 1</span><span>Whole solo from memory, on the music</span></li>
           <li><span class="when">Next solo rehearsal</span><span>Show Ms. Brittany: no missed steps</span></li>
+          <li><span class="when">Sun Nov 29</span><span>Every solo fix clean on two videos in a row</span></li>
+          <li><span class="when">Sun Dec 6</span><span>Mini audience #1: grandparents on a video call</span></li>
+          <li><span class="when">Sun Dec 20</span><span>Costume run #1 on the taped-out stage</span></li>
+          <li><span class="when">Sun Dec 20</span><span>Mini audience #2</span></li>
+          <li><span class="when">Sun Dec 27</span><span>Mini audience #3: one run for a friend or two</span></li>
+          <li><span class="when">Sat Jan 2</span><span>Mandatory rehearsal, back from break</span></li>
+          <li><span class="when">Wed Jan 6</span><span>Family mini show</span></li>
+          <li><span class="when">Fri Jan 8</span><span>Winter Showcase ★</span></li>
         </ul>
-        <p class="sub">The rest are on Toolkit page 1 and in the app.</p>
+        <p class="sub">They're on Toolkit page 1 and page 2b too, and Today shows the next one.</p>
       </div>
     </div>
   </section>
@@ -460,8 +473,8 @@ footer ul{display:grid;gap:4px}
       <div class="day" data-dow="3"><span class="dn">Wed <span class="today-tag">Today</span></span><span class="tag studio">Studio</span><span class="what">Contemporary</span><span class="t">6:30–7:30</span><span class="extra"><span class="tag mem">+ memory run</span> Solo rehearsal when one is booked.</span></div>
       <div class="day" data-dow="4"><span class="dn">Thu <span class="today-tag">Today</span></span><span class="tag home">Home</span><span class="what">Strong + bendy + trio + solo</span><span class="t">35–40 min</span></div>
       <div class="day" data-dow="5"><span class="dn">Fri <span class="today-tag">Today</span></span><span class="tag home">Home</span><span class="what">Technique + this week's trick + solo</span><span class="t">35–40 min</span></div>
-      <div class="day" data-dow="6"><span class="dn">Sat <span class="today-tag">Today</span></span><span class="tag studio">Studio</span><span class="what">Co Tech · PITCH rehearsal</span><span class="t">10:00–12:15</span><span class="extra">The big groups practice here.</span></div>
-      <div class="day" data-dow="0"><span class="dn">Sun <span class="today-tag">Today</span></span><span class="tag home">Home</span><span class="what">Film the solo + trio + film review</span><span class="t">35–40 min</span><span class="extra">Plan your week on Toolkit p.6.</span></div>
+      <div class="day" data-dow="6"><span class="dn">Sat <span class="today-tag">Today</span></span><span class="tag studio">Studio</span><span class="what">Co Tech · PITCH rehearsal</span><span class="t">10:00–12:15</span><span class="extra"><span class="tag mem">+ memory run</span> The big groups practice here.</span></div>
+      <div class="day" data-dow="0"><span class="dn">Sun <span class="today-tag">Today</span></span><span class="tag home">Home</span><span class="what">Film the solo + trio + film review</span><span class="t">35–40 min</span><span class="extra">Film review = the Sunday sheet. Plan your week on Toolkit p.6.</span></div>
     </div>
     <p class="sub">Trio privates with Larisa happen 1–2 times a month. On any day with a class, rehearsal or make-up, home practice is the short one: the 15-minute memory run.</p>
   </section>
@@ -475,7 +488,7 @@ footer ul{display:grid;gap:4px}
     <div class="lights">
       <div class="light"><span class="lamp" aria-hidden="true"></span><div><h3>Dance</h3><p>Classes plus short home practices. That's enough. More isn't always better.</p></div></div>
       <div class="light"><span class="lamp" aria-hidden="true"></span><div><h3>School</h3><p>Homework first on studio days. Read a little every day. Ask for help early, before it piles up.</p></div></div>
-      <div class="light"><span class="lamp" aria-hidden="true"></span><div><h3>Home</h3><p>Chores are teamwork: make your bed, pack your dance bag, help with dinner, and tidy your dance spot in 2 minutes.</p></div></div>
+      <div class="light"><span class="lamp" aria-hidden="true"></span><div><h3>Home</h3><p>Chores are teamwork: pack your dance bag and put it by the door, help with dinner, and tidy your dance spot in 2 minutes.</p></div></div>
       <div class="light"><span class="lamp" aria-hidden="true"></span><div><h3>Fun</h3><p>Friends, playing outside, drawing, family time, even doing nothing at all. Fun is part of the plan.</p></div></div>
     </div>
     <div class="alert">
@@ -492,6 +505,7 @@ footer ul{display:grid;gap:4px}
         <ul class="tips">
           <li><b>Same time, same place.</b> Start practice at the same time on Thu, Fri and Sun. A habit is easier than willpower.</li>
           <li><b>Big thing first.</b> Homework, then practice, then free time.</li>
+          <li><b>In the app too:</b> on a home day the solo comes first. The countdown door, the dare and the weekend games open once the plan is done ★. They live on Play, under Weekend games and Extras.</li>
           <li><b>Let the timer be the boss.</b> The app times each part. When it says done, you're done.</li>
           <li><b>Plan on Sunday.</b> Fill in page 6 and look at the week: tests, parties, rehearsals.</li>
           <li><b>Pack tonight.</b> Dance bag and water bottle by the door the night before.</li>
@@ -602,7 +616,7 @@ footer ul{display:grid;gap:4px}
       <li>Screens: <a href="https://www.healthychildren.org/English/fmp/Pages/MediaPlan.aspx" target="_blank" rel="noopener">AAP Family Media Plan</a></li>
       <li>Rest and training load: <a href="https://pubmed.ncbi.nlm.nih.gov/25646361/" target="_blank" rel="noopener">Jayanthi et al. 2015</a></li>
     </ul>
-    <p>Made Oct 26, 2026. When the plan changes, the app has the newest version.</p>
+    <p>Made Oct 26, 2026, updated Oct 29. When the plan changes, the app has the newest version.</p>
   </footer>
 
 </div>

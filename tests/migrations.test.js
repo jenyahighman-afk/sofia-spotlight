@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime, SOLO_V19, SOLO_V40, SOLO_V45, SOLO_V41, soloNeeds41, SOLO_V43, soloNeeds43, SOLO_LUNGE_STRENGTH, soloHasOldFloor, receive, saveSoloFix, setBackend, S } from "../js/store.js";
+import { SCHEMA_VERSION, MIGRATIONS, COLLECTIONS, migrateDoc, migrateCollection, docVersion, docTime, SOLO_V19, SOLO_V40, SOLO_V45, SOLO_V52, SOLO_V41, soloNeeds41, SOLO_V43, soloNeeds43, SOLO_LUNGE_STRENGTH, soloHasOldFloor, receive, saveSoloFix, setBackend, S } from "../js/store.js";
 import { applyData } from "../js/data.js";
 import { PRACTICE_ITEMS, AERIAL } from "../js/data.js";
 
@@ -259,7 +259,7 @@ test("40 → 41: the stored solo gets the verified cue table and the Oct 25 line
   assert.ok(d.corrections.includes(SOLO_V41.sideSit) && d.corrections.includes(SOLO_V43.donut), "41, then 43: Hannah's donut roll"); assert.ok(d.corrections.includes("My own line")); assert.equal(d.corrections.length, raw.corrections.length);
   assert.ok(d.tricks.includes(SOLO_V43.trick) && d.tricks.includes(SOLO_V41.tricks.arch) && d.tricks.includes(SOLO_V41.tricks.walk)); assert.ok(!d.tricks.some(t => /^Front walkover to knee/.test(t)));
   assert.ok(d.tricks.some(t => /^Calypso/.test(t)) && d.tricks.some(t => /^Scorpion/.test(t)), "lines with no new version stay");
-  assert.ok(d.steps.includes(SOLO_V43.donutStep)); assert.ok(d.eyes.includes("Heel stretch / standing → ")); assert.equal(d.checkpoints.find(c => c.d === "2026-11-04").text, SOLO_V45.checkpoint[1], "the Nov 4 text: step 40, then step 45");
+  assert.ok(d.steps.includes(SOLO_V43.donutStep)); assert.ok(d.eyes.includes("Heel stretch / standing → ")); assert.equal(d.checkpoints.find(c => c.d === "2026-11-04").text, SOLO_V52.checkpoint[1], "the Nov 4 text: step 40, then 45, then 52");
   const card = JSON.stringify({ ...d, cuesOld: undefined }); for (const old of ["tailbone", "~0:15", "~0:34", "~1:42", "~1:50", "Walkover/handstand", "Wednesdays 3:30", "ONE shoulder", "chin tucked"]) assert.ok(!card.includes(old), old);
   assert.equal(d.notes, "our notes"); assert.equal(d._v, SCHEMA_VERSION); assert.equal(soloNeeds43(d), false); // (soloNeeds41 matches Hannah's restored step line again; 41 never re-runs on a solo at 41+) assert.deepEqual(raw, solo31(), "the stored object is not mutated");
   // Run twice: nothing changes the second time. A partial override, or another dance, is left alone.
