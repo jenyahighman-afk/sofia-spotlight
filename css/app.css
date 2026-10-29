@@ -592,7 +592,7 @@ body.modal{overflow:hidden}
 /* Song words, karaoke-style (js/player.js renderKara, js/prompter.js karaokeHtml): the sung line with a colour wipe (--p), the 8-count in the corner */
 .kara-box{position:relative;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px 46px 8px 12px;margin:6px 0;text-align:center;min-height:52px}
 .kara .kl{line-height:1.2} .kara .kl.past{opacity:.45;font-size:.9rem} .kara .kl.next{opacity:.7;font-size:.95rem;margin-top:2px} .kara .kl.hint{font-size:.8rem;color:var(--ink-2);margin-top:4px}
-.kara .kl.now{font-family:Fredoka;font-size:1.5rem;background:linear-gradient(90deg,#FF5C93 var(--p,0%),var(--ink) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kara .kl.now{font-family:Fredoka;font-size:1.5rem;color:var(--ink)} .kara .kl.now .kw{background:linear-gradient(90deg,#FF5C93 var(--p,0%),var(--ink) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent}
 .kcount{position:absolute;top:6px;right:10px;font-family:Fredoka;font-size:1.5rem;line-height:1;color:#B98BEF;min-width:24px} .kcount.one{color:#FF5C93}
 .run-overlay .kara-box{width:100%;background:transparent;border:0;padding:0 46px;margin:0} .run-overlay .kara .kl.now{font-size:2rem} .run-overlay .kara .kl.next{font-size:1.1rem} .run-overlay .kcount{font-size:2.6rem;top:-4px}
 .timing{text-align:center} .timing .tl-now{font-family:Fredoka;font-size:1.4rem;line-height:1.2;margin-top:4px} .timing .tl-next{opacity:.7;margin-top:2px} .timing .tl-btn{font-size:1.3rem;padding:16px 28px;margin-top:10px}

@@ -7,7 +7,7 @@ import { normalizeCues, cueAt, fmtTime, fmtCueTime, isCueTable, trickAhead, lyri
 import { srcFor, trackUrl } from "./track.js";
 import { cuePhoto } from "./cuecards.js";
 import { pingDone } from "./remind.js";
-import { prompterHtml, karaokeHtml } from "./prompter.js";
+import { prompterHtml, karaokeHtml, wordWipes } from "./prompter.js";
 export { srcFor };
 
 const fmtT = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
@@ -101,7 +101,7 @@ function plSeek(t){ if (PL.audio) { PL.audio.currentTime = t; PL.revealed = -1; 
 
 // ---- Song words, karaoke-style (1.44.0) ----
 // The sung line above the move (player and Run it) with a colour wipe, the 8-count in the corner. The line's HTML is
-// rebuilt only when the line changes; the wipe (--p) moves every frame. Hidden while the words are being timed.
+// rebuilt only when the line changes; the wipe moves every frame, word by word (each word's --p). Hidden while timing.
 const KARA_RUN = `<div class="kara-box run-kara" id="plRunKaraBox" hidden><div id="plRunKara"></div><span class="kcount" id="plRunKCount" hidden>…</span></div>`;
 const lyricsOf = () => lyricLines(PL.dance && PL.dance.lyrics);
 const timesOf = () => lyricTimesFor(lyricsOf(), PL.dance && PL.dance.lyricTimes, PL.dance && PL.dance.lyricKeys); // taps, then the shipped times
@@ -112,7 +112,7 @@ function renderKara(t){
     if (!lines.length || (bx === "#plKaraBox" && PL.timing)) { box.hidden = true; continue; } box.hidden = false;
     const tm = timesOf(); const k = lyricAt(lines, tm, t); const key = `${k.cur ? k.cur.i : -1}|${k.next ? k.next.i : -1}|${k.timed}`;
     if (el._k !== key) { el._k = key; el.innerHTML = karaokeHtml(lines, tm, t); }
-    const now = el.querySelector(".kl.now"); if (now) now.style.setProperty("--p", Math.round(k.progress * 100) + "%");
+    const ws = wordWipes(k.cur ? k.cur.text : "", k.progress); el.querySelectorAll(".kl.now .kw").forEach((sp, i) => { const p = (ws[i] ? ws[i].p : 0) + "%"; if (sp._p !== p) { sp._p = p; sp.style.setProperty("--p", p); } });
   }
 }
 function renderKCount(k){ for (const id of ["#plKCount", "#plRunKCount"]) { const el = $(id); if (!el) continue; const on = !!(k && k.count); el.hidden = !on; if (on && el._c !== k.count) { el._c = k.count; el.textContent = k.count; el.classList.toggle("one", k.count === 1); } } }

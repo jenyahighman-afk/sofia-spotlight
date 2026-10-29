@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { installEnv } from "./_env.mjs";
 installEnv();
 const { lyricLines, normalizeLyricTimes, lyricAt, snapTime, countAt, MAX_LYRIC_LINES, lineKey, lyricTimesFor, normalizeLyricKeys } = await import("../js/cues.js");
-const { karaokeHtml } = await import("../js/prompter.js");
+const { karaokeHtml, wordWipes } = await import("../js/prompter.js");
 const { migrateDoc, SCHEMA_VERSION } = await import("../js/store.js");
 const src = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
 
@@ -40,9 +40,15 @@ test("a tap snaps to the nearest known onset within 0.6 s, else stays; the 8-cou
 test("karaokeHtml: nothing without words, a hint without times, otherwise past/now/next with the wipe and escaped text", () => {
   assert.equal(karaokeHtml("", [], 3), ""); assert.equal(karaokeHtml(null, null, 3), "");
   const h0 = karaokeHtml("a <b>\nc", [], 3); assert.ok(h0.includes('class="kara untimed"')); assert.ok(h0.includes("a &lt;b&gt;")); assert.ok(h0.includes("Time the words"));
-  const h = karaokeHtml("one\ntwo\nthree", [10, 14, 18], 12); assert.ok(h.includes('<div class="kl now" style="--p:50%">one</div>')); assert.ok(h.includes('<div class="kl next">two</div>')); assert.ok(!h.includes("kl past"));
-  const h2 = karaokeHtml("one\ntwo\nthree", [10, 14, 18], 15); assert.ok(h2.includes('class="kl past">one')); assert.ok(h2.includes('class="kl now" style="--p:25%">two')); assert.ok(h2.includes('class="kl next">three'));
-  assert.ok(karaokeHtml("one\ntwo", [10, 14], 2).includes('class="kl now" style="--p:0%">…'), "before the first line: … now, the first line next");
+  const h = karaokeHtml("one\ntwo\nthree", [10, 14, 18], 12); assert.ok(h.includes('<div class="kl now"><span class="kw" style="--p:50%">one</span></div>')); assert.ok(h.includes('<div class="kl next">two</div>')); assert.ok(!h.includes("kl past"));
+  const h2 = karaokeHtml("one\ntwo\nthree", [10, 14, 18], 15); assert.ok(h2.includes('class="kl past">one')); assert.ok(h2.includes('<div class="kl now"><span class="kw" style="--p:25%">two</span></div>')); assert.ok(h2.includes('class="kl next">three'));
+  assert.ok(karaokeHtml("one\ntwo", [10, 14], 2).includes('<div class="kl now">…</div>'), "before the first line: … now, the first line next");
+});
+
+test("the wipe runs word by word in reading order: each word lights from where it sits in the line, so a wrapped line fills its top row first", () => {
+  assert.deepEqual(wordWipes("one two three", 0.5).map(x => x.p), [100, 83, 0]); assert.deepEqual(wordWipes("one two three", 0).map(x => x.p), [0, 0, 0]); assert.deepEqual(wordWipes("one two three", 1).map(x => x.p), [100, 100, 100]);
+  assert.deepEqual(wordWipes("one two three", 0.5).map(x => x.w), ["one", "two", "three"]); assert.deepEqual(wordWipes("", 0.5), []); assert.deepEqual(wordWipes("  a  <b>  ", 1).map(x => x.w), ["a", "<b>"]);
+  const h = karaokeHtml("say it <now> here", [10], 12.5); assert.ok(h.includes('<span class="kw" style="--p:100%">say</span> <span class="kw" style="--p:100%">it</span> <span class="kw" style="--p:'), h); assert.ok(h.includes("&lt;now&gt;"), "escaped");
 });
 
 test("schema 46 normalizes lyrics, lyricTimes and lyricSnaps on dances only, never invents them", () => {
@@ -90,7 +96,8 @@ test("the wiring: the player renders the karaoke line and corner count in both v
   const pl = src("js/player.js"); for (const s of ["renderKCount(k); renderKara(t); renderCue(t);", 'id="plRunKara"', 'id="plRunKCount"', "countAt(t, PL.dance.bpm, PL.dance.countOffset)", "snapTime(PL.audio.currentTime, PL.dance.lyricSnaps)", "plTimeTap: timeTap", '$("#plTimeWords").onclick = timeWords']) assert.ok(pl.includes(s), s);
   assert.ok(!/Math\.floor\(\(t - \(\+PL\.dance\.countOffset/.test(pl), "the count maths lives in cues.js now");
   const ed = src("js/views/dances.js"); assert.ok(ed.includes('edText("lyrics"')); assert.ok(ed.includes("lyricsFromNotes(")); assert.ok(ed.includes("delete d.lyricSnaps"), "data-owned onsets stay out of the family's copy");
-  const css = src("css/app.css"); for (const s of [".kara-box{", ".kara .kl.now{", ".kcount{", ".run-overlay .kara-box{", ".timing .tl-btn{"]) assert.ok(css.includes(s), s);
+  const css = src("css/app.css"); for (const s of [".kara-box{", ".kara .kl.now{", ".kara .kl.now .kw{", ".kcount{", ".run-overlay .kara-box{", ".timing .tl-btn{"]) assert.ok(css.includes(s), s);
+  assert.ok(src("js/player.js").includes('el.querySelectorAll(".kl.now .kw")'), "the player moves each word's wipe every frame");
   const readme = src("README.md"); assert.ok(readme.includes("Time the words")); assert.ok(readme.includes("lyricSnaps")); assert.ok(!/Lyrics go into the cue sheets/.test(readme));
   assert.ok(/APP_VERSION = "1\.(4[4-9]|[5-9]\d)/.test(src("js/version.js")));
 });
