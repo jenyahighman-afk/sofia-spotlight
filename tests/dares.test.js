@@ -79,5 +79,5 @@ test("Today card: shows today's dare, one reroll, I did it saves the date, the b
     const n = writes.length; await window.dareDone(); assert.equal(writes.length, n, "a second tap writes nothing"); assert.equal(S.settings.stars, 5, "and pays nothing");
   } finally { setBackend(null); resetDom(); for (const k of Object.keys(S)) S[k] = {}; }
   assert.match(src("js/views/home.js"), /renderDares\(\)/); assert.match(src("sw.js"), /"\.\/js\/dares\.js"/); assert.match(src("sw.js"), /"\.\/data\/dares\.json"/);
-  const html = src("index.html"); assert.ok(html.indexOf('id="adventArea"') < html.indexOf('id="dareCard"') && html.indexOf('id="dareCard"') < html.indexOf('id="todayCard"'), "the card sits between the countdown and Today");
+  const html = src("index.html"); assert.ok(html.indexOf('id="todayCard"') < html.indexOf('id="moreToday"') && html.indexOf('id="moreToday"') < html.indexOf('id="adventArea"') && html.indexOf('id="adventArea"') < html.indexOf('id="dareCard"'), "the card sits under More for today, after the countdown, below the one card (Build 2)");
 });

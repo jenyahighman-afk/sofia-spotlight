@@ -87,6 +87,11 @@
       "Got 10 more minutes? Your full practice list is ready ⭐",
       "Bonus round: the full practice list! For extra-strong legs 🦵"
     ],
+    "pass": [
+      "Your Backstage Pass has a new part: {part}. Two minutes, one question, one star 🎟",
+      "Read {part} in your Backstage Pass? It's short, and there's a star in it ⭐",
+      "Nobody has opened the Backstage Pass for a couple of days. Next up: {part} 🎟"
+    ],
     "cards": [
       "You have {cards} trick cards! 🃏 Want to look at your binder?",
       "Peek at your trick cards 🃏 Any new shiny ones coming?"
@@ -118,7 +123,8 @@
     "streak": ["🔥 {streak}-day streak. Don't tell the other bunnies, they'll be jealous.", "🔥 {streak} days in a row! That's a lot of hops."],
     "skips": ["Heads up: {skips} free skip left this week. One bite keeps the 🔥 going."],
     "class": ["Studio today: {class} at {time} 🏫"],
-    "pet": ["We've danced together on {petDays} days 🐰💕"]
+    "pet": ["We've danced together on {petDays} days 🐰💕"],
+    "tip": ["🎟 Backstage Pass tip: {tip}", "From your Backstage Pass: {tip}"]
   },
   "buttons": ["Let's go ▶", "On it! ▶", "Okay okay ▶", "Show me ▶", "Hop to it ▶"]
 }

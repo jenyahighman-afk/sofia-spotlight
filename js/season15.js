@@ -1,13 +1,14 @@
 // The 15-week plan to the Winter Showcase (data/plan15.json): which week it is, its solo / trio / Friday goals, the next
 // checkpoint, and what the trick card does (Memory + knees until Nov 9, then the week's trick from the toolkit's
 // numbered list). Today shows the week with Ms. Brittany's pinned homework. Pure parts up top (tested in Node).
-import { $, esc, fmt, todayStr, daysUntil } from "./util.js";
+import { $, esc, fmt, todayStr, daysUntil, expose, toast } from "./util.js";
 import { PLAN15, PLAN_SPRING, SKILLS } from "./data.js";
-import { S, studioDates } from "./store.js";
-import { pinnedOpen } from "./corrections.js";
+import { S, studioDates, setSettings, normalizeCheckpoints } from "./store.js";
+import { pinnedOpen, hashText } from "./corrections.js";
 import { nextRehearsal } from "./studio.js";
 import { skillState } from "./skills.js";
 import { planDone } from "./streak.js";
+import { openStage } from "./stage.js";
 
 const DAY = 86400000;
 const dnum = (iso) => Math.round(new Date(iso + "T00:00:00").getTime() / DAY);
@@ -43,13 +44,43 @@ export function trickFocus(date, plan = activePlan(date), ladder = SKILLS){
 }
 // The solo skill to work on when the week says "weakest": the first one that isn't clean yet, in plan order.
 export function weakestTrick(skills = {}, ladder = SKILLS){ const list = (((ladder || {}).styles || {}).solo || {}).skills || []; const open = list.filter(s => s.ladder && !["clean", "checked"].includes(skillState(skills, s.id))); return (open[0] || list.find(s => s.ladder) || null); }
-// Checkpoints from `date` on, dated; the rehearsal one takes the next booked solo rehearsal (undated until one is booked);
-// `show: true` is show day and `beforeShow: n` is n days before it (the family mini show), both from `showDay`.
-export function checkpoints(date, plan = activePlan(date), oneOffs = []){
+// A checkpoint's id, the same on both phones and after the plan file is edited: the plan's start + a hash of its text
+// (the same text sits in both plans — "Family mini show" — so the plan is part of it). settings.checkpoints is keyed by it.
+export const cpId = (plan, c) => `${(plan && plan.start) || "plan"}:${hashText(String((c && c.t) || "").trim())}`;
+// Every checkpoint of a plan with its id, dated where it can be: the rehearsal one takes the next booked solo rehearsal
+// on or after `date` (undated until one is booked); `show: true` is show day and `beforeShow: n` is n days before it (the
+// family mini show), both from `showDay`. Dated ones first, in date order; undated last.
+export function allCheckpoints(plan = PLAN15, oneOffs = [], date = ""){
   const sd = showDay(plan);
-  return (plan.checkpoints || []).map(c => { if (c.show) return { d: sd, t: c.t }; if (c.beforeShow > 0) return { d: sd ? addDays(sd, -c.beforeShow) : "", t: c.t }; if (!c.rehearsal) return { d: c.d, t: c.t }; const r = nextRehearsal(oneOffs, c.after > date ? c.after : date); return { d: r ? r.start : "", t: c.t, rehearsal: true }; })
-    .filter(c => !c.d || c.d >= date).sort((a, b) => (a.d || "9999").localeCompare(b.d || "9999"));
+  return (plan.checkpoints || []).map(c => { const id = cpId(plan, c); if (c.show) return { id, d: sd, t: c.t }; if (c.beforeShow > 0) return { id, d: sd ? addDays(sd, -c.beforeShow) : "", t: c.t }; if (!c.rehearsal) return { id, d: c.d, t: c.t }; const r = nextRehearsal(oneOffs, c.after > date ? c.after : date); return { id, d: r ? r.start : "", t: c.t, rehearsal: true, after: c.after || "" }; })
+    .sort((a, b) => (a.d || "9999").localeCompare(b.d || "9999"));
 }
+// Checkpoints from `date` on (the undated rehearsal one included, last).
+export function checkpoints(date, plan = activePlan(date), oneOffs = []){ return allCheckpoints(plan, oneOffs, date).filter(c => !c.d || c.d >= date); }
+// The ticks (settings.checkpoints, schema 49): { [id]: { done: "YYYY-MM-DD", note? } }.
+export const checkpointTicks = (settings = S.settings) => normalizeCheckpoints((settings || {}).checkpoints);
+export const tickedOn = (ticks, id) => ((ticks || {})[id] || {}).done || "";
+// What Today lists, with a state each: "done" (ticked in the last `keepDone` days, kept as a ✅), "passed" (its day has
+// gone by, not ticked, kept for `past` days asking "did you make it?"), "book" (the rehearsal one, undated once its `after`
+// day is here: book a private), then the next `n` to come ("today" / "next"). Pure.
+export function checkpointsToShow(date, plan = activePlan(date), oneOffs = [], ticks = {}, { past = 7, keepDone = 2, n = 2 } = {}){
+  const out = [];
+  for (const c of allCheckpoints(plan, oneOffs, date)) {
+    const done = tickedOn(ticks, c.id);
+    if (done) { if (dnum(date) - dnum(done) < keepDone) out.push({ ...c, state: "done", done }); continue; }
+    if (!c.d) { if (c.rehearsal && c.after && date >= c.after) out.push({ ...c, state: "book" }); continue; }
+    if (c.d < date) { if (dnum(date) - dnum(c.d) <= past) out.push({ ...c, state: "passed" }); continue; }
+    out.push({ ...c, state: c.d === date ? "today" : "next" });
+  }
+  const coming = out.filter(c => c.state === "today" || c.state === "next").slice(0, n);
+  return [...out.filter(c => c.state === "done" || c.state === "passed" || c.state === "book"), ...coming];
+}
+// The one checkpoint for the top of Today: a passed one still unticked, else today's, else the rehearsal to book (a thing
+// to do now beats a date two months off), else the next to come. Never a finished one.
+export function nextCheckpoint(date, plan = activePlan(date), oneOffs = [], ticks = {}){ const list = checkpointsToShow(date, plan, oneOffs, ticks); for (const st of ["passed", "today", "book", "next"]) { const c = list.find(x => x.state === st); if (c) return c; } return null; }
+// The plans the by-when sheet lists: the one `date` is in, then the one after it (the spring plan after the Showcase's).
+export function plansFrom(date){ const cur = activePlan(date); const list = [PLAN15, PLAN_SPRING].filter(p => p && p.start && Array.isArray(p.checkpoints) && p.checkpoints.length); const i = list.indexOf(cur); return i < 0 ? list : list.slice(i); }
+export const planLabel = (plan) => plan === PLAN_SPRING ? "Spring: to the Glass House Ball" : "To the Winter Showcase";
 const firstSentence = (s) => String(s || "").split(/(?<=[.;])\s/)[0];
 // The session rules on `date` (plan15.json `rules`, from the research Jenya approved Oct 26). What the daily plan adds or
 // changes: { short (a light week or the night before the show: the 15-minute memory run), nightBefore, imagery: {title,
@@ -79,9 +110,18 @@ export function daysSinceDance(practice, today){
 // ---- DOM (Today) ----
 // Never more than 2 days without the solo: after two days without it the card asks for the memory run today.
 function gapNudge(date){ const max = ((activePlan(date).rules || {}).maxGap) || 2; const gap = daysSinceDance(S.practice, date); return Number.isFinite(gap) && gap >= max ? `<div class="sw-next sw-gap">🧠 ${gap} days without your solo: do the 15-minute memory run today <button class="btn sm coral" onclick="showPage('practice')">▶ Go</button></div>` : ""; }
+// One checkpoint row on the season card: a ✓ to tick it (a passed one asks "did you make it?"), undo on a ticked one,
+// a Book a private button on the undated rehearsal one.
+export function cpRow(c, date = todayStr()){
+  const when = c.d ? `<b>${esc(fmt(c.d))}</b>${c.state === "today" ? " <b>· today!</b>" : c.state === "next" ? ` <span class="muted">(${daysUntil(c.d)} day${daysUntil(c.d) === 1 ? "" : "s"})</span>` : ""}` : "";
+  if (c.state === "done") return `<div class="sw-next cp cp-done"><span class="grow">✅ <b>${esc(fmt(c.done))}</b> · ${esc(c.t)}</span><button class="lnk" onclick="cpTick('${c.id}',false)">undo</button></div>`;
+  if (c.state === "book") return `<div class="sw-next cp cp-book"><span class="grow">📅 <b>Book it:</b> ${esc(c.t)}</span><button class="btn sm coral" onclick="openRehearsal('solo')">📅 Book a private</button></div>`;
+  if (c.state === "passed") return `<div class="sw-next cp cp-passed"><span class="grow">🎯 ${when} · ${esc(c.t)}<div class="small muted">Did you make it?</div></span><button class="btn sm coral" onclick="cpTick('${c.id}',true)">✓ Made it</button></div>`;
+  return `<div class="sw-next cp"><span class="grow">🎯 ${when} · ${esc(c.t)}</span><button class="btn sm ghost" onclick="cpTick('${c.id}',true)">✓ Made it</button></div>`;
+}
 export function renderSeasonCard(date = todayStr()){
   const el = $("#seasonCard"); if (!el) return; const wk = weekOf(date);
-  const pins = pinnedOpen(S.corrections, "solo"); const cps = checkpoints(date, activePlan(date), studioDates()); const next = cps[0];
+  const pins = pinnedOpen(S.corrections, "solo"); const cps = checkpointsToShow(date, activePlan(date), studioDates(), checkpointTicks());
   if (!wk && !pins.length) { el.hidden = true; return; }
   const fri = memoryKnees(date) ? "Memory + knees: no new tricks yet" : wk ? wk.fri : "";
   el.hidden = false;
@@ -89,6 +129,22 @@ export function renderSeasonCard(date = todayStr()){
     <div class="sw-goal">🌸 <b>Solo:</b> ${esc(wk.solo)}</div><div class="sw-goal">👯 <b>Trio:</b> ${esc(wk.trio)}</div>${fri ? `<div class="sw-goal">⭐ <b>Friday:</b> ${esc(fri)}</div>` : ""}` : ""}
     ${wk && wk.judges ? `<div class="sw-goal">🎧 <b>Judges' week:</b> their recordings first, then the fixes they named</div>` : ""}${wk && wk.audition ? `<div class="sw-goal">🎟 <b>Audition weeks:</b> the panel teaches on the day — a pick-up drill and improv every full day, nothing to film</div>` : ""}${wk && wk.extra ? `<div class="sw-goal">${esc(wk.extra)}</div>` : ""}
     ${gapNudge(date)}
-    ${next ? `<div class="sw-next">🎯 ${next.d ? `<b>${esc(fmt(next.d))}</b>${daysUntil(next.d) > 0 ? ` <span class="muted">(${daysUntil(next.d)} day${daysUntil(next.d) === 1 ? "" : "s"})</span>` : " <b>· today!</b>"}` : `<b>Book it:</b>`} ${esc(next.t)}</div>` : ""}
+    ${cps.map(c => cpRow(c, date)).join("")}
+    <div class="row sw-foot"><button class="lnk" onclick="openByWhen()">📍 All checkpoints</button></div>
     ${pins.length ? `<div class="sw-pins"><div class="small"><b>📌 Ms. Brittany's homework</b></div>${pins.map(c => `<button class="fixchip pin" onclick="showMe('${c.id}')">${c.tag === "memory" ? "🧠" : "🦵"} ${esc(firstSentence(c.text))}</button>`).join("")}</div>` : ""}`;
 }
+// Tick a checkpoint done today (or undo). Saved in the family space, so both phones see the ✅.
+export async function tickCheckpoint(id, on = true, date = todayStr()){
+  const ticks = { ...checkpointTicks() }; if (on) ticks[id] = { ...(ticks[id] || {}), done: date }; else delete ticks[id];
+  await setSettings({ checkpoints: ticks }); return ticks;
+}
+async function cpTick(id, on){ await tickCheckpoint(id, on); toast(on ? "Made it! ✅" : "Okay, not yet"); renderSeasonCard(); renderByWhen(); try { document.dispatchEvent(new CustomEvent("checkpoint", { detail: { id, on } })); } catch (e) {} }
+// 📍 By when: every checkpoint of this plan and the next, with its ✓, so "did she make Nov 1?" has an answer.
+function renderByWhen(){
+  const el = $("#byWhenArea"); if (!el) return; const date = todayStr(); const ticks = checkpointTicks();
+  el.innerHTML = plansFrom(date).map(plan => `<div class="card"><h3>${esc(planLabel(plan))}</h3>${allCheckpoints(plan, studioDates(), date).map(c => { const done = tickedOn(ticks, c.id); const st = done ? "done" : !c.d ? "book" : c.d < date ? "passed" : c.d === date ? "today" : "next";
+    return `<div class="bw-row ${st}"><span class="bw-when">${done ? "✅" : st === "passed" ? "⬜" : st === "today" ? "🎯" : "○"} ${c.d ? esc(fmt(c.d).replace(/^\w+, /, "")) : "not booked"}</span><span class="grow">${esc(c.t)}${done ? `<div class="small muted">made it ${esc(fmt(done))}</div>` : ""}</span>${done ? `<button class="lnk" onclick="cpTick('${c.id}',false)">undo</button>` : st === "book" ? `<button class="btn sm ghost" onclick="closeStage();openRehearsal('solo')">📅 Book</button>` : `<button class="btn sm ${st === "passed" ? "coral" : "ghost"}" onclick="cpTick('${c.id}',true)">✓</button>`}</div>`; }).join("")}</div>`).join("");
+}
+export function openByWhen(){ renderByWhen(); openStage("📍 By when", [$("#byWhenArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); }
+export function initSeason(){ document.addEventListener("stageclosed", () => { const a = $("#byWhenArea"); if (a) a.style.display = "none"; }); }
+expose({ cpTick, openByWhen });

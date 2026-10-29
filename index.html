@@ -28,24 +28,31 @@
 </header>
 <!-- TODAY -->
 <section class="page on" id="p-home">
-  <div class="card coral news-card" id="newsCard" hidden></div>
-  <div id="newsArea" style="display:none"></div>
-  <div class="card violet pet-card" id="petCard"></div>
-  <div id="petArea" style="display:none"></div>
+  <!-- One card, one button (Build 2): the day's action first, then the plan boxes, the season card, the comp card.
+       The pet, the news, the Backstage Pass and the extras follow; the countdown, dares and the rest wait under More. -->
+  <div class="card sun today" id="todayCard"></div>
   <div class="card mint dayplan" id="dayPlan" hidden></div>
   <div class="card violet season" id="seasonCard" hidden></div>
-  <div class="card sun advent-card" id="adventCard" hidden></div>
-  <div id="adventArea" style="display:none"></div>
-  <div class="card dare-card" id="dareCard" hidden></div>
-  <div class="nudge glow-nudge" id="glowNudge" hidden></div>
-  <div class="card sun today" id="todayCard"></div>
   <div class="card coral" id="compCard" hidden></div>
+  <div class="card violet pet-card" id="petCard"></div>
+  <div id="petArea" style="display:none"></div>
+  <div class="card coral news-card" id="newsCard" hidden></div>
+  <div id="newsArea" style="display:none"></div>
+  <div class="card aqua pass-card" id="passCard" hidden></div>
+  <div id="passArea" style="display:none"></div>
+  <div class="card violet habit-card" id="habitCard"></div>
+  <div class="card aqua" id="goalReminder" hidden></div>
+  <div class="nudge glow-nudge" id="glowNudge" hidden></div>
   <details class="card acc" id="moreToday"><summary>✨ More for today</summary>
+    <div class="card sun advent-card" id="adventCard" hidden></div>
+    <div id="adventArea" style="display:none"></div>
+    <div class="card dare-card" id="dareCard" hidden></div>
     <div class="card violet bites" id="bitesCard"></div>
     <div class="card aqua" id="mindCard" hidden></div>
     <div class="card violet" id="weekFix"></div>
-    <div class="card aqua" id="goalReminder" hidden></div>
   </details>
+  <div id="readyArea" style="display:none"></div>
+  <div id="byWhenArea" style="display:none"></div>
   <div class="card">
     <h3>This week</h3>
     <div class="week" id="homeWeek"></div>

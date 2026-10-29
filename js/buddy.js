@@ -21,6 +21,7 @@ import { showNudge } from "./glow.js";
 import { cardList, cardCounts } from "./cards.js";
 import { nextUnlock, totalStars } from "./stars.js";
 import { petState, petSVG, furFor } from "./pet.js";
+import { nudgeFor as passNudge, todayTip, tipSaidToday, markTipSaid } from "./pass.js";
 
 const KEY = "spotlight:buddy";
 const KID_PAGES = ["home", "dances", "practice", "play", "me"];
@@ -53,6 +54,8 @@ export function pickStep(ctx, rng = Math.random){
   if (c.glow) tier1.push({ key: "glow", go: "showPage('me');buddyScroll('#meGlow')" });
   const memo = (c.cards || []).find(x => x.id === "memo" && !x.done); if (memo) tier1.push({ key: "memo", vars: { memo: memo.sub }, go: memo.go });
   if (!c.fullDone && !c.restDay) tier1.push({ key: "full", go: "showPage('practice')" });
+  // The Backstage Pass: the next part to read, once nothing has been read for two days (pass.js nudgeFor).
+  if (c.passPart) tier1.push({ key: "pass", vars: { part: c.passPart }, go: "openPass()" });
   if (tier1.length) return pick(tier1, rng);
   const fun = [{ key: "all-done", go: "showPage('play')" }, { key: "teach", go: "showPage('play');playOpen('teach')" }, { key: "count", go: "showPage('play');playOpen('count')" }, { key: "costume", go: "showPage('me');openCostumes()" }];
   if (c.cardsEarned > 0) fun.push({ key: "cards", vars: { cards: c.cardsEarned }, go: "showPage('me');openCards()" });
@@ -78,10 +81,12 @@ export function compose(ctx, { rng = Math.random, last = "", lines = BUDDY, just
   if (justDone) opener = pick(((lines.steps || {})["just-done"] || []).map(t => fill(t, vars)).filter(Boolean), rng);
   else if (!c.dayDone && c.streak === 0 && c.petDays > 0 && !c.comp) opener = pick(((lines.steps || {}).comeback || []).map(t => fill(t, vars)).filter(Boolean), rng);
   if (!opener) opener = pick((lines.openers || []).map(t => fill(t, vars)).filter(Boolean), rng) || "";
-  let fact = ""; const fs = factsFor(c);
-  if (fs.length && rng() < 0.6) { const [k, fv] = pick(fs, rng); fact = pick(((lines.facts || {})[k] || []).map(t => fill(t, { ...vars, ...fv })).filter(Boolean), rng) || ""; }
+  let fact = "", tipUsed = false; const fs = factsFor(c);
+  // The Backstage Pass's tip of the day rides along the first time the Bunny speaks that day (c.tip, pass.js); else a true fact, sometimes.
+  if (c.tip && (lines.facts || {}).tip) { fact = pick((lines.facts.tip || []).map(t => fill(t, { ...vars, tip: c.tip })).filter(Boolean), rng) || ""; tipUsed = !!fact; }
+  if (!fact && fs.length && rng() < 0.6) { const [k, fv] = pick(fs, rng); fact = pick(((lines.facts || {})[k] || []).map(t => fill(t, { ...vars, ...fv })).filter(Boolean), rng) || ""; }
   const button = step.go ? (pick(lines.buttons || [], rng) || "Let's go ▶") : "";
-  return { opener, text: chosen.t, fact, button, go: step.go || "", key: step.key, id: chosen.id };
+  return { opener, text: chosen.t, fact, button, go: step.go || "", key: step.key, id: chosen.id, tipUsed };
 }
 
 // ---------- what the app knows right now ----------
@@ -105,6 +110,8 @@ export function buddyContext(date = todayStr()){
     glow: showNudge(date), cardsEarned: cc.earned,
     starsLeft: nu ? nu[2] - totalStars() : 0, unlock: nu ? nu[3] : "",
     event: ev ? { name: short(ev.name), days: daysUntil(ev.start) } : null,
+    passPart: (() => { const p = passNudge(S.settings, date); return p ? `${p.e || ""} ${p.n}`.trim() : ""; })(),
+    tip: tipSaidToday(date) ? "" : String(((todayTip(date) || {}).t) || ""),
   };
 }
 
@@ -128,7 +135,7 @@ export function renderBuddy(){
 }
 export function showBuddy({ justDone = false } = {}){
   let ctx; try { ctx = buddyContext(); } catch (e) { console.warn("buddy", e); return null; }
-  msg = compose(ctx, { last: lastId(), justDone }); save({ last: msg.id }); renderBuddy(); return msg;
+  msg = compose(ctx, { last: lastId(), justDone }); save({ last: msg.id }); if (msg.tipUsed) markTipSaid(); renderBuddy(); return msg;
 }
 export function hideBuddy(){ msg = null; stopSpeaking(); renderBuddy(); }
 function scrollTo(sel){ setTimeout(() => { const e = $(sel); if (e && e.scrollIntoView) try { e.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (x) {} }, 60); }
@@ -137,10 +144,15 @@ function say(){ if (!msg) return; speakBunny([msg.opener, msg.text, msg.fact].fi
 function voice(){ const n = nextVoice(); if (!n) return; toast("🎙️ Voice: " + n); speakBunny("Hi! Is this my voice? Boing boing!"); }
 function tap(){ if (msg) hideBuddy(); else showBuddy(); }
 function quiet(){ save({ quiet: todayStr() }); hideBuddy(); }
-// Once per app open, when the day's data is in, on Today. Called by app.js on each data change.
+// Once per app open, when the day's data is in, on Today. Called by app.js on each data change. The bubble waits until
+// she has looked at the plan: her first scroll on Today, or AUTO_MS — never over the one card at the top (Build 2).
+export const AUTO_MS = 10000;
 export function buddyAuto(ready){
   if (autoDone || !ready) return; autoDone = true; if (quietToday()) return;
-  setTimeout(() => { const home = document.body.classList.contains("pg-home"); if (home && !blocked() && !msg) showBuddy(); }, 1500);
+  let fired = false; const wrap = document.querySelector(".wrap");
+  const go = () => { if (fired) return; fired = true; try { window.removeEventListener("scroll", go); if (wrap) wrap.removeEventListener("scroll", go); } catch (e) {} const home = document.body.classList.contains("pg-home"); if (home && !blocked() && !msg) showBuddy(); };
+  try { window.addEventListener("scroll", go, { passive: true }); if (wrap) wrap.addEventListener("scroll", go, { passive: true }); } catch (e) {}
+  setTimeout(go, AUTO_MS);
 }
 export function initBuddy(){
   renderBuddy();

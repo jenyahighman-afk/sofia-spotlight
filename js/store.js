@@ -8,7 +8,22 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 48;
+export const SCHEMA_VERSION = 49;
+// Schema 49 (1.47.0, Build 2 of the Oct 28 review): settings.checkpoints = { [id]: { done: "YYYY-MM-DD", note? } } — the
+// plan's checkpoints ticked from Today (id = season15.cpId: the plan's start + a hash of the text) — and settings.pass =
+// { read: { [partId]: "YYYY-MM-DD" } }, the parts of the in-app Backstage Pass she has read. Junk dropped, nothing invented.
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+export function normalizeCheckpoints(v){
+  const out = {}; for (const [k, x] of Object.entries(v && typeof v === "object" && !Array.isArray(v) ? v : {})) { const id = String(k).trim().slice(0, 80); if (!id) continue;
+    const done = x && typeof x === "object" ? x.done : x; if (typeof done !== "string" || !DATE_RE.test(done)) continue; const o = { done };
+    if (x && typeof x === "object" && typeof x.note === "string" && x.note.trim()) o.note = x.note.trim().slice(0, 140); out[id] = o; }
+  return out;
+}
+export function normalizePass(v){
+  const p = v && typeof v === "object" && !Array.isArray(v) ? v : {}; const read = {};
+  for (const [k, d] of Object.entries(p.read && typeof p.read === "object" && !Array.isArray(p.read) ? p.read : {})) if (/^[a-z0-9-]{1,24}$/.test(String(k)) && typeof d === "string" && DATE_RE.test(d)) read[k] = d;
+  return { read };
+}
 // Schema 44: the trick progress lineup's frames (js/lineup.js FRAMES), frozen here for the migration.
 export const FRAME_IDS = ["polaroid", "film", "star", "sparkle", "spotlight", "sticker"];
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
@@ -413,7 +428,9 @@ export const MIGRATIONS = {
     if (col !== "dances" || doc.judgesClips === undefined) return doc;
     doc.judgesClips = (Array.isArray(doc.judgesClips) ? doc.judgesClips : []).map(c => { const r = mediaRef(c); if (!r) return null; const o = { ...r }; if (c.name) o.name = String(c.name).slice(0, 60); if (c.comp) o.comp = String(c.comp).slice(0, 60); if (typeof c.at === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.at)) o.at = c.at; return o; }).filter(Boolean).slice(0, 10);
     return doc;
-  }
+  },
+  // 49 (1.47.0): settings.checkpoints (the plan's checkpoints ticked done) and settings.pass (the Backstage Pass parts read). Normalized when present.
+  49: (col, id, doc) => { if (col === "settings") { if (doc.checkpoints !== undefined) doc.checkpoints = normalizeCheckpoints(doc.checkpoints); if (doc.pass !== undefined) doc.pass = normalizePass(doc.pass); } return doc; }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],

@@ -47,7 +47,7 @@ test("Monday is a watching day (Hannah's videos, the solo in her head in the car
   assert.ok(/walkthrough/i.test(WATCH_DAY[0].text) && /run-through/i.test(WATCH_DAY[1].text) && /car/i.test(WATCH_DAY[2].text));
   assert.deepEqual(buildPlan({ ...base, date: "2026-11-03", short: "memory" }).map(i => i.id), MEMORY_RUN.map(i => i.id), "Tuesday: the 15-minute memory run");
   assert.deepEqual(buildPlan({ ...base, date: "2026-11-03", short: true }).map(i => i.id), MEMORY_RUN.map(i => i.id), "short: true still means the memory run");
-  for (const f of ["tools/print/Sofia-Practice-Toolkit.html", "tools/print/Sofia-Backstage-Pass.html", "tools/pass/backstage.json"]) { const t = src(f); assert.match(t, /Hannah's (two )?videos/, f); assert.doesNotMatch(t, /No home practice on Mon and Tue|Mon and Tue are rest days|Never 2 days in a row/, f); }
+  for (const f of ["tools/print/Sofia-Practice-Toolkit.html", "tools/print/Sofia-Backstage-Pass.html", "data/pass.json"]) { const t = src(f); assert.match(t, /Hannah's (two )?videos/, f); assert.doesNotMatch(t, /No home practice on Mon and Tue|Mon and Tue are rest days|Never 2 days in a row/, f); }
 });
 
 test("safety gates: no aerial drills during Memory + knees, and in the mission's own order after; Trick Quest hidden until Nov 9; gems never flip a trick to clean", () => {
@@ -96,7 +96,7 @@ test("the trio's videos: Today's 📹 Videos, a videos row on the trio card, the
   const d = src("js/views/dances.js"); assert.match(d, /d\.id==="solo"\|\|d\.id==="trio"\?videosEdit\(d\)/); assert.match(d, /isCueTable\(d\.cues\)\?tableTools\(d\):videosRow\(d\)/);
   assert.match(src("js/views/home.js"), /openVideos\(\)/); assert.match(src("js/cuecards.js"), /export function openVideos/);
   assert.match(src("js/player.js"), /import \{ prompterHtml(, \w+)* \} from "\.\/prompter\.js"/, "Run it with 📜 Lines on uses the prompter, so the player must import it (1.43.1)");
-  for (const f of ["tools/print/Sofia-Backstage-Pass.html", "tools/pass/backstage.json"]) { const t = src(f); assert.doesNotMatch(t, /feel lighter/, f); assert.match(t, /Never skip a meal\. Dancers run on fuel\./, f); }
+  for (const f of ["tools/print/Sofia-Backstage-Pass.html", "data/pass.json"]) { const t = src(f); assert.doesNotMatch(t, /feel lighter/, f); assert.match(t, /Never skip a meal\. Dancers run on fuel\./, f); }
   assert.doesNotMatch(src("js/glow.js") + src("README.md") + src("data/news.json"), /Glow-Up/); assert.match(src("js/glow.js"), /Growing-up Flipbook/);
   assert.match(JSON.stringify(json("compday")), /in for 4, out for 6/); assert.match(src("js/habit.js"), /in for 4, out for 6/); assert.match(JSON.stringify(json("daily")), /nine to twelve hours/);
 });

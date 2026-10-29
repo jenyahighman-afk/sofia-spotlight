@@ -1,67 +1,56 @@
 {
-  "id": "build1-1.43",
-  "title": "5 new things in your app!",
-  "intro": "From Mom's big review: your solo is the plan, your music and videos are one tap away, and Monday is a watching day. Tap 👀 Show me how for the steps, or ▶ Try it to jump straight in.",
+  "id": "build2-1.47",
+  "title": "4 new things in your app!",
+  "intro": "Build 2 from Mom's review: Today is one card with one button, your checkpoints get a tick, your solo has four readiness bars, and your Backstage Pass lives in the app now. Tap 👀 Show me how for the steps, or ▶ Try it to jump straight in.",
   "items": [
     {
-      "id": "plan",
+      "id": "today",
       "e": "⭐",
-      "n": "Plan done vs streak safe",
+      "n": "One card, one button",
       "where": "Today",
-      "pitch": "A game keeps your streak. Your solo makes the plan done.",
+      "pitch": "The top of Today says what today is and has one big button for it.",
       "steps": [
-        "Look at the chips at the top of Today: “⭐ Plan done” or “✓ Streak safe · solo next”.",
-        "Any bite keeps your streak. Only your solo (or the memory run) makes the plan done.",
-        "Plan done = your pet grows and the reminder stays quiet.",
-        "Tap “▶ Start practice”: the solo part of the list is the one that counts."
+        "Open Today: the first card shows the day and how many minutes the plan is.",
+        "Tap the big button: “▶ Start”, “▶ 15-min memory run” or “▶ Watch + picture”, whatever today is.",
+        "Your tricks, games and Memorize card moved down to “✨ Pick one extra”: the solo first, then those.",
+        "The doors, the dare and the rest wait under “✨ More for today”."
       ]
     },
     {
-      "id": "monday",
-      "e": "📹",
-      "n": "Monday = Hannah's videos",
+      "id": "checkpoints",
+      "e": "🎯",
+      "n": "Tick your checkpoints",
       "where": "Today",
-      "pitch": "Three classes on Monday, so no dancing at home: watch Hannah, then picture the solo in the car.",
+      "pitch": "Every finish line on the way to the show can be ticked. Made it? Tap ✓.",
       "steps": [
-        "On Monday, Today says “watch Hannah's videos”.",
-        "Tap “▶ Watch + picture”: the walkthrough, the run-through, then eyes closed in the car.",
-        "Tuesday is the 15-minute memory run again."
+        "On the week card, the next checkpoints have a “✓ Made it” button.",
+        "Made it? Tap it. A green ✅ stays for two days, and Mom's phone sees it too.",
+        "Tap “📍 All checkpoints” to see every one, all the way to the Ball."
       ]
     },
     {
-      "id": "tools",
-      "e": "🎵",
-      "n": "Music and videos, one tap",
-      "where": "Today · Practice",
-      "pitch": "Your solo's music, the trio's music and the videos are right under each practice item, and on Today.",
+      "id": "ready",
+      "e": "🌸",
+      "n": "How ready is the solo?",
+      "where": "Today · Dances",
+      "pitch": "Four honest bars: Know, Clean, Tricks, Perform. Nothing to fill in, they read your own practice.",
       "steps": [
-        "On Today, tap “🎵 Solo”, “🎵 Trio” or “📹 Videos”.",
-        "In practice, each solo or trio item has its own buttons: the music, “🧩 Chunks”, “⏸ Pause & Predict”.",
-        "The clock waits while the music plays. Tap “▶ Go” when you're back."
+        "Today says “moves known”: that's your Pause & Predict score, out of 28.",
+        "Tap “How ready?” for the four bars and what each one means.",
+        "On your solo card, open “🌸 How ready is the solo?” any time.",
+        "Know grows when you get a move right twice in a row in Pause & Predict."
       ]
     },
     {
-      "id": "timer",
-      "e": "⏰",
-      "n": "Did it?",
-      "where": "Practice",
-      "pitch": "The timer doesn't tick things off for you any more.",
+      "id": "pass",
+      "e": "🎟",
+      "n": "Your Backstage Pass",
+      "where": "Today",
+      "pitch": "Your Pass is in the app: ten short parts, one quick check each, a star for every one you get right.",
       "steps": [
-        "Practice is Timed from the start: each item has its own clock.",
-        "When it rings, tap “✅ Did it” or “↻ Again”.",
-        "Tap 🔊 and the bunny reads each item out loud."
-      ]
-    },
-    {
-      "id": "games",
-      "e": "🎮",
-      "n": "Games after the solo",
-      "where": "Play",
-      "pitch": "On a home day, the solo comes first; the games open when the plan is done.",
-      "steps": [
-        "On Thursday, Friday and Sunday, Play says “🏠 Home day: the solo first”.",
-        "What's Next?, Dance Along and Count Along are always there: they are solo work.",
-        "Trick Quest comes back Nov 9, once the solo is memorized."
+        "On Today, find “My Backstage Pass” and tap “Read it ▶”.",
+        "Read the part, then answer the one question. Right = a star and the next part.",
+        "Every day there's a “Tip of the day” from your Pass. Your bunny says it too."
       ]
     }
   ]

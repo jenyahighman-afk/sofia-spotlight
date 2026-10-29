@@ -42,9 +42,11 @@ export const KNEES = { title: "🦵 Memory + knees", items: [
   { id: "knees-memo", text: "Say the solo from the top, move by move, as far as you know", secs: 60, pose: "pose", kind: "tech" },
 ] };
 // `soloOnly` (a home day during Own it, before the plan is done): the game card is What's Next? — solo work — not a filler game.
+// `memo.table` (the dance has a verified cue table, the solo): the Memorize card opens the one memorize sheet (🧠 Memorize:
+// Chunks + Pause & Predict, with the five steps one tap inside); otherwise the five steps on the dance card.
 export function cardsFor(date, { skills = {}, bites = [], ladder, pool, memo = null, focus = null, soloOnly = false } = {}){
   const m = moveOfDay(date, pool), g = soloOnly ? ["nextmove", "What's Next?", "🧠"] : gameOfDay(date); const done = new Set(Array.isArray(bites) ? bites : []);
-  const extra = memo && memo.danceId ? [{ id: "memo", ic: "🧠", title: "Memorize it", sub: memo.label || "A chunk", go: `showPage('dances');memoFocus('${memo.danceId}')`, done: done.has("memo") }] : [];
+  const extra = memo && memo.danceId ? [{ id: "memo", ic: "🧠", title: "Memorize it", sub: memo.label || "A chunk", go: memo.table ? `openMemorize('${memo.danceId}','chunks')` : `showPage('dances');memoFocus('${memo.danceId}')`, done: done.has("memo") }] : [];
   return [...[
     trickCard(date, { skills, ladder, focus, done: done.has("trick") }),
     { id: "game", ic: g[2], title: "Dance game", sub: g[1], go: `showPage('play');playOpen('${g[0]}')`, done: done.has("game") },

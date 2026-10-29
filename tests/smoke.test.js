@@ -54,8 +54,9 @@ test("every screen initialises and renders with an empty family space (no throw,
   resetDom(); for (const k of Object.keys(M.store.S)) M.store.S[k] = {};
   for (const init of inits()) init();
   for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
-  const tc = el("#todayCard").innerHTML; assert.equal((tc.match(/class="choice-card/g) || []).length, 4, "Today has four choice cards (the fourth is Memorize it)"); assert.ok(tc.includes("memoFocus("), "the Memorize card points at the dance"); assert.ok(tc.includes("habitTired('stretch')") && tc.includes("off left this week"), "Today has the tired-day row and the skips left");
-  assert.ok(tc.includes("openMoments()"), "Today has the Moment button"); assert.ok(el("#meMoments").innerHTML.includes("openMoments()"), "Me has the Moments card");
+  const tc = el("#todayCard").innerHTML, hc = el("#habitCard").innerHTML; assert.equal((hc.match(/class="choice-card/g) || []).length, 4, "the extras card has four choice cards (the fourth is Memorize it)"); assert.ok(hc.includes("memoFocus(") || hc.includes("openMemorize("), "the Memorize card points at the dance or the memorize sheet"); assert.ok(hc.includes("habitTired('stretch')"), "the extras card has the tired-day row");
+  assert.ok(tc.includes("today-start") && tc.includes("openPracticeMode()") && tc.includes("off left this week"), "Today's one card has the one button and the skips left"); assert.equal((tc.match(/class="choice-card/g) || []).length, 0, "no choice cards on the one card");
+  assert.ok(hc.includes("openMoments()"), "the extras card has the Moment button"); assert.ok(el("#meMoments").innerHTML.includes("openMoments()"), "Me has the Moments card");
   assert.ok(el("#danceList").innerHTML.includes("openPlayer('solo')"), "solo cover has ▶ Practice");
   assert.ok(el("#danceList").innerHTML.includes("More ▸"), "More ▸ is collapsed by default");
   assert.ok(el("#danceList").innerHTML.includes('data-memo="solo"') && el("#danceList").innerHTML.includes('data-memo="trio"'), "the solo and the trio get a Memorize card");

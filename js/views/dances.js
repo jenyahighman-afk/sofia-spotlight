@@ -9,6 +9,7 @@ import { checkBadges } from "../badges.js";
 import { normalizeCues, parseCueText, formatCueText, fmtTime, fmtCueTime, isCueTable, lyricLines, lyricTimesFor } from "../cues.js";
 import { videosRow, videosEdit } from "../cuecards.js";
 import { memoDances, memoCard, bindMemo } from "../memo.js";
+import { readyFold } from "../ready.js";
 
 const STYLE_EMOJI = { lyrical:"🌸", jazz:"⚡", contemporary:"🌊", "hip hop":"🎧", hiphop:"🎧", ballet:"🩰", acro:"🤸", ballroom:"💃", tap:"👟" };
 export const danceEmoji = (d) => STYLE_EMOJI[String(d.style || "").toLowerCase().trim()] || "🎵";
@@ -37,8 +38,10 @@ function noteForm(d){
     <div class="row" style="margin-top:6px"><input type="text" id="noteText-${d.id}" placeholder="What did they say?" maxlength="140" autocomplete="off">${("webkitSpeechRecognition" in window||"SpeechRecognition" in window)?`<button class="btn sm ghost" id="noteMic-${d.id}" onclick="noteMic('${d.id}')" title="Say it">🎤</button>`:""}</div>
     <div class="row" style="margin-top:6px"><select id="noteSrc-${d.id}" style="max-width:150px">${sources.map(s=>`<option>${esc(s)}</option>`).join("")}</select><span class="grow"></span><button class="btn sm ghost" onclick="noteCancel()">Cancel</button><button class="btn sm coral" onclick="noteSave('${d.id}')">Save</button></div></div>`;
 }
-// A dance with a verified cue table (the solo): cue cards, memorize mode, Hannah's videos, the how-to.
-const tableTools=(d)=>`<div class="row table-tools"><button class="btn sm violet" onclick="openCueCards('${d.id}')">🃏 Cue cards</button><button class="btn sm violet" onclick="openMemorize('${d.id}','chunks')">🧩 Chunks</button><button class="btn sm violet" onclick="openMemorize('${d.id}','predict')">⏸ Pause &amp; Predict</button><button class="btn sm ghost" onclick="openHowto()">📖 How to practice</button></div>${videosRow(d)}`;
+// A dance with a verified cue table (the solo): ONE door to memorizing it — 🧠 Memorize (Chunks + Pause & Predict, with the
+// cue cards, the words, the five steps, What's Next? and Hannah's videos one tap inside it) — the how-to, the videos, and
+// the four readiness bars (ready.js) folded under the card.
+const tableTools=(d)=>`<div class="row table-tools"><button class="btn sm violet" onclick="openMemorize('${d.id}','chunks')">🧠 Memorize</button><button class="btn sm ghost" onclick="openHowto()">📖 How to practice</button></div>${videosRow(d)}${d.id==="solo"?readyFold():""}`;
 const cueSheetRo=(d)=>{ const list=normalizeCues(d.cues); if(!list.length) return `<div class="ro"></div>`; const tbl=isCueTable(d.cues); return `<div class="ro">${tbl&&d.cueSource?`<div class="small muted">Times: ${esc(d.cueSource)}${d.cueCheckedAt?" · nudged in Cue check "+esc(d.cueCheckedAt):""}</div>`:""}<ul>${list.map(c=>`<li${c.trick?' class="trick"':""}><b>${tbl?fmtCueTime(c.t)+"–"+fmtCueTime(c.end):fmtTime(c.t)}</b> ${c.trick?"★ ":""}${esc(c.move)}${c.lyric?` <span class="muted">“${esc(c.lyric)}”</span>`:""}</li>`).join("")}</ul></div>`; };
 function fullList(d){
   const all=forDance(S.corrections,d.id); if(!all.length) return `<div class="ro"></div>`;

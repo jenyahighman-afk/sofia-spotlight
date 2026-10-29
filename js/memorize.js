@@ -10,6 +10,7 @@ import { S, setSettings, dances } from "./store.js";
 import { normalizeCues, isCueTable, fmtCueTime } from "./cues.js";
 import { trackUrl } from "./track.js";
 import { cuePhoto, syncedVideos } from "./cuecards.js";
+import { knownCues } from "./ready.js";
 
 // One 8-count per segment, from count 1 (the dance's countOffset) to the end; a lead-in before the first count 1.
 export function eightCounts(bpm, offset = 0, duration = 0){
@@ -56,6 +57,13 @@ async function playSpan(a, b, done){
 function pauseAll(){ stopWatch(); for (const el of [MZ.audio, $("#mzVideo")]) { try { el && el.pause(); } catch (e) {} } }
 
 function chunkCard(c){ const d = dance(); const ph = c.n ? cuePhoto(d, c.n) : ""; return `<div class="mz-chunk ${c.trick ? "trick" : ""}">${ph ? `<img src="${esc(ph)}" alt="">` : ""}<div class="mz-label">${c.trick ? "★ " : ""}${esc(c.label)}</div><div class="small muted">${fmtCueTime(c.a)}–${fmtCueTime(c.b)}${c.n ? " · cue " + c.n : ""}</div></div>`; }
+// One memorize path (Build 2): this sheet is the door; every other way to learn the solo is one tap from here.
+// "N / 28 known" is the Know bar (ready.js): a move got right twice in a row in Pause & Predict.
+export function knownLine(d, settings = S.settings){ const k = knownCues(d && d.cues, (settings || {}).predict); return k.of ? `<div class="small muted mz-known">🧠 <b>${k.known} / ${k.of}</b> moves known${k.tricky ? ` · ${k.tricky} tricky` : ""} · <button class="lnk" onclick="closeMemorize();openReady()">how ready?</button></div>` : ""; }
+export function moreWays(d){
+  if (!d) return ""; const vids = Array.isArray(d.hannahVideos) && d.hannahVideos.length; const loops = Array.isArray(d.loops) && d.loops.length;
+  return `<div class="mz-more"><span class="small muted">More ways:</span><button class="chip" onclick="closeMemorize();openCueCards('${d.id}')">🃏 Cue cards</button><button class="chip" onclick="closeMemorize();openPlayer('${d.id}')">🎤 Words + music</button>${loops ? `<button class="chip" onclick="closeMemorize();showPage('dances');memoFocus('${d.id}')">📋 Five steps</button>` : ""}<button class="chip" onclick="closeMemorize();showPage('play');playOpen('nextmove');nmStart()">🧠 What's Next?</button>${vids ? `<button class="chip" onclick="closeMemorize();openVideos()">📹 Videos</button>` : ""}</div>`;
+}
 function srcChips(){ const vs = syncedVideos(dance()); if (!vs.length) return ""; return `<div class="row mz-src"><span class="small muted">Play:</span><button class="chip ${MZ.src === "music" ? "coral" : ""}" onclick="mzSrc('music')">🎵 Music</button>${vs.map((v, i) => `<button class="chip ${MZ.src === String(i) ? "coral" : ""}" onclick="mzSrc('${i}')">📹 ${esc(v.name || "Hannah")}</button>`).join("")}</div>`; }
 function render(){
   const d = dance(); if (!d) return; const body = $("#mzBody");
@@ -66,7 +74,7 @@ function render(){
       ${c ? chunkCard(c) : `<p class="small muted">${MZ.mode === "eight" ? "Loading the music to count it…" : "No cues."}</p>`}
       <div class="mz-btns"><button class="btn coral big-btn" onclick="mzAgain()">↻ Again</button><button class="btn big-btn" onclick="mzNext()">Next ›</button><button class="btn sun big-btn" onclick="mzTop()">⏮ From the top</button></div>
       <div class="row small muted" style="justify-content:space-between"><button class="lnk" onclick="mzPrev()">‹ back one</button><span>${list.length ? MZ.i + 1 + " of " + list.length : ""}</span></div>
-      <p class="small muted">Watch it, do it, say the move's name out loud. From the top = from 0:00 through this chunk.</p>`;
+      <p class="small muted">Watch it, do it, say the move's name out loud. From the top = from 0:00 through this chunk.</p>${knownLine(d)}${moreWays(d)}`;
   } else {
     const stats = statsOf(S.settings); const missed = stillMissed(stats, d.cues); const r = MZ.round; const tried = Object.keys(stats).length;
     let stage;
@@ -77,7 +85,7 @@ function render(){
     body.innerHTML = `${srcChips()}${stage}
       <div class="field-lab">Still getting missed ${missed.length ? `<span class="chip coral">${missed.length}</span>` : ""}</div>
       ${missed.length ? `<div class="mz-missed">${missed.map(c => `<button class="chip" onclick="mzDrill(${c.n})">${c.trick ? "★ " : ""}${esc(c.move)} <span class="muted">${fmtCueTime(c.t)}</span></button>`).join("")}</div>` : `<p class="small muted">${tried ? "Nothing missed on the last try. 🎉" : "No rounds yet."}</p>`}
-      ${tried ? `<p class="small muted">${tried} of ${normalizeCues(d.cues).length} cues tried. <button class="lnk" onclick="mzResetStats()">start over</button></p>` : ""}`;
+      ${tried ? `<p class="small muted">${tried} of ${normalizeCues(d.cues).length} cues tried. <button class="lnk" onclick="mzResetStats()">start over</button></p>` : ""}${knownLine(d)}${moreWays(d)}`;
   }
 }
 function setMode(m){ MZ.mode = m; MZ.i = 0; pauseAll(); render(); if (m === "eight") mediaEl(); }
