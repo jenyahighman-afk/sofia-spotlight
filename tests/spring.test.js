@@ -52,7 +52,7 @@ test("the engine switches plans by date: the Showcase plan through Jan 10, the s
   assert.equal(memoryKnees("2027-02-01"), false); assert.equal(memoryKnees("2026-11-01"), true, "the old gate still works on its own dates");
   assert.deepEqual(trickFocus("2027-02-03"), { kind: "weakest" }); assert.deepEqual(trickFocus("2027-01-20"), { kind: "none" }, "a taper week: nothing new"); assert.deepEqual(trickFocus("2027-04-14"), { kind: "rest" }, "spring break");
   const cps = checkpoints("2027-01-11"); assert.equal(cps[0].d, "2027-01-22"); assert.match(cps[0].t, /Hollywood Connection ★/); assert.equal(checkpoints("2027-06-18")[0].t, "Glass House Ball ★"); assert.equal(checkpoints("2027-06-21").length, 0);
-  assert.equal(checkpoints("2026-12-01")[0].t, "Mandatory rehearsal (back from break)", "before Jan 11 the Showcase plan's checkpoints");
+  assert.equal(checkpoints("2026-12-01")[0].t, "🎤 Mini audience #1: the solo for grandparents on a video call", "before Jan 11 the Showcase plan's checkpoints (Dec 6 is a finish line since 1.47.1)");
 });
 
 test("session rules on the spring plan: taper weeks, the night before a comp, the Sunday pair outside tapers, imagery from day one, the judges' week", () => {

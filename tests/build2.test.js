@@ -40,7 +40,7 @@ test("checkpoint ids are stable per plan and text; the same text in both plans g
   const a = cpId(plan15, { t: "Family mini show" }), b = cpId(spring, { t: "Family mini show" }); assert.notEqual(a, b); assert.ok(a.startsWith("2026-09-28:") && b.startsWith("2027-01-11:"));
   assert.equal(cpId(plan15, { t: " Family mini show " }), a, "whitespace doesn't change it"); assert.equal(cpId({ ...plan15, weeks: [] }, { t: "Family mini show" }), a, "editing the weeks doesn't change it");
   const all = allCheckpoints(plan15, [], "2026-10-26"); assert.equal(all.length, plan15.checkpoints.length); assert.ok(all.every(c => c.id && c.t)); assert.equal(new Set(all.map(c => c.id)).size, all.length, "unique within a plan");
-  assert.deepEqual(checkpoints("2026-10-26", plan15, []).map(c => c.d), ["2026-10-31", "2026-11-01", "2027-01-02", "2027-01-06", "2027-01-08", ""], "the dated list is what it was");
+  assert.deepEqual(checkpoints("2026-10-26", plan15, []).map(c => c.d), ["2026-10-31", "2026-11-01", "2026-11-29", "2026-12-06", "2026-12-20", "2026-12-20", "2026-12-27", "2027-01-02", "2027-01-06", "2027-01-08", ""], "the dated list, with the finish lines (1.47.1)");
   assert.ok(checkpoints("2026-10-26", plan15, []).every(c => c.id), "with ids"); assert.equal(allCheckpoints(spring, [], "2027-01-11").length, spring.checkpoints.length);
 });
 
@@ -49,11 +49,11 @@ test("what Today lists: the next two to come, a passed one unticked for a week (
   assert.deepEqual(show("2026-10-26").map(c => [c.d, c.state]), [["2026-10-31", "next"], ["2026-11-01", "next"]], "two to come, nothing passed, the rehearsal not yet due");
   assert.deepEqual(show("2026-10-31").map(c => [c.d, c.state]), [["2026-10-31", "today"], ["2026-11-01", "next"]]);
   const trio = cpId(plan15, { t: "Whole trio, no video" }), soloCp = cpId(plan15, { t: "Whole solo from memory, on the music" });
-  assert.deepEqual(show("2026-11-03").map(c => [c.t.slice(0, 10), c.state]), [["Whole trio", "passed"], ["Whole solo", "passed"], ["Next solo ", "book"], ["Mandatory ", "next"], ["Family min", "next"]], "Nov 3: both passed and unticked, the rehearsal to book (after Nov 1), then the next two");
+  assert.deepEqual(show("2026-11-03").map(c => [c.t.slice(0, 10), c.state]), [["Whole trio", "passed"], ["Whole solo", "passed"], ["Next solo ", "book"], ["Every solo", "next"], ["🎤 Mini au", "next"]], "Nov 3: both passed and unticked, the rehearsal to book (after Nov 1), then the next two (the Nov 29 and Dec 6 finish lines, 1.47.1)");
   assert.deepEqual(show("2026-11-08").filter(c => c.state === "passed").map(c => c.d), ["2026-11-01"], "Nov 8: Oct 31 is 8 days ago (gone), Nov 1 is 7 (still asked)");
   assert.deepEqual(show("2026-11-09").filter(c => c.state === "passed"), [], "Nov 9: both gone from Today (the by-when sheet keeps them)");
   const t1 = { [trio]: { done: "2026-10-31" } };
-  assert.deepEqual(show("2026-11-01", t1).map(c => [c.t.slice(0, 10), c.state]), [["Whole trio", "done"], ["Next solo ", "book"], ["Whole solo", "today"], ["Mandatory ", "next"]], "ticked yesterday: ✅ for two days; Book it from Nov 1 (the checkpoint's `after`); then the next two");
+  assert.deepEqual(show("2026-11-01", t1).map(c => [c.t.slice(0, 10), c.state]), [["Whole trio", "done"], ["Next solo ", "book"], ["Whole solo", "today"], ["Every solo", "next"]], "ticked yesterday: ✅ for two days; Book it from Nov 1 (the checkpoint's `after`); then the next two");
   assert.deepEqual(show("2026-11-02", t1).filter(c => c.state === "done"), [], "two days on, the ✅ leaves Today");
   assert.equal(show("2026-11-05", { [trio]: { done: "2026-11-05" }, [soloCp]: { done: "2026-11-01" } }).filter(c => c.state === "passed").length, 0, "ticked late still counts as made");
   const { bookingRecord } = await import("../js/studio.js"); const booked = [bookingRecord("2026-11-04", "3:30–4:00 PM", "Solo rehearsal with Ms. Brittany", "GHD", "r1")];

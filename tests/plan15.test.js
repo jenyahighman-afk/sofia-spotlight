@@ -35,7 +35,7 @@ test("Memory + knees until Nov 9, then the week's numbered trick(s), rest on the
   assert.equal(weakestTrick({ "s-side-sit": { state: "clean" } }).id, "s-side-ext", "the first numbered trick that isn't clean");
 });
 test("checkpoints: Oct 31 trio, Nov 1 solo, the next booked solo rehearsal after that, Jan 2, the mini show two days before the show, show day (one showDay field)", () => {
-  const cps = checkpoints("2026-10-26", plan, []); assert.deepEqual(cps.map(c => c.d), ["2026-10-31", "2026-11-01", "2027-01-02", "2027-01-06", "2027-01-08", ""], "no rehearsal booked: undated, last");
+  const cps = checkpoints("2026-10-26", plan, []); assert.deepEqual(cps.map(c => c.d), ["2026-10-31", "2026-11-01", "2026-11-29", "2026-12-06", "2026-12-20", "2026-12-20", "2026-12-27", "2027-01-02", "2027-01-06", "2027-01-08", ""], "no rehearsal booked: undated, last; the finish lines dated (1.47.1)");
   assert.equal(plan.showDay, "2027-01-08"); assert.equal(cps.find(c => /Showcase/.test(c.t)).d, plan.showDay); assert.equal(cps.find(c => /mini show/.test(c.t)).d, "2027-01-06");
   const moved = checkpoints("2026-10-26", { ...plan, showDay: "2027-01-09" }, []); assert.equal(moved.find(c => /Showcase/.test(c.t)).d, "2027-01-09"); assert.equal(moved.find(c => /mini show/.test(c.t)).d, "2027-01-07", "move showDay and both follow");
   const booked = [bookingRecord("2026-11-04", "3:30–4:00 PM", "Solo rehearsal with Ms. Brittany", "GHD", "r1"), bookingRecord("2026-10-28", "3:30", "Solo rehearsal with Ms. Brittany", "", "r0")];
