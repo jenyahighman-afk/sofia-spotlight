@@ -16,6 +16,7 @@ import { momentCount } from "../moments.js";
 import { renderReminder } from "../remind.js";
 import { renderFriends } from "../who.js";
 import { renderCardsCard } from "../cards.js";
+import { lineupCounts } from "../lineup.js";
 import { renderCostumeCard } from "../costume.js";
 import { renderGlowCard } from "../glow.js";
 
@@ -41,7 +42,9 @@ function renderMe(){
   const prog = styleProgress(S.skills);
   $("#skillRings").innerHTML = Object.entries(prog).map(([k, p]) => `<button class="skill-ring ${styleOpen === k ? "on" : ""}" onclick="meStyle('${k}')">${ring(p.pct, p.ic)}<small>${esc(p.n)}</small><small class="muted">${p.checked}★ ${p.clean}◉</small></button>`).join("");
   const st = styleOpen && SKILLS.styles[styleOpen];
-  const row = (sk) => { const state = skillState(S.skills, sk.id); return `<button class="skill ${state}" onclick="meSkill('${sk.id}')"><span class="st">${STATE_EMOJI[state]}</span><span class="grow">${esc(sk.n)}</span><small>${STATE_LABEL[state]}${state === "checked" && S.skills[sk.id] && S.skills[sk.id].teacher ? " · " + esc(S.skills[sk.id].teacher) : ""}</small></button>`; };
+  // A started skill's row gets a small 📷 (with its count) that opens the trick's progress lineup (js/lineup.js, in the binder).
+  const shots = lineupCounts();
+  const row = (sk) => { const state = skillState(S.skills, sk.id); return `<div class="skill-row"><button class="skill ${state}" onclick="meSkill('${sk.id}')"><span class="st">${STATE_EMOJI[state]}</span><span class="grow">${esc(sk.n)}</span><small>${STATE_LABEL[state]}${state === "checked" && S.skills[sk.id] && S.skills[sk.id].teacher ? " · " + esc(S.skills[sk.id].teacher) : ""}</small></button>${state === "notyet" ? "" : `<button class="skill-cam" onclick="openCards('${sk.id}')" aria-label="Progress photos: ${esc(sk.n)}">📷${shots[sk.id] ? " " + shots[sk.id] : ""}</button>`}</div>`; };
   const groups = st ? levelGroups(st) : null;
   const leveled = () => { const up = groups.filter(g => !g.bonus && g.req.length && g.lvl > Math.min(...(st.focus || [1]))); const reqLine = (g) => `<div class="lvl-up"><b>⭐ To level up · ${esc(g.label)}</b>${g.req.map(r => r.id ? `<span class="chip ${["clean", "checked"].includes(skillState(S.skills, r.id)) ? "mint" : ""}">${STATE_EMOJI[skillState(S.skills, r.id)]} ${esc(r.n)}</span>` : `<span class="chip">○ ${esc(r.n)}</span>`).join("")}</div>`;
     return `<div class="small muted" style="margin:6px 0">${esc(st.src || "")}${focusLabel(st) ? ` · her group: <b>${esc(focusLabel(st))}</b>` : ""}. Tap a skill: learning → clean. A grown-up marks ★ teacher-checked.</div>${up.map(reqLine).join("")}`

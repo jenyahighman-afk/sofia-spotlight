@@ -10,7 +10,8 @@ const src = (f) => readFileSync(new URL("../" + f, import.meta.url), "utf8");
 const { applyData, DATA_FILES } = await import("../js/data.js");
 const got = {}; for (const f of DATA_FILES) got[f] = read("data/" + f + ".json"); applyData(got);
 const { newsItems, isNew, markSeen, TRY, renderNews, renderSheet } = await import("../js/news.js");
-const FILES = { dares: "js/dares.js", cards: "js/cards.js", costume: "js/costume.js", glow: "js/glow.js", teach: "js/games/teach.js", count: "js/games/count.js" };
+// A feature's code; the trick cards' photo button lives in the progress lineup (js/lineup.js) since 1.42.
+const FILES = { dares: "js/dares.js", cards: ["js/cards.js", "js/lineup.js"], costume: "js/costume.js", glow: "js/glow.js", teach: "js/games/teach.js", count: "js/games/count.js" };
 
 test("the six poll features, each with steps and a place to try it", () => {
   const items = newsItems(got.news); assert.deepEqual(items.map(i => i.id), ["dares", "cards", "costume", "glow", "teach", "count"]);
@@ -19,7 +20,7 @@ test("the six poll features, each with steps and a place to try it", () => {
 
 test("steps are factual: every quoted button label is a real label in that feature's code", () => {
   for (const i of newsItems(got.news)) {
-    const code = src(FILES[i.id]);
+    const code = [].concat(FILES[i.id]).map(src).join("\n");
     for (const s of i.steps) for (const [, label] of s.matchAll(/“([^”]+)”/g)) assert.ok(code.includes(label), `${i.id}: “${label}” is not in ${FILES[i.id]}`);
   }
   // Try it uses the features' own openers / game ids

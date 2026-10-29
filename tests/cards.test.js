@@ -74,8 +74,8 @@ test("Me card and binder render in the fake DOM; a newly landed skill pops New c
     for (const st of Object.values(ladder.styles)) assert.ok(area.includes(st.n.replace(/&/g, "&amp;")), "group " + st.n);
     assert.equal((area.match(/class="tcard /g) || []).length, total, "every card in the binder"); assert.ok(area.includes("tcard tc-shiny") && area.includes("https://x/p.jpg"), "shiny card with its photo");
     window.cardOpen("s-donut"); const big = el("#cardsArea").innerHTML;
-    assert.ok(big.includes("tcard tc-shiny big") && big.includes("Change the photo") && big.includes("cardPhoto('s-donut', this)") && big.includes("Miss A"), "big view with the photo button");
-    window.cardOpen("b-plie"); assert.ok(!el("#cardsArea").innerHTML.includes("cardPhoto("), "a locked card has no photo button"); assert.ok(el("#cardsArea").innerHTML.includes("It's waiting for you"));
+    assert.ok(big.includes("tcard tc-shiny big") && big.includes("Miss A") && big.includes('id="tcLineup"') && el("#tcLineup").innerHTML.includes("lineupAdd('s-donut', this)"), "big view with the lineup and its add button");
+    window.cardOpen("b-plie"); assert.ok(!el("#tcLineup").innerHTML.includes("lineupAdd("), "a trick she hasn't started has no add button"); assert.ok(el("#cardsArea").innerHTML.includes("It's waiting for you"));
     window.cardOpen("");
     initCards(); el("#toast").textContent = "";
     await kidCycle("j-iso"); assert.equal(el("#toast").textContent, "", "learning is not a card yet");

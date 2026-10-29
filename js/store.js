@@ -8,7 +8,9 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 43;
+export const SCHEMA_VERSION = 44;
+// Schema 44: the trick progress lineup's frames (js/lineup.js FRAMES), frozen here for the migration.
+export const FRAME_IDS = ["polaroid", "film", "star", "sparkle", "spotlight", "sticker"];
 // Schema 38: the moves Teach It offers (the floor-safe ids of data/moves.json: no cartwheel, walkover, handstand, aerial,
 // bridge or rolls), frozen here for the migration.
 export const TEACH_MOVE_IDS = ["pose","plie","releve","passe","arab","attitude","develop","saute","pirouette","kick","fankick","chasse","pivot","jazzsq","layout","leap","calypso","tilt","reach","contract","spiral","floor","bounce","bodyroll","wave","toprock","freeze","hold"];
@@ -379,7 +381,18 @@ export const MIGRATIONS = {
     return doc;
   },
   // 43 (1.40.0): Hannah's donut roll again (SOLO_V43): step 41's over-one-shoulder note, drill and step become hers.
-  43: (col, id, doc) => { if (col === "dances" && id === "solo") fixSolo43(doc); return doc; }
+  43: (col, id, doc) => { if (col === "dances" && id === "solo") fixSolo43(doc); return doc; },
+  // 44 (1.42.0, trick progress lineup, js/lineup.js): photos.frame = the frame a progress photo is shown in (one of
+  // FRAME_IDS), photos.taken = the local day it is from (YYYY-MM-DD, she can change it), photos.stage = what the trick was
+  // then (learning / clean / checked). Each kept only when valid, else dropped; nothing invented, so an older card photo
+  // keeps working as it is (its day is its upload day, its frame the polaroid).
+  44: (col, id, doc) => {
+    if (col !== "photos") return doc;
+    if (doc.frame !== undefined && !FRAME_IDS.includes(doc.frame)) delete doc.frame;
+    if (doc.taken !== undefined && !(typeof doc.taken === "string" && /^\d{4}-\d{2}-\d{2}$/.test(doc.taken))) delete doc.taken;
+    if (doc.stage !== undefined && !["learning", "clean", "checked"].includes(doc.stage)) delete doc.stage;
+    return doc;
+  }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],

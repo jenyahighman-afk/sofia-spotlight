@@ -12,7 +12,7 @@ const APP_FILES = [
   "./js/media.js", "./js/push-config.js", "./js/remind.js", "./js/ics.js", "./js/seed.js", "./js/backup.js", "./js/family.js", "./js/avatar.js",
   "./js/corrections.js", "./js/streak.js", "./js/badges.js", "./js/skills.js", "./js/reports.js", "./js/grownups.js", "./js/showme.js", "./js/player.js", "./js/cues.js", "./js/stage.js", "./js/pmode.js", "./js/quick.js", "./js/plan.js", "./js/planToday.js", "./js/demos.js", "./js/drills.js", "./js/pet.js", "./js/advent.js", "./js/dares.js", "./js/news.js", "./js/buddy.js", "./js/voice.js", "./js/who.js", "./js/memo.js", "./js/workouts.js", "./js/workouts-core.js", "./js/dayplan.js", "./js/stars.js", "./js/coach.js", "./js/mode.js", "./js/teacher.js", "./js/bites.js", "./js/mind.js", "./js/prompter.js", "./js/palette.js", "./js/runcheck.js", "./js/coachhub.js", "./js/goals.js", "./js/frames.js", "./js/videoframes.js", "./js/pose.js", "./js/posemath.js", "./js/games/mirror.js", "./js/games/along.js", "./js/cards.js",
   "./js/costume.js",
-  "./js/glow.js",
+  "./js/glow.js", "./js/lineup.js",
   "./js/track.js", "./js/cuecards.js", "./js/cuecheck.js", "./js/memorize.js", "./js/season15.js", "./js/studio.js", "./js/howto.js", "./js/trickdrill.js", "./js/dancer.js", "./js/habit.js", "./js/moments.js",
   "./js/games/choreo.js", "./js/games/oops.js", "./js/games/nextmove.js", "./js/games/quest.js", "./js/games/trio.js", "./js/games/compday.js", "./js/games/sparkle.js",
   "./js/games/teach.js", "./js/games/count.js",

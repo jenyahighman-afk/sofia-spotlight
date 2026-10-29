@@ -3,21 +3,19 @@
 // landed yet show as greyed cards with their name, so she can see what's next. Each card shows its style, its number in
 // that style's ladder ("No. 3 of 10", straight from the order in skills.json), the Trick Quest gems it has and the date it
 // was earned (skills.at for clean, skills.checkedAt for teacher-checked). Nothing extra is stored for the cards themselves:
-// they are read from the `skills` collection. The one stored field is the optional photo of her doing the trick: a
-// photos document carries `card: skillId` (schema 35). Pure parts up top (tested in Node); the Me card and binder below.
-import { $, esc, toast, uid, expose, fmt } from "./util.js";
-import { S, storeSet } from "./store.js";
+// they are read from the `skills` collection. The stored field is the photo link: a photos document carries
+// `card: skillId` (schema 35); the newest linked photo is the card's art and every linked photo is in the card's progress
+// lineup (js/lineup.js, under the big card). Pure parts up top (tested in Node); the Me card and binder below.
+import { $, esc, toast, expose, fmt } from "./util.js";
+import { S } from "./store.js";
 import { SKILLS } from "./data.js";
 import { skillState, onSkillState, findSkill, inFocus } from "./skills.js";
 import { openStage } from "./stage.js";
-import { media, friendlyError } from "./sync.js";
-import { resizeImage } from "./media.js";
+import { CARD_ID_RE, normalizeCardLink, cardPhotos, lineupCounts, renderLineup, resetLineup } from "./lineup.js";
+export { CARD_ID_RE, normalizeCardLink, cardPhotos };
 
 // Card colours per style (presentation only). Unknown styles fall back to coral.
 export const CARD_COLORS = { solo: "#FF5C93", ballet: "#F7A8C6", jazz: "#E0A93A", contemporary: "#7FB3E6", acro: "#B98BEF", hiphop: "#5FB89A" };
-// A card id is a skill id: lower-case letters, digits and dashes (same as the onclick-safe pattern).
-export const CARD_ID_RE = /^[a-z0-9-]{1,40}$/;
-export const normalizeCardLink = (v) => typeof v === "string" && CARD_ID_RE.test(v) ? v : null;
 const TIER = { notyet: "locked", learning: "locked", clean: "card", checked: "shiny" };
 const RANK = { locked: 0, card: 1, shiny: 2 };
 export const tierOf = (state) => TIER[state] || "locked";
@@ -42,15 +40,6 @@ export function binderGroups(cards){
   const g = []; for (const c of cards) { let p = g.find(x => x.style === c.style); if (!p) g.push(p = { style: c.style, styleName: c.styleName, ic: c.ic, color: c.color, cards: [], earned: 0 }); p.cards.push(c); if (c.tier !== "locked") p.earned++; }
   return g;
 }
-// skillId → the newest photo linked to that card (not deleted, not a video, has a link).
-export function cardPhotos(photos = S.photos){
-  const out = {};
-  for (const [id, p] of Object.entries(photos || {})) {
-    const k = p && normalizeCardLink(p.card); if (!k || p.deleted || p.kind === "video" || !p.url) continue;
-    if (!out[k] || String(p.at || "") > String(out[k].at || "")) out[k] = { ...p, id };
-  }
-  return out;
-}
 // What a state change earns: "card" (newly landed clean), "shiny" (newly teacher-checked), else null.
 export function cardMoment(prev, next){ const a = tierOf(prev), b = tierOf(next); return RANK[b] > RANK[a] ? b : null; }
 
@@ -68,9 +57,9 @@ export function cardHTML(c, { big = false, photo = null } = {}){
 
 // ---------- Me card ----------
 export function renderCardsCard(){
-  const el = $("#meCards"); if (!el) return; const cards = cardList(); const n = cardCounts(cards);
+  const el = $("#meCards"); if (!el) return; const cards = cardList(); const n = cardCounts(cards); const shots = Object.values(lineupCounts()).reduce((a, b) => a + b, 0);
   el.innerHTML = `<div class="row"><h3 class="grow">🃏 My trick cards</h3><span class="chip violet">${n.earned} / ${n.total}</span></div>
-    <p class="small muted">Land a trick clean and its card is yours. Teacher-checked tricks turn shiny ✨${n.shiny ? ` · ${n.shiny} shiny` : ""}</p>
+    <p class="small muted">Land a trick clean and its card is yours. Teacher-checked tricks turn shiny ✨${n.shiny ? ` · ${n.shiny} shiny` : ""}${shots ? ` · 📷 ${shots} progress photo${shots === 1 ? "" : "s"}` : ""}</p>
     <div class="row"><button class="btn sm coral" onclick="openCards()">🃏 Open my binder</button></div>`;
   const a = $("#cardsArea"); if (a && a.style.display === "block") renderBinder(); // the binder is open: keep it live
 }
@@ -89,7 +78,8 @@ export function renderBinder(){
     el.innerHTML = `<div class="row"><button class="btn sm ghost" onclick="cardOpen('')">← All cards</button></div>
       <div class="tc-bigwrap">${cardHTML(c, { big: true, photo: ph })}</div>
       <p class="small" style="text-align:center">${line}</p>${c.tip ? `<p class="small muted" style="text-align:center">💡 ${esc(c.tip)}</p>` : ""}
-      ${locked ? "" : `<div class="row" style="justify-content:center"><label class="btn sm aqua">📷 ${ph ? "Change the photo" : "Add a photo"}<input type="file" accept="image/*" hidden onchange="cardPhoto('${c.id}', this)"></label></div><p class="small muted" style="text-align:center">A photo of you doing the trick goes on the card (and in Photos).</p>`}`;
+      <div id="tcLineup"></div>`;
+    renderLineup(c); // the progress lineup (js/lineup.js) fills #tcLineup: add a photo from learning on, frames, first vs now
     return;
   }
   const n = cardCounts(cards);
@@ -97,21 +87,10 @@ export function renderBinder(){
     + binderGroups(cards).map(g => `<h4 class="tc-group" style="--c:${g.color}">${g.ic} ${esc(g.styleName)} <span class="small muted">${g.earned}/${g.cards.length}</span></h4><div class="tc-grid">${g.cards.map(x => cardHTML(x, { photo: photos[x.id] })).join("")}</div>`).join("");
 }
 function show(id){ view = id || ""; renderBinder(); const b = $("#stageBody"); if (b) b.scrollTop = 0; }
-async function addPhoto(id, input){
-  const f = input && input.files && input.files[0]; if (input) input.value = ""; if (!f || !findSkill(id)) return;
-  try {
-    toast("Adding your photo…", 6000); const { blob, w, h } = await resizeImage(f); const pid = uid();
-    const { path, url } = await media.upload("photos", pid, blob, { contentType: "image/jpeg", name: f.name });
-    // One photo per card: older ones keep living in Photos, they just leave the card.
-    for (const [oid, p] of Object.entries(S.photos || {})) if (p && p.card === id) { const { card, ...rest } = p; await storeSet("photos", oid, rest); }
-    await storeSet("photos", pid, { path, url, cap: "🃏 " + findSkill(id).n, dance: "", w, h, size: blob.size, card: id, at: new Date().toISOString() });
-    toast("On the card! 📷"); renderBinder();
-  } catch (e) { console.warn(e); toast("Couldn't add it: " + friendlyError(e), 3500); }
-}
 // "New card!": a skill that newly reaches clean or teacher-checked pops a toast.
 function onState(id, prev, next){ const m = cardMoment(prev, next); if (!m) return; const s = findSkill(id); toast(m === "shiny" ? `✨ Shiny card! ${s ? s.n : ""}` : `🃏 New card! ${s ? s.n : ""}`, 2600); }
 export function initCards(){
   onSkillState(onState);
-  document.addEventListener("stageclosed", () => { const a = $("#cardsArea"); if (a) a.style.display = "none"; view = ""; });
+  document.addEventListener("stageclosed", () => { const a = $("#cardsArea"); if (a) a.style.display = "none"; view = ""; resetLineup(); });
 }
-expose({ openCards, cardOpen: show, cardPhoto: addPhoto });
+expose({ openCards, cardOpen: show });
