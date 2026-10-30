@@ -63,6 +63,7 @@ const PHRASES = {
   "mind-skills-pre-stage-routine-comp-day-fuel": "smell the flower",
   "practice-player": "practice player",
   "corrections-tracker": "＋ Note",
+  "progress-lineup": "your photos line up",
   "stars": "stars and games",
 };
 // Left out on purpose, with one word why: grown-up (Mom's side or set-up), self-explaining (she finds it by tapping),
@@ -77,7 +78,7 @@ const ALLOW = {
   "quick-sessions": "self-explaining", "run-check": "grown-up", "trick-quest": "self-explaining", "updates": "self-explaining",
   "my-workouts": "self-explaining", "daily-reminder": "grown-up", "moments": "self-explaining", "drill-box": "grown-up",
   "dance-with-a-friend": "self-explaining", "dance-pet": "self-explaining", "talking-helper": "self-explaining",
-  "whats-new": "self-explaining", "trick-cards": "self-explaining", "progress-lineup": "self-explaining",
+  "whats-new": "self-explaining", "trick-cards": "self-explaining",
   "costume-designer": "self-explaining", "growing-up-flipbook": "self-explaining", "teach-it": "self-explaining",
   "count-along": "self-explaining", "daily-habit": "self-explaining", "today-in-bites": "self-explaining",
   "scrolling-lines": "self-explaining", "colors": "self-explaining", "seasonal-themes": "self-explaining", "trick-clips": "grown-up",
