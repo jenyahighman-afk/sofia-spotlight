@@ -77,8 +77,13 @@ export function pickSeason(date, { settings = {}, peek = null } = {}){
   return seasonFor(date, { birthday: settings.birthday });
 }
 export const iconFor = (id) => `icons/season/${THEMES[id] ? id : "default"}-180.png`;
-// The fliers a theme adds over every screen (Halloween: three bats and a little witch on her broom), or "".
-export function decoHtml(id){ return id === "halloween" ? '<span class="hw-bat b1"></span><span class="hw-bat b2"></span><span class="hw-bat b3"></span><span class="hw-witch"></span>' : ""; }
+// The fliers a theme adds over every screen (Halloween: three bats and a little witch on her broom; Fall: four leaves
+// drifting down and a turkey strolling along the bottom), or "".
+const DECO = {
+  halloween: '<span class="hw-bat b1"></span><span class="hw-bat b2"></span><span class="hw-bat b3"></span><span class="hw-witch"></span>',
+  fall: '<span class="fl-leaf l1"></span><span class="fl-leaf l2"></span><span class="fl-leaf l3"></span><span class="fl-leaf l4"></span><span class="fl-turkey"></span>',
+};
+export function decoHtml(id){ return DECO[id] || ""; }
 
 // ---- DOM ----
 const PEEK = "spotlight:seasonpeek", SHOWER = "spotlight:seasonshower";

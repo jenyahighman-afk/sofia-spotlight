@@ -69,7 +69,7 @@ test("every theme has its button (SVG + an opaque 180 px PNG), the default too, 
 test("Halloween everywhere (1.51.0): webs, spiders, bats and witch hats on every screen, decoration only, calm with reduced motion", async () => {
   const { decoHtml } = await import("../js/seasons.js");
   const h = decoHtml("halloween"); assert.equal((h.match(/class="hw-bat /g) || []).length, 3, "three bats"); assert.match(h, /class="hw-witch"/, "and a little witch on her broom");
-  for (const id of Object.keys(THEMES)) if (id !== "halloween") assert.equal(decoHtml(id), "", id + ": no fliers");
+  for (const id of Object.keys(THEMES)) if (id !== "halloween" && id !== "fall") assert.equal(decoHtml(id), "", id + ": no fliers");
   for (const f of ["web", "web-light", "web-hero", "spider", "spider-light", "bat", "bat-light", "hat", "witch", "strand", "night", "pattern"]) {
     assert.ok(existsSync(new URL(`../icons/season/halloween/${f}.svg`, import.meta.url)), f + ".svg"); assert.ok(src("sw.js").includes(`"./icons/season/halloween/${f}.svg"`), f + " is precached");
   }
@@ -79,4 +79,20 @@ test("Halloween everywhere (1.51.0): webs, spiders, bats and witch hats on every
   assert.ok(rules.length >= 10 && rules.every(r => r.includes("pointer-events:none") || r.includes("display:inline-block")), "every decoration lets taps through");
   assert.match(css, /prefers-reduced-motion:reduce\)\{\.season-deco\{display:none\}/); assert.match(css, /body\.modal \.season-deco\{display:none\}/);
   const btn = src("icons/season/halloween.svg"); assert.ok(btn.includes("#FF5C93") && btn.includes("#4B2A6E") && btn.includes("#B79BE6"), "the button wears the witch hat with her pink band, and the lavender spider");
+});
+
+test("Fall everywhere (1.53.0): leaf sprigs, acorns, a leaf after each title, a pink beanie, the garland and its squirrel, falling leaves and a turkey; decoration only, calm with reduced motion", async () => {
+  const { decoHtml } = await import("../js/seasons.js");
+  const h = decoHtml("fall"); assert.equal((h.match(/class="fl-leaf /g) || []).length, 4, "four falling leaves"); assert.match(h, /class="fl-turkey"/, "and a turkey strolling by"); assert.doesNotMatch(h, /hw-/, "none of Halloween's");
+  for (const f of ["sprig", "leaf", "leaf-red", "leaf-gold", "leaf-pink", "acorn", "squirrel", "turkey", "beanie", "garland", "harvest", "branch-hero", "pattern"]) {
+    assert.ok(existsSync(new URL(`../icons/season/fall/${f}.svg`, import.meta.url)), f + ".svg"); assert.ok(src("sw.js").includes(`"./icons/season/fall/${f}.svg"`), f + " is precached");
+    assert.doesNotMatch(src(`icons/season/fall/${f}.svg`), /rgba\(/, f + ": solid colors with opacity, no rgba (MuPDF and some renderers draw rgba strokes black)");
+  }
+  const css = src("css/app.css"); const F = 'html[data-season="fall"]';
+  for (const sel of [`${F} header.hero{background:url(`, `${F} .wrap{background-image:`, `${F} .card:before`, `${F} .card h3:after`, `${F} nav.tabs:before`, `${F} nav.tabs:after`, `${F} nav.tabs button:last-child:before`, `${F} .buddy-pet:before`, `${F} .pet-stage:before`, `${F} .stage,${F} .gate{background-image`, `${F} .stage:after{top:env(safe-area-inset-top,0px);right:54px`]) assert.ok(css.includes(sel), sel);
+  assert.ok(!css.includes(`${F} .stage-top:before`), "nothing over the sheet's ✕");
+  const block = css.slice(css.indexOf("/* Fall everywhere"), css.indexOf("/* Fall's fliers")); const rules = block.match(/:(before|after)\{content:""[^}]*\}/g) || [];
+  assert.ok(rules.length >= 10 && rules.every(r => r.includes("pointer-events:none") || r.includes("display:inline-block")), "every decoration lets taps through");
+  assert.match(css, /\.fl-turkey:before\{content:"";position:absolute;inset:0;pointer-events:none/); assert.match(css, /prefers-reduced-motion:reduce\)\{html\[data-season="fall"\] \.card:after/);
+  const beanie = src("icons/season/fall/beanie.svg"); assert.ok(beanie.includes("#FF5C93"), "the beanie is her pink");
 });
