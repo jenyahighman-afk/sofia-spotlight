@@ -78,10 +78,12 @@ export function pickSeason(date, { settings = {}, peek = null } = {}){
 }
 export const iconFor = (id) => `icons/season/${THEMES[id] ? id : "default"}-180.png`;
 // The fliers a theme adds over every screen (Halloween: three bats and a little witch on her broom; Fall: four leaves
-// drifting down and a turkey strolling along the bottom), or "".
+// drifting down and a turkey strolling along the bottom; Christmas: five snowflakes drifting down and Santa's sleigh
+// flying across), or "".
 const DECO = {
   halloween: '<span class="hw-bat b1"></span><span class="hw-bat b2"></span><span class="hw-bat b3"></span><span class="hw-witch"></span>',
   fall: '<span class="fl-leaf l1"></span><span class="fl-leaf l2"></span><span class="fl-leaf l3"></span><span class="fl-leaf l4"></span><span class="fl-turkey"></span>',
+  christmas: '<span class="xm-snow s1"></span><span class="xm-snow s2"></span><span class="xm-snow s3"></span><span class="xm-snow s4"></span><span class="xm-snow s5"></span><span class="xm-sleigh"></span>',
 };
 export function decoHtml(id){ return DECO[id] || ""; }
 

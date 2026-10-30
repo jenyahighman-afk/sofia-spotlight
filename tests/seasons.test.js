@@ -69,7 +69,7 @@ test("every theme has its button (SVG + an opaque 180 px PNG), the default too, 
 test("Halloween everywhere (1.51.0): webs, spiders, bats and witch hats on every screen, decoration only, calm with reduced motion", async () => {
   const { decoHtml } = await import("../js/seasons.js");
   const h = decoHtml("halloween"); assert.equal((h.match(/class="hw-bat /g) || []).length, 3, "three bats"); assert.match(h, /class="hw-witch"/, "and a little witch on her broom");
-  for (const id of Object.keys(THEMES)) if (id !== "halloween" && id !== "fall") assert.equal(decoHtml(id), "", id + ": no fliers");
+  for (const id of Object.keys(THEMES)) if (!["halloween", "fall", "christmas"].includes(id)) assert.equal(decoHtml(id), "", id + ": no fliers");
   for (const f of ["web", "web-light", "web-hero", "spider", "spider-light", "bat", "bat-light", "hat", "witch", "strand", "night", "pattern"]) {
     assert.ok(existsSync(new URL(`../icons/season/halloween/${f}.svg`, import.meta.url)), f + ".svg"); assert.ok(src("sw.js").includes(`"./icons/season/halloween/${f}.svg"`), f + " is precached");
   }
@@ -95,4 +95,24 @@ test("Fall everywhere (1.53.0): leaf sprigs, acorns, a leaf after each title, a 
   assert.ok(rules.length >= 10 && rules.every(r => r.includes("pointer-events:none") || r.includes("display:inline-block")), "every decoration lets taps through");
   assert.match(css, /\.fl-turkey:before\{content:"";position:absolute;inset:0;pointer-events:none/); assert.match(css, /prefers-reduced-motion:reduce\)\{html\[data-season="fall"\] \.card:after/);
   const beanie = src("icons/season/fall/beanie.svg"); assert.ok(beanie.includes("#FF5C93"), "the beanie is her pink");
+});
+
+test("Christmas everywhere (1.55.0): holly, ornaments and bells, a candy cane after each title, a Santa hat, twinkling lights and a snowman, the tree, snowflakes and the sleigh; decoration only, calm with reduced motion", async () => {
+  const { decoHtml } = await import("../js/seasons.js");
+  const h = decoHtml("christmas"); assert.equal((h.match(/class="xm-snow /g) || []).length, 5, "five snowflakes"); assert.match(h, /class="xm-sleigh"/, "and Santa's sleigh"); assert.doesNotMatch(h, /hw-|fl-/, "none of Halloween's or Fall's");
+  assert.equal(seasonFor("2026-12-01"), "christmas"); assert.equal(seasonFor("2026-12-26"), "christmas"); assert.equal(seasonFor("2026-12-27"), "newyear", "the dress ends with Christmas");
+  for (const f of ["holly", "ornament", "ornament-red", "bell", "cane", "hat", "lights", "lights-still", "snowman", "tree", "bough-hero", "snowflake", "snowflake-pink", "snowflake-lilac", "sleigh", "pattern"]) {
+    assert.ok(existsSync(new URL(`../icons/season/christmas/${f}.svg`, import.meta.url)), f + ".svg"); assert.ok(src("sw.js").includes(`"./icons/season/christmas/${f}.svg"`), f + " is precached");
+    assert.doesNotMatch(src(`icons/season/christmas/${f}.svg`), /rgba\(/, f + ": solid colors with opacity, no rgba");
+  }
+  assert.match(src("icons/season/christmas/lights.svg"), /<animate /, "the lights twinkle"); assert.doesNotMatch(src("icons/season/christmas/lights-still.svg"), /<animate/, "the still string doesn't");
+  const css = src("css/app.css"); const X = 'html[data-season="christmas"]';
+  for (const sel of [`${X} header.hero{background:url(`, `${X} .wrap{background-image:`, `${X} .card:before`, `${X} .card h3:after`, `${X} nav.tabs:before`, `${X} nav.tabs:after`, `${X} nav.tabs button:last-child:before`, `${X} .buddy-pet:before`, `${X} .pet-stage:before`, `${X} .stage,${X} .gate{background-image`, `${X} .stage:after{top:env(safe-area-inset-top,0px);left:calc(50% - 11px)`]) assert.ok(css.includes(sel), sel);
+  assert.ok(!css.includes(`${X} .stage-top:before`), "nothing over the sheet's ✕");
+  assert.ok(css.includes(`${X} .stage:after,${X} .gate:after{z-index:-1}`) && new RegExp(`${X.replace(/[[\]"]/g, "\\$&")} \\.stage:before,[^{]*\\.gate:before\\{[^}]*z-index:-1\\}`).test(css), "the sheet's holly and ornament sit behind its buttons and chips");
+  const block = css.slice(css.indexOf("/* Christmas everywhere"), css.indexOf("/* Christmas's fliers")); const rules = block.match(/:(before|after)\{content:""[^}]*\}/g) || [];
+  assert.ok(rules.length >= 10 && rules.every(r => r.includes("pointer-events:none") || r.includes("display:inline-block")), "every decoration lets taps through");
+  assert.match(css, /\.xm-sleigh:before\{content:"";position:absolute;inset:0;pointer-events:none/);
+  assert.match(css, /prefers-reduced-motion:reduce\)\{html\[data-season="christmas"\] \.card:after[^}]*\{animation:none\} html\[data-season="christmas"\] nav\.tabs:before\{background-image:url\(\.\.\/icons\/season\/christmas\/lights-still\.svg\)\}/, "with reduced motion nothing swings and the lights stay still");
+  assert.ok(src("icons/season/christmas/hat.svg").includes("#FF5C93") && src("icons/season/christmas/holly.svg").includes("#FF5C93"), "her pink: a berry on the Santa hat's brim and on the holly");
 });
