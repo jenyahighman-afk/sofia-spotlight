@@ -12,6 +12,7 @@ import { computeStreak, dayCounts, planDone, skipsLeft } from "../streak.js";
 import { cardsFor, moveOfDay, TIRED, KNEES } from "../habit.js";
 import { renderSeasonCard, trickFocus, memoryKnees, nextCheckpoint, checkpointTicks, activePlan } from "../season15.js";
 import { planFor } from "../planToday.js";
+import { planSummary } from "../plan.js";
 import { studioOn } from "../studio.js";
 import { dayKindNow, homeLineNow, weekdayOf } from "../daykind.js";
 import { openPracticeMode } from "../pmode.js";
@@ -70,7 +71,8 @@ function renderHome(){
   // classes and, on Monday, "no dancing tonight".
   let what, sub;
   if(cls.length){ what="🏫 Studio day"; sub=`<div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div>${kind==="watch"?`<div class="today-sub">🏠 Hannah's videos, then picture the solo in the car. No dancing tonight.</div>`:""}`; }
-  else if(hp){ what="🏠 Home practice"; sub=`<div class="today-sub">${esc(hp)}</div>`; }
+  // A home day says what its session holds (plan.planSummary), not the weekday's old line from home-days.json.
+  else if(hp){ what="🏠 Home practice"; sub=`<div class="today-sub">${esc(planSummary(plan)||hp)}</div>`; }
   else { what="🌙 Rest day"; sub=`<div class="today-sub">Stretch a little if you want.</div>`; }
   const dayKind=kind==="watch"?"📹 Watch day":kind==="memory"?"🏫 Studio day":home?"🏠 Home day":"🌙 Rest day";
   const ctx={practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today}; const streak=computeStreak(ctx); const skips=skipsLeft(ctx);

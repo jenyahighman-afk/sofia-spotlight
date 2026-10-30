@@ -98,6 +98,28 @@ export function buildPlan(opts){
   return items;
 }
 export const planTotal = (items) => items.length;
+// What a day's session holds, in a few short words, for the Today card's subtitle on a home day (the Oct 28 review: the
+// subtitle came from data/home-days.json — Friday said "Technique + run" while its session also had strength, flex, the
+// knee block and a film item). The parts in session order, each once; strength, flex and technique as one group; the solo
+// and trio runs as "solo + trio"; the warm-up left out (every session has one). "" for an empty list.
+const PART = { core: "strength", legs: "strength", str: "strength", flex: "flex", tech: "technique", fix: "your fix", aerial: "aerial", improv: "improv", listen: "🎧 judges", watch: "Hannah's videos" };
+const PART_ID = { "knees-block": "knees", "solo-run": "solo", "trio-mark": "trio", "film-chunk": "film", "film-review": "Sunday review", imagery: "picture it", "aud-pickup": "pick-up drill",
+  "mem-top": "solo from the top", "mem-chunk": "this week's chunk", "mem-predict": "Pause & Predict", "mem-picture": "picture it", "watch-picture": "picture it in the car" };
+const BASE = ["strength", "flex", "technique"];
+export function planSummary(items){
+  const parts = [];
+  for (const it of Array.isArray(items) ? items : []) {
+    if (!it || it.kind === "warm" || /^mem-warm$/.test(it.id)) continue;
+    const p = PART_ID[it.id] || (it.kind === "trick" ? "trick" : it.kind === "mind" ? "picture it" : PART[it.kind]) || ""; if (p && !parts.includes(p)) parts.push(p);
+  }
+  const out = []; const base = BASE.filter(b => parts.includes(b));
+  for (const p of parts) {
+    if (BASE.includes(p)) { if (p === base[0]) out.push(base.join(", ")); continue; }
+    if (p === "trio" && parts.includes("solo")) continue; if (p === "solo") { out.push(parts.includes("trio") ? "solo + trio" : "solo"); continue; }
+    out.push(p);
+  }
+  const s = out.join(" · "); return s ? s[0].toUpperCase() + s.slice(1) : "";
+}
 
 // Per-day customisation stored on the practice record: custom = { swap: {fromId: toId}, add: [ids], drop: [ids] }.
 // Swaps and adds only take items from the same pool kind; unknown ids are ignored so stale data can't break the plan.
