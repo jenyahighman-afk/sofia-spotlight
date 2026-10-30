@@ -49,7 +49,7 @@ export const shotScore = (mine, gold) => { const d = featureDistance(mine, gold)
 
 // iPhone: a sound can only start inside a tap, so the music element is poked on the tap and really played later.
 function unlock(a){ try { const p = a.play(); if (p && p.then) p.then(() => { if (!a._armed) a.pause(); }).catch(() => {}); } catch (e) {} }
-const Q = { skill: null, dance: null, stations: [], i: 0, bars: null, timer: 0, left: 0, audio: null, stream: null, shot: null, busy: false, worked: 0 };
+const Q = { skill: null, dance: null, stations: [], i: 0, bars: null, timer: 0, left: 0, audio: null, stream: null, shot: null, busy: false, worked: 0, spotted: new Set() };
 function chime(f = 1046){ try { const ctx = Q.ctx || (Q.ctx = new (window.AudioContext || window.webkitAudioContext)()); const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f; g.gain.value = 0.25; o.connect(g); g.connect(ctx.destination); const t = ctx.currentTime; o.start(t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.3); o.stop(t + 0.35); } catch (e) {} }
 const fmt = (s) => Math.floor(s / 60) + ":" + String(Math.max(0, s) % 60).padStart(2, "0");
 const barsHtml = (bars) => `<div class="qs-bars">${BARS.map(k => `<div class="qs-bar"><span>${BAR_ICON[k]}</span><div class="qs-track"><div class="qs-fill" style="width:${bars[k]}%"></div></div><small>${bars[k]}</small></div>`).join("")}</div>`;
@@ -59,12 +59,21 @@ async function saveBars(){ const rec = S.skills[Q.skill.id] || { id: Q.skill.id,
 // ---- boss pick ----
 function qsStart(){
   const st = (SKILLS.styles || {}).solo; if (!st) return toast("No tricks yet");
-  Q.dance = dances().find(d => d.id === "solo") || {}; stopAll();
+  Q.dance = dances().find(d => d.id === "solo") || {}; Q.spotted = new Set(); stopAll();
   openStage("⚔️ Trick Quest", [$("#qsArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`);
   $("#qsArea").innerHTML = `<p class="small muted">Pick a boss. Empty its three bars to win a gem.</p>${st.skills.map(k => { const q = questOf(S.skills[k.id]); const bars = q.bars || seedBars(lastTrickReview(S.reviews, k.n)); return `<button class="qs-boss" onclick="qsPick('${k.id}')"><b>${esc(k.n)}</b> <span class="small">${"💎".repeat(Math.min(5, q.gems.length))}${skillState(S.skills, k.id) === "clean" || skillState(S.skills, k.id) === "checked" ? " ✓" : ""}</span>${barsHtml(bars)}</button>`; }).join("")}`;
 }
+// Acro bosses (the cartwheel, the walkover, the handstand, the donut roll) ask first: mat down and a grown-up watching
+// (the Oct 28 review: "Slow five ×5" could hand her the walkover alone at home). One tap per boss each time Quest opens.
+export const ACRO_RE = /cartwheel|walkover|handstand|donut|aerial|round-?off/i;
+export const needsGrownUp = (skill) => !!skill && ACRO_RE.test(String(skill.n || "") + " " + String(skill.id || ""));
+function spotGate(k){
+  $("#qsArea").innerHTML = `<div class="pm-item qs-spot"><div class="pm-kind">🤸</div><div class="pm-text">${esc(k.n)} is acro.</div><div class="small" style="margin-top:6px">Mat down, and a grown-up watching. No grown-up? Pick another boss today.</div></div>`;
+  stageActions(`<button class="btn ghost" onclick="qsStart()">‹ Another boss</button><button class="btn coral big-btn grow" onclick="qsSpotted('${k.id}')">✓ Mat + grown-up here</button>`);
+}
+function qsSpotted(id){ Q.spotted.add(id); qsPick(id); }
 function qsPick(id){
-  const k = findSkill(id); if (!k) return; Q.skill = k; Q.worked = 0; const q = questOf(S.skills[id]); Q.bars = q.bars || seedBars(lastTrickReview(S.reviews, k.n)); Q.stations = buildStations(k, Q.dance, openFor(S.corrections, "solo")); Q.i = 0; station();
+  const k = findSkill(id); if (!k) return; if (needsGrownUp(k) && !Q.spotted.has(k.id)) return spotGate(k); Q.skill = k; Q.worked = 0; const q = questOf(S.skills[id]); Q.bars = q.bars || seedBars(lastTrickReview(S.reviews, k.n)); Q.stations = buildStations(k, Q.dance, openFor(S.corrections, "solo")); Q.i = 0; station();
 }
 // A clip or photo of the trick (a saved social-media clip, or Sofia doing it right), kept with the move pictures.
 // Under it, the drill box's saved posts for this trick (js/drills.js), when there are any.
@@ -128,4 +137,4 @@ async function finish(){
 }
 function stopAll(){ clearInterval(Q.timer); if (Q.audio) { try { Q.audio.pause(); Q.audio.src = ""; } catch (e) {} Q.audio = null; } if (Q.stream) { Q.stream.getTracks().forEach(t => t.stop()); Q.stream = null; } }
 document.addEventListener("stageclosed", stopAll);
-expose({ qsStart, qsPick, qsDone: done, qsSkip: skip, qsShot: shot, qsGold: makeGold, qsFinish: finish });
+expose({ qsStart, qsPick, qsSpotted, qsDone: done, qsSkip: skip, qsShot: shot, qsGold: makeGold, qsFinish: finish });

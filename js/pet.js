@@ -5,9 +5,10 @@
 // already keeps; only the pet's name and fur colour are stored (settings.pet = { name, fur }, schema 32).
 // Content (levels, moves, outfits, lines) lives in data/pet.json. Pure parts up top (tested in Node).
 import { $, esc, todayStr, dateStr, expose, toast } from "./util.js";
-import { S, setSettings } from "./store.js";
-import { PET, PRACTICE_ITEMS } from "./data.js";
-import { planDays, planDone } from "./streak.js";
+import { S, setSettings, events } from "./store.js";
+import { PET, PRACTICE_ITEMS, CLASSES } from "./data.js";
+import { planDays, planDone, isPaused } from "./streak.js";
+import { dayKindNow } from "./daykind.js";
 import { todayMode } from "./mode.js";
 import { openStage } from "./stage.js";
 
@@ -23,7 +24,8 @@ export const earnedOutfits = (days, pet = PET) => (pet.outfits || []).filter(o =
 // What it wears: the show costume in show week, else the newest outfit it earned (leg warmers always stay on).
 export function outfitFor(days, showWeek, pet = PET){ if (showWeek) { const s = (pet.outfits || []).find(o => o.show); if (s) return s; } const e = earnedOutfits(days, pet); return e[e.length - 1] || null; }
 // Mood: "danced" once today counts; "hello" for a brand-new pet (no practice day yet), so it never meets her asleep;
-// "nap" after a day with no practice (until today's first bite); otherwise "ready".
+// "nap" after a day with no practice (until today's first bite); otherwise "ready". Only a home day the plan was missed
+// counts as "no practice" (yesterdayOk below): after a studio day, Monday's watch day or a school break it is "ready".
 export function petMood({ todayDone, yesterdayDone, days = 1 }){ return todayDone ? "danced" : !days ? "hello" : yesterdayDone ? "ready" : "nap"; }
 // The move it just learned today (the practice day that reached a move's `at`), else null.
 export function justLearned(days, todayDone, pet = PET){ if (!todayDone) return null; return (pet.moves || []).find(m => m.at > 0 && m.at === days) || null; }
@@ -67,9 +69,13 @@ export function petSVG({ fur, outfit = null, nap = false, scale = 1 } = {}){
 
 // ---------- today ----------
 const yesterday = (date) => { const d = new Date(date + "T00:00:00"); d.setDate(d.getDate() - 1); return dateStr(d); };
+// Did yesterday leave the pet awake? Yes when her solo was danced (plan done), or when yesterday asked for no home session:
+// a studio day (Monday's watch day, the memory-run days), a rest day, a school break. The review (Oct 28): it napped on
+// Tuesday after a Monday with three classes. Pure: kind = daykind.dayKind for that date, paused = streak.isPaused.
+export const yesterdayOk = (rec, kind, paused = false) => planDone(rec) || kind !== "home" || !!paused;
 export function petState(date = todayStr()){
   const days = planDays(S.practice); // days the plan was done (her solo danced), not just streak-safe days
-  const todayDone = planDone(S.practice[date]), yesterdayDone = planDone(S.practice[yesterday(date)]);
+  const y = yesterday(date); const todayDone = planDone(S.practice[date]), yesterdayDone = yesterdayOk(S.practice[y], dayKindNow(y), isPaused(y, CLASSES, events()));
   const showWeek = todayMode().mode === "comp"; const mood = petMood({ todayDone, yesterdayDone, days });
   const moves = learnedMoves(days); const move = moves[moves.length - 1] || null; const ps = petSettings();
   return { ...ps, days, todayDone, showWeek, mood, level: petLevel(days), moves, move, next: nextMove(days), outfit: outfitFor(days, showWeek), learned: justLearned(days, todayDone) };

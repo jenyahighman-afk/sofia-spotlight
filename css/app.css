@@ -742,3 +742,7 @@ html[data-season="fall"] .gate:after{right:auto;left:30px}
 @keyframes fl-stroll{0%{transform:translateX(0)}30%,100%{transform:translateX(calc(100vw + 160px))}}
 @keyframes fl-waddle{from{transform:rotate(-5deg) translateY(0)}to{transform:rotate(5deg) translateY(-3px)}}
 @media (prefers-reduced-motion:reduce){html[data-season="fall"] .card:after,html[data-season="fall"] .modal-card:after,html[data-season="fall"] nav.tabs:after,html[data-season="fall"] .stage:after,html[data-season="fall"] .gate:after{animation:none}}
+/* 🎬 Film it (js/film.js, 1.54.0): film a chunk, watch it back, film again; the acro check in Trick Quest */
+.film video{display:block;width:100%;max-height:60vh;margin:8px 0 6px;border-radius:12px;background:#000}
+.film .film-cam{display:block;width:100%;text-align:center;margin:10px 0} .film-btns{gap:8px;margin-top:6px;flex-wrap:nowrap} .film-btns .film-cam{flex:1 1 auto;width:auto;margin:0} .film-btns .btn{white-space:nowrap}
+.qs-spot{text-align:center}

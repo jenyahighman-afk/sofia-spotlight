@@ -49,7 +49,7 @@ export function toolsFor(it, vids = {}){
   else if (id === "judges-trio") { push({ label: "🎧 Judges' feedback", go: "showPage('dances');judgesOpen('trio')" }); push({ label: "📝 Write the fixes", go: "showPage('dances');noteOpen('trio')" }); }
   else if (id === "mem-chunk") { push({ label: "🧩 Chunks", go: "openMemorize('solo','chunks')" }); push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); }
   else if (id === "mem-predict") push({ label: "⏸ Pause & Predict", go: "openMemorize('solo','predict')" });
-  else if (id === "film-chunk") { push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); push({ label: "🧩 Chunks", go: "openMemorize('solo','chunks')" }); }
+  else if (id === "film-chunk") { push({ label: "🎬 Film it", go: "openFilm()" }); push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); push({ label: "🧩 Chunks", go: "openMemorize('solo','chunks')" }); }
   // The Sunday film review (Build 3): the sheet — the last run, what went well, ✓ It showed / Not yet, a note — one tap away.
   else if (id === "film-review") { push({ label: "🎬 Sunday sheet", go: "openSunday()" }); push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); }
   else if (id === "trio-mark" || dance === "trio") { push({ label: "🎵 Trio music", go: "openPlayer('trio')" }); push(vid("trio", /run/i, 0)); }

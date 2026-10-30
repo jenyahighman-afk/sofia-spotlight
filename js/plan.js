@@ -83,7 +83,9 @@ export function buildPlan(opts){
   const nAerial = (pool.aerialByWeekday || {})[String(wd)] || 0;
   if (nAerial && !comp && opts.focus !== "knees") { const done = new Set(opts.aerialDone || []); const open = (opts.aerial || []).filter(a => !done.has(a.id) && a.section !== "In class only");
     const want = wd === 4 ? (a) => a.section === "Strength" : (a) => a.section.startsWith("Drills");
-    const picks = open.filter(want).slice(0, nAerial); if (picks.length < nAerial) picks.push(...open.filter(a => !want(a) && !picks.includes(a)).slice(0, nAerial - picks.length));
+    // Only the day's own section (Thursday strength, Friday drills): once it is all ticked the day has fewer aerial steps,
+    // never a step borrowed from another section (the Oct 28 review: the fallback handed her prerequisites like the dive cartwheel).
+    const picks = open.filter(want).slice(0, nAerial);
     // The step's how-to and its watch-for text (aerial.json `wrong`) travel as `how`, so practice mode shows both under the step.
     for (const a of picks) { const how = [a.how, a.wrong ? "⚠ Watch for: " + a.wrong : ""].filter(Boolean).join(" "); items.push({ id: "aerial-" + a.id, text: "Aerial mission: " + a.text, secs: 90, kind: "aerial", pose: (pool.aerialPoses || {})[a.section] || "cartwheel", aerialId: a.id, ...(how ? { how } : {}) }); } }
   // Runs: only dances that exist (built-in or added) and aren't deleted.

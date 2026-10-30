@@ -629,6 +629,14 @@
     <video id="hvVideo" playsinline controls></video>
   </div>
 </div>
+<!-- 🎬 Film it (js/film.js): film a chunk, watch it back, film again. The clip stays on this phone. -->
+<div class="modal film" id="film" hidden>
+  <div class="modal-card">
+    <div class="row"><h3 class="grow">🎬 Film a chunk</h3><button class="btn sm ghost" id="filmClose">✕</button></div>
+    <input type="file" id="filmIn" accept="video/*" capture="environment" hidden>
+    <div id="filmBody"></div>
+  </div>
+</div>
 <!-- HOW TO PRACTICE MY SOLO -->
 <div class="modal" id="howto" hidden>
   <div class="modal-card">
