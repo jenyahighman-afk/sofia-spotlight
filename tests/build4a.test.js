@@ -49,16 +49,14 @@ test("one answer to what kind of day it is (daykind.js): a home weekday with not
   clearS();
 });
 
-test("Play decides the kind of day the way Today does: a Thursday with a make-up class is not gated, a real home day is; Today's \"They're on Play too\" shows only while Play's gate is open; no clock reads in the render paths", () => {
+test("Play decides the kind of day the way Today does: a Thursday with a make-up class is not gated, a real home day is; Today's link to Play shows once the plan is done (1.52.0); no clock reads in the render paths", () => {
   const home = (d, one) => DK.dayKind(d, opts(one)) === "home";
   assert.equal(PL.gamesFor("2026-10-29", { home: home("2026-10-29", [ACRO]), knees: true, done: false }).gate, false, "the studio day opens every game");
   assert.equal(PL.gamesFor("2026-10-29", { home: home("2026-10-29"), knees: true, done: false }).gate, true, "the same Thursday with nothing booked gates the fillers until the plan is done");
   assert.deepEqual(PL.playSections("2026-10-29", { home: home("2026-10-29", [ACRO]), knees: true, done: false, doors: true }).sections.map(s => s.id), ["solo", "weekend", "extras"]);
-  assert.equal(HM.extrasGateHtml({ open: true }), "", "extras open: no gate line");
-  assert.match(HM.extrasGateHtml({ open: false, onPlay: true }), /They're on Play too/); assert.match(HM.extrasGateHtml({ open: false, onPlay: true }), /once the plan is done/);
-  assert.doesNotMatch(HM.extrasGateHtml({ open: false, onPlay: false }), /Play/, "Play hides them too: the line points nowhere");
+  assert.match(HM.funLink({ pd: true }), /Pick something fun on Play/); assert.match(HM.funLink({ kind: "rest" }), /on Play/, "a rest day has no plan to finish"); assert.equal(HM.funLink({ pd: false, kind: "home" }), ""); assert.equal(HM.funLink({ pd: false, kind: "memory" }), "");
   const h = src("js/views/home.js"), p = src("js/views/play.js"), sch = src("js/views/schedule.js");
-  assert.match(h, /gateExtras\(extrasOpen\(\{pd,kind\}\),!playGate\)/); assert.match(h, /gamesFor\(today,\{home,knees:memoryKnees\(today\),done:pd\}\)\.gate/);
+  assert.doesNotMatch(h, /gateExtras|extrasGate/, "1.52.0: Today has no extras to gate");
   assert.match(p, /home: dayKindNow\(today\) === "home"/); assert.match(h, /const kind=dayKindNow\(today\)/);
   for (const [f, s] of [["home.js", h], ["play.js", p], ["schedule.js", sch]]) assert.doesNotMatch(s, /new Date\(\)\.getDay\(\)/, f + " reads no weekday off the clock");
   for (const [f, s] of [["play.js", p], ["schedule.js", sch]]) assert.doesNotMatch(s, /HOME_DAYS/, f + " asks daykind, not the table"); assert.doesNotMatch(h, /HOME_DAYS\[wd\]/, "the week strip asks daykind (the one card still names the home plan)");
@@ -67,7 +65,7 @@ test("Play decides the kind of day the way Today does: a Thursday with a make-up
   // the pages in the fake DOM: a booking today makes Today a studio day and Play ungated, whatever weekday it is
   resetDom(); clearS(); const today = todayStr(); const b = bookingRecord(today, "5:30 PM", "", "GHD", "r-today", "other"); S.events = { [b.id]: b };
   HM.renderHome(); const tc = el("#todayCard").innerHTML; assert.ok(/📹 Watch day|🏫 Studio day/.test(tc), "the one card says studio"); assert.doesNotMatch(tc, /🏠 Home day/);
-  assert.match(el("#extrasGate").innerHTML, /They're on Play too/, "Play shows the extras on a studio day, so Today may point there");
+  assert.doesNotMatch(tc, /today-fun/, "nothing done yet: no link to Play");
   assert.doesNotMatch(el("#habitCard").innerHTML, /Your solo first/, "the extras card doesn't call a studio day a home day either");
   PL.renderPlay(); const grid = el("#gameGrid").innerHTML; assert.doesNotMatch(grid, /game-gate/, "no 'Home day: the solo first' on a studio day"); assert.match(grid, /✨ Extras/); assert.match(grid, /🎉 Weekend games/);
   // the week strip: today's cell carries the memory run when today is a home weekday with the booking, never the full practice
@@ -76,16 +74,16 @@ test("Play decides the kind of day the way Today does: a Thursday with a make-up
   resetDom(); clearS();
 });
 
-test("the dated plan10 box under the one card is its headline and note only — no second item list; a day with neither shows nothing, the one card is the plan", () => {
-  const h29 = DP.dayNoteHtml(DP.dayPlan("2026-10-29")); assert.match(h29, /📋 15-minute memory run/); assert.match(h29, /class day/); assert.match(h29, /Acro make-up class at 5:30, so today is the short version/);
-  for (const bad of ["dpTick(", "dp-list", "dp-foot", "if there's time", "tick a solid box", "trio-run", "solo-top"]) assert.ok(!h29.includes(bad), "no " + bad);
-  const h31 = DP.dayNoteHtml(DP.dayPlan("2026-10-31")); assert.match(h31, /📋 ★ trio checkpoint/); assert.match(h31, /Halloween/);
+test("the dated plan10 line inside the one card is its headline and note only (1.52.0: one line, none on a memory-run day) — no second item list; a day with neither shows nothing, the one card is the plan", () => {
+  const h29 = DP.dayNoteHtml(DP.dayPlan("2026-10-29")); assert.equal(h29, "", "a memory-run day adds nothing: the big button says the same words");
+  const h31 = DP.dayNoteHtml(DP.dayPlan("2026-10-31")); assert.match(h31, /📋 <b>★ trio checkpoint<\/b> · Halloween/); assert.doesNotMatch(h31, /class day/, "the card already says the kind of day");
+  for (const bad of ["dpTick(", "dp-list", "dp-foot", "if there's time", "tick a solid box", "trio-run", "solo-top"]) assert.ok(!h31.includes(bad), "no " + bad);
   assert.equal(DP.dayNoteHtml(DP.dayPlan("2026-11-02")), "", "no label, no note: nothing to add"); assert.equal(DP.dayNoteHtml(null), ""); assert.equal(DP.dayNoteHtml(DP.dayPlan("2027-05-01")), "");
   resetDom(); DP.renderDayPlan("2026-11-02"); assert.equal(el("#dayPlan").hidden, true); assert.equal(el("#dayPlan").innerHTML, "");
-  DP.renderDayPlan("2026-11-01"); assert.equal(el("#dayPlan").hidden, false); assert.match(el("#dayPlan").innerHTML, /📋 ★ solo checkpoint/); assert.match(el("#dayPlan").innerHTML, /home day/);
+  DP.renderDayPlan("2026-11-01"); assert.equal(el("#dayPlan").hidden, false); assert.match(el("#dayPlan").innerHTML, /📋 <b>★ solo checkpoint<\/b>/); assert.doesNotMatch(el("#dayPlan").innerHTML, /home day/);
   // the data model is untouched: a must box ticked is still the "plan" bite, the ▶ targets still resolve (the Bunny reads them)
   const p = DP.dayPlan("2026-10-29"); assert.deepEqual(p.must.map(m => m.id), ["trio-run", "solo-top"]); assert.equal(DP.tickPlan({ done: [] }, p, "trio-run").mustDone, true); assert.equal(DP.goFor("player:solo"), "openPlayer('solo')");
-  assert.match(src("js/views/home.js"), /renderDayPlan\(today\)/, "Today passes its date"); assert.ok(/id="todayCard"[^\n]*\n\s*<div class="card mint dayplan" id="dayPlan"/.test(html), "the box still sits right under the one card");
+  assert.match(src("js/views/home.js"), /renderDayPlan\(today\)/, "Today passes its date"); assert.ok(src("js/views/home.js").includes('<div class="today-line small dp-line" id="dayPlan" hidden></div>'), "the dated line sits inside the one card (1.52.0)");
   resetDom(); clearS(); HM.renderHome(); assert.ok(el("#todayCard").innerHTML.includes("today-start"), "the one card is always there, so nothing is blank when the box hides"); resetDom(); clearS();
 });
 

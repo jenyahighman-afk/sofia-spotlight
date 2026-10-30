@@ -1,44 +1,44 @@
 {
-  "id": "build3-1.48",
+  "id": "today-1.52",
   "title": "3 new things in your app!",
-  "intro": "On Sundays the film review is a little sheet: what went well, did your fix show, one note. Dance Along knows Hannah's videos now, so the whole solo fits. And the doors, the dare and the costume designer live on Play, after the plan.",
-  "mom": "New for Mom: this card is yours — the week, last Sunday's sheet, the fix, privates, the next checkpoint. The dance-time nudge now names the kind of day, and a second one comes at 8 pm on home days only if the plan isn't done (Me → ⏰ My dance time).",
+  "intro": "Today fits on one screen now: your one card and your next finish line. Your pet, your Backstage Pass and the week moved to Me. The extras wait on Play, under the games.",
+  "mom": "New for Mom: Today is one screen: the card, the next finish line (tap it for ✓ Made it) and the Sunday sheet on Sundays. The pet, the Pass, What's new and the week strip are on Me; the extras on Play; this week's fix on Practice.",
   "items": [
     {
-      "id": "sunday",
-      "e": "🎬",
-      "n": "The Sunday sheet",
-      "where": "Today · Practice",
-      "pitch": "On Sundays the film review is four little steps: the last run, what went well, did the fix show, a note.",
+      "id": "today",
+      "e": "☀️",
+      "n": "Today fits one screen",
+      "where": "Today",
+      "pitch": "One card with one big button. Your next finish line is the line under it.",
       "steps": [
-        "On a Sunday, the film-review item in practice mode has a “🎬 Sunday sheet” button. Today has one too.",
-        "Watch the last run together, then tap “Watched it ›”.",
-        "Say what went well. Mom types one word. Then “✓ It showed” or “Not yet” for this week's fix.",
-        "A note if you want, then “✅ Done”. The plan item ticks itself."
+        "Today is one card: the big button starts what today needs.",
+        "On the card: “🎵 Solo”, “🎵 Trio”, “📹 Videos” and “🧠 Memorize”.",
+        "Tap the 🎯 line under the card: your finish lines open, with ✓ Made it.",
+        "When the plan is done, “Pick something fun on Play ›” shows up."
       ]
     },
     {
-      "id": "along",
-      "e": "🕺",
-      "n": "Dance Along with Hannah's videos",
-      "where": "Play",
-      "pitch": "Hannah's videos are offered in Dance Along: ＋ Learn it, no picking from Photos. The whole solo fits now.",
+      "id": "me",
+      "e": "🐰",
+      "n": "Your pet and your Pass on Me",
+      "where": "Me",
+      "pitch": "Your pet, your Backstage Pass and the week live on Me now, right under your dancer.",
       "steps": [
-        "Play → Dance Along: under your dances, “📹 Hannah's videos” lists the solo's and trio's videos.",
-        "Tap “＋ Learn it”: the app reads the moves off the video that's already in the family space.",
-        "Then “▶ Dance” beside it: the video plays next to your camera and scores you, all the way to the ending."
+        "Tap Me at the bottom. Your pet is right under your dancer.",
+        "Under the pet: “My Backstage Pass”, then “This week”.",
+        "A pink dot on Me means something new is waiting there."
       ]
     },
     {
-      "id": "play",
-      "e": "🎮",
-      "n": "Play in three parts",
+      "id": "extras",
+      "e": "✨",
+      "n": "Extras on Play",
       "where": "Play",
-      "pitch": "Solo work first, the weekend games after the plan, and the extras: the countdown doors, the dare and the costume designer.",
+      "pitch": "Pick one extra, how you feel today and this week's mind skill are on Play, under the games.",
       "steps": [
-        "Play has three parts: “🌸 Solo work”, “🎉 Weekend games” and “✨ Extras”.",
-        "Doors, dare and costume designer live in Extras. On Today they open under More once the plan is done ⭐.",
-        "On a home day the weekend games and the extras wait for the plan, like before."
+        "Open Play and scroll past the games.",
+        "“✨ Pick one extra” has a trick, a game, a move and Memorize it.",
+        "“✨ More for today” has how you feel and this week's mind skill."
       ]
     }
   ]

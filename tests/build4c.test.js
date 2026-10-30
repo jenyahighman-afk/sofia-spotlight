@@ -62,12 +62,12 @@ test("the Bunny and the pet in words a 9-year-old owns: no babyish openers, a da
   assert.ok(pet.lines.nap.includes("Zzz… a bite of practice wakes me up 😴")); assert.ok(!JSON.stringify(pet).includes("one bite wakes me up"));
 });
 
-test("8. Today's countdown sticker and chip show the event's short name, the same helper the Moment sticker uses", () => {
+test("8. Today's countdown sticker (and the week strip) show the event's short name, the same helper the Moment sticker uses", () => {
   assert.equal(MO.shortEventName("Winter Showcase (Winter Formal)"), "Winter Showcase"); assert.equal(MO.shortEventName("Gravit8 Seattle"), "Gravit8 Seattle");
   assert.equal(MO.shortEventName(""), ""); assert.equal(MO.shortEventName(null), ""); assert.equal(MO.shortEventName("A (x) B (y)"), "A B");
   assert.equal(MO.stickersFor({ eventName: "Winter Showcase (Winter Formal)", eventDays: 71 }).find(s => s.key === "event").text, "71 days to Winter Showcase");
   const home = src("js/views/home.js");
-  assert.match(home, /\$\("#stickerWhat"\)\.textContent=shortEventName\(ne\.name\)/); assert.match(home, /\$\{esc\(shortEventName\(ne\.name\)\)\}<\/span>/);
+  assert.match(home, /\$\("#stickerWhat"\)\.textContent=shortEventName\(ne\.name\)/); assert.match(home, /esc\(shortEventName\(e\.name\)\)/); assert.doesNotMatch(home, /todayCount/, "1.52.0: the countdown is the header's sticker only");
   assert.doesNotMatch(home, /textContent=ne\.name/); assert.match(home, /import \{ todayNudge, shortEventName \} from "\.\.\/moments\.js"/);
   assert.ok(json("events").some(e => e.name === "Winter Showcase (Winter Formal)"), "the event that needed it");
 });

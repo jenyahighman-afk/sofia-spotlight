@@ -2,7 +2,8 @@
 // `event`, the Winter Showcase). Behind each door: a sticker for her sticker book, a true dance fact or a mini challenge;
 // every 7th door is a star bonus and the last door is show day. Today's door and any she missed can be opened; tomorrow's
 // stays locked. Opened doors are stored as dates (settings.advent = { open: ["YYYY-MM-DD", ...] }, schema 33).
-// Pure parts up top (tested in Node); the Today row and the calendar below.
+// Pure parts up top (tested in Node); the calendar below. Play's ✨ Extras tile ("🎁 Show countdown") opens it (1.52.0: no
+// Today row any more; the header's sticker is the countdown).
 import { $, esc, todayStr, expose, toast } from "./util.js";
 import { S, setSettings, events } from "./store.js";
 import { ADVENT } from "./data.js";
@@ -46,17 +47,6 @@ export function doorText(door){
   return { sticker: `${it.e} New sticker: ${it.n}!`, fact: `🤓 Did you know? ${it}`, challenge: `🎯 Mini challenge: ${it}`, stars: `⭐ Surprise! +${it.n} stars for your dancer`, show: `${it.e} ${it.text}` }[door.kind] || "";
 }
 
-// ---------- Today row ----------
-export function renderAdvent(){
-  const el = $("#adventCard"); if (!el) return; const doors = doorsFor(); const today = todayStr(); const ev = showEvent();
-  if (!doors.length || today < doors[0].date || !ev || today > (ev.end || ev.start)) { el.hidden = true; el.innerHTML = ""; return; }
-  el.hidden = false; const opened = openedDates(); const door = doors.find(d => d.date === today) || doors[doors.length - 1]; const done = opened.includes(door.date);
-  const missed = missedDoors(doors, opened, today).length; const book = stickerBook(doors, opened).length; const name = String(ev.name || "the show").replace(/\s*\([^)]*\)/g, "");
-  el.innerHTML = `<div class="row"><span class="advent-ic">🎁</span><div class="grow"><b>${door.left ? `${door.left} day${door.left === 1 ? "" : "s"} to ${esc(name)}!` : `It's ${esc(name)} day! 🌟`}</b>
-    <div class="small muted">${book} sticker${book === 1 ? "" : "s"} in your book${missed ? ` · ${missed} door${missed === 1 ? "" : "s"} to catch up` : ""}</div></div>
-    <button class="btn sm ${done ? "ghost" : "coral"}" onclick="openAdvent()">${done ? "📅 Calendar" : "🚪 Open today's door"}</button></div>`;
-}
-
 // ---------- the calendar ----------
 let shown = "";
 function openAdvent(date){ shown = date || todayStr(); const door = doorsFor().find(d => d.date === shown); if (door && !openedDates().includes(door.date) && canOpen(door)) return openDoor(door.date, true); renderCalendar(); openStage("🎁 Show countdown", [$("#adventArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); }
@@ -65,7 +55,6 @@ async function openDoor(date, fromToday){
   if (!canOpen(door)) { const n = daysBetween(todayStr(), door.date); toast(`No peeking! This door opens in ${n} day${n === 1 ? "" : "s"} 🔒`, 2500); return; }
   const patch = openPatch(door); shown = date; if (patch) { try { await setSettings(patch); } catch (e) { console.warn("advent", e); } }
   renderCalendar(patch ? date : ""); if (fromToday) openStage("🎁 Show countdown", [$("#adventArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`);
-  renderAdvent();
 }
 function renderCalendar(justOpened = ""){
   const el = $("#adventArea"); if (!el) return; const doors = doorsFor(); const today = todayStr(); const opened = new Set(openedDates()); const book = stickerBook(doors, [...opened]);

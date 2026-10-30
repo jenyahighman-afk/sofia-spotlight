@@ -28,38 +28,19 @@
 </header>
 <!-- TODAY -->
 <section class="page on" id="p-home">
-  <!-- One card, one button (Build 2): the day's action first, then the plan boxes, the season card, the comp card.
-       The pet, the news, the Backstage Pass and the extras follow; the countdown, dares and the rest wait under More. -->
+  <!-- Today fits one screen (1.52.0): the one card (its dated line and the plan-done link inside), the finish lines folded
+       under one line, and the cards that only come on their day (Sunday's sheet, a comp weekend, a goal check-in, the
+       month's photo). The pet, the Pass, What's new and the week live on Me; the extras on Play; the week's fix on Practice. -->
   <div class="card sun today" id="todayCard"></div>
-  <div class="card mint dayplan" id="dayPlan" hidden></div>
+  <details class="card violet season-fold" id="seasonFold" hidden><summary id="seasonSum"></summary><div class="season" id="seasonCard" hidden></div></details>
   <div class="card violet sunday-card" id="sundayCard" hidden></div>
-  <div class="card violet season" id="seasonCard" hidden></div>
   <div class="card coral" id="compCard" hidden></div>
-  <div class="card violet pet-card" id="petCard"></div>
-  <div id="petArea" style="display:none"></div>
-  <div class="card coral news-card" id="newsCard" hidden></div>
-  <div id="newsArea" style="display:none"></div>
-  <div class="card aqua pass-card" id="passCard" hidden></div>
-  <div id="passArea" style="display:none"></div>
-  <div class="card violet habit-card" id="habitCard"></div>
   <div class="card aqua" id="goalReminder" hidden></div>
   <div class="nudge glow-nudge" id="glowNudge" hidden></div>
-  <details class="card acc" id="moreToday"><summary>✨ More for today</summary>
-    <div class="small muted extras-gate" id="extrasGate" hidden></div>
-    <div class="card sun advent-card" id="adventCard" hidden></div>
-    <div id="adventArea" style="display:none"></div>
-    <div class="card dare-card" id="dareCard" hidden></div>
-    <div class="card violet bites" id="bitesCard"></div>
-    <div class="card aqua" id="mindCard" hidden></div>
-    <div class="card violet" id="weekFix"></div>
-  </details>
+  <div id="adventArea" style="display:none"></div>
   <div id="readyArea" style="display:none"></div>
   <div id="byWhenArea" style="display:none"></div>
   <div id="sundayArea" style="display:none"></div>
-  <div class="card">
-    <h3>This week</h3>
-    <div class="week" id="homeWeek"></div>
-  </div>
 </section>
 
 <!-- DANCES -->
@@ -79,6 +60,7 @@
     <div id="workoutRow" class="wo-row"></div>
     <details class="more plan-fold" id="planFold"><summary>📋 Today's exercises <span class="chip" id="planCount"></span></summary><div id="practiceChecklist" class="plist"></div></details>
   </div>
+  <div class="card violet" id="weekFix"></div>
   <details class="card acc"><summary>💬 How did it feel?</summary>
     <textarea id="practiceNote" placeholder="One line."></textarea>
     <div class="row" style="margin-top:8px"><button class="btn sm coral" id="saveNote">Save</button><span class="grow"></span><label class="small muted">Day <input type="date" id="practiceDate" style="max-width:150px;display:inline-block"></label></div>
@@ -109,6 +91,13 @@
   <div class="card aqua who-row" id="whoRow"></div>
   <div class="game-grid" id="gameGrid"></div>
   <div id="playExtras" hidden><div class="card dare-card" id="playDare" hidden></div></div>
+  <div id="playToday">
+    <div class="card violet habit-card" id="habitCard"></div>
+    <details class="card acc" id="moreToday"><summary>✨ More for today</summary>
+      <div class="card violet bites" id="bitesCard"></div>
+      <div class="card aqua" id="mindCard" hidden></div>
+    </details>
+  </div>
   <div class="row" id="gameBack" hidden><button class="btn sm ghost" onclick="playOpen('')">‹ All games</button></div>
   <div class="card coral game-card" data-game="choreo">
     <h3>💃 Choreo Studio</h3>
@@ -200,6 +189,16 @@
     <div class="row"><div id="avWrap" class="avwrap"><svg id="avSvg" viewBox="90 30 120 230"></svg></div><div class="grow"><h2 id="avName">Sofia</h2><div class="small muted">Tap me to change my look.</div></div></div>
     <div id="avOpts" style="display:none;margin-top:8px"></div>
     <div class="stats" id="meStreak"></div>
+  </div>
+  <div class="card coral news-card" id="newsCard" hidden></div>
+  <div id="newsArea" style="display:none"></div>
+  <div class="card violet pet-card" id="petCard"></div>
+  <div id="petArea" style="display:none"></div>
+  <div class="card aqua pass-card" id="passCard" hidden></div>
+  <div id="passArea" style="display:none"></div>
+  <div class="card">
+    <h3>This week</h3>
+    <div class="week" id="homeWeek"></div>
   </div>
   <div class="card sun stars-card" id="meStars"></div>
   <div class="card violet cos-card" id="meCostumes"></div>

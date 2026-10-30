@@ -50,7 +50,7 @@ export function pickStep(ctx, rng = Math.random){
   if (mustLeft.length) { const m = mustLeft[0]; return { key: "plan-more", vars: { item: m.t }, go: goFor(m.go) || "buddyScroll('#dayPlan')" }; }
   // The day counts: first the small "for today" things that are still open, then something fun.
   const tier1 = [];
-  if (c.dare === false) tier1.push({ key: "dare", go: "showPage('home');buddyScroll('#dareCard')" });
+  if (c.dare === false) tier1.push({ key: "dare", go: "showPage('play');buddyScroll('#playDare')" });
   if (c.door === false) tier1.push({ key: "door", go: "showPage('home');openAdvent()" });
   if (c.glow) tier1.push({ key: "glow", go: "showPage('me');buddyScroll('#meGlow')" });
   const memo = (c.cards || []).find(x => x.id === "memo" && !x.done); if (memo) tier1.push({ key: "memo", vars: { memo: memo.sub }, go: memo.go });
@@ -148,12 +148,15 @@ function voice(){ const n = nextVoice(); if (!n) return; toast("🎙️ Voice: "
 function tap(){ if (msg) hideBuddy(); else showBuddy(); }
 function quiet(){ save({ quiet: todayStr() }); hideBuddy(); }
 // Once per app open, when the day's data is in, on Today. Called by app.js on each data change. The bubble waits until
-// she has looked at the plan: her first scroll on Today, or AUTO_MS — never over the one card at the top (Build 2).
+// she has looked at the plan: her first scroll on Today, or AUTO_MS — never over the one card at the top (Build 2). Since
+// 1.52.0 Today is one screen, so before the plan is done the Bunny waits in its corner (a tap still opens it); a rest day
+// has no plan to wait for. Pure: autoOk.
 export const AUTO_MS = 10000;
+export const autoOk = ({ pd = false, kind = "" } = {}) => !!pd || kind === "rest";
 export function buddyAuto(ready){
   if (autoDone || !ready) return; autoDone = true; if (quietToday()) return;
   let fired = false; const wrap = document.querySelector(".wrap");
-  const go = () => { if (fired) return; fired = true; try { window.removeEventListener("scroll", go); if (wrap) wrap.removeEventListener("scroll", go); } catch (e) {} const home = document.body.classList.contains("pg-home"); if (home && !blocked() && !msg) showBuddy(); };
+  const go = () => { if (fired) return; fired = true; try { window.removeEventListener("scroll", go); if (wrap) wrap.removeEventListener("scroll", go); } catch (e) {} const home = document.body.classList.contains("pg-home"); const d = todayStr(); if (home && !blocked() && !msg && autoOk({ pd: planDone(S.practice[d]), kind: dayKindNow(d) })) showBuddy(); };
   try { window.addEventListener("scroll", go, { passive: true }); if (wrap) wrap.addEventListener("scroll", go, { passive: true }); } catch (e) {}
   setTimeout(go, AUTO_MS);
 }

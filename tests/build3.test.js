@@ -21,7 +21,6 @@ const RM = await import("../js/remind.js");
 const W = await import("../worker/src/remind-core.js");
 const AL = await import("../js/games/along.js");
 const PL = await import("../js/views/play.js");
-const { extrasOpen } = await import("../js/views/home.js");
 const B = await import("../js/buddy.js");
 const { todayStr } = await import("../js/util.js");
 const plan15 = json("plan15"), spring = json("plan-spring"), news = json("news");
@@ -164,16 +163,15 @@ test("Dance Along: the cap is 130 s (the solo plus its lead-in), Hannah's upload
   assert.ok(html.includes('id="alongHannah"') && html.includes("Up to 130 seconds") && !html.includes("Up to 2 minutes"));
 });
 
-test("the extras on Play: three sections (solo work, weekend games, extras), the gate hides the last two; Today shows the doors and the dare only once the plan is done; the Bunny's game card is solo work on a home day", async () => {
+test("the extras on Play: three sections (solo work, weekend games, extras), the gate hides the last two; the doors and the dare live on Play only (1.52.0); the Bunny's game card is solo work on a home day", async () => {
   const gated = PL.playSections("2026-11-05", { home: true, knees: true, done: false, doors: true }); assert.equal(gated.gate, true); assert.deepEqual(gated.sections.map(s => s.id), ["solo"]); assert.deepEqual(gated.sections[0].games.map(g => g.id), ["nextmove", "along", "count"]);
   const open = PL.playSections("2026-11-05", { home: true, knees: true, done: true, doors: true }); assert.deepEqual(open.sections.map(s => s.id), ["solo", "weekend", "extras"]);
   assert.deepEqual(open.sections[1].games.map(g => g.id), PL.GAMES.filter(g => !PL.SOLO_WORK.includes(g.id)).map(g => g.id)); assert.deepEqual(open.sections[2].games.map(g => g.id), ["doors", "costume"]); assert.equal(open.sections[2].dare, true);
   assert.deepEqual(PL.playSections("2026-11-05", { home: true, knees: true, done: true, doors: false }).sections[2].games.map(g => g.id), ["costume"], "no countdown running: no doors tile");
   const later = PL.playSections("2026-11-12", { home: true, knees: false, done: false, doors: true }); assert.equal(later.gate, false); assert.ok(later.sections[0].games.some(g => g.id === "quest"), "after Own it Trick Quest is solo work"); assert.equal(later.sections.length, 3);
   assert.deepEqual(PL.EXTRAS.map(e => e.go), ["openAdvent()", "openCostumes()"]); assert.deepEqual(PL.gamesFor("2026-11-05", { home: true, knees: true, done: false }).games.map(g => g.id), PL.SOLO_GAMES, "the Build 1 gate is unchanged");
-  assert.equal(extrasOpen({ pd: false, kind: "home" }), false); assert.equal(extrasOpen({ pd: true, kind: "home" }), true); assert.equal(extrasOpen({ pd: false, kind: "rest" }), true, "a rest day has no plan to finish"); assert.equal(extrasOpen({ pd: false, kind: "memory" }), false);
-  const home = src("js/views/home.js"); assert.match(home, /gateExtras\(extrasOpen\(\{pd,kind\}\),!playGate\)/); assert.match(home, /They're on Play too/); assert.ok(html.includes('id="extrasGate"') && html.includes('id="playExtras"') && html.includes('id="playDare"'));
-  assert.match(src("js/dares.js"), /\["#dareCard", "#playDare"\]/); assert.match(src("js/buddy.js"), /soloOnly: dayKindNow\(date\) === "home" && !planDone\(rec\)/);
+  assert.ok(!html.includes('id="extrasGate"') && !html.includes('id="dareCard"') && html.includes('id="playExtras"') && html.includes('id="playDare"'), "1.52.0: the doors and the dare live on Play only");
+  assert.match(src("js/dares.js"), /\$\("#playDare"\)/); assert.match(src("js/buddy.js"), /soloOnly: dayKindNow\(date\) === "home" && !planDone\(rec\)/);
   const ctx = { name: "Sofia", pet: "Bun-Bun", dayDone: false, safe: false, fullDone: false, streak: 2, skips: 2, petDays: 3, comp: null, compMode: false, plan: null, ticks: [], classes: [], restDay: false, cards: [{ id: "trick", sub: "Leap", go: "a", done: false }, { id: "game", sub: "What's Next?", go: "b", done: false }], dare: false, door: false, glow: true, cardsEarned: 3, starsLeft: 2, unlock: "Gold", event: null };
   const keys = new Set(); for (let i = 0; i < 40; i++) keys.add(B.pickStep(ctx, () => i / 40).key); for (const k of keys) assert.ok(["trick", "game"].includes(k), "before the plan is done, never the fun tier: " + k);
   // the pages in the fake DOM: Play's sections (the extras only when today's gate is open), the dare on Play
@@ -181,12 +179,12 @@ test("the extras on Play: three sections (solo work, weekend games, extras), the
   const { dayKindNow } = await import("../js/daykind.js"); // Build 4: Play's "home" is the kind of day (a class booked on a home weekday is a studio day)
   const gate = PL.gamesFor(today, { home: dayKindNow(today) === "home", knees: memoryKnees(today), done: planDone(S.practice[today]) }).gate;
   PL.renderPlay(); const grid = el("#gameGrid").innerHTML; assert.match(grid, /🌸 Solo work/); assert.equal(/✨ Extras/.test(grid), !gate, "the extras follow the same gate as the weekend games"); assert.equal(/🎉 Weekend games/.test(grid), !gate); assert.equal(el("#playExtras").hidden, gate);
-  const DR = await import("../js/dares.js"); DR.renderDares(); assert.equal(el("#playDare").hidden, false); assert.equal(el("#playDare").innerHTML, el("#dareCard").innerHTML, "the same dare card on Play and Today");
+  const DR = await import("../js/dares.js"); DR.renderDares(); assert.equal(el("#playDare").hidden, false); assert.match(el("#playDare").innerHTML, /Today's dance dare/);
   resetDom(); clearS();
 });
 
 test("the release's housekeeping: the news edition, the service worker, the README", async () => {
-  const { TRY } = await import("../js/news.js"); for (const id of ["sunday", "mom", "remind", "along", "play"]) assert.ok(TRY[id], "Try it for " + id); assert.equal(news.id, "build3-1.48");
+  const { TRY } = await import("../js/news.js"); for (const id of ["sunday", "mom", "remind", "along", "play"]) assert.ok(TRY[id], "Try it for " + id); assert.ok(news.id, "an edition is out (1.52.0's since)");
   for (const f of ["./js/sunday.js", "./js/momweek.js"]) assert.ok(src("sw.js").includes(`"${f}"`), f);
   assert.match(src("README.md"), /### Build 3 of the Oct 28 review \(1\.48\.0\)/); assert.match(src("js/app.js"), /initSunday\(\)/);
 });

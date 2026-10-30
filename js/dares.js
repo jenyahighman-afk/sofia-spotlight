@@ -35,12 +35,13 @@ export function donePatch(date, settings = S.settings){
 }
 
 // ---------- Today card ----------
-// The card: on Today (#dareCard, once the plan is done — home.js gateExtras) and on Play (#playDare, Build 3), the same.
+// The card lives on Play (#playDare, Build 3) under ✨ Extras, after the plan on a home day (Play's own gate); 1.52.0 took
+// Today's copy away.
 export function renderDares(){
   const today = todayStr(); const d = shownDare(today); const done = doneOn(today); const n = doneCount(); const canReroll = !done && !rerolledOn(today);
-  for (const sel of ["#dareCard", "#playDare"]) { const el = $(sel); if (!el) continue;
-  if (!d) { el.hidden = true; el.innerHTML = ""; continue; }
-  el.hidden = !!(el.dataset && el.dataset.gated === "1"); // Today's copy waits for the plan (home.js gateExtras); Play's never
+  { const el = $("#playDare"); if (!el) return;
+  if (!d) { el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
   el.className = `card dare-card ${done ? "done" : ""}`;
   el.innerHTML = `<div class="row dare-head"><span class="dare-ic">${esc(d.e || "🎯")}</span><div class="grow"><div class="small muted">${done ? "✅ Dare done!" : "🎯 Today's dance dare"}</div><div class="dare-text">${esc(d.text)}</div></div></div>
     ${done ? `<div class="small muted dare-count">🎯 ${n} dare${n === 1 ? "" : "s"} done. New dare tomorrow!</div>`

@@ -62,22 +62,22 @@ test("schema 34: done dates are real dates, once each, sorted; reroll is a date 
   assert.deepEqual(migrateDoc("practice", "2026-10-17", { _v: 21, bites: ["dare", "zzz"] }).bites, ["dare"], "dare survives the bite filter");
 });
 
-test("Today card: shows today's dare, one reroll, I did it saves the date, the bite and one star, then a calm done state", async () => {
+test("Play's dare card: shows today's dare, one reroll, I did it saves the date, the bite and one star, then a calm done state", async () => {
   resetDom(); for (const k of Object.keys(S)) S[k] = {}; S.practice = {}; S.settings = { stars: 4 };
-  const today = todayIso(); renderDares(); const card = el("#dareCard");
+  const today = todayIso(); renderDares(); const card = el("#playDare");
   assert.equal(card.hidden, false); const first = dareFor(today);
   assert.ok(card.innerHTML.includes(first.text.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").slice(0, 12)), "today's dare shows");
   assert.ok(card.innerHTML.includes("dareDone()") && card.innerHTML.includes("I did it! 🎉") && card.innerHTML.includes("🎲 Try another"));
   const writes = []; setBackend({ set: async (col, id, rec) => { writes.push({ col, id, rec }); }, del: async () => {} });
   try {
-    await window.dareReroll(); assert.equal(S.settings.dares.reroll, today); assert.ok(!el("#dareCard").innerHTML.includes("Try another"), "the reroll is used up");
-    assert.ok(el("#dareCard").innerHTML.includes(dareFor(today, true).text.slice(0, 12)), "the new dare shows");
+    await window.dareReroll(); assert.equal(S.settings.dares.reroll, today); assert.ok(!el("#playDare").innerHTML.includes("Try another"), "the reroll is used up");
+    assert.ok(el("#playDare").innerHTML.includes(dareFor(today, true).text.slice(0, 12)), "the new dare shows");
     await window.dareReroll(); assert.equal(writes.length, 1, "a second reroll writes nothing");
     await window.dareDone();
     assert.deepEqual(S.settings.dares.done, [today]); assert.equal(S.settings.stars, 5, "one star"); assert.deepEqual(S.practice[today].bites, ["dare"], "the dare bite is counted");
-    const html = el("#dareCard").innerHTML; assert.ok(html.includes("🎯 1 dare done") && !html.includes("dareDone()"), "calm done state with a count");
+    const html = el("#playDare").innerHTML; assert.ok(html.includes("🎯 1 dare done") && !html.includes("dareDone()"), "calm done state with a count");
     const n = writes.length; await window.dareDone(); assert.equal(writes.length, n, "a second tap writes nothing"); assert.equal(S.settings.stars, 5, "and pays nothing");
   } finally { setBackend(null); resetDom(); for (const k of Object.keys(S)) S[k] = {}; }
-  assert.match(src("js/views/home.js"), /renderDares\(\)/); assert.match(src("sw.js"), /"\.\/js\/dares\.js"/); assert.match(src("sw.js"), /"\.\/data\/dares\.json"/);
-  const html = src("index.html"); assert.ok(html.indexOf('id="todayCard"') < html.indexOf('id="moreToday"') && html.indexOf('id="moreToday"') < html.indexOf('id="adventArea"') && html.indexOf('id="adventArea"') < html.indexOf('id="dareCard"'), "the card sits under More for today, after the countdown, below the one card (Build 2)");
+  assert.match(src("js/views/play.js"), /renderDares\(\)/); assert.match(src("sw.js"), /"\.\/js\/dares\.js"/); assert.match(src("sw.js"), /"\.\/data\/dares\.json"/);
+  const html = src("index.html"); assert.ok(html.indexOf('id="playExtras"') < html.indexOf('id="playDare"') && html.indexOf('id="p-play"') < html.indexOf('id="playDare"') && !html.includes('id="dareCard"'), "the card sits under Play's extras, and only there (1.52.0)");
 });

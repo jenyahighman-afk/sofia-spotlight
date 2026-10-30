@@ -152,10 +152,10 @@ test("6. the Pass star only on a first-try right answer; a later right answer re
   assert.equal(P.todayTip(mon), P.tipFor(mon, P.momentsFor(mon, { studio: true, home: false })), "no hour: a midday tip"); assert.match(src("js/pass.js"), /todayTip\(todayStr\(\), clockHour\(\)\)/);
 });
 
-test("7. What's new for Sofia is three kid lines about three kid things; Mom's items are one line on her Grown-ups card until she taps Got it", () => {
-  assert.deepEqual(NW.newsItems(news).map(i => i.id), ["sunday", "along", "play"]); const sentences = news.intro.split(/(?<=[.!?])\s+/); assert.ok(sentences.length >= 2 && sentences.length <= 3, "two or three lines: " + sentences.length);
-  assert.match(news.intro, /Sunday/); assert.match(news.intro, /Hannah/); assert.match(news.intro, /Play/); assert.doesNotMatch(news.intro, /Mom gets|nudge/, "nothing about Mom's things");
-  assert.ok(news.title.startsWith("3 ")); const m = NW.momNews(news); assert.equal(m.id, news.id); assert.match(m.text, /^New for Mom:/); assert.match(m.text, /8 pm/); assert.match(m.text, /My dance time/);
+test("7. What's new for Sofia is three kid lines about three kid things (the 1.52.0 edition since); Mom's items are one line on her Grown-ups card until she taps Got it", () => {
+  assert.deepEqual(NW.newsItems(news).map(i => i.id), ["today", "me", "extras"]); const sentences = news.intro.split(/(?<=[.!?])\s+/); assert.ok(sentences.length >= 2 && sentences.length <= 3, "two or three lines: " + sentences.length);
+  assert.match(news.intro, /Today/); assert.match(news.intro, /Me/); assert.match(news.intro, /Play/); assert.doesNotMatch(news.intro, /Mom gets|nudge/, "nothing about Mom's things");
+  assert.ok(news.title.startsWith("3 ")); const m = NW.momNews(news); assert.equal(m.id, news.id); assert.match(m.text, /^New for Mom:/); assert.match(m.text, /on Me/); assert.match(m.text, /Practice/);
   localStorage.removeItem("spotlight:momnews"); assert.equal(NW.momNewsFor(news).id, news.id); assert.match(NW.momNewsHtml(news), /mom-news[\s\S]*New for Mom[\s\S]*momNewsGotIt\(\)/);
   assert.equal(NW.momNews({ id: "x", items: [] }), null); assert.equal(NW.momNewsHtml({ id: "x", items: [] }), "");
   resetDom(); clearS(); MW.renderMomWeek(); assert.match(el("#momWeek").innerHTML, /New for Mom/); window.momNewsGotIt(); assert.equal(localStorage.getItem("spotlight:momnews"), news.id); assert.doesNotMatch(el("#momWeek").innerHTML, /New for Mom/, "Got it: gone on this phone, the card re-drawn");

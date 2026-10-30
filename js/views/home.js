@@ -1,7 +1,8 @@
-// Today tab (Build 2 of the Oct 28 review): ONE card at the top with the day's one action — ▶ Start for the home plan,
-// the 15-minute memory run or Monday's watch-and-picture, straight from planToday — the plan-done state, the streak, the
-// countdown, how much of the solo is known and the next checkpoint. Everything else sits under it: the dated plan boxes,
-// the season card (ticks), the pet, the Backstage Pass, the extras (choice cards, tired row) and ✨ More for today.
+// Today tab: ONE card with the day's one action — ▶ Start for the home plan, the 15-minute memory run or Monday's
+// watch-and-picture, straight from planToday (Build 2) — the streak and the day off in one line, the dated note, the
+// Solo · Trio · Videos · Memorize row; the next finish line folded under it (the season card inside). Since 1.52.0 Today
+// fits one screen: this module still draws the pieces that moved — the pet, the Pass, What's new and the week strip on Me,
+// ✨ Pick one extra and More for today on Play, this week's fix on Practice — so every page stays current on each render.
 import { $, esc, fmt, todayStr, daysUntil, expose, toast } from "../util.js";
 import { CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "../data.js";
 import { S, events, nextEvent, storeSet, dances, studioDates } from "../store.js";
@@ -13,11 +14,9 @@ import { renderSeasonCard, trickFocus, memoryKnees, nextCheckpoint, checkpointTi
 import { planFor } from "../planToday.js";
 import { studioOn } from "../studio.js";
 import { dayKindNow, homeLineNow, weekdayOf } from "../daykind.js";
-import { gamesFor } from "./play.js";
 import { openPracticeMode } from "../pmode.js";
 import { todayNudge, shortEventName } from "../moments.js";
 import { isCueTable } from "../cues.js";
-import { readinessNow } from "../ready.js";
 import { renderPassCard } from "../pass.js";
 import { currentWeekFix, pickWeekFix, TAG_EMOJI, seenCount, fixOnVideo, FIX_SEEN_TO_MOVE } from "../corrections.js";
 import { checkBadges } from "../badges.js";
@@ -27,30 +26,34 @@ import { renderBites } from "../bites.js";
 import { renderMindCard } from "../mind.js";
 import { applyPalette } from "../palette.js";
 import { renderPet } from "../pet.js";
-import { renderAdvent } from "../advent.js";
-import { renderDares } from "../dares.js";
 import { renderNews } from "../news.js";
 import { renderGlowNudge } from "../glow.js";
 import { renderSundayCard } from "../sunday.js";
 
 const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
-// Build 3: the countdown doors and the dare moved to Play; on Today they show only once the plan is done (a rest day has
-// no plan to finish, so they stay open there). Pure.
-export const extrasOpen = ({ pd = false, kind = "" } = {}) => !!pd || kind === "rest";
-// Build 4: "They're on Play too" only while Play shows them — Play's own gate (play.js gamesFor: a home day before the solo
-// is done, until Nov 9) hides them there as well, so `onPlay` = that gate is open. Pure.
-export const extrasGateHtml = ({ open = false, onPlay = true } = {}) => open ? "" : `🎁 The countdown door and today's dare open here once the plan is done ⭐${onPlay ? ` <button class="lnk" onclick="showPage('play')">They're on Play too</button>` : ""}`;
-function gateExtras(open, onPlay = true){
-  for (const id of ["#adventCard", "#dareCard"]) { const e = $(id); if (!e) continue; if (e.dataset) e.dataset.gated = open ? "" : "1"; if (!open) e.hidden = true; } // renderDares (Play too) reads the flag
-  const g = $("#extrasGate"); if (g) { g.hidden = open; g.innerHTML = extrasGateHtml({ open, onPlay }); }
+// The one line under the big button: the streak and the plan's state or the days off left, then How ready? (1.52.0: the
+// show countdown is the header's sticker only). Pure.
+export function metaLine({ streak = 0, pd = false, safe = false, skips = 0 } = {}){
+  const tier = pd ? "⭐ Plan done" : safe ? "✓ Streak safe · solo next" : `${skips} day${skips === 1 ? "" : "s"} off left this week`;
+  return `<div class="today-line small today-meta"><span class="${streak ? "today-streak" : ""}">🔥 ${streak}-day streak</span> · ${tier} · <button class="lnk" onclick="openReady()">How ready?</button></div>`;
 }
+// The folded finish line's one line (season15 nextCheckpoint): book it, did you make it, today, or how many days. Pure.
+export function finishLine(cp, today = todayStr()){
+  if (!cp) return "🏁 My finish lines";
+  if (cp.state === "book") return `🎯 <b>Book it:</b> ${esc(cp.t)}`;
+  if (cp.state === "passed") return `🎯 <b>${esc(fmt(cp.d))}</b> · ${esc(cp.t)} · <b>did you make it?</b>`;
+  if (cp.state === "today") return `🎯 <b>Today!</b> ${esc(cp.t)}`;
+  const n = daysUntil(cp.d); return `🎯 <b>${esc(fmt(cp.d))}</b> <span class="muted">(${n} day${n === 1 ? "" : "s"})</span> · ${esc(cp.t)}`;
+}
+// The way to the extras once there's nothing left to do on Today (the plan done, or a rest day). Pure.
+export const funLink = ({ pd = false, kind = "" } = {}) => pd ? `<button class="lnk today-fun" onclick="showPage('play')">⭐ Plan done! Pick something fun on Play ›</button>` : kind === "rest" ? `<button class="lnk today-fun" onclick="showPage('play')">🎮 Games and extras are on Play ›</button>` : "";
 // Pure: the one action for the day. kind = "watch" | "memory" (a studio day) | "home" | "rest"; nDone / total = today's
 // session progress; mins = its length. Returns { label, go, ghost } for the big button.
 export function startButton({ kind, mins = 0, nDone = 0, total = 0 }){
   const left = total && kind !== "memory" ? ` · ${Math.max(0, mins)} min` : ""; const prog = nDone && total ? ` <span class="today-prog">${nDone} of ${total}</span>` : ""; // the memory run says its own length
   if (total && nDone >= total) return { label: `✅ Practice done${left}`, go: "showPage('practice')", ghost: true };
   if (kind === "rest") return { label: "🧘 2-min stretch", go: "habitTired('stretch')", ghost: false };
-  const verb = nDone ? "▶ Keep going" : kind === "watch" ? "▶ Watch + picture" : kind === "memory" ? "▶ 15-min memory run" : "▶ Start";
+  const verb = nDone ? "▶ Keep going" : kind === "watch" ? "▶ Watch + picture" : kind === "memory" ? "▶ 15-min memory run" : "▶ Start practice"; // the Pass's words (1.52.0)
   return { label: verb + left + prog, go: "showPage('practice');openPracticeMode()", ghost: false };
 }
 function renderHome(){
@@ -61,29 +64,29 @@ function renderHome(){
   // daykind.js (the same answer Play, the week strip and the Schedule use), from the date string, never the clock (Build 4).
   const dow=weekdayOf(today); const cls=studioOn(today,CLASSES,studioDates()); const hp=HOME_DAYS[dow]; const kind=dayKindNow(today); const home=kind==="home";
   const rec=S.practice[today]; const doneToday=dayCounts(rec,PRACTICE_ITEMS.length); const pd=planDone(rec);
-  const playGate=gamesFor(today,{home,knees:memoryKnees(today),done:pd}).gate; // Play hides the fillers and the extras behind this
   // Today's session (planToday): its length and how far she is, for the one button.
   const plan=planFor(today); const mins=Math.round(plan.reduce((a,i)=>a+(+i.secs||0),0)/60); const nDone=((rec&&rec.done)||[]).filter(id=>plan.some(i=>i.id===id)).length; const total=kind==="rest"?0:plan.length;
+  // The button names the home part of a studio day ("▶ 15-min memory run", "▶ Watch + picture"), so the card adds only the
+  // classes and, on Monday, "no dancing tonight".
   let what, sub;
-  if(cls.length){ what="🏫 Studio day"; sub=`<div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div><div class="today-sub">🏠 At home: ${kind==="watch"?"<b>watch Hannah's videos</b>, then picture the solo in the car. No dancing tonight.":"<b>15-minute memory run</b> instead of the full session"}</div>`; }
+  if(cls.length){ what="🏫 Studio day"; sub=`<div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div>${kind==="watch"?`<div class="today-sub">🏠 Hannah's videos, then picture the solo in the car. No dancing tonight.</div>`:""}`; }
   else if(hp){ what="🏠 Home practice"; sub=`<div class="today-sub">${esc(hp)}</div>`; }
   else { what="🌙 Rest day"; sub=`<div class="today-sub">Stretch a little if you want.</div>`; }
   const dayKind=kind==="watch"?"📹 Watch day":kind==="memory"?"🏫 Studio day":home?"🏠 Home day":"🌙 Rest day";
   const ctx={practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today}; const streak=computeStreak(ctx); const skips=skipsLeft(ctx);
-  // Two tiers, in plain words: ⭐ Plan done (her solo danced) · ✓ Streak safe (a bite, the solo still to do) · days off left.
-  const tier=pd?`<span class="chip mint">⭐ Plan done</span>`:doneToday?`<span class="chip sun">✓ Streak safe · solo next</span>`:`<span class="chip">${skips} day${skips===1?"":"s"} off left this week</span>`;
   const sb=startButton({kind,mins,nDone,total});
-  // The one progress number (ready.js Know bar) and the next checkpoint (season15, tickable on the season card below).
-  let soloLine=""; try{ const r=readinessNow(today); if(r.know.of) soloLine=`<div class="today-line small">🧠 Solo: <b>${r.know.n} / ${r.know.of}</b> moves known${r.know.tricky?` · ${r.know.tricky} tricky`:""} <button class="lnk" onclick="openReady()">How ready?</button></div>`; }catch(e){ console.warn(e); }
-  let cpLine=""; try{ const cp=nextCheckpoint(today,activePlan(today),studioDates(),checkpointTicks()); if(cp) cpLine=`<div class="today-line small">🎯 ${cp.state==="book"?`<b>Book it:</b> ${esc(cp.t)} <button class="lnk" onclick="openRehearsal('solo')">book a private</button>`:cp.state==="passed"?`<b>${esc(fmt(cp.d))}</b> · ${esc(cp.t)} · did you make it? <button class="lnk" onclick="cpTick('${cp.id}',true)">✓ yes</button>`:`<b>${esc(fmt(cp.d))}</b>${cp.state==="today"?" <b>· today!</b>":` <span class="muted">(${daysUntil(cp.d)} day${daysUntil(cp.d)===1?"":"s"})</span>`} · ${esc(cp.t)}`}</div>`; }catch(e){ console.warn(e); }
+  // Two tiers, in plain words: ⭐ Plan done (her solo danced) · ✓ Streak safe (a bite, the solo still to do) · days off left.
   $("#todayCard").innerHTML=`<div class="today-date small">${esc(fmt(today))} · ${dayKind}${total?` · ${mins} min`:""}</div><div class="today-what">${what}</div>${sub}
+    <div class="today-line small dp-line" id="dayPlan" hidden></div>
     <button class="btn ${sb.ghost?"ghost":"coral"} big-btn today-start" onclick="${sb.go}">${sb.label}</button>
-    <div class="row today-meta"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${tier}<span id="todayCount"></span></div>
-    ${soloLine}${cpLine}
-    <div class="row today-media"><button class="btn sm violet" onclick="openPlayer('solo')">🎵 Solo</button><button class="btn sm violet" onclick="openPlayer('trio')">🎵 Trio</button><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="openMemorize('solo','chunks')">🧠 Memorize</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}`;
+    ${metaLine({streak,pd,safe:doneToday,skips})}
+    <div class="today-media"><button class="btn sm violet" onclick="openPlayer('solo')">🎵 Solo</button><button class="btn sm violet" onclick="openPlayer('trio')">🎵 Trio</button><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="openMemorize('solo','chunks')">🧠 Memorize</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${funLink({pd,kind})}`;
+  renderDayPlan(today); renderSeasonCard(today);
+  // The next finish line is the fold's one line; the season card (✓ Made it, the week, the pinned notes) opens under it.
+  let cp=null; try{ cp=nextCheckpoint(today,activePlan(today),studioDates(),checkpointTicks()); }catch(e){ console.warn(e); }
+  const sc=$("#seasonCard"); $("#seasonSum").innerHTML=`<span class="fl-text">${finishLine(cp,today)}</span>`; $("#seasonFold").hidden=!cp&&!!(sc&&sc.hidden);
   renderHabit(today,{rec,home,pd});
-  renderNews(); renderPet(); renderAdvent(); renderDares(); gateExtras(extrasOpen({pd,kind}),!playGate); renderGlowNudge(); renderDayPlan(today); renderSundayCard(today); renderSeasonCard(today); renderComp(); renderBites(); renderMindCard(); renderPassCard(); applyPalette();
-  if(ne){ const d=daysUntil(ne.start); $("#todayCount").innerHTML=`<span class="chip sun">🎀 ${d<=0?"Today":d+" days"} · ${esc(shortEventName(ne.name))}</span>`; }
+  renderNews(); renderPet(); renderGlowNudge(); renderSundayCard(today); renderComp(); renderBites(); renderMindCard(); renderPassCard(); applyPalette();
   // this week's fix
   const fix=currentWeekFix(today); const open=Object.values(S.corrections).some(c=>!c.deleted&&c.status!=="done");
   if(fix) $("#weekFix").innerHTML=`<div class="row"><span class="chip violet">${TAG_EMOJI[fix.tag]||"✨"} This week's fix${fix.pinned?" · 📌 "+esc(fix.source||"teacher"):""}</span><span class="grow"></span><button class="btn sm ghost" onclick="showMe('${fix.id}')">Show me</button></div><div class="fix-text">${esc(fix.text)}</div>${videoRow(fix)}`;
@@ -102,7 +105,7 @@ function renderHome(){
   $("#homeWeek").innerHTML=h; const td=$("#homeWeek .day.today"); if(td) $("#homeWeek").scrollLeft=Math.max(0,td.offsetLeft-8);
 }
 // ✨ Pick one extra: the choice cards (a trick, a game, a move, Memorize it), the tired-day row, the moment nudge and the
-// shortcuts — below the plan now, so a bite is an extra, never the first thing on the screen (Build 2).
+// Moment shortcut — on Play since 1.52.0, under the games, so a bite is an extra, never the first thing on Today.
 function renderHabit(today,{rec,home,pd}){
   const el=$("#habitCard"); if(!el) return;
   const bites=(rec&&Array.isArray(rec.bites))?rec.bites:[]; const mp=todayPick(dances(),S.settings,today); const memo=mp?{danceId:mp.dance.id,table:isCueTable(mp.dance.cues),label:mp.run?`${shortName(mp.dance)} · full run`:`${shortName(mp.dance)} · ${mp.chunk.n}`}:null;
@@ -112,7 +115,7 @@ function renderHabit(today,{rec,home,pd}){
     <div class="choice ${cards.length>3?"four":""}">${cards.map(c=>`<button class="choice-card ${c.done?"done":""}" onclick="${c.go}"><span class="ic">${c.done?"✅":c.ic}</span><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></button>`).join("")}</div>
     <div class="tired">${tired?`<span>😴 Rest counted. Streak safe ✓</span>`:`<span>😴 Tired today? That's allowed.</span><div class="row"><button class="btn sm ghost" onclick="habitTired('stretch')">🧘 2-min stretch</button><button class="btn sm ghost" onclick="habitTired('picture')">🎧 Picture the dance</button></div>`}</div>
     ${(()=>{ const n=todayNudge(); return n?`<div class="nudge"><span class="grow">${n.emoji} <b>${esc(n.text)}</b> Make it a moment?</span><button class="btn sm coral" onclick="openMoments('${n.key}')">📸 Yes</button><button class="lnk" onclick="mmLater().then(()=>this.closest('.nudge').remove())">later</button></div>`:""; })()}
-    <div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="showPage('play')">🎮 All games</button><button class="btn sm ghost" onclick="openMoments()">📸 Moment</button></div>`;
+    <div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="openMoments()">📸 Moment</button></div>`;
 }
 // Today's "Show me a move": one technique item with its animated dancer, timed, as a bite.
 function habitMove(){ const m=moveOfDay(todayStr()); if(!m) return toast("No move today"); openPracticeMode([{...m,kind:"tech"}],{title:"✨ Move of the day",bite:"move"}); }

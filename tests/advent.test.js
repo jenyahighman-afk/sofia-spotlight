@@ -9,7 +9,7 @@ const read = (f) => JSON.parse(readFileSync(new URL("../" + f, import.meta.url),
 const { applyData, DATA_FILES } = await import("../js/data.js");
 const got = {}; for (const f of DATA_FILES) got[f] = read("data/" + f + ".json"); applyData(got);
 const adv = got.advent, evs = got.events;
-const { doorsFor, canOpen, openedDates, stickerBook, missedDoors, openPatch, doorText, showEvent, renderAdvent } = await import("../js/advent.js");
+const { doorsFor, canOpen, openedDates, stickerBook, missedDoors, openPatch, doorText, showEvent } = await import("../js/advent.js");
 const { S, migrateDoc, SCHEMA_VERSION, setBackend } = await import("../js/store.js");
 const src = (f) => readFileSync(new URL("../" + f, import.meta.url), "utf8");
 
@@ -48,19 +48,17 @@ test("schema 33: opened doors are real dates, once each, sorted; nothing invente
   assert.deepEqual(migrateDoc("settings", "main", { _v: 32, advent: "x" }).advent, { open: [] }); assert.equal("advent" in migrateDoc("settings", "main", { _v: 32, pin: "2027" }), false);
 });
 
-test("Today row and calendar: open today's door, see what's inside, the sticker book fills, locked doors say no peeking", async () => {
+test("Play's countdown tile and the calendar: open today's door, see what's inside, the sticker book fills, locked doors say no peeking", async () => {
   resetDom(); for (const k of Object.keys(S)) S[k] = {};
   const doors = doorsFor(); const today = new Date(); const iso = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
-  renderAdvent(); const row = el("#adventCard");
-  if (iso < doors[0].date || iso > "2027-01-10") { assert.equal(row.hidden, true, "hidden outside the countdown"); return; }
-  assert.equal(row.hidden, false); assert.ok(row.innerHTML.includes("Open today's door") && row.innerHTML.includes("openAdvent()"), "a door to open today"); assert.ok(row.innerHTML.includes("Winter Showcase") && !row.innerHTML.includes("Winter Formal"), "the show's short name");
+  assert.ok(!src("index.html").includes('id="adventCard"'), "1.52.0: no Today row; the header's sticker is the countdown"); assert.match(src("js/views/play.js"), /go: "openAdvent\(\)"/, "Play's ✨ Extras tile opens the calendar");
+  if (iso < doors[0].date || iso > "2027-01-10") return; // the doors open only during the countdown
   const writes = []; setBackend({ set: async (col, id, rec) => { writes.push({ col, id, rec }); }, del: async () => {} });
   try {
     await window.openAdvent(); assert.deepEqual(S.settings.advent.open, [iso], "today's door is saved as opened"); assert.equal(writes.length, 1);
     const area = el("#adventArea").innerHTML; const door = doors.find(d => d.date === iso); assert.ok(area.includes("advent-reveal pop") && area.includes(doorText(door).replace(/&/g, "&amp;").replace(/"/g, "&quot;").slice(0, 20)), "the surprise shows with a pop");
     assert.ok(area.includes("adventDoor('" + doors.at(-1).date + "')") && area.includes("door locked"), "future doors are in the grid, locked");
-    renderAdvent(); assert.ok(el("#adventCard").innerHTML.includes("📅 Calendar"), "after opening, the row offers the calendar");
     await window.adventDoor(doors.at(-1).date); assert.deepEqual(S.settings.advent.open, [iso], "no peeking at show day"); assert.equal(writes.length, 1);
   } finally { setBackend(null); resetDom(); for (const k of Object.keys(S)) S[k] = {}; }
-  assert.match(src("js/views/home.js"), /renderAdvent\(\)/); assert.match(src("sw.js"), /"\.\/js\/advent\.js"/); assert.match(src("sw.js"), /"\.\/data\/advent\.json"/);
+  assert.match(src("sw.js"), /"\.\/js\/advent\.js"/); assert.match(src("sw.js"), /"\.\/data\/advent\.json"/);
 });

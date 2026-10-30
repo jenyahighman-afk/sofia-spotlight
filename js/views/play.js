@@ -70,6 +70,7 @@ export function renderPlay(){
   if (openGame !== "count" && countRunning()) stopCount(); // leaving the game stops its music or clicks
   $("#gameGrid").hidden = !!openGame; $("#gameBack").hidden = !openGame;
   const px = $("#playExtras"); if (px) px.hidden = !!openGame || gate; renderDares();
+  const pt = $("#playToday"); if (pt) pt.hidden = !!openGame; // ✨ Pick one extra and More for today (drawn by home.js), under the games since 1.52.0
   $$(".game-card").forEach(c => { c.hidden = c.dataset.game !== openGame; });
   csRender(); tfRender(); renderAlong(); renderTeach(); renderCount(); $("#jeBest").textContent=s.jeBest||0; $("#nmBest").textContent=s.nmBest||0; $("#cdBest").textContent=s.cdBest||0; $("#gameBest").textContent=s.gameBest||0; $("#mirrorBest").textContent=s.mirrorBest||0;
 }

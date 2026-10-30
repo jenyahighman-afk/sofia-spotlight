@@ -116,14 +116,13 @@ test("the Bunny: the Pass part is a step once the day counts; the tip of the day
 });
 
 test("Today = one card, one button: the day's action from the plan, the plan-done state, the solo count and the next checkpoint; the extras below; the page order", () => {
-  assert.deepEqual(startButton({ kind: "home", mins: 36, nDone: 0, total: 15 }), { label: "▶ Start · 36 min", go: "showPage('practice');openPracticeMode()", ghost: false });
+  assert.deepEqual(startButton({ kind: "home", mins: 36, nDone: 0, total: 15 }), { label: "▶ Start practice · 36 min", go: "showPage('practice');openPracticeMode()", ghost: false });
   assert.deepEqual(startButton({ kind: "memory", mins: 16, nDone: 0, total: 5 }).label, "▶ 15-min memory run", "the memory run says its own length"); assert.equal(startButton({ kind: "watch", mins: 9, total: 3 }).label, "▶ Watch + picture · 9 min");
   assert.match(startButton({ kind: "home", mins: 36, nDone: 7, total: 15 }).label, /^▶ Keep going · 36 min <span class="today-prog">7 of 15<\/span>$/);
   assert.deepEqual(startButton({ kind: "home", mins: 36, nDone: 15, total: 15 }), { label: "✅ Practice done · 36 min", go: "showPage('practice')", ghost: true });
   assert.deepEqual(startButton({ kind: "rest" }), { label: "🧘 2-min stretch", go: "habitTired('stretch')", ghost: false });
-  const at = (id) => html.indexOf(`id="${id}"`); const order = ["p-home", "todayCard", "dayPlan", "seasonCard", "compCard", "petCard", "newsCard", "passCard", "habitCard", "goalReminder", "glowNudge", "moreToday", "adventCard", "dareCard", "bitesCard", "mindCard", "weekFix", "homeWeek"];
+  const at = (id) => html.indexOf(`id="${id}"`); const order = ["p-home", "todayCard", "seasonFold", "seasonCard", "sundayCard", "compCard", "goalReminder", "glowNudge", "p-dances"]; // 1.52.0: Today fits one screen; the rest moved (tests/today152.test.js)
   for (let i = 1; i < order.length; i++) assert.ok(at(order[i - 1]) < at(order[i]), `${order[i - 1]} before ${order[i]}`);
-  assert.ok(at("moreToday") < at("adventCard") && at("adventCard") < html.indexOf("</details>", at("moreToday")), "the countdown doors sit under More for today");
   const home = src("js/views/home.js"); assert.match(home, /class="today-date small"/); assert.match(home, /today-start/); assert.match(home, /openMemorize\('solo','chunks'\)/); assert.match(home, /renderPassCard\(\)/); assert.match(home, /function renderHabit/); assert.ok(home.indexOf("choice-card") > home.indexOf("function renderHabit"), "the choice cards are drawn by the extras card, not the one card");
   const memo = cardsFor("2026-11-05", { memo: { danceId: "solo", table: true, label: "Solo · Soft half" } }).find(c => c.id === "memo"); assert.equal(memo.go, "openMemorize('solo','chunks')", "the solo's Memorize card opens the one memorize sheet");
   assert.equal(cardsFor("2026-11-05", { memo: { danceId: "trio", table: false, label: "Trio" } }).find(c => c.id === "memo").go, "showPage('dances');memoFocus('trio')", "the trio (no cue table) keeps the five steps");
@@ -144,7 +143,7 @@ test("the screens render with Build 2 in place: the one card, the extras, the Pa
   const home = await import("../js/views/home.js"); const stage = await import("../js/stage.js"); const season = await import("../js/season15.js"); const ready = await import("../js/ready.js"); const nav = await import("../js/nav.js");
   nav.initNav(); stage.initStage(); season.initSeason(); ready.initReady(); P.initPass();
   assert.doesNotThrow(() => home.renderHome(), "Today renders");
-  const tc = el("#todayCard").innerHTML; assert.match(tc, /today-start/); assert.match(tc, /🧠 Solo: <b>0 \/ 28<\/b> moves known/); assert.match(tc, /openReady\(\)/); assert.match(tc, /🎯 /); assert.match(tc, /🧠 Memorize/);
+  const tc = el("#todayCard").innerHTML; assert.match(tc, /today-start/); assert.match(tc, /How ready\?/); assert.match(tc, /openReady\(\)/); assert.match(el("#seasonSum").innerHTML, /🎯 |🏁 My finish lines/); assert.match(tc, /🧠 Memorize/);
   assert.match(el("#habitCard").innerHTML, /Pick one extra/); assert.equal((el("#habitCard").innerHTML.match(/choice-card/g) || []).length, 4);
   assert.match(el("#passCard").innerHTML, /Part 1 of 10 · 🎭 Meet your crew · 2 min/); assert.match(el("#passCard").innerHTML, /openPass\('crew'\)/); assert.match(el("#passCard").innerHTML, /Tip of the day/);
   const sc = el("#seasonCard").innerHTML; assert.match(sc, /cpTick\('2026-09-28:[a-z0-9]+',true\)|cpTick\('2027-01-11:[a-z0-9]+',true\)|Book a private|openByWhen\(\)/, "a checkpoint row or the by-when link");

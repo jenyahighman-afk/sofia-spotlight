@@ -90,7 +90,7 @@ test("renders: the Me card picks a pose, then shows the pose, months and the two
 
 test("wiring: the ids sit where they should in index.html, Today and Me render them, the upload reuses the Moments path, nothing public", () => {
   const html = src("index.html");
-  assert.ok(html.indexOf('id="glowNudge"') > html.indexOf('id="habitCard"') && html.indexOf('id="glowNudge"') < html.indexOf('id="moreToday"') && html.indexOf('id="glowNudge"') > html.indexOf('id="p-home"'), "the nudge sits below the one card and the extras, above More (Build 2)");
+  assert.ok(html.indexOf('id="glowNudge"') > html.indexOf('id="todayCard"') && html.indexOf('id="glowNudge"') < html.indexOf('id="p-dances"'), "the nudge sits on Today under the one card (1.52.0: Today fits one screen)");
   assert.match(html, /id="glowNudge"[^>]*hidden/);
   const me = html.indexOf('id="p-me"'), card = html.indexOf('id="meGlow"'), area = html.indexOf('id="glowArea"'), friends = html.indexOf('id="meFriends"');
   assert.ok(me < card && card < area && area < friends, "meGlow and glowArea right before meFriends inside p-me");

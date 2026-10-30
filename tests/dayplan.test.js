@@ -65,8 +65,9 @@ test("schema 30 normalizes practice.plan, never invents it", () => {
   assert.deepEqual(migrateDoc("practice", "2026-10-17", { _v: 21, bites: ["plan", "zzz"] }).bites, ["plan"], "plan is a bite kind");
 });
 
-test("on Today the plan card comes right after the one card (Build 2), then the season card and the pet; the show countdown waits under More", () => {
+test("on Today the dated line sits inside the one card and the finish lines fold right under it (1.52.0: Today fits one screen)", () => {
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8"); const at = (id) => html.indexOf(`id="${id}"`);
-  assert.ok(at("todayCard") < at("dayPlan") && at("dayPlan") < at("seasonCard") && at("seasonCard") < at("petCard") && at("petCard") < at("adventCard"), "one card → plan → season → pet → countdown");
-  assert.ok(/id="todayCard"[^\n]*\n\s*<div class="card mint dayplan" id="dayPlan"/.test(html), "nothing in between the one card and the plan");
+  assert.ok(at("p-home") < at("todayCard") && at("todayCard") < at("seasonFold") && at("seasonFold") < at("seasonCard") && at("seasonCard") < at("p-dances"), "one card → the folded finish lines, all on Today");
+  assert.ok(/id="todayCard"><\/div>\n\s*<details class="card violet season-fold" id="seasonFold"/.test(html.replace(/\r\n/g, "\n")), "nothing in between the one card and its finish line");
+  assert.equal(at("dayPlan"), -1, "the dated line is drawn inside the card (home.js), not a box of its own");
 });

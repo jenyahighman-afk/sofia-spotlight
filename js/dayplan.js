@@ -35,10 +35,11 @@ export function goFor(go){
 // its own (they said "trio, the ending, a trio chunk" under a card that said "the solo first"). What's left of the dated sheet
 // is its headline and its note: "📋 ★ solo checkpoint · home day", "Halloween: the checkpoint takes 5 minutes…". A day with
 // neither (or no entry at all) shows nothing — the one card above is the plan. The ticks (tickPlan, dpTick: a must box =
-// the "plan" bite) stay as they were for anything that still reads them. Pure.
+// the "plan" bite) stay as they were for anything that still reads them. Since 1.52.0 it is one line inside the one card
+// (the card already says the kind of day), and a memory-run day adds nothing: the big button says the same words. Pure.
 export function dayNoteHtml(p){
-  if (!p || (!p.label && !p.note)) return "";
-  return `<div class="row dp-head"><b class="grow">📋 ${esc(p.label || "Today's plan")}</b><span class="chip">${TAGS[p.tag]}</span></div>${p.note ? `<div class="small dp-note">${esc(p.note)}</div>` : ""}`;
+  if (!p || (!p.label && !p.note) || /memory run/i.test(p.label)) return "";
+  return `📋 ${p.label ? `<b>${esc(p.label)}</b>` : ""}${p.label && p.note ? " · " : ""}${p.note ? esc(p.note) : ""}`;
 }
 
 // ---- DOM ----

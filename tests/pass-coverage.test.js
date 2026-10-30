@@ -41,6 +41,7 @@ const PHRASES = {
   "15-week-plan-teacher-homework-studio-dates": "Own it",
   "practice-rules-from-the-research": "two videos in a row",
   "today-one-card-one-button": "⭐ Plan done",
+  "today-fits-one-screen": "Spotlight app = TODAY",
   "checkpoints-as-goals": "✓ Made it",
   "solo-readiness-bars": "How ready?",
   "backstage-pass-in-the-app": "Backstage Pass",
