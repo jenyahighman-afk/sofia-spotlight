@@ -21,6 +21,17 @@ export const reviewSunday = (date) => shift(date, -new Date(date + "T00:00:00").
 // The record's key: the plan week that Sunday closes, as its Monday (corrections.planWeekKey; the same key as the week's fix).
 export const sundayOf = (date) => planWeekKey(reviewSunday(date));
 export const EMPTY = { went: "", fix: "", fixId: "", note: "", done: "" };
+// The fix the sheet asks about: the one of the week that Sunday closes. On a Sunday that is this week's fix; on the days after,
+// the app has moved on to the new week's, so: the week's fix while settings still hold it, the one already answered on this
+// sheet, a teacher's pinned fix (it carries over), else none, and the step is skipped (the Oct 30 re-audit: a weekday sheet
+// asked about this week's fix and filed the answer under last week). Pure but for weekFixOrPick on a Sunday.
+export function sheetFix(date, settings = S.settings, corrections = S.corrections){
+  if (isSunday(date)) return weekFixOrPick(date);
+  const key = sundayOf(date); const ok = (c) => c && !c.deleted ? c : null; const w = (settings || {}).weekFix;
+  if (w && w.week === key && ok((corrections || {})[w.id])) return corrections[w.id];
+  const rec = sundayRecords(settings)[key]; if (rec && rec.fixId && ok((corrections || {})[rec.fixId])) return corrections[rec.fixId];
+  return pinnedOpen(corrections || {})[0] || null;
+}
 export const sundayRecords = (settings = S.settings) => normalizeSunday((settings || {}).sunday);
 export const sundayRecord = (settings, date) => sundayRecords(settings)[sundayOf(date)] || null;
 // Where the week's sheet stands: { key, sunday, rec, done, started, label, bits } (bits = the short facts for a card or a line).
@@ -67,7 +78,8 @@ async function save(patch){ const key = sundayOf(today()); const all = { ...sund
 const bar = () => `<div class="sd-steps">${STEPS.map((s, i) => `<span class="${i + 1 < SD.step ? "done" : i + 1 === SD.step ? "on" : ""}"></span>`).join("")}</div><div class="small muted">Step ${SD.step} of ${STEPS.length} · ${STEPS[SD.step - 1]}</div>`;
 const nav = (back, next) => `<div class="row sd-nav">${back ? `<button class="btn sm ghost" onclick="sdStep(${SD.step - 1})">‹ Back</button>` : ""}<span class="grow"></span>${next || ""}</div>`;
 function fixStep(r){
-  const fix = weekFixOrPick(today()); if (!fix) return `<div class="sd-q">🎯 This week's fix</div><p class="small muted">No fix picked for this week yet.</p><div class="row"><button class="btn sm coral" onclick="sdPickFix()">Pick one</button></div>${nav(true, `<button class="btn sm ghost" onclick="sdStep(4)">Skip ›</button>`)}`;
+  const fix = sheetFix(today()); if (!fix && !isSunday(today())) return `<div class="sd-q">🎯 Last week's fix</div><p class="small muted">The app has moved on to this week's fix, so this step is skipped. On Sunday it asks on the day.</p>${nav(true, `<button class="btn sm coral" onclick="sdStep(4)">Next ›</button>`)}`;
+  if (!fix) return `<div class="sd-q">🎯 This week's fix</div><p class="small muted">No fix picked for this week yet.</p><div class="row"><button class="btn sm coral" onclick="sdPickFix()">Pick one</button></div>${nav(true, `<button class="btn sm ghost" onclick="sdStep(4)">Skip ›</button>`)}`;
   const n = seenCount(S.settings.fixSeen, fix.id); const twice = n >= FIX_SEEN_TO_MOVE; const mem = offersNow().find(o => o.memoryDone);
   const recorded = r.fixId === fix.id && r.fix ? `<div class="small">Today: <b>${r.fix === "yes" ? "it showed ✓" : "not yet"}</b></div>` : "";
   return `<div class="sd-q">🎯 Did the fix show on the video?</div><div class="fix-text">${TAG_EMOJI[fix.tag] || "✨"} ${esc(fix.text)}${fix.pinned ? ` <span class="small muted">· 📌 ${esc(fix.source || "teacher")}</span>` : ""}</div>
@@ -92,7 +104,7 @@ export function openSunday(step){ SD.msg = ""; SD.step = step || (cur().done ? 0
 function go(n){ SD.msg = ""; SD.step = Math.max(0, Math.min(STEPS.length, +n || 0)); render(); const b = $("#stageBody"); if (b) b.scrollTop = 0; }
 async function went(){ const v = String((($("#sdWent") || {}).value) || "").replace(/\s+/g, " ").trim().slice(0, WENT_MAX); await save({ went: v }); go(3); }
 async function fix(ok){
-  const f = weekFixOrPick(today()); if (!f) return go(4); const r = await fixOnVideo(f.id, ok); await save({ fix: ok ? "yes" : "no", fixId: f.id });
+  const f = sheetFix(today()); if (!f) return go(4); const r = await fixOnVideo(f.id, ok); await save({ fix: ok ? "yes" : "no", fixId: f.id });
   SD.msg = r.moved ? "Twice on video! ✅ Next fix: " + r.moved.text.slice(0, 40) : r.ask ? "Twice in a row 🎉 A grown-up checks it off in Grown-ups" : ok ? `📹 ${r.count} of ${FIX_SEEN_TO_MOVE}: one more video to go` : "Okay, the count starts again";
   render();
 }

@@ -95,7 +95,7 @@ test("wiring: the ids sit where they should in index.html, Today and Me render t
   const me = html.indexOf('id="p-me"'), card = html.indexOf('id="meGlow"'), area = html.indexOf('id="glowArea"'), friends = html.indexOf('id="meFriends"');
   assert.ok(me < card && card < area && area < friends, "meGlow and glowArea right before meFriends inside p-me");
   assert.ok(html.indexOf("</section>", me) > friends);
-  assert.match(src("js/views/home.js"), /renderGlowNudge\(\)/); assert.match(src("js/views/me.js"), /renderGlowCard\(\)/); assert.match(src("js/app.js"), /initGlow\(\)/);
+  assert.match(src("js/views/home.js"), /renderGlowNudge[,(]/); assert.match(src("js/views/me.js"), /renderGlowCard\(\)/); assert.match(src("js/app.js"), /initGlow\(\)/);
   const g = src("js/glow.js"); assert.match(g, /media\.upload\("photos"/); assert.match(g, /storeSet\("photos"/); assert.match(g, /resizeImage/);
   assert.ok(!/firestore\.rules|public|publish/i.test(g.replace(/^\/\/.*$/gm, "")), "no public sharing code");
   assert.ok(src("sw.js").includes("./js/glow.js"));

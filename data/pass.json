@@ -57,12 +57,12 @@
    "id": "week", "e": "📅", "n": "Your week", "mins": 1,
    "lines": [
     "Mon · Ballet, Acro, Jazz Tech at the studio (4:30–7:30). At home: watch Hannah's two videos, and dance the solo in your head in the car. No dancing tonight.",
-    "Tue · Hip Hop, Ballroom (5:30–7:30) + the 15-minute memory run.",
-    "Wed · Contemporary (6:30–7:30) + the 15-minute memory run. Solo rehearsal when one is booked.",
-    "Thu · Home: strong + bendy + trio + solo (35–40 min).",
-    "Fri · Home: technique + this week's trick + solo (35–40 min).",
-    "Sat · Co Tech + PITCH rehearsal (10:00–12:15) + the 15-minute memory run. The big groups practice here.",
-    "Sun · Home: film the solo + trio + film review (the 🎬 Sunday sheet). Plan your week on Toolkit page 6."
+    "Tue · Hip Hop, Ballroom (5:30–7:30) + the memory run.",
+    "Wed · Contemporary (6:30–7:30) + the memory run. Solo rehearsal when one is booked.",
+    "Thu · Home: strong + bendy + technique, your fix, knees or a trick, aerial strength, solo + trio (35–45 min).",
+    "Fri · Home: the same as Thursday, with aerial drills (35–45 min).",
+    "Sat · Co Tech + PITCH rehearsal (10:00–12:15) + the memory run. The big groups practice here.",
+    "Sun · Home: the session, then film the solo + trio + film review (the 🎬 Sunday sheet). Plan your week on Toolkit page 6."
    ],
    "check": { "q": "Which days are home practice days?", "a": ["Mon, Tue, Wed", "Thu, Fri, Sun", "Every single day"], "ok": 1, "yay": "Yes! Thu, Fri and Sun at home 🏠", "hint": "Mon is videos and picturing; Tue, Wed and Sat get the short memory run." }
   },
@@ -152,6 +152,7 @@
   { "t": "Home day: the solo and the trio first. The countdown door and the dare open once both are done ⭐", "when": ["home"], "part": "time" },
   { "t": "Snack first, dance about 45 min later, dinner after. Never right after a big meal 🍌", "when": ["home"], "part": "food" },
   { "t": "Keep Toolkit page 4 open while you practice. Your fixes are right there 👀", "when": ["home"], "part": "grab" },
+  { "t": "🎬 Coach corner (on Practice): your solo tricks, and how feet, knees, eyes and arms did in your reviews.", "when": ["home"], "part": "grab" },
   { "t": "When the app says ⭐ Plan done, a sticker goes on Toolkit page 2.", "when": ["home"], "part": "grab" },
   { "t": "Warm up first, always. Then the bendy stuff 🧘", "when": ["home"], "part": "body" },
   { "t": "Stop before you're too tired. Tired teaches your body the wrong way.", "when": ["home"], "part": "body" },

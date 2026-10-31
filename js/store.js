@@ -615,9 +615,14 @@ export function docTime(doc){ if (!doc) return 0; if (typeof doc._at === "number
 // A dance's cue table shows the cue check tool's nudges (cueTimes) over the built-in times; everything else comes from data.
 export function dances(){ const merged={}; DEFAULT_DANCES.forEach(d=>merged[d.id]={...d}); Object.entries(S.dances).forEach(([id,d])=>merged[id]={...(merged[id]||{}),...d}); return Object.values(merged).filter(d=>!d.deleted).map(d=>d.cueTimes&&isCueTable(d.cues)?{...d,cues:applyCueTimes(d.cues,d.cueTimes)}:d); }
 // One-off studio dates (events.kind "class": a booked solo rehearsal, a make-up class) are not shows: no countdown, no comp mode.
-export const isStudioDate = (e) => !!e && e.kind === "class";
-export function events(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted&&!isStudioDate(e)).sort((a,b)=>a.start.localeCompare(b.start)); }
+// A pair offered as "sign up for one" (`pick`: the Dec 6 / Dec 12 solo-trio showings) is a studio date only once the family picks
+// it (`chosen`, Schedule → ✓ This one); until then it, a hold weekend and a deadline (kinds "hold", "deadline") are calendar-only
+// (1.57.0): on the calendar, the week strip and Mom's card, never a studio day, a show or a countdown.
+export const isStudioDate = (e) => !!e && e.kind === "class" && (!e.pick || !!e.chosen);
+export const isCalendarOnly = (e) => !!e && (e.kind === "hold" || e.kind === "deadline" || (e.kind === "class" && !!e.pick && !e.chosen));
+export function events(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted&&!isStudioDate(e)&&!isCalendarOnly(e)).sort((a,b)=>a.start.localeCompare(b.start)); }
 export function studioDates(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted&&isStudioDate(e)).sort((a,b)=>a.start.localeCompare(b.start)); }
+export function calendarOnly(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted&&isCalendarOnly(e)).sort((a,b)=>a.start.localeCompare(b.start)); }
 export function nextEvent(){ return events().find(e=>daysUntil(e.end)>=0); }
 export function pin(){ return typeof S.settings.pin === "string" && S.settings.pin ? S.settings.pin : DEFAULT_PIN; }
 export function pinOn(){ return S.settings.pinOn !== false; }

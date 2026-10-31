@@ -163,7 +163,7 @@
    "Wanna dance? Pick one below 👇",
    "I've been practicing my {move}! Your turn?",
    "Ready when you are! 💃",
-   "One bite and I'll show you a move!",
+   "Dance your solo and I'll show you a move!",
    "Let's dance today, {who}!"
   ],
   "danced": [
@@ -186,7 +186,7 @@
   "hello": [
    "Hi! I'm {name}! Dance with me and I'll grow 🌱",
    "Hi {who}! I'm new here. Practice with me? 💖",
-   "Hello! One bite and I'll learn my first move!"
+   "Hello! Dance with me and I'll learn my first move!"
   ]
  }
 }

@@ -23,7 +23,9 @@ function render(){
     : `<p>Prop the phone up so all of you is in the picture. Film one chunk: 8 to 16 counts, with the music.</p>${cam}<p class="small muted">The clip stays on this phone. Nothing is uploaded. Watch it right here, then film it again.</p>`;
 }
 export function openFilm(){ drop(); F.n = 0; render(); $("#film").hidden = false; document.body.classList.add("modal"); }
-export function closeFilm(){ const v = $("#filmVideo"); if (v) { try { v.pause(); } catch (e) {} } drop(); $("#film").hidden = true; if ($("#pmode").hidden) document.body.classList.remove("modal"); }
+// Closing lets the clip go: pause it, unload it from the <video> (it stayed loaded, holding memory, and could replay),
+// revoke its URL and empty the sheet.
+export function closeFilm(){ const v = $("#filmVideo"); if (v) { try { v.pause(); v.removeAttribute("src"); v.load(); } catch (e) {} } drop(); render(); $("#film").hidden = true; if ($("#pmode").hidden) document.body.classList.remove("modal"); }
 function picked(file){ if (!file) return; if (!isVideoFile(file)) return toast("That isn't a video. Tap 🎥 and film one."); drop(); F.file = file; F.url = URL.createObjectURL(file); F.n++; render(); }
 async function keep(){ if (!F.file) return; try { await saveBlob(F.file, clipFileName(F.file, todayStr(), F.n)); } catch (e) { console.warn(e); toast("Couldn't save it here"); } }
 export function initFilm(){ const i = $("#filmIn"); if (i) i.onchange = () => { const f = i.files && i.files[0]; i.value = ""; picked(f); }; const c = $("#filmClose"); if (c) c.onclick = closeFilm; }

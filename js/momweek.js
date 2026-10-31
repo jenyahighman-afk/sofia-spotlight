@@ -5,7 +5,7 @@
 // checkpoint, the imagery script read-aloud window (plan rules.imagery.parentDays: a grown-up reads the steps for the first
 // two weeks, until Nov 23), and the next mini audience. Pure parts up top (tested in Node); the card below.
 import { $, esc, fmt, todayStr, expose } from "./util.js";
-import { S, studioDates } from "./store.js";
+import { S, studioDates, calendarOnly } from "./store.js";
 import { CLASSES, HOME_DAYS } from "./data.js";
 import { weekOf, activePlan, nextCheckpoint, checkpointTicks, allCheckpoints, tickedOn } from "./season15.js";
 import { weekFixOrPick, seenCount, FIX_SEEN_TO_MOVE, TAG_EMOJI } from "./corrections.js";
@@ -36,13 +36,13 @@ export function grownUpItem(items){
 export function momTodayLine(date, { kind = "rest", classes = [], items = [], homePlan = "" } = {}){
   const wd = new Date(date + "T00:00:00").getDay(); const last = classes.length ? shortClass(classes[classes.length - 1].name) : "";
   const mins = Math.round((items || []).reduce((a, i) => a + (+i.secs || 0), 0) / 60);
-  const what = kind === "watch" ? "studio day: Hannah's videos, then the solo in the car — no dancing tonight" : kind === "memory" ? `studio day: the 15-minute memory run${last ? " after " + last : ""}` : kind === "home" ? `home day: ${homePlan || "home practice"}${mins ? ` · ${mins} min` : ""}` : "rest day: nothing planned, a stretch if she likes";
+  const what = kind === "watch" ? "studio day: Hannah's videos, then the solo in the car — no dancing tonight" : kind === "memory" ? `studio day: the memory run${last ? " after " + last : ""}` : kind === "home" ? `home day: ${homePlan || "home practice"}${mins ? ` · ${mins} min` : ""}` : "rest day: nothing planned, a stretch if she likes";
   const g = grownUpItem(items);
   return { k: "today", ic: kind === "watch" ? "📹" : kind === "memory" ? "🏫" : kind === "home" ? "🏠" : "🌙", text: `${DAYS[wd]}, ${what}${g ? ` · ${g} wants a grown-up` : ""}` };
 }
 // The lines: [{ k, ic, text, sub?, warn?, go?, btn? }]. Everything is handed in, so the test can set the week up; `today`
 // (the kind of day, the classes, the plan's items) adds the first line when given.
-export function momWeekLines(date, { plan = activePlan(date), week = weekOf(date, plan), sunday = {}, fix = null, seen = {}, oneOffs = [], ticks = {}, today = null } = {}){
+export function momWeekLines(date, { plan = activePlan(date), week = weekOf(date, plan), sunday = {}, fix = null, seen = {}, oneOffs = [], ticks = {}, today = null, dates = [] } = {}){
   const out = [];
   // 0. today (Build 4)
   if (today) out.push(momTodayLine(date, today));
@@ -62,9 +62,12 @@ export function momWeekLines(date, { plan = activePlan(date), week = weekOf(date
   // 4. privates this month
   const month = date.slice(0, 7); const st = privatesStatus(oneOffs, month); const r = nextRehearsal(oneOffs, date);
   if (st[0].need) out.push({ k: "privates", ic: "🩰", text: `Privates in ${monthName(month)}: ${st.map(s => `${s.label} ${s.have}/${s.need}${s.short ? "" : " ✓"}`).join(" · ")}`, sub: r ? `Next solo private: ${fmt(r.start)}${r.time ? " " + r.time : ""}` : "No solo private booked ahead", warn: st.some(s => s.short) || !r, go: "openRehearsal('solo')", btn: "📅 Book" });
+  // 4b. the studio's dates in the next 7 days (1.57.0): a showing, a hold weekend, a deadline; an unpicked pair says "sign up for one"
+  const soon = (dates || []).filter(e => e && !e.deleted && (e.end || e.start) >= date && e.start <= addDays(date, 6)).sort((a, b) => a.start.localeCompare(b.start));
+  if (soon.length) out.push({ k: "dates", ic: "🗓️", text: "Coming up: " + soon.map(e => `${fmt(e.start)} · ${e.short || e.name}${e.pick && !e.chosen ? " (sign up for one)" : ""}`).join("; "), sub: soon[0].notes || "", warn: soon.some(e => e.kind === "deadline" || (e.pick && !e.chosen)), go: "showPage('schedule')", btn: "🗓️ Calendar" });
   // 5. the next checkpoint
   const cp = nextCheckpoint(date, plan, oneOffs, ticks);
-  if (cp) out.push({ k: "checkpoint", ic: "🎯", text: cp.state === "book" ? `Book it: ${cp.t}` : cp.state === "passed" ? `${fmt(cp.d)} · ${cp.t}` : `Next checkpoint: ${fmt(cp.d)}${cp.state === "today" ? " · today" : ` (${dnum(cp.d) - dnum(date)} days)`} · ${cp.t}`, sub: cp.state === "passed" ? "Passed and not ticked: did she make it? (✓ on Today's week card)" : cp.state === "book" ? "The rehearsal checkpoint needs a booked private" : "", warn: cp.state === "passed" || cp.state === "book", go: cp.state === "book" ? "openRehearsal('solo')" : "", btn: cp.state === "book" ? "📅 Book" : "" });
+  if (cp) out.push({ k: "checkpoint", ic: "🎯", text: cp.state === "book" ? `Book it: ${cp.t}` : cp.state === "passed" ? `${fmt(cp.d)} · ${cp.t}` : `Next checkpoint: ${fmt(cp.d)}${cp.state === "today" ? " · today" : ` (${dnum(cp.d) - dnum(date)} days)`} · ${cp.t}`, sub: cp.state === "passed" ? "Passed and not ticked: did she make it? (tap the 🎯 line on Today, then ✓ Made it)" : cp.state === "book" ? "The rehearsal checkpoint needs a booked private" : "", warn: cp.state === "passed" || cp.state === "book", go: cp.state === "book" ? "openRehearsal('solo')" : "", btn: cp.state === "book" ? "📅 Book" : "" });
   // 6. the Show-in-your-head script: a grown-up reads it aloud for the first parentDays
   const im = (plan && plan.rules && plan.rules.imagery) || null;
   if (im && im.from) { const until = addDays(im.from, +im.parentDays || 0);
@@ -75,7 +78,7 @@ export function momWeekLines(date, { plan = activePlan(date), week = weekOf(date
   const minis = allCheckpoints(plan, oneOffs, date).filter(c => MINI_RE.test(c.t));
   if (minis.length) { const open = minis.find(c => !tickedOn(ticks, c.id));
     if (!open) out.push({ k: "mini", ic: "🎤", text: `Mini audiences: all ${minis.length} done ✓` });
-    else if (open.d && open.d < date) out.push({ k: "mini", ic: "🎤", text: `${open.t} was due ${fmt(open.d)}`, sub: "Did it happen? Tick it on Today's week card, or plan the next one", warn: true });
+    else if (open.d && open.d < date) out.push({ k: "mini", ic: "🎤", text: `${open.t} was due ${fmt(open.d)}`, sub: "Did it happen? Tick it from the 🎯 line on Today, or plan the next one", warn: true });
     else { const left = open.d ? dnum(open.d) - dnum(date) : null; out.push({ k: "mini", ic: "🎤", text: `Next mini audience: ${open.d ? fmt(open.d) : "not dated"}${left !== null ? ` (${left} day${left === 1 ? "" : "s"})` : ""}`, sub: open.t, warn: left !== null && left <= 7 }); } }
   return out;
 }
@@ -88,7 +91,7 @@ export function momToday(date = todayStr()){
   const kind = cls.length ? shortKind(date) : HOME_DAYS[wd] ? "home" : "rest";
   return { kind, classes: cls, items: kind === "rest" ? [] : planFor(date), homePlan: HOME_DAYS[wd] || "" };
 }
-export function momWeekNow(date = todayStr()){ return momWeekLines(date, { sunday: sundayRecords(S.settings), fix: weekFixOrPick(date), seen: S.settings.fixSeen, oneOffs: studioDates(), ticks: checkpointTicks(), today: momToday(date) }); }
+export function momWeekNow(date = todayStr()){ return momWeekLines(date, { sunday: sundayRecords(S.settings), fix: weekFixOrPick(date), seen: S.settings.fixSeen, oneOffs: studioDates(), ticks: checkpointTicks(), today: momToday(date), dates: [...calendarOnly(), ...studioDates().filter(e => e.showing)] }); }
 export function renderMomWeek(){
   const el = $("#momWeek"); if (!el) return; const date = todayStr(); let lines; try { lines = momWeekNow(date); } catch (e) { console.warn("momweek", e); el.innerHTML = `<p class="small muted">Couldn't read the week.</p>`; return; }
   el.innerHTML = `<div class="row"><h3 class="grow">👩 This week, for Mom</h3><span class="chip">${esc(fmt(date))}</span></div>

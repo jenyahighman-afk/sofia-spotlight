@@ -35,7 +35,7 @@ test("Memory + knees until Nov 9, then the week's numbered trick(s), rest on the
   assert.equal(weakestTrick({ "s-side-sit": { state: "clean" } }).id, "s-side-ext", "the first numbered trick that isn't clean");
 });
 test("checkpoints: Oct 31 trio, Nov 1 solo, the next booked solo rehearsal after that, Jan 2, the mini show two days before the show, show day (one showDay field)", () => {
-  const cps = checkpoints("2026-10-26", plan, []); assert.deepEqual(cps.map(c => c.d), ["2026-10-31", "2026-11-01", "2026-11-29", "2026-12-06", "2026-12-20", "2026-12-20", "2026-12-27", "2027-01-02", "2027-01-06", "2027-01-08", ""], "no rehearsal booked: undated, last; the finish lines dated (1.47.1)");
+  const cps = checkpoints("2026-10-26", plan, []); assert.deepEqual(cps.map(c => c.d), ["2026-10-31", "2026-11-01", "2026-11-29", "2026-12-05", "2026-12-06", "2026-12-06", "2026-12-20", "2026-12-20", "2026-12-27", "2027-01-02", "2027-01-06", "2027-01-08", ""], "no rehearsal booked: undated, last; the finish lines dated (1.47.1); the showings (1.57.0)");
   assert.equal(plan.showDay, "2027-01-08"); assert.equal(cps.find(c => /Showcase/.test(c.t)).d, plan.showDay); assert.equal(cps.find(c => /mini show/.test(c.t)).d, "2027-01-06");
   const moved = checkpoints("2026-10-26", { ...plan, showDay: "2027-01-09" }, []); assert.equal(moved.find(c => /Showcase/.test(c.t)).d, "2027-01-09"); assert.equal(moved.find(c => /mini show/.test(c.t)).d, "2027-01-07", "move showDay and both follow");
   const booked = [bookingRecord("2026-11-04", "3:30–4:00 PM", "Solo rehearsal with Ms. Brittany", "GHD", "r1"), bookingRecord("2026-10-28", "3:30", "Solo rehearsal with Ms. Brittany", "", "r0")];
@@ -52,7 +52,7 @@ test("no weekly Wednesday solo rehearsal; the Thu Oct 29 Acro make-up is a one-o
   const r = bookingRecord("2026-11-04", "3:30–4:00 PM"); assert.equal(r.kind, "class"); assert.ok(isRehearsal(r)); assert.ok(r.id.startsWith("r-")); assert.equal(isShortDay("2026-11-04", [], [r]), true);
   assert.equal(nextRehearsal([r, { ...r, id: "x", start: "2026-11-02", deleted: true }], "2026-11-01").id, r.id, "a cancelled one doesn't count");
 });
-test("the daily plan: a 15-minute memory run on studio days, the knee block instead of a trick until Nov 9, this week's trick after", () => {
+test("the daily plan: a memory run on studio days, the knee block instead of a trick until Nov 9, this week's trick after", () => {
   const base = { pool, date: "2026-10-29", tricks: ["Floor kick (1:40.75): 8 slow kicks.", "Side-sit leg reach (0:10.5): sit."], dances: [{ id: "solo" }, { id: "trio" }] };
   const short = buildPlan({ ...base, short: true }); assert.deepEqual(short.map(i => i.id), ["mem-warm", "mem-top", "mem-chunk", "mem-trio", "mem-predict", "mem-picture"]); assert.equal(short.reduce((s, i) => s + i.secs, 0), 1080, "about 15 minutes of solo, plus the warm-up and two minutes of trio (1.56.0)");
   const knees = buildPlan({ ...base, date: "2026-10-30", focus: "knees" }); assert.ok(knees.some(i => i.id === KNEE_DRILL.id)); assert.ok(!knees.some(i => /^trick-/.test(i.id)), "no trick drill");
@@ -72,8 +72,8 @@ test("the phases list on Practice matches the plan", () => {
   const ph = json("phases"); assert.deepEqual(ph.slice(0, 4).map(p => [p.n, p.d]), plan.phases.map(p => [p.n, p.d]));
   assert.ok(!JSON.stringify(ph).includes("Oct 18"), "no leftover dates from the old phases");
 });
-test("Today's dated plan: Thu Oct 29 (Acro make-up 5:30) is the 15-minute memory run, not the full home session", () => {
-  const d = json("plan10").days["2026-10-29"]; assert.equal(d.tag, "class"); assert.deepEqual(d.mins, [15, 5]); assert.match(d.classes, /Acro make-up class 5:30 PM/); assert.match(d.label, /15-minute memory run/);
+test("Today's dated plan: Thu Oct 29 (Acro make-up 5:30) is the memory run, not the full home session", () => {
+  const d = json("plan10").days["2026-10-29"]; assert.equal(d.tag, "class"); assert.deepEqual(d.mins, [15, 5]); assert.match(d.classes, /Acro make-up class 5:30 PM/); assert.match(d.label, /memory run/i);
   assert.ok(d.must.some(m => m.go === "player:trio"), "the trio's no-video run before Saturday stays"); assert.ok(!d.must.some(m => /Warm-up 5 min/.test(m.t)));
 });
 

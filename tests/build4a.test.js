@@ -28,7 +28,7 @@ const opts = (oneOffs = []) => ({ classes, oneOffs, homeDays, studioKind });
 
 test("one answer to what kind of day it is (daykind.js): a home weekday with nothing booked is a home day; a class or a booked date makes it a studio day with the memory run (Monday: the watch day); the rest rest", () => {
   assert.equal(DK.weekdayOf("2026-10-29"), 4, "Thu"); assert.equal(DK.weekdayOf("2026-11-01"), 0, "Sun");
-  assert.equal(DK.dayKind("2026-10-29", opts([ACRO])), "memory", "Thu Oct 29 with the Acro make-up: a studio day, the 15-minute memory run");
+  assert.equal(DK.dayKind("2026-10-29", opts([ACRO])), "memory", "Thu Oct 29 with the Acro make-up: a studio day, the memory run");
   assert.equal(DK.dayKind("2026-10-29", opts()), "home", "the same Thursday with nothing booked: a home day");
   assert.equal(DK.dayKind("2026-11-05", opts()), "home"); assert.equal(DK.dayKind("2026-11-06", opts()), "home", "Fri"); assert.equal(DK.dayKind("2026-11-01", opts()), "home", "Sun");
   assert.equal(DK.dayKind("2026-11-02", opts()), "watch", "Monday's three classes: Hannah's videos and the solo in her head");
@@ -38,13 +38,13 @@ test("one answer to what kind of day it is (daykind.js): a home weekday with not
   assert.equal(DK.isHomeDay("2026-11-05", opts()), true); assert.equal(DK.isHomeDay("2026-10-29", opts([ACRO])), false);
   // the "Home: …" line for a day's cell (the week strip, the Schedule)
   assert.equal(DK.homeLine("2026-11-05", opts()), "Strength + flex + solo run"); assert.equal(DK.homeLine("2026-11-06", opts()), "Technique + run"); assert.equal(DK.homeLine("2026-11-01", opts()), "Full-out run (film it)");
-  assert.equal(DK.homeLine("2026-10-29", opts([ACRO])), "15-min memory run", "a class on a home weekday: the memory run, not the full practice");
+  assert.equal(DK.homeLine("2026-10-29", opts([ACRO])), "memory run", "a class on a home weekday: the memory run, not the full practice");
   assert.equal(DK.homeLine("2026-11-02", opts()), "", "Monday has no home line"); assert.equal(DK.homeLine("2026-11-04", opts()), "", "Wednesday neither");
   // from the app's own state: data/events.json carries the Oct 29 make-up; a booking saved later counts the same day it's saved
   clearS();
-  assert.equal(DK.dayKindNow("2026-10-29"), "memory"); assert.equal(DK.dayKindNow("2026-11-05"), "home"); assert.equal(DK.dayKindNow("2026-11-02"), "watch"); assert.equal(DK.homeLineNow("2026-10-29"), "15-min memory run");
+  assert.equal(DK.dayKindNow("2026-10-29"), "memory"); assert.equal(DK.dayKindNow("2026-11-05"), "home"); assert.equal(DK.dayKindNow("2026-11-02"), "watch"); assert.equal(DK.homeLineNow("2026-10-29"), "memory run");
   const b = bookingRecord("2026-11-06", "4:00–4:30 PM", "", "GHD", "r-test", "other"); S.events = { [b.id]: b };
-  assert.equal(DK.dayKindNow("2026-11-06"), "memory"); assert.equal(DK.homeLineNow("2026-11-06"), "15-min memory run");
+  assert.equal(DK.dayKindNow("2026-11-06"), "memory"); assert.equal(DK.homeLineNow("2026-11-06"), "memory run");
   S.events = { [b.id]: { ...b, deleted: true } }; assert.equal(DK.dayKindNow("2026-11-06"), "home", "a cancelled booking gives the day back"); assert.equal(DK.homeLineNow("2026-11-06"), "Technique + run");
   clearS();
 });
@@ -70,7 +70,7 @@ test("Play decides the kind of day the way Today does: a Thursday with a make-up
   PL.renderPlay(); const grid = el("#gameGrid").innerHTML; assert.doesNotMatch(grid, /game-gate/, "no 'Home day: the solo first' on a studio day"); assert.match(grid, /✨ Extras/); assert.match(grid, /🎉 Weekend games/);
   // the week strip: today's cell carries the memory run when today is a home weekday with the booking, never the full practice
   const cell = (el("#homeWeek").innerHTML.match(/<div class="day today">[\s\S]*?(?=<div class="day |$)/) || [""])[0]; assert.ok(cell, "today's cell");
-  if (data.HOME_DAYS[DK.weekdayOf(today)]) { assert.match(cell, /Home: 15-min memory run/); assert.doesNotMatch(cell, /Strength \+ flex|Technique \+ run|Full-out run/); } else assert.doesNotMatch(cell, /Home:/);
+  if (data.HOME_DAYS[DK.weekdayOf(today)]) { assert.match(cell, /Home: memory run/); assert.doesNotMatch(cell, /Strength \+ flex|Technique \+ run|Full-out run/); } else assert.doesNotMatch(cell, /Home:/);
   resetDom(); clearS();
 });
 

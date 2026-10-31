@@ -1,5 +1,5 @@
 // What kind of day is it? ONE answer for Today, Play, the week strip and the Schedule (Build 4, Part A of the Oct 29 audit,
-// which found Play calling a Thursday with an Acro make-up class a home day while Today said "Studio day · 15-min memory run").
+// which found Play calling a Thursday with an Acro make-up class a home day while Today said "Studio day · memory run").
 // A home weekday (data/home-days.json) with nothing booked is a home day; a weekly class or a booked one-off date (a make-up
 // class, a private) turns it into a studio day whose home plan is the short one — Monday's watch-and-picture or the 15-minute
 // memory run (planToday.shortKind, plan15 rules.studioDays); any other day is a rest day. Everything here takes the date
@@ -17,9 +17,9 @@ export function dayKind(date, { classes = [], oneOffs = [], homeDays = {}, studi
   return homeDays[weekdayOf(date)] ? "home" : "rest";
 }
 export const isHomeDay = (date, opts) => dayKind(date, opts) === "home";
-// The "Home: …" line for a day's cell: the home plan's name on a home weekday, "15-min memory run" once a class or a booked
+// The "Home: …" line for a day's cell: the home plan's name on a home weekday, "memory run" once a class or a booked
 // date turns that weekday into a studio day, "" on any other day.
-export function homeLine(date, opts = {}){ const hp = (opts.homeDays || {})[weekdayOf(date)]; if (!hp) return ""; return dayKind(date, opts) === "home" ? hp : "15-min memory run"; }
+export function homeLine(date, opts = {}){ const hp = (opts.homeDays || {})[weekdayOf(date)]; if (!hp) return ""; return dayKind(date, opts) === "home" ? hp : "memory run"; }
 
 // ---- from the app's own state: the weekly classes, the booked dates, the plan's studio days ----
 export const dayOpts = () => ({ classes: CLASSES, oneOffs: studioDates(), homeDays: HOME_DAYS, studioKind: shortKind });

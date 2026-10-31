@@ -1,16 +1,16 @@
-// Today tab: ONE card with the day's one action — ▶ Start for the home plan, the 15-minute memory run or Monday's
+// Today tab: ONE card with the day's one action — ▶ Start for the home plan, the memory run or Monday's
 // watch-and-picture, straight from planToday (Build 2) — the streak and the day off in one line, the dated note, the
 // Solo · Trio · Videos · Memorize row; the next finish line folded under it (the season card inside). Since 1.52.0 Today
 // fits one screen: this module still draws the pieces that moved — the pet, the Pass, What's new and the week strip on Me,
 // ✨ Pick one extra and More for today on Play, this week's fix on Practice — so every page stays current on each render.
 import { $, esc, fmt, todayStr, daysUntil, expose, toast } from "../util.js";
 import { CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "../data.js";
-import { S, events, nextEvent, storeSet, dances, studioDates } from "../store.js";
+import { S, events, nextEvent, storeSet, dances, studioDates, calendarOnly } from "../store.js";
 import { todayPick, chunkLabel, shortName } from "../memo.js";
 import { renderDayPlan } from "../dayplan.js";
 import { computeStreak, dayCounts, planDone, skipsLeft, gateOpen } from "../streak.js";
 import { cardsFor, moveOfDay, TIRED, KNEES } from "../habit.js";
-import { renderSeasonCard, trickFocus, memoryKnees, nextCheckpoint, checkpointTicks, activePlan } from "../season15.js";
+import { renderSeasonCard, trickFocus, memoryKnees, nextCheckpoint, checkpointTicks, activePlan, daysSinceDance } from "../season15.js";
 import { planFor } from "../planToday.js";
 import { planSummary } from "../plan.js";
 import { studioOn } from "../studio.js";
@@ -55,10 +55,10 @@ export const BEST_TIME = "🍌 Snack first, dance 45 min later, dinner after";
 // Pure: the one action for the day. kind = "watch" | "memory" (a studio day) | "home" | "rest"; nDone / total = today's
 // session progress; mins = its length. Returns { label, go, ghost } for the big button.
 export function startButton({ kind, mins = 0, nDone = 0, total = 0 }){
-  const left = total && kind !== "memory" ? ` · ${Math.max(0, mins)} min` : ""; const prog = nDone && total ? ` <span class="today-prog">${nDone} of ${total}</span>` : ""; // the memory run says its own length
+  const left = total ? ` · ${Math.max(0, mins)} min` : ""; const prog = nDone && total ? ` <span class="today-prog">${nDone} of ${total}</span>` : ""; // the memory run says its own length
   if (total && nDone >= total) return { label: `✅ Practice done${left}`, go: "showPage('practice')", ghost: true };
   if (kind === "rest") return { label: "🧘 2-min stretch", go: "habitTired('stretch')", ghost: false };
-  const verb = nDone ? "▶ Keep going" : kind === "watch" ? "▶ Watch + picture" : kind === "memory" ? "▶ 15-min memory run" : "▶ Start practice"; // the Pass's words (1.52.0)
+  const verb = nDone ? "▶ Keep going" : kind === "watch" ? "▶ Watch + picture" : kind === "memory" ? "▶ Memory run" : "▶ Start practice"; // the Pass's words (1.52.0)
   return { label: verb + left + prog, go: "showPage('practice');openPracticeMode()", ghost: false };
 }
 function renderHome(){
@@ -71,7 +71,7 @@ function renderHome(){
   const rec=S.practice[today]; const doneToday=dayCounts(rec,PRACTICE_ITEMS.length); const pd=planDone(rec);
   // Today's session (planToday): its length and how far she is, for the one button.
   const plan=planFor(today); const mins=Math.round(plan.reduce((a,i)=>a+(+i.secs||0),0)/60); const nDone=((rec&&rec.done)||[]).filter(id=>plan.some(i=>i.id===id)).length; const total=kind==="rest"?0:plan.length;
-  // The button names the home part of a studio day ("▶ 15-min memory run", "▶ Watch + picture"), so the card adds only the
+  // The button names the home part of a studio day ("▶ Memory run", "▶ Watch + picture"), so the card adds only the
   // classes and, on Monday, "no dancing tonight".
   let what, sub;
   if(cls.length){ what="🏫 Studio day"; sub=`<div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div>${kind==="watch"?`<div class="today-sub">🏠 Hannah's videos, then picture the solo in the car. No dancing tonight.</div>`:""}`; }
@@ -81,6 +81,8 @@ function renderHome(){
   const dayKind=kind==="watch"?"📹 Watch day":kind==="memory"?"🏫 Studio day":home?"🏠 Home day":"🌙 Rest day";
   const ctx={practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today}; const streak=computeStreak(ctx); const skips=skipsLeft(ctx);
   const sb=startButton({kind,mins,nDone,total}); const gd=gateOpen(rec,plan);
+  // Two days without the solo (plan rules.maxGap): one line on the card, not only inside the folded finish lines (the re-audit).
+  const gap=daysSinceDance(S.practice,today); const maxGap=(((activePlan(today)||{}).rules)||{}).maxGap||2; const gapLine=!pd&&kind!=="rest"&&Number.isFinite(gap)&&gap>=maxGap?`<div class="today-line small today-gap">🧠 ${gap} days without your solo: dance it today, even the memory run counts</div>`:"";
   // 🧠 Memorize opens the dance whose turn it is today (memo.todayPick: the solo and the trio take turns): the Memorize sheet for a
   // dance with a cue table, its Five steps on Dances otherwise (the trio; habit.js's own rule), the solo when nothing is picked.
   const mp=todayPick(dances(),S.settings,today); const memoGo=!mp?"openMemorize('solo','chunks')":isCueTable(mp.dance.cues)?`openMemorize('${mp.dance.id}','chunks')`:`showPage('dances');memoFocus('${mp.dance.id}')`;
@@ -88,14 +90,17 @@ function renderHome(){
   $("#todayCard").innerHTML=`<div class="today-date small">${esc(fmt(today))} · ${dayKind}${total?` · ${mins} min`:""}</div><div class="today-what">${what}</div>${sub}
     <div class="today-line small dp-line" id="dayPlan" hidden></div>
     <button class="btn ${sb.ghost?"ghost":"coral"} big-btn today-start" onclick="${sb.go}">${sb.label}</button>
-    ${metaLine({streak,pd,safe:doneToday,skips})}
+    ${metaLine({streak,pd,safe:doneToday,skips})}${gapLine}
     <div class="today-media"><button class="btn sm violet" onclick="openPlayer('solo')">🎵 Solo</button><button class="btn sm violet" onclick="openPlayer('trio')">🎵 Trio</button><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="${memoGo}">🧠 Memorize</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${funLink({pd,kind,trio:home&&pd&&!gd})}`;
-  renderDayPlan(today); renderSeasonCard(today);
+  // The dated line from plan10 on home days only (the re-audit: "★ Tricks start today" under "No dancing tonight" on a studio day).
+  if(home) renderDayPlan(today); else { const dp=$("#dayPlan"); if(dp){ dp.hidden=true; dp.innerHTML=""; } }
+  renderSeasonCard(today);
   // The next finish line is the fold's one line; the season card (✓ Made it, the week, the pinned notes) opens under it.
   let cp=null; try{ cp=nextCheckpoint(today,activePlan(today),studioDates(),checkpointTicks()); }catch(e){ console.warn(e); }
   const sc=$("#seasonCard"); $("#seasonSum").innerHTML=`<span class="fl-text">${finishLine(cp,today)}</span>`; $("#seasonFold").hidden=!cp&&!!(sc&&sc.hidden);
   renderHabit(today,{rec,home,pd,gd});
-  renderNews(); renderPet(); renderGlowNudge(); renderSundayCard(today); renderComp(); renderBites(); renderMindCard(); renderPassCard(); applyPalette();
+  // The other pages' cards drawn from here (1.52.0) each in their own guard, so one error leaves the rest drawn (the re-audit).
+  for(const f of [renderNews,renderPet,renderGlowNudge,()=>renderSundayCard(today),renderComp,renderBites,renderMindCard,renderPassCard,applyPalette]){ try{ f(); }catch(e){ console.error("renderHome", e); } }
   // this week's fix
   const fix=currentWeekFix(today); const open=Object.values(S.corrections).some(c=>!c.deleted&&c.status!=="done");
   if(fix) $("#weekFix").innerHTML=`<div class="row"><span class="chip violet">${TAG_EMOJI[fix.tag]||"✨"} This week's fix${fix.pinned?" · 📌 "+esc(fix.source||"teacher"):""}</span><span class="grow"></span><button class="btn sm ghost" onclick="showMe('${fix.id}')">Show me</button></div><div class="fix-text">${esc(fix.text)}</div>${videoRow(fix)}`;
@@ -107,12 +112,16 @@ function renderHome(){
   const names=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]; let h="";
   for(let i=0;i<7;i++){ const d=new Date(monday); d.setDate(monday.getDate()+i); const ds=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
     let evs=studioOn(ds,CLASSES,studioDates()).map(c=>`<div class="ev ${c.oneOff?"oneoff":""}">${esc(short(c.name))}</div>`).join("");
+    calendarOnly().filter(e=>ds>=e.start&&ds<=(e.end||e.start)).forEach(e=>evs+=`<div class="ev other">${esc(e.short||e.name)}${e.pick?"?":""}</div>`);
     const hl=homeLineNow(ds); if(hl) evs+=`<div class="ev home">Home: ${esc(hl)}</div>`;
     events().filter(e=>ds>=e.start&&ds<=e.end).forEach(e=>evs+=`<div class="ev comp">${esc(shortEventName(e.name))}</div>`);
     if(planDone(S.practice[ds])) evs+=`<div class="ev done">⭐ plan done</div>`; else if(dayCounts(S.practice[ds],PRACTICE_ITEMS.length)) evs+=`<div class="ev done">✓ streak safe</div>`;
     h+=`<div class="day ${ds===today?"today":""}"><b>${names[i]} ${d.getDate()}</b>${evs}</div>`; }
-  $("#homeWeek").innerHTML=h; const td=$("#homeWeek .day.today"); if(td) $("#homeWeek").scrollLeft=Math.max(0,td.offsetLeft-8);
+  $("#homeWeek").innerHTML=h; weekToToday();
 }
+// The week strip lives on Me (1.52.0): scrolled while Me was hidden it stayed at Monday (offsetLeft 0), so it also scrolls when Me shows.
+function weekToToday(){ const w=$("#homeWeek"), td=$("#homeWeek .day.today"); if(w&&td&&td.offsetLeft) w.scrollLeft=Math.max(0,td.offsetLeft-8); }
+if(typeof document!=="undefined"&&document.addEventListener) document.addEventListener("page",e=>{ if(e&&e.detail==="me") setTimeout(weekToToday,0); });
 // ✨ Pick one extra: the choice cards (a trick, a game, a move, Memorize it), the tired-day row, the moment nudge and the
 // Moment shortcut — on Play since 1.52.0, under the games, so a bite is an extra, never the first thing on Today.
 function renderHabit(today,{rec,home,pd,gd}){

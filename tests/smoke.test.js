@@ -20,7 +20,7 @@ before(async () => {
   M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js"); M.along = await import("../js/games/along.js"); M.hub = await import("../js/coachhub.js");
 });
 
-// A studio day (any weekly class or a one-off date) has the short 15-minute memory run instead of the full plan.
+// A studio day (any weekly class or a one-off date) has the short memory run instead of the full plan.
 const shortDay = () => M.studio.isShortDay(M.util.todayStr(), JSON.parse(read("data/classes.json")), M.store.studioDates());
 const SCREENS = () => ({
   home: M.home.renderHome, dances: M.dances.renderDances, practice: M.practice.renderPractice, play: M.play.renderPlay, me: M.me.renderMe,

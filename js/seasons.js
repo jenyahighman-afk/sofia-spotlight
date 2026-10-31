@@ -88,7 +88,8 @@ const DECO = {
 export function decoHtml(id){ return DECO[id] || ""; }
 
 // ---- DOM ----
-const PEEK = "spotlight:seasonpeek", SHOWER = "spotlight:seasonshower";
+const PEEK = "spotlight:seasonpeek", SHOWER = "spotlight:seasonshower", FOOLS = "spotlight:foolsfixed";
+let heroDate = ""; // the day applySeason last dressed, for the April Fools tap
 const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const short = (s) => new Date(s + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -102,7 +103,8 @@ export function applySeason(date = todayStr()){
   const line = $("#heroLine"); if (line) { if (!line.dataset.base) line.dataset.base = line.textContent; line.textContent = t ? (helloFor(date, id, { birthday: (S.settings || {}).birthday }) || t.line) : line.dataset.base; }
   const touch = document.querySelector('link[rel="apple-touch-icon"]'); if (touch) touch.setAttribute("href", iconFor(id));
   const fav = document.querySelector('link[rel="icon"]'); if (fav) fav.setAttribute("href", `icons/season/${t ? id : "default"}.svg`);
-  const hero = document.querySelector("header.hero"); if (hero) { hero.classList.remove("fixed"); if (id === "aprilfools" && !hero.dataset.fools) { hero.dataset.fools = "1"; hero.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("button")) return; if (document.documentElement.getAttribute("data-season") !== "aprilfools" || hero.classList.contains("fixed")) return; hero.classList.add("fixed"); toast("April Fools! 🙃"); }); } }
+  // April Fools: once she taps the upside-down title right it stays fixed for the rest of that day (any re-render had flipped it back).
+  const hero = document.querySelector("header.hero"); if (hero) { heroDate = date; hero.classList.toggle("fixed", id === "aprilfools" && lsGet(FOOLS) === date); if (id === "aprilfools" && !hero.dataset.fools) { hero.dataset.fools = "1"; hero.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("button")) return; if (document.documentElement.getAttribute("data-season") !== "aprilfools" || hero.classList.contains("fixed")) return; hero.classList.add("fixed"); lsSet(FOOLS, heroDate); toast("April Fools! 🙃"); }); } }
   ensureDeco(id);
   // The shower waits for the family's settings: before they arrive "seasons off" isn't known yet (the re-audit: it played anyway).
   if (t && received.any.has("settings")) showerOnce(id, date);
@@ -131,6 +133,7 @@ export function renderSeasonRow(date = todayStr()){
     <div class="small muted">On iPhone the home-screen button keeps the picture it had when the app was added; this season's is the one above.</div>`;
 }
 async function setSeasons(v){ await setSettings({ seasons: v === "off" ? "off" : "on" }); try { localStorage.removeItem(PEEK); } catch (e) {} applySeason(); renderSeasonRow(); }
-function seasonPeek(id){ const date = todayStr(); if (id === "") { try { localStorage.removeItem(PEEK); } catch (e) {} } else lsSet(PEEK, { id, date }); applySeason(date); if (id) showerOnce(id, date, true); renderSeasonRow(date); }
+// The peek's own shower goes first: it marks today as showered, so applySeason's once-a-day shower stays quiet (a peek played two).
+function seasonPeek(id, date = todayStr()){ if (id === "") { try { localStorage.removeItem(PEEK); } catch (e) {} } else lsSet(PEEK, { id, date }); if (id) showerOnce(id, date, true); applySeason(date); renderSeasonRow(date); }
 async function seasonBirthday(v){ const md = typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v.slice(5) : ""; await setSettings({ birthday: validBirthday(md) }); applySeason(); renderSeasonRow(); if (md) toast("Birthday saved 🎂"); }
 expose({ setSeasons, seasonPeek, seasonBirthday });

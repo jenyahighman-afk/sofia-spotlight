@@ -40,7 +40,7 @@ test("checkpoint ids are stable per plan and text; the same text in both plans g
   const a = cpId(plan15, { t: "Family mini show" }), b = cpId(spring, { t: "Family mini show" }); assert.notEqual(a, b); assert.ok(a.startsWith("2026-09-28:") && b.startsWith("2027-01-11:"));
   assert.equal(cpId(plan15, { t: " Family mini show " }), a, "whitespace doesn't change it"); assert.equal(cpId({ ...plan15, weeks: [] }, { t: "Family mini show" }), a, "editing the weeks doesn't change it");
   const all = allCheckpoints(plan15, [], "2026-10-26"); assert.equal(all.length, plan15.checkpoints.length); assert.ok(all.every(c => c.id && c.t)); assert.equal(new Set(all.map(c => c.id)).size, all.length, "unique within a plan");
-  assert.deepEqual(checkpoints("2026-10-26", plan15, []).map(c => c.d), ["2026-10-31", "2026-11-01", "2026-11-29", "2026-12-06", "2026-12-20", "2026-12-20", "2026-12-27", "2027-01-02", "2027-01-06", "2027-01-08", ""], "the dated list, with the finish lines (1.47.1)");
+  assert.deepEqual(checkpoints("2026-10-26", plan15, []).map(c => c.d), ["2026-10-31", "2026-11-01", "2026-11-29", "2026-12-05", "2026-12-06", "2026-12-06", "2026-12-20", "2026-12-20", "2026-12-27", "2027-01-02", "2027-01-06", "2027-01-08", ""], "the dated list, with the finish lines (1.47.1) and the showings (1.57.0: Dec 5 group, Dec 6 solo + trio until the family picks Dec 12)");
   assert.ok(checkpoints("2026-10-26", plan15, []).every(c => c.id), "with ids"); assert.equal(allCheckpoints(spring, [], "2027-01-11").length, spring.checkpoints.length);
 });
 
@@ -49,7 +49,7 @@ test("what Today lists: the next two to come, a passed one unticked for a week (
   assert.deepEqual(show("2026-10-26").map(c => [c.d, c.state]), [["2026-10-31", "next"], ["2026-11-01", "next"]], "two to come, nothing passed, the rehearsal not yet due");
   assert.deepEqual(show("2026-10-31").map(c => [c.d, c.state]), [["2026-10-31", "today"], ["2026-11-01", "next"]]);
   const trio = cpId(plan15, { t: "Whole trio, no video" }), soloCp = cpId(plan15, { t: "Whole solo from memory, on the music" });
-  assert.deepEqual(show("2026-11-03").map(c => [c.t.slice(0, 10), c.state]), [["Whole trio", "passed"], ["Whole solo", "passed"], ["Next solo ", "book"], ["Every solo", "next"], ["🎤 Mini au", "next"]], "Nov 3: both passed and unticked, the rehearsal to book (after Nov 1), then the next two (the Nov 29 and Dec 6 finish lines, 1.47.1)");
+  assert.deepEqual(show("2026-11-03").map(c => [c.t.slice(0, 10), c.state]), [["Whole trio", "passed"], ["Whole solo", "passed"], ["Next solo ", "book"], ["Every solo", "next"], ["Group show", "next"]], "Nov 3: both passed and unticked, the rehearsal to book (after Nov 1), then the next two (the Nov 29 finish line, then the Dec 5 group showing, 1.57.0)");
   assert.deepEqual(show("2026-11-08").filter(c => c.state === "passed").map(c => c.d), ["2026-11-01"], "Nov 8: Oct 31 is 8 days ago (gone), Nov 1 is 7 (still asked)");
   assert.deepEqual(show("2026-11-09").filter(c => c.state === "passed"), [], "Nov 9: both gone from Today (the by-when sheet keeps them)");
   const t1 = { [trio]: { done: "2026-10-31" } };
@@ -117,13 +117,13 @@ test("the Bunny: the Pass part is a step once the day counts; the tip of the day
 
 test("Today = one card, one button: the day's action from the plan, the plan-done state, the solo count and the next checkpoint; the extras below; the page order", () => {
   assert.deepEqual(startButton({ kind: "home", mins: 36, nDone: 0, total: 15 }), { label: "▶ Start practice · 36 min", go: "showPage('practice');openPracticeMode()", ghost: false });
-  assert.deepEqual(startButton({ kind: "memory", mins: 16, nDone: 0, total: 5 }).label, "▶ 15-min memory run", "the memory run says its own length"); assert.equal(startButton({ kind: "watch", mins: 9, total: 3 }).label, "▶ Watch + picture · 9 min");
+  assert.deepEqual(startButton({ kind: "memory", mins: 16, nDone: 0, total: 5 }).label, "▶ Memory run · 16 min", "the memory run shows its real minutes, like the other days (1.57.0: no \"15-min\" in its name)"); assert.equal(startButton({ kind: "watch", mins: 9, total: 3 }).label, "▶ Watch + picture · 9 min");
   assert.match(startButton({ kind: "home", mins: 36, nDone: 7, total: 15 }).label, /^▶ Keep going · 36 min <span class="today-prog">7 of 15<\/span>$/);
   assert.deepEqual(startButton({ kind: "home", mins: 36, nDone: 15, total: 15 }), { label: "✅ Practice done · 36 min", go: "showPage('practice')", ghost: true });
   assert.deepEqual(startButton({ kind: "rest" }), { label: "🧘 2-min stretch", go: "habitTired('stretch')", ghost: false });
   const at = (id) => html.indexOf(`id="${id}"`); const order = ["p-home", "todayCard", "seasonFold", "seasonCard", "sundayCard", "compCard", "goalReminder", "glowNudge", "p-dances"]; // 1.52.0: Today fits one screen; the rest moved (tests/today152.test.js)
   for (let i = 1; i < order.length; i++) assert.ok(at(order[i - 1]) < at(order[i]), `${order[i - 1]} before ${order[i]}`);
-  const home = src("js/views/home.js"); assert.match(home, /class="today-date small"/); assert.match(home, /today-start/); assert.match(home, /onclick="\$\{memoGo\}">🧠 Memorize</); assert.match(home, /openMemorize\('solo','chunks'\)/); assert.match(home, /renderPassCard\(\)/); assert.match(home, /function renderHabit/); assert.ok(home.indexOf("choice-card") > home.indexOf("function renderHabit"), "the choice cards are drawn by the extras card, not the one card");
+  const home = src("js/views/home.js"); assert.match(home, /class="today-date small"/); assert.match(home, /today-start/); assert.match(home, /onclick="\$\{memoGo\}">🧠 Memorize</); assert.match(home, /openMemorize\('solo','chunks'\)/); assert.match(home, /renderPassCard[,(]/); assert.match(home, /function renderHabit/); assert.ok(home.indexOf("choice-card") > home.indexOf("function renderHabit"), "the choice cards are drawn by the extras card, not the one card");
   const memo = cardsFor("2026-11-05", { memo: { danceId: "solo", table: true, label: "Solo · Soft half" } }).find(c => c.id === "memo"); assert.equal(memo.go, "openMemorize('solo','chunks')", "the solo's Memorize card opens the one memorize sheet");
   assert.equal(cardsFor("2026-11-05", { memo: { danceId: "trio", table: false, label: "Trio" } }).find(c => c.id === "memo").go, "showPage('dances');memoFocus('trio')", "the trio (no cue table) keeps the five steps");
 });

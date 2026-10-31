@@ -64,6 +64,6 @@ test("Today card: the pet naps after a day off, wakes up and dances when today c
   S.practice = { [daysAgo(1)]: { bites: ["plan"] } }; renderPet(); h = el("#petCard").innerHTML; assert.ok(h.includes("pet-stage ready"), "practised yesterday: ready");
   S.practice = { [daysAgo(1)]: { bites: ["plan"] }, [daysAgo(0)]: { bites: ["memo"] } }; renderPet(); h = el("#petCard").innerHTML; assert.ok(h.includes("pet-stage danced"), "today counts: dancing"); assert.ok(h.includes("I just learned the Bunny hop! 🎉"), "day 2 is the hop");
   const st = petState(); assert.equal(st.days, 2); assert.equal(st.move.id, "hop"); assert.equal(st.level.n, "Tiny");
-  assert.match(src("js/views/home.js"), /renderPet\(\)/, "Today renders the pet"); assert.match(src("sw.js"), /"\.\/js\/pet\.js"/); assert.match(src("sw.js"), /"\.\/data\/pet\.json"/);
+  assert.match(src("js/views/home.js"), /renderPet[,(]/, "Today renders the pet"); assert.match(src("sw.js"), /"\.\/js\/pet\.js"/); assert.match(src("sw.js"), /"\.\/data\/pet\.json"/);
   resetDom(); for (const k of Object.keys(S)) S[k] = {};
 });

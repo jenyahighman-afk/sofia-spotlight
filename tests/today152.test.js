@@ -40,7 +40,7 @@ test("the one card's lines: the streak and the day off, the finish line, the lin
   assert.match(HM.finishLine({ state: "passed", d, t: "Clean run" }), /did you make it\?/); assert.match(HM.finishLine({ state: "today", d, t: "Clean run" }), /^🎯 <b>Today!<\/b> Clean run$/);
   assert.match(HM.finishLine({ state: "next", d: "2099-01-01", t: "Clean run" }), /\(\d+ days\)<\/span> · Clean run$/);
   assert.match(HM.finishLine({ state: "next", d, t: "<b>" }), /&lt;b&gt;/, "escaped");
-  assert.equal(DP.dayNoteHtml({ label: "15-minute memory run", note: "short version" }), "", "the button says it"); assert.equal(DP.dayNoteHtml({ label: "", note: "Hold Sunday" }), "📋 Hold Sunday");
+  assert.equal(DP.dayNoteHtml({ label: "memory run", note: "short version" }), "", "the button says it"); assert.equal(DP.dayNoteHtml({ label: "", note: "Hold Sunday" }), "📋 Hold Sunday");
   const home = src("js/views/home.js"); assert.doesNotMatch(home, /todayCount|moves known|At home: /, "no second countdown, no solo count, no memory-run repeat");
   assert.match(home, /<div class="today-line small dp-line" id="dayPlan" hidden><\/div>/); assert.match(home, /\$\{funLink\(\{pd,kind,trio:home&&pd&&!gd\}\)\}/);
   assert.doesNotMatch(home, /All games/, "the extras card is on Play: no button to Play on it");

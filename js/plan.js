@@ -17,7 +17,7 @@ export function rotate(pool, n, day, prefer = []){
 // the sentences after it its `how`, which practice mode shows under the text and the checklist folds under "How to do it").
 export function splitLine(s){ const m = String(s || "").replace(/\s+/g, " ").trim(); const i = m.search(/(?<=[.!?])\s/); return i < 0 ? { text: m, how: "" } : { text: m.slice(0, i).trim(), how: m.slice(i).trim() }; }
 
-// A studio class or rehearsal day: the short version, a 15-minute memory run (the toolkit's rule). The run itself is the
+// A studio class or rehearsal day: the short version, a memory run (the toolkit's rule). The run itself is the
 // 5-minute "Solo from the top" item; the whole list is the 15 minutes.
 export const MEMORY_RUN = [
   { id: "mem-warm", text: "Warm up 3 min: jumping jacks, arm circles, leg swings", secs: 180, pose: "jacks", kind: "warm" },

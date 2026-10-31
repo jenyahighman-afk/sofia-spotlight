@@ -55,7 +55,7 @@ test("1b. the fix is picked on the first open of a new week (weekFixOrPick): onc
     assert.equal(C.weekFixOrPick("2026-11-04").id, pick.id); await new Promise(r => setTimeout(r, 0)); assert.equal(writes.length, n, "a week that has its fix is never re-picked");
     S.corrections = { ...S.corrections, p: OPEN("p", "Knees over toes", "knees", { pinned: true, source: "Ms. Brittany" }) };
     assert.equal(C.weekFixOrPick("2026-11-09").id, "p", "a teacher's pinned note is the week's fix"); await new Promise(r => setTimeout(r, 0)); assert.equal(writes.length, n, "and needs no pick saved");
-    assert.match(src("js/planToday.js"), /weekFixOrPick\(date\)/); assert.match(src("js/sunday.js"), /weekFixOrPick\(today\(\)\)/); assert.match(src("js/momweek.js"), /fix: weekFixOrPick\(date\)/);
+    assert.match(src("js/planToday.js"), /weekFixOrPick\(date\)/); assert.match(src("js/sunday.js"), /if \(isSunday\(date\)\) return weekFixOrPick\(date\);/); assert.match(src("js/sunday.js"), /sheetFix\(today\(\)\)/); assert.match(src("js/momweek.js"), /fix: weekFixOrPick\(date\)/);
   } finally { ST.setBackend(null); ST.receive("corrections", {}, { fromCache: false }); ST.receive("settings", {}, { fromCache: false }); clearS(); }
 });
 
@@ -87,7 +87,7 @@ test("2. the Sunday sheet reviews a Sunday: today's on a Sunday, last Sunday's o
 
 test("2b. Mom's card opens with today: the kind of day, what the plan is, and the one item that wants a grown-up", () => {
   const t = MW.momTodayLine("2026-10-29", { kind: "memory", classes: [{ t: "5:30", name: "Acro make-up class" }], items: PL.MEMORY_RUN });
-  assert.equal(t.k, "today"); assert.equal(t.text, "Thursday, studio day: the 15-minute memory run after Acro make-up · Pause & Predict wants a grown-up");
+  assert.equal(t.k, "today"); assert.equal(t.text, "Thursday, studio day: the memory run after Acro make-up · Pause & Predict wants a grown-up");
   assert.equal(MW.momTodayLine("2026-11-02", { kind: "watch", classes: data.CLASSES.filter(c => c.day === 1), items: PL.WATCH_DAY }).text, "Monday, studio day: Hannah's videos, then the solo in the car — no dancing tonight");
   assert.equal(MW.momTodayLine("2026-11-05", { kind: "home", homePlan: "Strength + flex + solo run", items: [{ id: "x", text: "Plank", secs: 600 }, { id: "imagery", text: "Show in your head (6 min)", how: "1. Stand… A grown-up reads the steps out loud for the first two weeks.", secs: 360 }] }).text, "Thursday, home day: Strength + flex + solo run · 16 min · Show in your head wants a grown-up");
   assert.equal(MW.momTodayLine("2026-11-07", { kind: "rest" }).text, "Saturday, rest day: nothing planned, a stretch if she likes");

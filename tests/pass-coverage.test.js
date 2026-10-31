@@ -37,6 +37,7 @@ function readmeFeatures(md){
 
 // Covered: the key → words Sofia reads in data/pass.json.
 const PHRASES = {
+  "coach-corner": "Coach corner",
   "solo-and-trio-first": "the solo and the trio come first",
   "solos-cue-table-cue-cards-and-memorize-mode": "🧠 Memorize",
   "15-week-plan-teacher-homework-studio-dates": "Own it",
@@ -70,8 +71,8 @@ const PHRASES = {
 // Left out on purpose, with one word why: grown-up (Mom's side or set-up), self-explaining (she finds it by tapping),
 // spring (after the Showcase; the Pass gets its spring words then).
 const ALLOW = {
-  "ai-coach": "grown-up", "coach-corner": "grown-up", "skeleton-view": "grown-up", "goals": "self-explaining",
-  "spring-plan": "spring", "whats-next": "self-explaining",
+  "ai-coach": "grown-up", "skeleton-view": "grown-up", "goals": "self-explaining",
+  "studios-december-dates": "grown-up", "spring-plan": "spring", "whats-next": "self-explaining",
   "pinned-notes-close-through-grown-ups": "grown-up", "this-week-for-mom": "grown-up", "nudges-that-follow-the-plan": "grown-up",
   "worker-must-be-redeployed": "grown-up", "dance-along-with-hannahs-videos": "grown-up",
   "one-kind-of-day-for-every-screen": "self-explaining", "second-nudge": "grown-up", "moms-card": "grown-up",
@@ -134,6 +135,6 @@ test("the sentences the two Passes share read the same (emoji and ★/⭐ aside:
   for (const s of SHARED) { const n = norm(s); assert.ok(app.includes(n), "app: " + s); assert.ok(print.includes(n), "paper: " + s); }
   assert.doesNotMatch(paper + kid, /make your bed|send it to Coach me|Chunks or Cue cards|Tap Done/i, "the old lines are gone from both");
   assert.ok(/Co Tech · PITCH rehearsal\s+10:00–12:15\s+\+ memory run/.test(paper), "Saturday carries the memory run on paper, like Wednesday");
-  assert.ok(pass.parts.find(p => p.id === "week").lines.some(l => /^Sat .*15-minute memory run/.test(l)), "and in the app");
+  assert.ok(pass.parts.find(p => p.id === "week").lines.some(l => /^Sat .*memory run/.test(l)), "and in the app");
   assert.ok(!/[\u{1F000}-\u{1FFFF}]/u.test(paper), "no color emoji on paper (black-ink printer)");
 });
