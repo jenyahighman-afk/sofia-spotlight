@@ -26,6 +26,9 @@ export const MEMORY_RUN = [
   { id: "mem-predict", text: "Pause & Predict with a grown-up: what comes next?", secs: 180, pose: "pose", kind: "run" },
   { id: "mem-picture", text: "Picture it: eyes closed, the whole solo in your head, counts and all", secs: 60, pose: "hold", kind: "run" },
 ];
+// The trio in the memory run (Jenya, Oct 30: studio days and the light week had no trio at all): after this week's chunk,
+// when the trio is one of her dances. It makes the run about two minutes longer.
+export const MEMORY_TRIO = { id: "mem-trio", text: "Trio from the top · 2 min: mark it with the music, as far as you know", secs: 120, pose: "reach", kind: "run", dance: "trio" };
 // Monday (three classes, plan15.json rules.studioDays): no dancing at home. Hannah's two videos, then the solo with eyes
 // closed in the car. The videos are one tap away from the item (pmode.js toolsFor).
 export const WATCH_DAY = [
@@ -60,7 +63,9 @@ export function buildPlan(opts){
   // Listening is no extra dancing, so it also opens the short plans: the Monday after a comp starts with the judges.
   const jg = ses.judges; if (jg) { if (!jg.soloDone) items.push({ id: "judges-solo", text: jg.solo, how: jg.how, secs: jg.secs, kind: "listen", pose: "hold", dance: "solo" }); if (!jg.trioDone) items.push({ id: "judges-trio", text: jg.trio, how: jg.how, secs: jg.secs, kind: "listen", pose: "hold", dance: "trio" }); }
   if (opts.short === "watch") return [...items, ...WATCH_DAY.map(it => ({ ...it }))];
-  if (opts.short) return [...items, ...MEMORY_RUN.map(it => it.id === "mem-top" && opts.nightBefore ? { ...it, text: "Night before the show · From the top, marking it with the music: no full-out tonight" } : { ...it })];
+  if (opts.short) { const run = MEMORY_RUN.map(it => it.id === "mem-top" && opts.nightBefore ? { ...it, text: "Night before the show · From the top, marking it with the music: no full-out tonight" } : { ...it });
+    if ((opts.dances || []).some(d => d && d.id === "trio")) run.splice(run.findIndex(it => it.id === "mem-chunk") + 1, 0, { ...MEMORY_TRIO });
+    return [...items, ...run]; }
   const prefer = opts.preferTags || [];
   const comp = opts.mode === "comp"; // comp week: one core, one legs, no trick drills or aerial missions — clean runs instead
   // Taper (from Dec 28): one core, one legs, one technique — fewer exercises, the full-out stays.
@@ -88,9 +93,10 @@ export function buildPlan(opts){
     const picks = open.filter(want).slice(0, nAerial);
     // The step's how-to and its watch-for text (aerial.json `wrong`) travel as `how`, so practice mode shows both under the step.
     for (const a of picks) { const how = [a.how, a.wrong ? "⚠ Watch for: " + a.wrong : ""].filter(Boolean).join(" "); items.push({ id: "aerial-" + a.id, text: "Aerial mission: " + a.text, secs: 90, kind: "aerial", pose: (pool.aerialPoses || {})[a.section] || "cartwheel", aerialId: a.id, ...(how ? { how } : {}) }); } }
-  // Runs: only dances that exist (built-in or added) and aren't deleted.
+  // Runs: only dances that exist (built-in or added) and aren't deleted. The solo's line follows the full-out rule; the trio's is the
+  // week's trio goal from the 15-week plan (season15.sessionRules trio, since 1.56.0), then once with the music.
   const have = new Set((opts.dances || []).map(d => d.id));
-  for (const r of pool.runs || []) if (!r.dance || have.has(r.dance)) items.push({ ...r, ...(r.id === "solo-run" && ses.run ? { text: ses.run.text, secs: ses.run.secs } : {}), kind: "run" });
+  for (const r of pool.runs || []) if (!r.dance || have.has(r.dance)) items.push({ ...r, ...(r.id === "solo-run" && ses.run ? { text: ses.run.text, secs: ses.run.secs } : {}), ...(r.id === "trio-mark" && ses.trio ? { text: ses.trio.text, secs: ses.trio.secs } : {}), kind: "run" });
   // The research rules (season15.sessionRules): film one chunk (weeks 1–9), the Sunday review, the show in her head (from Nov 9).
   if (ses.clips) items.push({ id: "film-chunk", text: ses.clips.text, secs: ses.clips.secs, kind: "run", pose: "pose" });
   if (ses.review) items.push({ id: "film-review", text: ses.review.text, secs: ses.review.secs, kind: "run", pose: "pose" });
@@ -103,7 +109,7 @@ export const planTotal = (items) => items.length;
 // knee block and a film item). The parts in session order, each once; strength, flex and technique as one group; the solo
 // and trio runs as "solo + trio"; the warm-up left out (every session has one). "" for an empty list.
 const PART = { core: "strength", legs: "strength", str: "strength", flex: "flex", tech: "technique", fix: "your fix", aerial: "aerial", improv: "improv", listen: "🎧 judges", watch: "Hannah's videos" };
-const PART_ID = { "knees-block": "knees", "solo-run": "solo", "trio-mark": "trio", "film-chunk": "film", "film-review": "Sunday review", imagery: "picture it", "aud-pickup": "pick-up drill",
+const PART_ID = { "knees-block": "knees", "solo-run": "solo", "trio-mark": "trio", "mem-trio": "trio", "film-chunk": "film", "film-review": "Sunday review", imagery: "picture it", "aud-pickup": "pick-up drill",
   "mem-top": "solo from the top", "mem-chunk": "this week's chunk", "mem-predict": "Pause & Predict", "mem-picture": "picture it", "watch-picture": "picture it in the car" };
 const BASE = ["strength", "flex", "technique"];
 export function planSummary(items){

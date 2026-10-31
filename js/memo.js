@@ -47,8 +47,13 @@ export const allDone = (rec, danceId) => STEP_IDS.every(s => stepsDone(rec, danc
 export function todayPick(list, settings, date = ""){
   const key = (d) => { const c = nextCheckpoint(d, date); return c ? c.d : "9999-99-99"; };
   const order = memoDances(list).map((d, i) => ({ d, i })).sort((x, y) => key(x.d).localeCompare(key(y.d)) || x.i - y.i).map(x => x.d);
+  // Jenya, Oct 30: the solo and the trio take turns, one day each (odd day numbers the trio), until every chunk of both is
+  // known; after the trio's last dated checkpoint (Oct 31) the order above would have picked the solo every day.
+  const pair = order.filter(d => (d.id === "solo" || d.id === "trio") && chunkOfDay(d, settings)).sort((a, b) => a.id.localeCompare(b.id));
+  if (pair.length === 2 && date) { const d = pair[Math.abs(dayNum(date)) % 2]; return { dance: d, chunk: chunkOfDay(d, settings), run: false }; }
   for (const d of order) { const c = chunkOfDay(d, settings); if (c) return { dance: d, chunk: c, run: false }; } return order[0] ? { dance: order[0], chunk: null, run: true } : null;
 }
+const dayNum = (iso) => Math.floor(Date.parse(iso + "T00:00:00Z") / 86400000);
 export const shortName = (d) => String(d.name || "").split("·")[0].trim();
 // Dated checkpoints from the dance (data/dances.json `checkpoints`): the next one on or after `date`.
 export function nextCheckpoint(d, date){ const cps = (d.checkpoints || []).filter(c => c && /^\d{4}-\d{2}-\d{2}$/.test(String(c.d)) && c.text).sort((a, b) => a.d.localeCompare(b.d)); return cps.find(c => c.d >= date) || null; }

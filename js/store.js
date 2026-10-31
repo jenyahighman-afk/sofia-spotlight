@@ -8,7 +8,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 52;
+export const SCHEMA_VERSION = 53;
 // Schema 52 (Build 4, Part B of the Oct 29 audit): a stored solo's Nov 4 checkpoint, if it still has step 45's exact words, says
 // what the plan's Nov 4 row says (SOLO_V52, fixSolo52). Text the family typed is never touched.
 // Schema 51 (Build 4, Part A of the Oct 29 audit): the week's fix and the Sunday sheet are keyed by the PLAN week — Monday →
@@ -490,7 +490,10 @@ export const MIGRATIONS = {
   // Monday (the rule is in the schema-51 note up top). Only when present; other documents untouched.
   51: (col, id, doc) => { if (col === "settings") { if (doc.sunday !== undefined) doc.sunday = rekeySunday(doc.sunday); if (doc.weekFix !== undefined) doc.weekFix = rekeyWeekFix(doc.weekFix); } return doc; },
   // 52 (Build 4, Part B): the solo's Nov 4 checkpoint text (SOLO_V52) — see fixSolo52.
-  52: (col, id, doc) => { if (col === "dances" && id === "solo") fixSolo52(doc); return doc; }
+  52: (col, id, doc) => { if (col === "dances" && id === "solo") fixSolo52(doc); return doc; },
+  // 53 (1.56.0, Jenya Oct 30): the evening nudge is a 6:30 pm last call. A stored time that is one of the old defaults (7:30,
+  // 8:00 pm: the app saved the default when reminders were turned on) moves to 6:30; a time the family picked stays.
+  53: (col, id, doc) => { if (col === "settings" && id === "main" && doc.reminder && typeof doc.reminder === "object" && !Array.isArray(doc.reminder)) { const r = doc.reminder; if ((r.h2 === 20 && r.m2 === 0) || (r.h2 === 19 && r.m2 === 30)) doc.reminder = { ...r, h2: 18, m2: 30 }; } return doc; }
 };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],

@@ -37,8 +37,10 @@ test("chunk of the day is the first unknown one; two perfect Test me days make i
 test("steps done per dance per day, the Today pick (trio first, then run days) and the fourth Today card", () => {
   const rec = { done: [], memo: { trio: ["story", "mark", "bogus"], solo: STEP_IDS } };
   assert.deepEqual(stepsDone(rec, "trio"), ["story", "mark"]); assert.equal(allDone(rec, "trio"), false); assert.equal(allDone(rec, "solo"), true); assert.deepEqual(stepsDone({}, "trio"), []);
-  let pick = todayPick([solo, trio, plain], {}, "2026-10-20"); assert.equal(pick.dance.id, "trio", "the soonest checkpoint goes first (trio Oct 31 before solo Nov 1), whatever the list order");
-  assert.equal(todayPick([solo, trio], {}, "2026-11-02").dance.id, "solo", "after the trio checkpoint the solo (Nov 4) is first"); assert.equal(todayPick([solo, { ...trio, checkpoints: [] }], {}).dance.id, "solo", "no checkpoints → list order");
+  // 1.56.0 (Jenya, Oct 30): with a date, the solo and the trio take turns, one day each (odd day numbers the trio), whatever the list order
+  let pick = todayPick([solo, trio, plain], {}, "2026-10-31"); assert.equal(pick.dance.id, "trio", "Oct 31, the trio's checkpoint day, is a trio day");
+  assert.equal(todayPick([trio, solo, plain], {}, "2026-11-01").dance.id, "solo", "Nov 1 the solo"); assert.equal(todayPick([solo, trio], {}, "2026-11-02").dance.id, "trio", "Nov 2 the trio again");
+  assert.equal(todayPick([solo, trio], { memo: { trio: { known: ["Opening + floor", "Build"], tested: {} } } }, "2026-11-02").dance.id, "solo", "once every trio chunk is known, the solo every day"); assert.equal(todayPick([solo, { ...trio, checkpoints: [] }], {}).dance.id, "solo", "no checkpoints → list order");
   pick = todayPick([trio, solo], {}); assert.equal(pick.dance.id, "trio"); assert.equal(pick.chunk.n, "Opening + floor"); assert.equal(pick.run, false);
   const all = { memo: { trio: { known: ["Opening + floor", "Build"], tested: {} }, solo: { known: ["Soft half"], tested: {} } } };
   pick = todayPick([trio, solo], all); assert.equal(pick.run, true); assert.equal(pick.dance.id, "trio");

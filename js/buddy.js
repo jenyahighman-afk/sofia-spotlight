@@ -11,7 +11,8 @@ import { speakBunny, stopSpeaking, nextVoice, canSpeak } from "./voice.js";
 import { S, events, dances } from "./store.js";
 import { BUDDY, CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "./data.js";
 import { dayKindNow } from "./daykind.js";
-import { dayCounts, planDone, planDays, computeStreak, skipsLeft } from "./streak.js";
+import { dayCounts, planDone, planDays, computeStreak, skipsLeft, gateOpen } from "./streak.js";
+import { planFor } from "./planToday.js";
 import { cardsFor } from "./habit.js";
 import { dayPlan, planTicks, goFor } from "./dayplan.js";
 import { compWeekend, todayMode } from "./mode.js";
@@ -107,7 +108,7 @@ export function buddyContext(date = todayStr()){
     // The dated box lists no items since 1.49.0 (the one card is the step), so the plan's must boxes are not offered.
     plan: plan && { ...plan, must: [] }, ticks: planTicks(rec), classes, restDay: !classes.length && !HOME_DAYS[dow] && !plan,
     // On a home day before the plan is done the game card is What's Next? (solo work), never a filler game (Build 3).
-    cards: cardsFor(date, { skills: S.skills, bites, memo, soloOnly: dayKindNow(date) === "home" && !planDone(rec) }),
+    cards: cardsFor(date, { skills: S.skills, bites, memo, soloOnly: dayKindNow(date) === "home" && !gateOpen(rec, planFor(date)) }),
     dare: shownDare(date) ? dareDoneOn(date) : null,
     door: door && showEvent() ? openedDates().includes(date) : null,
     glow: showNudge(date), cardsEarned: cc.earned,

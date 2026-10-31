@@ -20,6 +20,19 @@ export function dayCounts(rec, totalItems){
 // (plan.js SOLO_ITEMS: the solo run, the memory run's top and chunk, a watch-day video, the show in her head), a must-box
 // of the dated plan, or a Memorize chunk. The pet grows, the reminder goes quiet and the 2-day clock resets on this tier.
 export const SOLO_ITEMS = ["solo-run", "mem-top", "mem-chunk", "watch-walk", "watch-run", "imagery"];
+// The trio's part of a day (Jenya, Oct 30: solo first on every home day, "but she also needs time to work on memorizing and
+// practicing her trio"): the plan's trio item (the week's trio goal on a full day, the memory run's trio), a trio run logged
+// from the player, or all five of the trio's Memorize steps. It never makes ⭐ Plan done: the streak and the reminders count the solo.
+export const TRIO_ITEMS = ["trio-mark", "mem-trio"];
+export function trioDone(rec){
+  if (!rec) return false;
+  if (Array.isArray(rec.done) && rec.done.some(id => TRIO_ITEMS.includes(id))) return true;
+  if (Array.isArray(rec.runs) && rec.runs.some(r => r && r.danceId === "trio")) return true;
+  const m = rec.memo && typeof rec.memo === "object" ? rec.memo.trio : null; return Array.isArray(m) && new Set(m).size >= 5;
+}
+// What opens Play's weekend games, the countdown door and the dare on a home day: the plan done (the solo) and, when today's
+// plan has a trio item, the trio too. `items` = today's plan (planToday.planFor).
+export const gateOpen = (rec, items = []) => planDone(rec) && (!(items || []).some(it => it && TRIO_ITEMS.includes(it.id)) || trioDone(rec));
 export function planDone(rec){
   if (!rec) return false;
   if (Array.isArray(rec.runs) && rec.runs.length) return true;

@@ -54,7 +54,7 @@ test("no weekly Wednesday solo rehearsal; the Thu Oct 29 Acro make-up is a one-o
 });
 test("the daily plan: a 15-minute memory run on studio days, the knee block instead of a trick until Nov 9, this week's trick after", () => {
   const base = { pool, date: "2026-10-29", tricks: ["Floor kick (1:40.75): 8 slow kicks.", "Side-sit leg reach (0:10.5): sit."], dances: [{ id: "solo" }, { id: "trio" }] };
-  const short = buildPlan({ ...base, short: true }); assert.deepEqual(short.map(i => i.id), MEMORY_RUN.map(i => i.id)); assert.equal(short.reduce((s, i) => s + i.secs, 0), 960, "about 15 minutes (16 with the warm-up)");
+  const short = buildPlan({ ...base, short: true }); assert.deepEqual(short.map(i => i.id), ["mem-warm", "mem-top", "mem-chunk", "mem-trio", "mem-predict", "mem-picture"]); assert.equal(short.reduce((s, i) => s + i.secs, 0), 1080, "about 15 minutes of solo, plus the warm-up and two minutes of trio (1.56.0)");
   const knees = buildPlan({ ...base, date: "2026-10-30", focus: "knees" }); assert.ok(knees.some(i => i.id === KNEE_DRILL.id)); assert.ok(!knees.some(i => /^trick-/.test(i.id)), "no trick drill");
   const week = buildPlan({ ...base, date: "2026-11-13", focus: ["Side-sit leg reach (0:10.5): sit."] }); assert.ok(week.find(i => i.kind === "trick").text.includes("Side-sit leg reach"));
   assert.ok(!buildPlan({ ...base, date: "2026-11-27", focus: "none" }).some(i => i.kind === "trick"), "light week: no trick");

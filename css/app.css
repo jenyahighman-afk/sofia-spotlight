@@ -697,7 +697,7 @@ html[data-season="halloween"] .gate:after{right:auto;left:30px}
 @keyframes hw-cross{0%{transform:translate(0,0)}20%{transform:translate(28vw,-16px)}40%{transform:translate(56vw,10px)}60%{transform:translate(84vw,-10px)}75%,100%{transform:translate(calc(100vw + 160px),0)}}
 @keyframes hw-broom{0%{transform:translate(0,0) rotate(-4deg)}12%{transform:translate(50vw,-12px) rotate(3deg)}25%,100%{transform:translate(calc(100vw + 280px),6px) rotate(-4deg)}}
 @keyframes hw-flap{from{transform:scaleY(1)}to{transform:scaleY(.55)}}
-@media (prefers-reduced-motion:reduce){.season-deco{display:none}html[data-season="halloween"] .card:after,html[data-season="halloween"] .modal-card:after,html[data-season="halloween"] nav.tabs:after,html[data-season="halloween"] .stage:after,html[data-season="halloween"] .gate:after{animation:none}}
+@media (prefers-reduced-motion:reduce){.season-deco{display:none}html[data-season="halloween"] .card:after,html[data-season="halloween"] .modal-card:after,html[data-season="halloween"] nav.tabs:after,html[data-season="halloween"] .stage:after,html[data-season="halloween"] .gate:after{animation:none!important}} /* !important: the swings are on .card:nth-child(…):after, one class stronger */
 body.modal .season-deco{display:none}
 /* Fall everywhere (1.53.0, Nov 1 to the Sunday after Thanksgiving; Jenya: dress Fall like Halloween): leaf sprigs in the
    card corners, acorns swinging on their stems, a leaf after every title, a pink knit beanie on the Bunny, her pet and the
@@ -708,6 +708,7 @@ html[data-season="fall"] header.hero{background:url(../icons/season/fall/harvest
 html[data-season="fall"] header.hero:before{content:"";position:absolute;left:0;top:0;width:76px;height:76px;background:url(../icons/season/fall/branch-hero.svg) no-repeat top right/contain;transform:scaleX(-1);opacity:.8;pointer-events:none}
 html[data-season="fall"] .wrap{background-image:url(../icons/season/fall/pattern.svg);background-size:200px 200px;background-attachment:local}
 html[data-season="fall"] .card,html[data-season="fall"] .modal-card{position:relative}
+html[data-season="fall"] .modal-card{overflow-x:hidden} /* the corner sprig sits half outside the sheet: clip it there, so the sheet never scrolls sideways */
 html[data-season="fall"] .card:before,html[data-season="fall"] .modal-card:before{content:"";position:absolute;top:-11px;right:-9px;width:40px;height:40px;background:url(../icons/season/fall/sprig.svg) no-repeat top right/contain;pointer-events:none;z-index:1}
 html[data-season="fall"] .card:nth-child(even):before{right:auto;left:-9px;transform:scaleX(-1)}
 html[data-season="fall"] #seasonFold:before{right:-9px;left:auto;transform:none}
@@ -744,7 +745,7 @@ html[data-season="fall"] .gate:after{right:auto;left:30px}
 @keyframes fl-fall{0%{transform:translate(0,0) rotate(0)}10%{transform:translate(24px,15vh) rotate(70deg)}20%{transform:translate(-12px,31vh) rotate(150deg)}30%{transform:translate(20px,47vh) rotate(230deg)}40%{transform:translate(-8px,63vh) rotate(300deg)}50%{transform:translate(14px,80vh) rotate(380deg)}60%,100%{transform:translate(0,calc(100vh + 60px)) rotate(450deg)}}
 @keyframes fl-stroll{0%{transform:translateX(0)}30%,100%{transform:translateX(calc(100vw + 160px))}}
 @keyframes fl-waddle{from{transform:rotate(-5deg) translateY(0)}to{transform:rotate(5deg) translateY(-3px)}}
-@media (prefers-reduced-motion:reduce){html[data-season="fall"] .card:after,html[data-season="fall"] .modal-card:after,html[data-season="fall"] nav.tabs:after,html[data-season="fall"] .stage:after,html[data-season="fall"] .gate:after{animation:none}}
+@media (prefers-reduced-motion:reduce){html[data-season="fall"] .card:after,html[data-season="fall"] .modal-card:after,html[data-season="fall"] nav.tabs:after,html[data-season="fall"] .stage:after,html[data-season="fall"] .gate:after{animation:none!important}}
 /* Christmas everywhere (1.55.0, Dec 1–26; dressed like Halloween and Fall): holly with berries on the card corners (one
    berry her pink), ornaments and jingle bells swinging on their ribbons, a candy cane after every title, a Santa hat on the
    Bunny, her pet and the Me face, a string of twinkling lights with a snowman sitting on the nav bar, a tree with presents
@@ -754,6 +755,7 @@ html[data-season="christmas"] header.hero{background:url(../icons/season/christm
 html[data-season="christmas"] header.hero:before{content:"";position:absolute;left:0;top:0;width:76px;height:76px;background:url(../icons/season/christmas/bough-hero.svg) no-repeat top right/contain;transform:scaleX(-1);opacity:.85;pointer-events:none}
 html[data-season="christmas"] .wrap{background-image:url(../icons/season/christmas/pattern.svg);background-size:200px 200px;background-attachment:local}
 html[data-season="christmas"] .card,html[data-season="christmas"] .modal-card{position:relative}
+html[data-season="christmas"] .modal-card{overflow-x:hidden} /* the corner holly sits half outside the sheet: clip it there, so the sheet never scrolls sideways */
 html[data-season="christmas"] .card:before,html[data-season="christmas"] .modal-card:before{content:"";position:absolute;top:-11px;right:-9px;width:40px;height:40px;background:url(../icons/season/christmas/holly.svg) no-repeat top right/contain;pointer-events:none;z-index:1}
 html[data-season="christmas"] .card:nth-child(even):before{right:auto;left:-9px;transform:scaleX(-1)}
 html[data-season="christmas"] #seasonFold:before{right:-9px;left:auto;transform:none}
@@ -790,7 +792,7 @@ html[data-season="christmas"] .gate:after{right:auto;left:30px}
 @keyframes xm-drift{0%{transform:translate(0,0) rotate(0)}12%{transform:translate(16px,14vh) rotate(40deg)}24%{transform:translate(-8px,28vh) rotate(80deg)}36%{transform:translate(14px,43vh) rotate(120deg)}48%{transform:translate(-6px,58vh) rotate(160deg)}60%{transform:translate(10px,74vh) rotate(200deg)}72%,100%{transform:translate(0,calc(100vh + 50px)) rotate(240deg)}}
 @keyframes xm-fly{0%{transform:translate(0,8px) rotate(-3deg)}14%{transform:translate(50vw,-10px) rotate(2deg)}28%,100%{transform:translate(calc(100vw + 300px),4px) rotate(-3deg)}}
 @keyframes xm-bob{from{transform:translateY(-2px)}to{transform:translateY(2px)}}
-@media (prefers-reduced-motion:reduce){html[data-season="christmas"] .card:after,html[data-season="christmas"] .modal-card:after,html[data-season="christmas"] nav.tabs:after,html[data-season="christmas"] .stage:after,html[data-season="christmas"] .gate:after{animation:none} html[data-season="christmas"] nav.tabs:before{background-image:url(../icons/season/christmas/lights-still.svg)}}
+@media (prefers-reduced-motion:reduce){html[data-season="christmas"] .card:after,html[data-season="christmas"] .modal-card:after,html[data-season="christmas"] nav.tabs:after,html[data-season="christmas"] .stage:after,html[data-season="christmas"] .gate:after{animation:none!important} html[data-season="christmas"] nav.tabs:before{background-image:url(../icons/season/christmas/lights-still.svg)}}
 /* 🎬 Film it (js/film.js, 1.54.0): film a chunk, watch it back, film again; the acro check in Trick Quest */
 .film video{display:block;width:100%;max-height:60vh;margin:8px 0 6px;border-radius:12px;background:#000}
 .film .film-cam{display:block;width:100%;text-align:center;margin:10px 0} .film-btns{gap:8px;margin-top:6px;flex-wrap:nowrap} .film-btns .film-cam{flex:1 1 auto;width:auto;margin:0} .film-btns .btn{white-space:nowrap}

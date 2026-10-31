@@ -4,7 +4,8 @@ import { $, $$, esc, expose, todayStr } from "../util.js";
 import { S } from "../store.js";
 import { dayKindNow } from "../daykind.js";
 import { memoryKnees } from "../season15.js";
-import { planDone } from "../streak.js";
+import { planDone, gateOpen } from "../streak.js";
+import { planFor } from "../planToday.js";
 import { initChoreo, csRender } from "../games/choreo.js";
 import { tfRender } from "../games/trio.js";
 import "../games/oops.js";
@@ -34,11 +35,13 @@ export const GAMES = [
   { id: "count",   emoji: "🥁", name: "Count Along",    blurb: "Tap the beat of your music",   best: (s) => { const b = topBest(s); return b === null ? null : b + "%"; } },
 ];
 // The games that are solo work; the rest are fillers. Pure: which tiles show on `date` — Trick Quest waits until the solo is
-// memorized (Memory + knees), and on a home day during Own it the fillers wait until the plan is done (`gate`).
+// memorized (Memory + knees), and on every home day of the season the fillers wait until the solo and the trio are done
+// (`gate`; `done` = streak.gateOpen). Until Oct 30 the gate ended with Memory + knees on Nov 9; Jenya: solo first all season,
+// as the Pass says, and time for the trio too. Trick Quest is solo work (SOLO_WORK below), so the gate leaves it open.
 export const SOLO_GAMES = ["nextmove", "along", "count"];
 export function gamesFor(date, { home = false, knees = false, done = false, games = GAMES } = {}){
-  const gate = home && knees && !done;
-  return { gate, games: games.filter(g => !(g.id === "quest" && knees) && !(gate && !SOLO_GAMES.includes(g.id))) };
+  const gate = home && !done;
+  return { gate, games: games.filter(g => !(g.id === "quest" && knees) && !(gate && !SOLO_WORK.includes(g.id))) };
 }
 // Build 3 (the review's "demote the extras"): Play is three sections — 🌸 Solo work (the solo games and Trick Quest), 🎉 Weekend
 // games (the fillers) and ✨ Extras (the countdown doors while they run, the costume designer, the dare card under them).
@@ -63,9 +66,10 @@ export function renderPlay(){
   const s = S.settings; renderWho(); const today = todayStr();
   const ev = showEvent(); const doors = doorsFor(); const doorsOn = !!ev && doors.length > 0 && today >= doors[0].date && today <= (ev.end || ev.start);
   // The kind of day is Today's own answer (daykind.js): a home weekday with a class booked is a studio day, so nothing is gated.
-  const { gate, sections } = playSections(today, { home: dayKindNow(today) === "home", knees: memoryKnees(today), done: planDone(S.practice[today]), doors: doorsOn });
+  const rec = S.practice[today]; const pd = planDone(rec);
+  const { gate, sections } = playSections(today, { home: dayKindNow(today) === "home", knees: memoryKnees(today), done: gateOpen(rec, planFor(today)), doors: doorsOn });
   const tile = (g) => { const b = g.best ? g.best(s) : null; return `<button class="game-tile" onclick="${g.go || `playOpen('${g.id}')`}"><span class="gt-emoji">${g.emoji}</span><span class="gt-name">${esc(g.name)}</span><small>${esc(g.blurb)}</small>${b !== null ? `<small class="gt-best">Best ${esc(String(b))}</small>` : ""}</button>`; };
-  $("#gameGrid").innerHTML = (gate ? `<div class="game-gate"><span class="grow">🏠 Home day: the solo first. The other games open when the plan is done ⭐</span><button class="btn sm coral" onclick="showPage('practice')">▶ Start practice</button></div>` : "")
+  $("#gameGrid").innerHTML = (gate ? `<div class="game-gate"><span class="grow">${pd ? "⭐ Solo done! Now your trio 👯 The other games open after it." : "🏠 Home day: the solo and the trio first. The other games open when both are done ⭐"}</span><button class="btn sm coral" onclick="showPage('practice')">${pd ? "▶ Trio" : "▶ Start practice"}</button></div>` : "")
     + sections.map(sec => `<div class="game-sec" data-sec="${sec.id}"><b>${sec.title}</b><small>${esc(sec.sub)}</small></div>` + sec.games.map(tile).join("")).join("");
   if (openGame !== "count" && countRunning()) stopCount(); // leaving the game stops its music or clicks
   $("#gameGrid").hidden = !!openGame; $("#gameBack").hidden = !openGame;

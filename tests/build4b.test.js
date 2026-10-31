@@ -129,15 +129,15 @@ test("4. readiness: one run per home day in the window (not per calendar day), t
   assert.match(RD.readyFold("2026-10-29"), /<span class="chip">0 \/ 28 moves known<\/span>/); assert.match(RD.readyFold("2026-12-02"), /<span class="chip">0%<\/span>/); resetDom(); clearS();
 });
 
-test("5. the second nudge: 8:00 pm unless the family set a time, on home kinds only (never after three classes or a memory run); the plan days follow the date's plan", () => {
-  assert.deepEqual(RM.DEFAULT_SECOND, { h: 20, m: 0 }); const r = RM.reminderOf({}); assert.equal(r.h2, 20); assert.equal(r.m2, 0); assert.deepEqual(RM.reminderOf({ reminder: { h2: 19, m2: 30 } }), { on: false, h: 16, m: 30, second: true, h2: 19, m2: 30 }, "her own time stays");
+test("5. the second nudge: a 6:30 pm last call (8:00 pm until 1.56.0) unless the family set a time, on home kinds only (never after three classes or a memory run); the plan days follow the date's plan", () => {
+  assert.deepEqual(RM.DEFAULT_SECOND, { h: 18, m: 30 }); const r = RM.reminderOf({}); assert.equal(r.h2, 18); assert.equal(r.m2, 30); assert.deepEqual(RM.reminderOf({ reminder: { h2: 19, m2: 30 } }), { on: false, h: 16, m: 30, second: true, h2: 19, m2: 30 }, "her own time stays");
   assert.equal(W.secondSlotFor("home"), true); assert.equal(W.secondSlotFor("watch"), false); assert.equal(W.secondSlotFor("memory"), false); assert.equal(W.secondSlotFor(undefined), true, "an older subscription without kinds keeps it");
   const sub = { h: 16, m: 30, h2: 20, m2: 0, tz: "America/Los_Angeles", lastSent: "2026-10-13" }; const t1 = new Date("2026-10-13T23:32:00Z"), t2 = new Date("2026-10-14T03:05:00Z"); // Tue Oct 13 2026, 16:32 and 20:05 PDT
   assert.equal(W.dueSlot({ ...sub, kinds: { 2: "memory" } }, t2), null, "Tuesday is a memory-run day: no evening nudge"); assert.equal(W.dueSlot({ ...sub, kinds: { 1: "watch", 2: "watch" } }, t2), null);
   assert.deepEqual(W.dueSlot({ ...sub, kinds: { 2: "home" } }, t2), { slot: 2, date: "2026-10-13" }); assert.deepEqual(W.dueSlot(sub, t2), { slot: 2, date: "2026-10-13" }, "no kinds: as before");
   assert.deepEqual(W.dueSlot({ ...sub, lastSent: "", kinds: { 2: "memory" } }, t1), { slot: 1, date: "2026-10-13" }, "the dance-time nudge is not the second slot: it still goes");
   assert.match(src("js/remind.js"), /plan = activePlan\(todayStr\(\)\)/); assert.doesNotMatch(src("js/remind.js"), /PLAN15/); assert.deepEqual(RM.planWeekdays(data.CLASSES, data.HOME_DAYS, spring).kinds, RM.planWeekdays(data.CLASSES, data.HOME_DAYS, plan15).kinds, "both plans keep Monday as the watch day");
-  resetDom(); clearS(); S.settings = {}; RM.renderReminder(); assert.match(el("#meReminder").innerHTML, /8:00 pm<\/b> on home days/); resetDom(); clearS();
+  resetDom(); clearS(); S.settings = {}; RM.renderReminder(); assert.match(el("#meReminder").innerHTML, /last call at <b>6:30 pm<\/b> on home days/); resetDom(); clearS();
 });
 
 test("6. the Pass star only on a first-try right answer; a later right answer reads the part with a kind line; the hour is the caller's", () => {

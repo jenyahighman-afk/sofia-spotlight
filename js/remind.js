@@ -3,8 +3,9 @@
 // day (pingDone). Build 3: the nudge follows the plan's days — every weekday with a plan (a home day, Monday's watch day,
 // the memory-run studio days: planWeekdays) with a line for that kind of day — and a second nudge later in the evening
 // (settings.reminder.second / h2 / m2, on unless turned off, schema 50) goes out only if the plan still isn't done — on home
-// days only since Build 4 (the worker skips watch and memory-run kinds), at 8:00 pm unless the family set a time (classes end
-// at 7:30, so 7:30 landed in the car).
+// days only since Build 4 (the worker skips watch and memory-run kinds), at 6:30 pm unless the family set a time: a last call
+// (Jenya, Oct 30), so practice never runs into bedtime (lights out 9:00). It was 7:30 (in the car after class), then 8:00.
+// A subscribed phone sends its times again when they change (resyncReminder), so an old 7:30 or 8:00 doesn't stay at the worker.
 // Pure parts up top (tested in Node).
 import { $, esc, toast, expose, todayStr } from "./util.js";
 import { S, setSettings } from "./store.js";
@@ -14,7 +15,7 @@ import { sync } from "./sync.js";
 import { coachConfig } from "./firebase-config.js";
 import { pushConfig } from "./push-config.js";
 
-export const DEFAULT_TIME = { h: 16, m: 30 }, DEFAULT_SECOND = { h: 20, m: 0 };
+export const DEFAULT_TIME = { h: 16, m: 30 }, DEFAULT_SECOND = { h: 18, m: 30 };
 export const timeParts = (s) => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(s || "").trim()); if (!m) return null; const h = +m[1], mi = +m[2]; return h >= 0 && h <= 23 && mi >= 0 && mi <= 59 ? { h, m: mi } : null; };
 export const timeValue = (t) => `${String(t.h).padStart(2, "0")}:${String(t.m).padStart(2, "0")}`;
 export const timeLabel = (t) => { const h12 = t.h % 12 || 12; return `${h12}:${String(t.m).padStart(2, "0")} ${t.h < 12 ? "am" : "pm"}`; };
@@ -62,19 +63,31 @@ export function renderReminder(){
     <div class="row"><input type="time" id="rmTime" value="${timeValue(r)}" step="900" style="max-width:150px" ${block ? "disabled" : ""}>
       ${block ? `<span class="small muted">${esc(block)}</span>` : here ? `<button class="btn sm ghost" onclick="rmOff()">Turn off on this phone</button><button class="btn sm ghost" onclick="rmTest()">Send a test</button>` : `<button class="btn sm coral" onclick="rmOn()">Remind me on this phone</button>`}</div>
     <div class="small muted rm-days">Plan days: ${esc(daysLabel(pw)) || "none right now"}</div>
-    <div class="rm-second"><div class="row"><span class="grow">🌙 A second nudge at <b>${esc(timeLabel({ h: r.h2, m: r.m2 }))}</b> on home days if the plan isn't done yet</span><button class="btn sm ${r.second ? "coral" : "ghost"}" onclick="rmSecond()">${r.second ? "On" : "Off"}</button></div>
+    <div class="rm-second"><div class="row"><span class="grow">⏰ A last call at <b>${esc(timeLabel({ h: r.h2, m: r.m2 }))}</b> on home days if the plan isn't done yet</span><button class="btn sm ${r.second ? "coral" : "ghost"}" onclick="rmSecond()">${r.second ? "On" : "Off"}</button></div>
       ${r.second ? `<div class="row" style="margin-top:6px"><input type="time" id="rmTime2" value="${timeValue({ h: r.h2, m: r.m2 })}" step="900" style="max-width:150px" ${block ? "disabled" : ""}><span class="small muted">Never more than two a day.</span></div>` : ""}</div>
     ${r.on && !here && !block ? `<p class="small muted">Reminders are on for the family. Tap the button to get them on this phone too.</p>` : ""}`;
   const t = $("#rmTime"); if (t) t.onchange = () => { const p = timeParts(t.value); if (!p) return; setSettings({ reminder: { ...r, ...p } }).then(() => { if (subscribedHere()) subscribe(reminderOf(S.settings)).catch(e => toast(e.message, 3000)); renderReminder(); }); };
   const t2 = $("#rmTime2"); if (t2) t2.onchange = () => { const p = timeParts(t2.value); if (!p) return; setSettings({ reminder: { ...r, h2: p.h, m2: p.m } }).then(() => { if (subscribedHere()) subscribe(reminderOf(S.settings)).catch(e => toast(e.message, 3000)); renderReminder(); }); };
 }
 // The second nudge on or off (the family setting); this phone's subscription follows right away.
-async function second(){ const r = reminderOf(S.settings); await setSettings({ reminder: { ...r, second: !r.second } }); if (subscribedHere()) subscribe(reminderOf(S.settings)).catch(e => toast(e.message, 3000)); toast(r.second ? "Second nudge off" : "Second nudge on 🌙"); renderReminder(); }
+async function second(){ const r = reminderOf(S.settings); await setSettings({ reminder: { ...r, second: !r.second } }); if (subscribedHere()) subscribe(reminderOf(S.settings)).catch(e => toast(e.message, 3000)); toast(r.second ? "Last call off" : "Last call on ⏰"); renderReminder(); }
 async function subscribe(r){
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription(); if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToBytes(pushConfig.publicKey) });
   const j = sub.toJSON(); await post("/remind/subscribe", subscribeBody(r, { familyId: sync.familyId, endpoint: j.endpoint, keys: j.keys, tz: tz() }));
-  try { localStorage.setItem(LS, j.endpoint); } catch (e) {} return sub;
+  try { localStorage.setItem(LS, j.endpoint); localStorage.setItem(SENT, sentSig(r)); } catch (e) {} return sub;
+}
+// What this phone last sent the worker: the times and the plan days. On open, a subscribed phone whose times or plan days
+// changed since (a new default, a migrated time, a new class) subscribes again, once per run, quietly.
+const SENT = "spotlight:pushsent";
+export const sentSig = (r, plan = planWeekdays()) => JSON.stringify([r.h, r.m, r.second ? r.h2 : null, r.second ? r.m2 : null, plan.days, plan.kinds]);
+let resynced = false;
+export function resyncReminder(){
+  if (resynced || !subscribedHere() || !sync.familyId || pushBlocker(env())) return; resynced = true;
+  let last = ""; try { last = localStorage.getItem(SENT) || ""; } catch (e) {}
+  const r = reminderOf(S.settings); if (!r.on || last === sentSig(r)) return;
+  try { if (typeof Notification !== "undefined" && Notification.permission !== "granted") return; } catch (e) { return; }
+  subscribe(r).catch(e => console.warn("reminder resync", e));
 }
 async function on(){
   const block = pushBlocker(env()); if (block) return toast(block, 4000);

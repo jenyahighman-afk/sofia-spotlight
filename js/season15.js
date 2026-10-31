@@ -85,7 +85,7 @@ const firstSentence = (s) => String(s || "").split(/(?<=[.;])\s/)[0];
 // The session rules on `date` (plan15.json `rules`, from the research Jenya approved Oct 26). What the daily plan adds or
 // changes: { short (a light week or the night before the show: the 15-minute memory run), nightBefore, imagery: {title,
 // how, secs} | null, clips: {text, secs} | null, review: {text, secs} | null (Sundays), run: {text, secs} (the solo run
-// line), taper (fewer exercises, still one full-out: rules.taper.from, or a week flagged `taper` in the spring plan),
+// line), trio: {text, secs} | null (the week's trio goal, the full day's trio item since 1.56.0), taper (fewer exercises, still one full-out: rules.taper.from, or a week flagged `taper` in the spring plan),
 // judges: {comp, solo, trio, how, secs} | null (the week after a comp: the judges' audio feedback comes first),
 // audition: {pickup: {text, how, secs} | null, improv: {text, how, secs} | null} | null (the audition weeks, plan-spring.json
 // weeks[].audition + rules.audition: the panel teaches on the day, so full days drill pick-up and improv, not the dances) }.
@@ -96,9 +96,10 @@ export function sessionRules(date, plan = activePlan(date)){
   const clips = r.clips && wk && date <= r.clips.to ? { text: r.clips.text, secs: r.clips.secs || 240 } : null;
   const review = r.review && wk && wd === 0 ? { text: taper ? r.review.taper : r.review.sunday, secs: r.review.secs || 300 } : null;
   const fo = r.fullOut || {}; const run = !fo.from || date < fo.from ? { text: fo.before, secs: 300 } : fo.backToBackFrom && date >= fo.backToBackFrom && wd === 0 && !taper ? { text: fo.pair, secs: 480 } : { text: fo.one, secs: 300 };
+  const trio = wk && wk.trio ? { text: `👯 Trio · this week: ${wk.trio} · then the whole trio once with the music`, secs: 240 } : null;
   const jg = r.judges; const judges = jg && wk && wk.judges ? { comp: String(wk.judges), solo: jg.solo, trio: jg.trio, how: jg.how || "", secs: jg.secs || 300 } : null;
   const ad = r.audition; const audition = ad && wk && wk.audition ? { pickup: ad.pickup ? { text: ad.pickup, how: ad.pickupHow || "", secs: ad.pickupSecs || 180 } : null, improv: ad.improv ? { text: ad.improv, how: ad.improvHow || "", secs: ad.improvSecs || 120 } : null } : null;
-  return { short: nightBefore || !!(wk && wk.light), nightBefore, imagery, clips, review, run: run.text ? run : null, taper, judges, audition };
+  return { short: nightBefore || !!(wk && wk.light), nightBefore, imagery, clips, review, run: run.text ? run : null, trio, taper, judges, audition };
 }
 // Whole days since she last danced her solo (streak.js planDone: a logged run, the solo part of a session, a plan box or
 // a Memorize chunk — a game or a dare doesn't reset this clock), 0 = today. Infinity if never.

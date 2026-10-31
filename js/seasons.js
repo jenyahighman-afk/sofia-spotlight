@@ -6,7 +6,7 @@
 // settings.seasons = "off" turns them off; settings.birthday = "MM-DD" (the family space, never the repo) makes the
 // birthday week; a peek (this phone, today only) tries any theme. Pure parts up top, tested in Node; the DOM below.
 import { $, esc, todayStr, expose, toast } from "./util.js";
-import { S, setSettings } from "./store.js";
+import { S, setSettings, received } from "./store.js";
 
 export const THEMES = {
   halloween:  { n: "Halloween", e: "🎃", motif: "🦇 ✦ 🎃 ✦ 👻", shower: ["🦇", "🎃", "👻", "🍬", "🕸️"], hero: "linear-gradient(135deg,#2E1B45 0%,#7A2E6E 48%,#FF5C93 100%)", ring: "#FF8A3D", line: "solo 🎃 trio 🎃 team PITCH", hello: "Happy Halloween, Sofia! 🎃" },
@@ -104,7 +104,8 @@ export function applySeason(date = todayStr()){
   const fav = document.querySelector('link[rel="icon"]'); if (fav) fav.setAttribute("href", `icons/season/${t ? id : "default"}.svg`);
   const hero = document.querySelector("header.hero"); if (hero) { hero.classList.remove("fixed"); if (id === "aprilfools" && !hero.dataset.fools) { hero.dataset.fools = "1"; hero.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("button")) return; if (document.documentElement.getAttribute("data-season") !== "aprilfools" || hero.classList.contains("fixed")) return; hero.classList.add("fixed"); toast("April Fools! 🙃"); }); } }
   ensureDeco(id);
-  if (t) showerOnce(id, date);
+  // The shower waits for the family's settings: before they arrive "seasons off" isn't known yet (the re-audit: it played anyway).
+  if (t && received.any.has("settings")) showerOnce(id, date);
 }
 function ensureDeco(id){ let el = document.getElementById("seasonDeco"); const html = decoHtml(id); if (!html) { if (el) el.remove(); return; } if (!el) { el = document.createElement("div"); el.id = "seasonDeco"; el.className = "season-deco"; el.setAttribute("aria-hidden", "true"); document.body.appendChild(el); } if (el.dataset.id !== id) { el.dataset.id = id; el.innerHTML = html; } }
 // A short emoji shower the first time the app opens on a theme day (this phone), and on a peek. Never with reduced motion.

@@ -45,8 +45,8 @@ test("Monday is a watching day (Hannah's videos, the solo in her head in the car
   assert.equal(studioKind("2026-11-02", plan), "watch", "Monday"); assert.equal(studioKind("2026-11-03", plan), "memory", "Tuesday"); assert.equal(studioKind("2026-11-07", plan), "memory", "Saturday");
   const mon = buildPlan({ ...base, date: "2026-11-02", short: "watch" }); assert.deepEqual(mon.map(i => i.id), WATCH_DAY.map(i => i.id)); assert.ok(mon.every(i => i.kind === "watch" || i.kind === "mind"), "no dancing on Monday");
   assert.ok(/walkthrough/i.test(WATCH_DAY[0].text) && /run-through/i.test(WATCH_DAY[1].text) && /car/i.test(WATCH_DAY[2].text));
-  assert.deepEqual(buildPlan({ ...base, date: "2026-11-03", short: "memory" }).map(i => i.id), MEMORY_RUN.map(i => i.id), "Tuesday: the 15-minute memory run");
-  assert.deepEqual(buildPlan({ ...base, date: "2026-11-03", short: true }).map(i => i.id), MEMORY_RUN.map(i => i.id), "short: true still means the memory run");
+  assert.deepEqual(buildPlan({ ...base, date: "2026-11-03", short: "memory" }).map(i => i.id), ["mem-warm", "mem-top", "mem-chunk", "mem-trio", "mem-predict", "mem-picture"], "Tuesday: the memory run, with two minutes of trio since 1.56.0");
+  assert.deepEqual(buildPlan({ ...base, date: "2026-11-03", short: true }).map(i => i.id), ["mem-warm", "mem-top", "mem-chunk", "mem-trio", "mem-predict", "mem-picture"], "short: true still means the memory run");
   for (const f of ["tools/print/Sofia-Practice-Toolkit.html", "tools/print/Sofia-Backstage-Pass.html", "data/pass.json"]) { const t = src(f); assert.match(t, /Hannah's (two )?videos/, f); assert.doesNotMatch(t, /No home practice on Mon and Tue|Mon and Tue are rest days|Never 2 days in a row/, f); }
 });
 
@@ -60,11 +60,13 @@ test("safety gates: no aerial drills during Memory + knees, and in the mission's
   const q = src("js/games/quest.js"); assert.ok(!q.includes("kidCycle"), "a gem count never changes the trick's circle"); assert.match(q, /Ask Ms\. Brittany or a grown-up/);
 });
 
-test("filler games wait for the solo on a home day during Own it; the solo games stay; the Today game card becomes What's Next?", () => {
+test("filler games wait for the solo (and the trio, streak.gateOpen) on every home day; the solo games stay; the Today game card becomes What's Next?", () => {
   const g = gamesFor("2026-11-05", { home: true, knees: true, done: false }); assert.equal(g.gate, true); assert.deepEqual(g.games.map(x => x.id), SOLO_GAMES);
   assert.equal(gamesFor("2026-11-05", { home: true, knees: true, done: true }).gate, false, "plan done: everything opens");
   assert.equal(gamesFor("2026-11-04", { home: false, knees: true, done: false }).gate, false, "a studio day isn't gated");
-  assert.equal(gamesFor("2026-11-12", { home: true, knees: false, done: false }).games.length, GAMES.length, "after Own it nothing is hidden");
+  const later = gamesFor("2026-11-12", { home: true, knees: false, done: false }); assert.equal(later.gate, true, "Jenya, Oct 30: solo first all season, not just until Nov 9");
+  assert.deepEqual(later.games.map(x => x.id), ["quest", "nextmove", "along", "count"], "after Own it Trick Quest is solo work, so the gate leaves it open");
+  assert.equal(gamesFor("2026-11-12", { home: true, knees: false, done: true }).games.length, GAMES.length, "done: nothing is hidden");
   const c = cardsFor("2026-11-05", { soloOnly: true }).find(x => x.id === "game"); assert.equal(c.sub, "What's Next?"); assert.match(c.go, /playOpen\('nextmove'\)/);
   assert.notEqual(cardsFor("2026-11-05", {}).find(x => x.id === "game").go, c.go);
 });
@@ -76,7 +78,7 @@ test("tool buttons under a practice item: the music, Hannah's videos by name, Ch
   assert.deepEqual(toolsFor({ id: "watch-run" }, { solo: ["Hannah 1", "Hannah 2"] }), [{ label: "📹 Hannah 2", go: "hvWatch('solo',1)" }], "no name match: by position");
   assert.deepEqual(toolsFor({ id: "watch-run" }, {}), [], "no videos uploaded yet: no button");
   assert.deepEqual(toolsFor({ id: "solo-run", dance: "solo" }, vids), [{ label: "🎵 Solo music", go: "openPlayer('solo')" }]);
-  assert.deepEqual(toolsFor({ id: "trio-mark", dance: "trio" }, vids).map(t => t.go), ["openPlayer('trio')", "hvWatch('trio',0)"]);
+  assert.deepEqual(toolsFor({ id: "trio-mark", dance: "trio" }, vids).map(t => t.go), ["openPlayer('trio')", "hvWatch('trio',0)"]); assert.deepEqual(toolsFor({ id: "mem-trio", dance: "trio" }, vids).map(t => t.go), ["openPlayer('trio')", "hvWatch('trio',0)"], "the memory run's trio too (1.56.0)");
   assert.deepEqual(toolsFor({ id: "mem-chunk" }, vids).map(t => t.label), ["🧩 Chunks", "🎵 Solo music"]); assert.deepEqual(toolsFor({ id: "mem-predict" }, vids).map(t => t.label), ["⏸ Pause & Predict"]);
   assert.deepEqual(toolsFor({ id: "core-plank", kind: "core" }, vids), []); assert.deepEqual(toolsFor(null, vids), []);
   const pm = src("js/pmode.js"); assert.match(pm, /PM\.ask = true/, "the timer asks instead of ticking off"); assert.match(pm, /✅ Did it/); assert.match(pm, /↻ Again/); assert.match(pm, /!== "manual"/, "timed unless she picked Manual");

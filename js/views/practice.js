@@ -4,6 +4,7 @@ import { $, $$, esc, fmt, todayStr, toast, expose } from "../util.js";
 import { PRACTICE_ITEMS, PHASES, AERIAL, CLASSES } from "../data.js";
 import { S, storeSet, events } from "../store.js";
 import { computeStreak, dayCounts, planDone } from "../streak.js";
+import { pingDone } from "../remind.js";
 import { renderQuick } from "../quick.js";
 import { renderWorkouts } from "../workouts.js";
 import { planFor } from "../planToday.js";
@@ -62,6 +63,7 @@ async function onCheck(e){
   e.target.closest(".pitem").classList.toggle("done",e.target.checked);
   const plan=planFor(date); const pct=Math.round(100*done.length/Math.max(1,plan.length));
   await storeSet("practice",date,{...rec,done,total:plan.length});
+  if(e.target.checked&&date===todayStr()&&planDone({...rec,done})&&!planDone(rec)) try{ pingDone(); }catch(err){} // this tick finished the plan: no reminder tonight
   const aer=plan.find(i=>i.id===e.target.dataset.id&&i.aerialId); if(aer&&e.target.checked){ const ad=new Set(S.settings.aerial||[]); if(!ad.has(aer.aerialId)){ ad.add(aer.aerialId); await storeSet("settings","main",{...S.settings,aerial:[...ad]}); } }
   if(date===todayStr()){ try{ localStorage.setItem("spotlight:practice:"+date,JSON.stringify(done)); }catch(e){} }
   if(pct>=100&&lastPct<100) confetti(); lastPct=pct; checkBadges();

@@ -23,10 +23,11 @@ export const KIND_LINES = {
   memory: ["Memory run 🧠", "15 minutes: the solo from the top, Lines off."],
   home: ["Home practice 🏠", "Tap ▶ Start. Your solo first ⭐"],
 };
+// The last call (6:30 pm since 1.56.0, Jenya Oct 30): start now, so practice is done long before bed.
 export const SECOND_LINES = [
-  ["Still time ✨", "15 minutes and the plan is done ⭐"],
-  ["Before bed 🌙", "The memory run is enough. Then rest."],
-  ["One more go? 🩰", "Your solo is waiting. Short is fine."],
+  ["Last call ⏰", "Start by 7:00 and you're done long before bed ⭐"],
+  ["Last call 🩰", "Solo first, then the trio. Tap ▶ Start."],
+  ["Last call 🌙", "Dance now, sleep on time. Sleep saves your steps."],
 ];
 export const dayNumber = (iso) => Math.floor(Date.parse(iso + "T00:00:00Z") / 86400000);
 const nth = (list, iso) => list[((dayNumber(iso) % list.length) + list.length) % list.length];

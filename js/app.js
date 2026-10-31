@@ -51,6 +51,7 @@ import { initFilm } from "./film.js";
 import { initReady } from "./ready.js";
 import { initPass } from "./pass.js";
 import { initSeason } from "./season15.js";
+import { resyncReminder } from "./remind.js";
 import { initSunday } from "./sunday.js";
 
 const VERSION_KEY = "spotlight:version";
@@ -94,7 +95,7 @@ function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.class
     // Locked Grown-ups pages bounce to the PIN pad (which remembers where to go next).
     setGuard(p => { if (GROWNUP_PAGES.includes(p) && !isUnlocked()) { $("#pinTarget").value = p; $("#pinIn").value = ""; $("#pinMsg").textContent = ""; return "pin"; } return p; });
     let restored = false;
-    onChange(() => { renderAll(); buddyAuto(settled("practice") && settled("settings")); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); saveDrillsMove().then(n => { if (n) toast("Your drill box moved to its own shelf ✓"); }).catch(console.warn); saveWorkoutsMove().then(n => { if (n) toast("Your workouts moved to their own shelf ✓"); }).catch(console.warn); refreshSeedFiles().then(names => { if (names.length) toast("New version in My files: " + names.join(", "), 3500); }).catch(console.warn); checkBadges().catch(console.warn); });
+    onChange(() => { renderAll(); if (settled("settings")) try { resyncReminder(); } catch (e) { console.warn(e); } buddyAuto(settled("practice") && settled("settings")); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); saveDrillsMove().then(n => { if (n) toast("Your drill box moved to its own shelf ✓"); }).catch(console.warn); saveWorkoutsMove().then(n => { if (n) toast("Your workouts moved to their own shelf ✓"); }).catch(console.warn); refreshSeedFiles().then(names => { if (names.length) toast("New version in My files: " + names.join(", "), 3500); }).catch(console.warn); checkBadges().catch(console.warn); });
     renderAll();
   } catch (e) { console.error(e); return fatal("The app couldn't load its content: " + (e.message || e)); }
 

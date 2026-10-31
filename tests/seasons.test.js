@@ -112,7 +112,7 @@ test("Christmas everywhere (1.55.0): holly, ornaments and bells, a candy cane af
   const block = css.slice(css.indexOf("/* Christmas everywhere"), css.indexOf("/* Christmas's fliers")); const rules = block.match(/:(before|after)\{content:""[^}]*\}/g) || [];
   assert.ok(rules.length >= 10 && rules.every(r => r.includes("pointer-events:none") || r.includes("display:inline-block")), "every decoration lets taps through");
   assert.match(css, /\.xm-sleigh:before\{content:"";position:absolute;inset:0;pointer-events:none/);
-  assert.match(css, /prefers-reduced-motion:reduce\)\{html\[data-season="christmas"\] \.card:after[^}]*\{animation:none\} html\[data-season="christmas"\] nav\.tabs:before\{background-image:url\(\.\.\/icons\/season\/christmas\/lights-still\.svg\)\}/, "with reduced motion nothing swings and the lights stay still");
+  assert.match(css, /prefers-reduced-motion:reduce\)\{html\[data-season="christmas"\] \.card:after[^}]*\{animation:none!important\} html\[data-season="christmas"\] nav\.tabs:before\{background-image:url\(\.\.\/icons\/season\/christmas\/lights-still\.svg\)\}/, "with reduced motion nothing swings and the lights stay still");
   assert.ok(src("icons/season/christmas/hat.svg").includes("#FF5C93") && src("icons/season/christmas/holly.svg").includes("#FF5C93"), "her pink: a berry on the Santa hat's brim and on the holly");
 });
 
