@@ -24,7 +24,7 @@ function renderCal(){
   for(let day=1;day<=dim;day++){ const ds=y+"-"+String(m+1).padStart(2,"0")+"-"+String(day).padStart(2,"0"); let ev="";
     studioOn(ds,CLASSES,studioDates()).forEach(c=>ev+=`<div class="ev ${c.oneOff?"oneoff":""}">${esc(c.name.replace(/Mini\/Jr |Mini /,""))}</div>`);
     // A home weekday with a class booked is a studio day: its home line is the memory run, not the full practice (daykind).
-    const hl=homeLineNow(ds); if(hl) ev+=`<div class="ev home">${hl==="memory run"?"Home: memory run":"Home practice"}</div>`;
+    const hl=homeLineNow(ds); if(hl) ev+=`<div class="ev home">${hl==="memory run"?"Home: memory run":hl==="Show day ★"?"Show day ★":"Home practice"}</div>`;
     events().filter(e=>ds>=e.start&&ds<=e.end).forEach(e=>ev+=`<div class="ev comp">${esc(e.name)}</div>`);
     onDay(ds).forEach(e=>ev+=`<div class="ev other">${esc(e.short||e.name)}${e.pick?"?":""}</div>`);
     Object.values(S.todos).filter(t=>t.due===ds).forEach(t=>ev+=`<div class="ev other">${esc(t.text)}</div>`);

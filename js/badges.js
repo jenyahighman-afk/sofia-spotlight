@@ -1,7 +1,7 @@
 // Badges: which ones exist, which are earned (pure evaluation), and awarding them into the `badges` collection.
 import { S, storeSet, settled, dances } from "./store.js";
 import { CLASSES, AERIAL, PRACTICE_ITEMS } from "./data.js";
-import { events } from "./store.js";
+import { events, studioDates } from "./store.js";
 import { computeStreak } from "./streak.js";
 import { closedCount } from "./corrections.js";
 import { todayStr, toast } from "./util.js";
@@ -47,7 +47,7 @@ export function context(today = todayStr()){
   const quickCount = Object.values(S.practice).reduce((a, p) => a + (Array.isArray(p.quick) ? p.quick.length : 0), 0);
   const gems = Object.values(S.skills).reduce((a, k) => a + ((k.quest && Array.isArray(k.quest.gems)) ? k.quest.gems.length : 0), 0);
   return {
-    streak: computeStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today }),
+    streak: computeStreak({ practice: S.practice, classes: CLASSES, events: [...events(), ...studioDates()], totalItems: PRACTICE_ITEMS.length, today }),
     closed: closedCount(S.corrections), aerialPct: AERIAL.length ? Math.round(100 * aerialDone / AERIAL.length) : 0,
     settings: S.settings, practice: S.practice, weekFixPicked: !!(S.settings.weekFix && S.settings.weekFix.id && !S.settings.weekFix.auto), fullRun, quickCount, gems,
   };

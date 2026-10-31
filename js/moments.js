@@ -3,7 +3,7 @@
 // kept in the Photos tab. Stickers suggest themselves from the day (a gem, a badge, a streak milestone). Pure parts up
 // top (tested in Node); canvas drawing and the stage UI below.
 import { $, esc, toast, todayStr, uid, expose, saveBlob, daysUntil, fmt } from "./util.js";
-import { S, storeSet, setSettings, events, nextEvent } from "./store.js";
+import { S, storeSet, setSettings, events, nextEvent, studioDates } from "./store.js";
 import { CLASSES, PRACTICE_ITEMS, P } from "./data.js";
 import { computeStreak, dayCounts } from "./streak.js";
 import { checkins } from "./goals.js";
@@ -89,7 +89,7 @@ export function drawMoment(cv, o){
 // ---------- today's context ----------
 export function todayContext(){
   const today = todayStr(); const rec = S.practice[today] || {};
-  const streak = computeStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today });
+  const streak = computeStreak({ practice: S.practice, classes: CLASSES, events: [...events(), ...studioDates()], totalItems: PRACTICE_ITEMS.length, today });
   const gem = Object.values(S.skills || {}).find(k => k && k.quest && Array.isArray(k.quest.gems) && k.quest.gems.includes(today)); const gemTrick = gem ? ((findSkill(gem.id) || {}).n || "a trick") : "";
   const badges = Object.values(S.badges || {}).filter(b => b && !b.deleted && b.at === today).map(b => b.label);
   const ne = nextEvent();

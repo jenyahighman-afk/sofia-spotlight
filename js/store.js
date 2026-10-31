@@ -8,7 +8,7 @@ import { packFrames, FDIM } from "./posemath.js";
 
 // Bump this whenever a stored field is renamed, dropped or changes meaning — and add a MIGRATIONS entry for the new number.
 // Every stored document carries _v (the schema it was written with). Documents without _v are schema 1 (the original Claude-hosted app).
-export const SCHEMA_VERSION = 53;
+export const SCHEMA_VERSION = 54;
 // Schema 52 (Build 4, Part B of the Oct 29 audit): a stored solo's Nov 4 checkpoint, if it still has step 45's exact words, says
 // what the plan's Nov 4 row says (SOLO_V52, fixSolo52). Text the family typed is never touched.
 // Schema 51 (Build 4, Part A of the Oct 29 audit): the week's fix and the Sunday sheet are keyed by the PLAN week — Monday →
@@ -176,7 +176,7 @@ export const SOLO_V41 = {
     arch: "Kneeling arch + leg kick (0:16.5): warm the back first (cobra, then seal). Kneel tall, arch, tip forward onto the hands and kick the back leg up, straight and pointed. 4 slow on the mat, knees over toes as you come back up.",
     heel: "Heel stretch (0:31.5): développé side at a counter: 4 up, hold 2, 4 down ×6. Side-lying leg lifts 2×12. Standing heel down. Decide with Ms. Brittany: clean attitude or straight leg, never halfway.",
     leap: "Leap + cartwheel (0:48 · 0:49.5): leap ON the swell, then cartwheel: reach, look, place. Head stays up until the hands go down. Cartwheel over a tape line, legs straight. Play from 0:44 ×5.",
-    walk: "Walkover to knees (1:07.75: handstand → bridge → knees) + handstand (1:28.5): wrists first. Wall handstand 3×10–15 s. Kick up to vertical ×5, split at the top ×5. The landing knee touches softly, never drops. Kick-overs only with a spotter.",
+    walk: "Walkover to knees (1:07.75: handstand → bridge → knees) + handstand (1:28.5): wrists first. Wall handstand 3×10–15 s. Kick up to vertical ×5, split at the top ×5. The landing knee touches softly, never drops. Kick-overs and aerials only in class.",
     kick: "Floor kick (1:40.75): 8 slow kicks each side, 4 up, 4 down, pointed at the top. Kick from the hip, back long; hamstring stretch after.",
     passe: "Passé turns (1:49.5): passé balance on relevé 10 s. Quarter turns ×8, half ×8, singles ×10. Spot a sticker on the wall; arms round like holding a beach ball.",
     end: "The ending (2:00.5): play the last 15 seconds of the real track ×5. Hold, breathe, count 8 more after you think it's over.",
@@ -493,8 +493,16 @@ export const MIGRATIONS = {
   52: (col, id, doc) => { if (col === "dances" && id === "solo") fixSolo52(doc); return doc; },
   // 53 (1.56.0, Jenya Oct 30): the evening nudge is a 6:30 pm last call. A stored time that is one of the old defaults (7:30,
   // 8:00 pm: the app saved the default when reminders were turned on) moves to 6:30; a time the family picked stays.
+  // 54 (1.58.0, the Oct 30 final re-audit): the solo's trick 4 says kick-overs and aerials only in class (the paper and the Pass
+  // said so; the stored line still said "with a spotter"), and the trio card's home line follows the plan (every home session).
+  54: (col, id, doc) => {
+    if (col === "dances" && id === "solo" && Array.isArray(doc.tricks)) doc.tricks = doc.tricks.map(l => typeof l === "string" ? l.replace(SOLO_V54.walk[0], SOLO_V54.walk[1]) : l);
+    if (col === "dances" && id === "trio" && doc.rehearsal === SOLO_V54.trio[0]) doc.rehearsal = SOLO_V54.trio[1];
+    return doc;
+  },
   53: (col, id, doc) => { if (col === "settings" && id === "main" && doc.reminder && typeof doc.reminder === "object" && !Array.isArray(doc.reminder)) { const r = doc.reminder; if ((r.h2 === 20 && r.m2 === 0) || (r.h2 === 19 && r.m2 === 30)) doc.reminder = { ...r, h2: 18, m2: 30 }; } return doc; }
 };
+export const SOLO_V54 = { walk: ["Kick-overs only with a spotter.", "Kick-overs and aerials only in class."], trio: ["Choreography with Larisa · mark it once a week at home (Thursday) · trio with Hannah and Lauren", "Choreography with Larisa · this week's trio goal in every home session · trio with Hannah and Lauren"] };
 export const SOLO_V40 = {
   teacher: ["Ms. Brittany (weekly solo rehearsal; Hannah not available on a regular schedule)", "Ms. Brittany (solo rehearsals booked as needed, at least 2 a month; Hannah not available on a regular schedule)"],
   rehearsal: ["Wednesdays 3:30–4:00 solo rehearsal with Ms. Brittany · Thu/Fri/Sun home practice", "Solo rehearsals with Ms. Brittany booked as needed (at least 2 a month) · Thu/Fri/Sun home practice"],
@@ -618,11 +626,16 @@ export function dances(){ const merged={}; DEFAULT_DANCES.forEach(d=>merged[d.id
 // A pair offered as "sign up for one" (`pick`: the Dec 6 / Dec 12 solo-trio showings) is a studio date only once the family picks
 // it (`chosen`, Schedule → ✓ This one); until then it, a hold weekend and a deadline (kinds "hold", "deadline") are calendar-only
 // (1.57.0): on the calendar, the week strip and Mom's card, never a studio day, a show or a countdown.
-export const isStudioDate = (e) => !!e && e.kind === "class" && (!e.pick || !!e.chosen);
-export const isCalendarOnly = (e) => !!e && (e.kind === "hold" || e.kind === "deadline" || (e.kind === "class" && !!e.pick && !e.chosen));
+// Once one of a pair is picked, the other is `chosen: false` and leaves the calendar (1.58.0: it still said "sign up for one");
+// un-picking clears the pair (`chosen: null`). A studio closure (kind "closed": the studio's Thanksgiving and Winter Break)
+// is calendar-only too, and takes the weekly classes off its dates (studio.studioOn).
+export const isStudioDate = (e) => !!e && e.kind === "class" && (!e.pick || e.chosen === true);
+export const isCalendarOnly = (e) => !!e && (e.kind === "hold" || e.kind === "deadline" || e.kind === "closed" || (e.kind === "class" && !!e.pick && e.chosen !== true && e.chosen !== false));
 export function events(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted&&!isStudioDate(e)&&!isCalendarOnly(e)).sort((a,b)=>a.start.localeCompare(b.start)); }
 export function studioDates(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted&&isStudioDate(e)).sort((a,b)=>a.start.localeCompare(b.start)); }
 export function calendarOnly(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted&&isCalendarOnly(e)).sort((a,b)=>a.start.localeCompare(b.start)); }
+export function allEvents(){ const merged={}; DEFAULT_EVENTS.forEach(e=>merged[e.id]={...e}); Object.entries(S.events).forEach(([id,e])=>merged[id]={...(merged[id]||{}),...e}); return Object.values(merged).filter(e=>!e.deleted); }
+export const closures = () => allEvents().filter(e => e.kind === "closed");
 export function nextEvent(){ return events().find(e=>daysUntil(e.end)>=0); }
 export function pin(){ return typeof S.settings.pin === "string" && S.settings.pin ? S.settings.pin : DEFAULT_PIN; }
 export function pinOn(){ return S.settings.pinOn !== false; }

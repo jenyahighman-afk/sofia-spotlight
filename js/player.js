@@ -7,6 +7,7 @@ import { normalizeCues, cueAt, fmtTime, fmtCueTime, isCueTable, trickAhead, lyri
 import { srcFor, trackUrl } from "./track.js";
 import { cuePhoto } from "./cuecards.js";
 import { pingDone } from "./remind.js";
+import { planDone } from "./streak.js";
 import { prompterHtml, karaokeHtml, wordWipes } from "./prompter.js";
 export { srcFor };
 
@@ -160,8 +161,8 @@ async function runEnded(){
   const ask = (q) => new Promise(res => { box.innerHTML = `<div class="run-q">${q}</div><div class="row run-yn"><button class="btn coral" id="plYes">Yes!</button><button class="btn ghost" id="plNo">Not yet</button></div>`; $("#plYes").onclick = () => res(true); $("#plNo").onclick = () => res(false); });
   const ending = await ask("Did you hold the ending?"); const eyes = await ask("Eyes up?");
   const date = todayStr(); const rec = S.practice[date] || { done: [], note: "", runs: [] };
-  await storeSet("practice", date, { ...rec, runs: [...(rec.runs || []), { at: new Date().toISOString(), danceId: run.danceId, speed: 100, full: true, ending, eyes }] });
-  try { pingDone(); } catch (e) {} // a logged run = the plan is done: no reminder tonight
+  const next = { ...rec, runs: [...(rec.runs || []), { at: new Date().toISOString(), danceId: run.danceId, speed: 100, full: true, ending, eyes }] }; await storeSet("practice", date, next);
+  if (planDone(next)) try { pingDone(); } catch (e) {} // a solo run = the plan is done: no reminder tonight (a trio run is not)
   box.innerHTML = `<div class="run-q">${ending && eyes ? "Both! ⭐ Logged." : "Logged. Next run: " + (!ending ? "hold the ending" : "eyes up") + "."}</div><div class="row run-yn"><button class="btn coral" onclick="plRunClose()">Done</button><button class="btn ghost" onclick="plRunIt()">Again</button></div>`;
   checkBadges();
 }

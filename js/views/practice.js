@@ -2,7 +2,7 @@
 // Plan, safety rules, aerial mission, notes and history sit under accordions.
 import { $, $$, esc, fmt, todayStr, toast, expose } from "../util.js";
 import { PRACTICE_ITEMS, PHASES, AERIAL, CLASSES } from "../data.js";
-import { S, storeSet, events } from "../store.js";
+import { S, storeSet, events, studioDates } from "../store.js";
 import { computeStreak, dayCounts, planDone } from "../streak.js";
 import { pingDone } from "../remind.js";
 import { renderQuick } from "../quick.js";
@@ -32,7 +32,7 @@ function renderPractice(){
   renderQuick(); renderWorkouts();
   const date=curDate(); const rec=S.practice[date]||{done:[],note:"",runs:[]}; const done=new Set(rec.done||[]); const plan=planFor(date);
   const pct=plan.length?Math.round(100*[...done].filter(id=>plan.some(i=>i.id===id)).length/plan.length):0;
-  const streak=computeStreak({practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today:todayStr()});
+  const streak=computeStreak({practice:S.practice,classes:CLASSES,events:[...events(),...studioDates()],totalItems:PRACTICE_ITEMS.length,today:todayStr()});
   $("#practiceHead").innerHTML=`${ring(pct)}<div class="grow"><div class="today-what">${date===todayStr()?"Today":fmt(date)}</div><div class="row"><span class="chip ${streak?"coral":""}">🔥 ${streak}-day streak</span>${(rec.runs||[]).length?`<span class="chip sun">▶ ${rec.runs.length} run${rec.runs.length>1?"s":""}</span>`:""}</div><div class="small muted" style="margin-top:4px">${practiceState({pd:planDone(rec),safe:dayCounts(rec,PRACTICE_ITEMS.length),pct})}</div></div>`;
   let lastKind=""; $("#practiceChecklist").innerHTML=plan.map(it=>{ const head=it.kind!==lastKind?`<div class="row pgroup"><span class="grow">${KIND[it.kind]||"✨"} ${GROUP[it.kind]||it.kind}</span>${SWAPPABLE.has(it.kind)?`<button type="button" class="lnk" onclick="swapOpen('${it.kind}','')">＋ one more</button>`:""}</div>`:""; lastKind=it.kind;
     return head+`<label class="pitem ${done.has(it.id)?"done":""}"><input type="checkbox" ${done.has(it.id)?"checked":""} data-id="${it.id}" class="pchk"><span class="pk">${KIND[it.kind]||"✨"}</span><span class="grow">${esc(it.text)}</span>${it.kind==="tech"?`<button type="button" class="lnk" onclick="event.preventDefault();openCoach('','${esc(it.text.split(/[:,(]/)[0].trim())}')" title="Coach me">🎬</button>`:""}${SWAPPABLE.has(it.kind)?`<button type="button" class="lnk" onclick="event.preventDefault();swapOpen('${it.kind}','${it.id}')" title="Swap">🔁</button>`:""}</label>`; }).join("");

@@ -59,10 +59,11 @@
     "Mon · Ballet, Acro, Jazz Tech at the studio (4:30–7:30). At home: watch Hannah's two videos, and dance the solo in your head in the car. No dancing tonight.",
     "Tue · Hip Hop, Ballroom (5:30–7:30) + the memory run.",
     "Wed · Contemporary (6:30–7:30) + the memory run. Solo rehearsal when one is booked.",
-    "Thu · Home: strong + bendy + technique, your fix, knees or a trick, aerial strength, solo + trio (35–45 min).",
-    "Fri · Home: the same as Thursday, with aerial drills (35–45 min).",
+    "Thu · Home: strong + bendy + technique, your fix, knees or a trick, aerial strength (from Nov 9), solo + trio (35–45 min).",
+    "Fri · Home: the same as Thursday, with aerial drills (from Nov 9) (35–45 min).",
     "Sat · Co Tech + PITCH rehearsal (10:00–12:15) + the memory run. The big groups practice here.",
-    "Sun · Home: the session, then film the solo + trio + film review (the 🎬 Sunday sheet). Plan your week on Toolkit page 6."
+    "Sun · Home: the session, then film the solo + trio + film review (the 🎬 Sunday sheet). Plan your week on Toolkit page 6.",
+    "Studio closed Nov 25–29 and Dec 19–Jan 1: your class days are home days. Show day has no home practice: dance your best on stage!"
    ],
    "check": { "q": "Which days are home practice days?", "a": ["Mon, Tue, Wed", "Thu, Fri, Sun", "Every single day"], "ok": 1, "yay": "Yes! Thu, Fri and Sun at home 🏠", "hint": "Mon is videos and picturing; Tue, Wed and Sat get the short memory run." }
   },
@@ -112,7 +113,7 @@
     "Dancers your age need 9–12 hours of sleep every night.",
     "While you sleep, your brain saves the steps you practiced, and your muscles repair and grow.",
     "Same bedtime every night, weekends too. Wake up at 7:00 → lights out by 9:00.",
-    "Late studio nights (Mon, Tue): dinner, shower, bed. Homework is already done.",
+    "Late studio nights (Mon, Tue): dinner, the memory run on Tuesday, shower, bed. Homework is already done.",
     "Wind down: shower, PJs, a paper book, lights out."
    ],
    "check": { "q": "How much sleep do dancers your age need?", "a": ["6 hours", "9–12 hours", "Only a lot on weekends"], "ok": 1, "yay": "Yes! 9–12 hours, every night 😴", "hint": "More than grown-ups need!" }

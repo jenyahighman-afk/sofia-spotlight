@@ -53,7 +53,7 @@ export const cpId = (plan, c) => `${(plan && plan.start) || "plan"}:${hashText(S
 // (Schedule → ✓ This one), else its own `d` with `alt` ("sign up: Dec 6 or Dec 12") after the words. Dated ones first, in date order; undated last.
 export function allCheckpoints(plan = PLAN15, oneOffs = [], date = ""){
   const sd = showDay(plan);
-  return (plan.checkpoints || []).map(c => { const id = cpId(plan, c); if (c.show) return { id, d: sd, t: c.t }; if (c.beforeShow > 0) return { id, d: sd ? addDays(sd, -c.beforeShow) : "", t: c.t }; if (c.pick) { const ch = (oneOffs || []).find(e => e && !e.deleted && e.pick === c.pick && e.chosen); return { id, d: ch ? ch.start : c.d, t: ch || !c.alt ? c.t : `${c.t} (${c.alt})` }; } if (!c.rehearsal) return { id, d: c.d, t: c.t }; const r = nextRehearsal(oneOffs, c.after > date ? c.after : date); return { id, d: r ? r.start : "", t: c.t, rehearsal: true, after: c.after || "" }; })
+  return (plan.checkpoints || []).map(c => { const id = cpId(plan, c); if (c.show) return { id, d: sd, t: c.t }; if (c.beforeShow > 0) return { id, d: sd ? addDays(sd, -c.beforeShow) : "", t: c.t }; if (c.pick) { const ch = (oneOffs || []).find(e => e && !e.deleted && e.pick === c.pick && e.chosen === true); const ds = (Array.isArray(c.dates) && c.dates.length ? [...c.dates] : [c.d]).sort(); return { id, d: ch ? ch.start : (ds.find(x => x >= (date || "")) || ds[ds.length - 1]), t: ch || !c.alt ? c.t : `${c.t} (${c.alt})` }; } if (!c.rehearsal) return { id, d: c.d, t: c.t }; const r = nextRehearsal(oneOffs, c.after > date ? c.after : date); return { id, d: r ? r.start : "", t: c.t, rehearsal: true, after: c.after || "" }; })
     .sort((a, b) => (a.d || "9999").localeCompare(b.d || "9999"));
 }
 // Checkpoints from `date` on (the undated rehearsal one included, last).
@@ -78,7 +78,7 @@ export function checkpointsToShow(date, plan = activePlan(date), oneOffs = [], t
 }
 // The one checkpoint for the top of Today: a passed one still unticked, else today's, else the rehearsal to book (a thing
 // to do now beats a date two months off), else the next to come. Never a finished one.
-export function nextCheckpoint(date, plan = activePlan(date), oneOffs = [], ticks = {}){ const list = checkpointsToShow(date, plan, oneOffs, ticks); for (const st of ["passed", "today", "book", "next"]) { const c = list.find(x => x.state === st); if (c) return c; } return null; }
+export function nextCheckpoint(date, plan = activePlan(date), oneOffs = [], ticks = {}){ const list = checkpointsToShow(date, plan, oneOffs, ticks); for (const st of ["today", "passed", "book", "next"]) { const c = list.find(x => x.state === st); if (c) return c; } return null; }
 // The plans the by-when sheet lists: the one `date` is in, then the one after it (the spring plan after the Showcase's).
 export function plansFrom(date){ const cur = activePlan(date); const list = [PLAN15, PLAN_SPRING].filter(p => p && p.start && Array.isArray(p.checkpoints) && p.checkpoints.length); const i = list.indexOf(cur); return i < 0 ? list : list.slice(i); }
 export const planLabel = (plan) => plan === PLAN_SPRING ? "Spring: to the Glass House Ball" : "To the Winter Showcase";
@@ -100,7 +100,8 @@ export function sessionRules(date, plan = activePlan(date)){
   const trio = wk && wk.trio ? { text: `👯 Trio · this week: ${wk.trio} · then the whole trio once with the music`, secs: 240 } : null;
   const jg = r.judges; const judges = jg && wk && wk.judges ? { comp: String(wk.judges), solo: jg.solo, trio: jg.trio, how: jg.how || "", secs: jg.secs || 300 } : null;
   const ad = r.audition; const audition = ad && wk && wk.audition ? { pickup: ad.pickup ? { text: ad.pickup, how: ad.pickupHow || "", secs: ad.pickupSecs || 180 } : null, improv: ad.improv ? { text: ad.improv, how: ad.improvHow || "", secs: ad.improvSecs || 120 } : null } : null;
-  return { short: nightBefore || !!(wk && wk.light), nightBefore, imagery, clips, review, run: run.text ? run : null, trio, taper, judges, audition };
+  const show = !!(showDay(plan) && date === showDay(plan)); // show day (1.58.0): no home practice, the plan is empty
+  return { short: nightBefore || !!(wk && wk.light), nightBefore, show, imagery, clips, review, run: run.text ? run : null, trio, taper, judges, audition };
 }
 // Whole days since she last danced her solo (streak.js planDone: a logged run, the solo part of a session, a plan box or
 // a Memorize chunk — a game or a dare doesn't reset this clock), 0 = today. Infinity if never.
@@ -111,7 +112,7 @@ export function daysSinceDance(practice, today){
 
 // ---- DOM (Today) ----
 // Never more than 2 days without the solo: after two days without it the card asks for the memory run today.
-function gapNudge(date){ const max = ((activePlan(date).rules || {}).maxGap) || 2; const gap = daysSinceDance(S.practice, date); return Number.isFinite(gap) && gap >= max ? `<div class="sw-next sw-gap">🧠 ${gap} days without your solo: do the memory run today <button class="btn sm coral" onclick="showPage('practice')">▶ Go</button></div>` : ""; }
+function gapNudge(date){ if ((((activePlan(date) || {}).rules || {}).studioDays || {})[String(new Date(date + "T00:00:00").getDay())] === "watch") return ""; const max = ((activePlan(date).rules || {}).maxGap) || 2; const gap = daysSinceDance(S.practice, date); return Number.isFinite(gap) && gap >= max ? `<div class="sw-next sw-gap">🧠 ${gap} days without your solo: do the memory run today <button class="btn sm coral" onclick="showPage('practice')">▶ Go</button></div>` : ""; }
 // A checkpoint can be ticked once its day is here or gone (Build 4: never ahead of time — the Showcase and the Ball are not
 // "made" in October), and cpTick asks once before saving. Pure.
 export const canTick = (state) => state === "today" || state === "passed";

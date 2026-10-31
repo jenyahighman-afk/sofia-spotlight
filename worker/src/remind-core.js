@@ -20,7 +20,7 @@ export const LINES = [
 export const KINDS = ["watch", "memory", "home"];
 export const KIND_LINES = {
   watch: ["Watch day 📹", "Hannah's two videos, then the solo in your head."],
-  memory: ["Memory run 🧠", "15 minutes: the solo from the top, Lines off."],
+  memory: ["Memory run 🧠", "The solo from the top, Lines off, then a little trio."],
   home: ["Home practice 🏠", "Tap ▶ Start. Your solo first ⭐"],
 };
 // The last call (6:30 pm since 1.56.0, Jenya Oct 30): start now, so practice is done long before bed.

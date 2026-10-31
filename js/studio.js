@@ -3,15 +3,17 @@
 // the rest), so it never counts as a show: no countdown, no comp mode. On a day with any studio class or rehearsal the
 // home plan is the short one: a memory run. Pure parts up top.
 import { $, esc, toast, uid, todayStr, fmt, expose } from "./util.js";
-import { storeSet, studioDates, calendarOnly, S } from "./store.js";
+import { storeSet, studioDates, calendarOnly, allEvents, closures, S } from "./store.js";
 import { CLASSES } from "./data.js";
 
 const weekdayOf = (date) => new Date(date + "T00:00:00").getDay();
 export const isRehearsal = (e) => /rehearsal/i.test(String((e && e.name) || ""));
 // What's on at the studio that day: the weekly classes for its weekday and the one-off dates. [{ t, name, room, oneOff }]
-export function studioOn(date, classes = [], oneOffs = []){
-  const wd = weekdayOf(date);
-  return [...classes.filter(c => c.day === wd).map(c => ({ t: c.t, name: c.name, room: c.room || "", oneOff: false })),
+// `closed`: the studio's closures (store.closures, kind "closed"): no weekly classes on their dates (1.58.0).
+export const closedOn = (date, closed = []) => (closed || []).some(e => e && !e.deleted && date >= e.start && date <= (e.end || e.start));
+export function studioOn(date, classes = [], oneOffs = [], closed = closures()){
+  const wd = weekdayOf(date); const shut = closedOn(date, closed);
+  return [...(shut ? [] : classes).filter(c => c.day === wd).map(c => ({ t: c.t, name: c.name, room: c.room || "", oneOff: false })),
     ...oneOffs.filter(e => e && !e.deleted && e.start === date).map(e => ({ t: e.time || "", name: e.name || "Studio", room: e.room || "", oneOff: true, id: e.id }))]
     .sort((a, b) => String(a.t).localeCompare(String(b.t)));
 }
@@ -73,9 +75,9 @@ async function saveRehearsal(){
   toast(`Booked: ${fmt(date)} ✓${st && st.need ? ` ${st.label} privates in ${monthName(date.slice(0, 7))}: ${st.have}/${st.need}.` : ""} That day's home plan is the memory run`, 3600);
 }
 // ✓ This one: the picked date becomes a studio day (the memory run at home), the other of the pair goes back to the calendar only.
-async function studioPick(id){ const e = calendarOnly().find(x => x.id === id); if (!e || !e.pick) return; const pair = [...calendarOnly(), ...studioDates()].filter(x => x.pick === e.pick);
+async function studioPick(id){ const e = calendarOnly().find(x => x.id === id); if (!e || !e.pick) return; const pair = allEvents().filter(x => x.pick === e.pick);
   for (const x of pair) await storeSet("events", x.id, { ...(S.events[x.id] || {}), chosen: x.id === id }); toast(`✓ ${fmt(e.start)}. That day's home plan is the memory run`, 3200); }
-async function studioUnpick(id){ const e = studioDates().find(x => x.id === id); if (!e || !e.pick) return; await storeSet("events", id, { ...(S.events[id] || {}), chosen: false }); }
+async function studioUnpick(id){ const e = studioDates().find(x => x.id === id); if (!e || !e.pick) return; for (const x of allEvents().filter(y => y.pick === e.pick)) await storeSet("events", x.id, { ...(S.events[x.id] || {}), chosen: null }); }
 async function studioDel(id){ const e = studioDates().find(x => x.id === id); if (!e || !confirm(`Cancel "${e.name}" on ${fmt(e.start)}?`)) return; await storeSet("events", id, { ...(S.events[id] || {}), ...e, deleted: true }); }
 export function initStudio(){ $("#rhClose").onclick = closeRehearsal; $("#rhSave").onclick = saveRehearsal;
   $("#rhFor").onchange = () => { const known = Object.values(ROUTINES).map(r => r.name); if (!$("#rhName").value.trim() || known.includes($("#rhName").value)) $("#rhName").value = ROUTINES[$("#rhFor").value].name; }; }

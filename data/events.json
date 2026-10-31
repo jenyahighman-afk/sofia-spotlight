@@ -19,6 +19,15 @@
   "notes": "She performs unless you email your location's front desk to opt out by today. Tee shirt size by today on the form on the studio website's home page (otherwise picked by age). The $60 fee auto-charges Nov 8, no refunds."
  },
  {
+  "id": "closed-thanksgiving",
+  "kind": "closed",
+  "short": "Studio closed",
+  "name": "Studio closed: Thanksgiving Break",
+  "start": "2026-11-25",
+  "end": "2026-11-29",
+  "notes": "No classes (the studio's important dates). Her usual class days are home days."
+ },
+ {
   "id": "grp-showing-1205",
   "kind": "class",
   "showing": true,
@@ -69,18 +78,28 @@
   "notes": "Held for every competitive team dancer: the studio may add rehearsals after the Dec 5 group showings. Keep the weekend free."
  },
  {
+  "id": "closed-winter",
+  "kind": "closed",
+  "short": "Studio closed",
+  "name": "Studio closed: Winter Break",
+  "start": "2026-12-19",
+  "end": "2027-01-01",
+  "notes": "No classes (the studio's important dates). Her usual class days are full home days. Back Sat Jan 2 for the mandatory rehearsal."
+ },
+ {
   "id": "wf",
   "name": "Winter Showcase (Winter Formal)",
   "start": "2027-01-08",
   "end": "2027-01-10",
-  "type": "Informal Performance Showcase + Competitive Showcase",
+  "type": "Competitive Showcase Jan 7–8 (solo, trio, PITCH) + Informal Performance Showcase Jan 9–10 (her classes)",
   "dances": "Solo, trio, PITCH groups, class dances",
-  "notes": "Informal Performance Showcase (opt-out only: she performs unless you email your location's front desk by Sat Nov 7) + the competitive showcase. Shows run all day by age division; each class does a 1–1.5 min mini routine, all classes or none. Tee shirt size by Nov 7 on the studio website's home page. What to wear for the classes: the winter performance tee + solid black bottoms; ballet: pink tights, pink ballet shoes and a solid black leotard. Several classes: layer (black leggings over pink convertible tights) and change shoes only: no changing rooms, no time for full changes. Must be back for rehearsals Sat Jan 2. Treat it as the dress rehearsal for the January comps.",
+  "notes": "Competitive Showcase Thu–Fri Jan 7–8 (Sofia most likely Fri Jan 8); Informal Performance Showcase Sat–Sun Jan 9–10 (her classes). The Informal is opt-out only: she performs unless you email your location's front desk by Sat Nov 7). Shows run all day by age division; each class does a 1–1.5 min mini routine, all classes or none. Tee shirt size by Nov 7 on the studio website's home page. What to wear for the classes: the winter performance tee + solid black bottoms; ballet: pink tights, pink ballet shoes and a solid black leotard. Several classes: layer (black leggings over pink convertible tights) and change shoes only: no changing rooms, no time for full changes. Must be back for rehearsals Sat Jan 2. Treat it as the dress rehearsal for the January comps.",
   "cost": "$60 participation fee (winter performance tee + the performance video); tickets $10 each",
   "charge": "Auto-charge Nov 8, 2026 (no refunds once charged)",
   "fun": "Season kickoff! Everyone at Glass House performs, and it's the first time the solo, trio and PITCH dances are seen by an audience. Rehearsal Sat Jan 2 is a must.",
   "pack": "comp",
-  "venue": "Meydenbauer Theater, 11100 NE 6th St, Bellevue, WA 98004"
+  "venue": "Meydenbauer Theater, 11100 NE 6th St, Bellevue, WA 98004",
+  "paused": true
  },
  {
   "id": "pp",

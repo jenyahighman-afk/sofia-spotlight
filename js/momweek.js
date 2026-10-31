@@ -12,6 +12,8 @@ import { weekFixOrPick, seenCount, FIX_SEEN_TO_MOVE, TAG_EMOJI } from "./correct
 import { privatesStatus, nextRehearsal, studioOn } from "./studio.js";
 import { sundayRecords, sundayOf, reviewSunday } from "./sunday.js";
 import { planFor, shortKind } from "./planToday.js";
+import { dayKindNow } from "./daykind.js";
+import { planSummary } from "./plan.js";
 import { momNewsHtml } from "./news.js";
 
 const DAY = 86400000;
@@ -36,7 +38,7 @@ export function grownUpItem(items){
 export function momTodayLine(date, { kind = "rest", classes = [], items = [], homePlan = "" } = {}){
   const wd = new Date(date + "T00:00:00").getDay(); const last = classes.length ? shortClass(classes[classes.length - 1].name) : "";
   const mins = Math.round((items || []).reduce((a, i) => a + (+i.secs || 0), 0) / 60);
-  const what = kind === "watch" ? "studio day: Hannah's videos, then the solo in the car — no dancing tonight" : kind === "memory" ? `studio day: the memory run${last ? " after " + last : ""}` : kind === "home" ? `home day: ${homePlan || "home practice"}${mins ? ` · ${mins} min` : ""}` : "rest day: nothing planned, a stretch if she likes";
+  const what = kind === "show" ? "show day ★ no home practice today" : kind === "watch" ? "studio day: Hannah's videos, then the solo in the car — no dancing tonight" : kind === "memory" ? `studio day: the memory run${last ? " after " + last : ""}` : kind === "home" ? `home day: ${homePlan || "home practice"}${mins ? ` · ${mins} min` : ""}` : "rest day: nothing planned, a stretch if she likes";
   const g = grownUpItem(items);
   return { k: "today", ic: kind === "watch" ? "📹" : kind === "memory" ? "🏫" : kind === "home" ? "🏠" : "🌙", text: `${DAYS[wd]}, ${what}${g ? ` · ${g} wants a grown-up` : ""}` };
 }
@@ -47,13 +49,13 @@ export function momWeekLines(date, { plan = activePlan(date), week = weekOf(date
   // 0. today (Build 4)
   if (today) out.push(momTodayLine(date, today));
   // 1. the week
-  if (week) out.push({ k: "week", ic: "📅", text: `Week ${week.w} of ${week.total}${week.phase ? " · " + week.phase.n : ""}${week.light ? " · light week" : ""}${week.taper ? " · taper" : ""}${week.judges ? " · judges' week" : ""}`, sub: `Solo: ${week.solo}${week.fri ? ` · Friday: ${week.fri}` : ""}` });
+  if (week) out.push({ k: "week", ic: "📅", text: `Week ${week.w} of ${week.total}${week.phase ? " · " + week.phase.n : ""}${week.light ? " · light week" : ""}${week.taper || (plan && plan.rules && plan.rules.taper && plan.rules.taper.from && date >= plan.rules.taper.from) ? " · taper" : ""}${week.judges ? " · judges' week" : ""}`, sub: `Solo: ${week.solo}${week.fri ? ` · Friday: ${week.fri}` : ""}` });
   else out.push({ k: "week", ic: "📅", text: "No plan week for this date", sub: "The plans run Sep 28 to the Showcase, then Jan 11 to the Ball." });
   // 2. the Sunday sheet — keyed by the plan week (schema 51): today's sheet on a Sunday, last Sunday's on the days after it
   const key = sundayOf(date); const rec = (sunday || {})[key]; const when = fmt(reviewSunday(date)).replace(/^\w+, /, "");
   const bits = rec ? [rec.went ? `went well: “${rec.went}”` : "", rec.fix ? (rec.fix === "yes" ? "the fix showed ✓" : "the fix: not yet") : "", rec.note ? `note: ${rec.note}` : ""].filter(Boolean).join(" · ") : "";
   if (rec && rec.done) out.push({ k: "sunday", ic: "🎬", text: isSun(date) ? `Sunday sheet: done ${fmt(rec.done)}` : `Last Sunday's sheet (${when}): done`, sub: bits || "no words typed" });
-  else if (isSun(date)) out.push({ k: "sunday", ic: "🎬", text: "Sunday sheet: today", sub: rec ? "started, not finished" : "Open it from the film-review item, or on Today", go: "openSunday()", btn: "🎬 Open" });
+  else if (isSun(date)) out.push({ k: "sunday", ic: "🎬", text: "Sunday sheet: today", sub: rec ? "started, not finished" : "Open it on Today (🎬 Sunday film review)", go: "openSunday()", btn: "🎬 Open" });
   else out.push({ k: "sunday", ic: "🎬", text: `Last Sunday's sheet (${when}): not filled`, sub: rec ? "started, not finished — it can still be done" : "It can still be filled in: the last run, what went well, the fix", warn: true, go: "openSunday()", btn: "🎬 Fill it" });
   // 3. the week's fix and its video count (picked on the first open of a new week, so "none" means no open note)
   if (fix) { const n = seenCount(seen, fix.id); const twice = n >= FIX_SEEN_TO_MOVE;
@@ -88,8 +90,9 @@ export function momWeekLines(date, { plan = activePlan(date), week = weekOf(date
 // the memory run otherwise), a home weekday a home day, anything else rest — the same reading as Today's card.
 export function momToday(date = todayStr()){
   const cls = studioOn(date, CLASSES, studioDates()); const wd = new Date(date + "T00:00:00").getDay();
-  const kind = cls.length ? shortKind(date) : HOME_DAYS[wd] ? "home" : "rest";
-  return { kind, classes: cls, items: kind === "rest" ? [] : planFor(date), homePlan: HOME_DAYS[wd] || "" };
+  const kind = dayKindNow(date); const items = kind === "rest" || kind === "show" ? [] : planFor(date);
+  // What the session holds (plan.planSummary), not the weekday's old line (the re-audit: a light-week Thursday said "Strength + flex").
+  return { kind, classes: cls, items, homePlan: planSummary(items) || HOME_DAYS[wd] || "" };
 }
 export function momWeekNow(date = todayStr()){ return momWeekLines(date, { sunday: sundayRecords(S.settings), fix: weekFixOrPick(date), seen: S.settings.fixSeen, oneOffs: studioDates(), ticks: checkpointTicks(), today: momToday(date), dates: [...calendarOnly(), ...studioDates().filter(e => e.showing)] }); }
 export function renderMomWeek(){

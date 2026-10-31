@@ -1,7 +1,7 @@
 // Me tab: avatar (tap = customize, long-press = Grown-ups), streak, badge case, personal bests, skill rings, repeated notes.
 import { $, esc, todayStr, toast, expose } from "../util.js";
 import { CLASSES, PRACTICE_ITEMS, SKILLS } from "../data.js";
-import { S, events } from "../store.js";
+import { S, events, studioDates } from "../store.js";
 import { avRender, avToggle } from "../avatar.js";
 import { renderPaletteRow, applyPalette } from "../palette.js";
 import { renderRitualCard } from "../mind.js";
@@ -26,8 +26,8 @@ const ring = (pct, ic) => { const r = 26, c = 2 * Math.PI * r; return `<svg view
 
 function renderMe(){
   avRender(); renderGoalsCard(); renderPaletteRow(); applyPalette(); renderRitualCard();
-  const today = todayStr(); const streak = computeStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today });
-  const best = bestStreak({ practice: S.practice, classes: CLASSES, events: events(), totalItems: PRACTICE_ITEMS.length, today });
+  const today = todayStr(); const streak = computeStreak({ practice: S.practice, classes: CLASSES, events: [...events(), ...studioDates()], totalItems: PRACTICE_ITEMS.length, today });
+  const best = bestStreak({ practice: S.practice, classes: CLASSES, events: [...events(), ...studioDates()], totalItems: PRACTICE_ITEMS.length, today });
   renderReminder(); renderFriends(); renderCardsCard(); renderCostumeCard(); renderGlowCard();
   $("#meMoments").innerHTML = `<div class="row"><h3 class="grow">📸 Moments</h3><span class="chip violet">${momentCount()} kept</span></div><p class="small muted">Turn a photo into a card with a sticker, your streak and your avatar. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
   const nu = nextUnlock(); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;

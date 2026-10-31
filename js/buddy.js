@@ -48,6 +48,8 @@ export function pickStep(ctx, rng = Math.random){
     if (card) { const key = { trick: "trick", game: "game", move: "move", memo: "memo" }[card.id] || "trick"; return { key, vars: { trick: card.sub, game: card.sub, move: card.sub, memo: card.sub }, go: card.go }; }
     return { key: "rest", go: "habitTired('stretch')" };
   }
+  // The solo is done but today's trio item isn't (streak.gateOpen): the trio is the one next step, before any extra (1.58.0).
+  if (c.gate) return { key: "trio", go: "showPage('practice')" };
   if (mustLeft.length) { const m = mustLeft[0]; return { key: "plan-more", vars: { item: m.t }, go: goFor(m.go) || "buddyScroll('#dayPlan')" }; }
   // The day counts: first the small "for today" things that are still open, then something fun.
   const tier1 = [];
@@ -102,7 +104,7 @@ export function buddyContext(date = todayStr()){
   const nu = nextUnlock(); const ps = petState(date); const cc = cardCounts(cardList());
   return {
     date, name: String(((S.settings || {}).avatar || {}).name || "").trim() || "Sofia", pet: ps.name,
-    dayDone: planDone(rec), safe: dayCounts(rec, total), fullDone: !!rec && dayCounts({ done: rec.done, total: rec.total }, total),
+    dayDone: planDone(rec), gate: dayKindNow(date) === "home" && !gateOpen(rec, planFor(date)), safe: dayCounts(rec, total), fullDone: !!rec && dayCounts({ done: rec.done, total: rec.total }, total),
     streak: computeStreak(ctxS), skips: skipsLeft(ctxS), petDays: planDays(S.practice),
     comp: compWeekend(date, evs), compMode: todayMode().mode === "comp",
     // The dated box lists no items since 1.49.0 (the one card is the step), so the plan's must boxes are not offered.

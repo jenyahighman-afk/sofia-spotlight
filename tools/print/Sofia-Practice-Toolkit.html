@@ -11,7 +11,7 @@
 @page { size: Letter; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #fff; color: #111; font-family: "Segoe UI", Arial, sans-serif; font-size: 8.6pt; line-height: 1.32; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.page { width: 8.5in; height: 11in; padding: 0.4in 0.42in 0.5in; position: relative; page-break-after: always; overflow: hidden; }
+.page { width: 8.5in; height: 11in; padding: 0.4in 0.25in 0.5in 0.68in; position: relative; /* left 0.68in since 1.58.0: the 3-ring holes (0.36–0.64in) stay clear of the text */ page-break-after: always; overflow: hidden; }
 .page:last-child { page-break-after: auto; }
 .foot { position: absolute; left: 0; right: 0; bottom: 0.28in; text-align: center; font-size: 6.8pt; color: #666; }
 .hero { border: 2px solid #111; border-radius: 12px; padding: 9px 13px 8px; display: flex; align-items: flex-end; gap: 12px; margin-bottom: 9px; }
@@ -138,7 +138,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
         <tr><td><b>Sat</b></td><td>Co Tech · PITCH rehearsal + the <b>memory run</b></td></tr>
         <tr><td><b>Sun</b></td><td>HOME: the session + FILM the solo + trio + the Sunday sheet</td></tr>
       </table>
-      <div class="small muted" style="margin-top:4px">Trio privates with Larisa 1–2× a month. Home sessions are 35–45 minutes; <b style="color:#111">best time:</b> a small snack after school, dance about 45 minutes later, dinner after; from Nov 9 each one ends with <b style="color:#111">Show in your head</b> (page 3). <b style="color:#111">Never more than 2 days without the solo:</b> on a class, rehearsal or make-up day, the memory run (Monday: Hannah's videos).</div>
+      <div class="small muted" style="margin-top:4px">Trio privates with Larisa: at least 2 a month (30 min). Home sessions are 35–45 minutes; <b style="color:#111">best time:</b> a small snack after school, dance about 45 minutes later, dinner after; from Nov 9 each one ends with <b style="color:#111">Show in your head</b> (page 3). <b style="color:#111">Never more than 2 days without the solo:</b> on a class, rehearsal or make-up day, the memory run (Monday: Hannah's videos). <b style="color:#111">Studio closed</b> Nov 25–29 and Dec 19–Jan 1: class days are home sessions.</div>
     </div>
   </div>
   <div class="box" style="margin-top:8px">
@@ -177,7 +177,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
 
 <!-- PAGE 2b · COUNTDOWN + REWARDS (new Oct 29) -->
 <section class="page mm">
-  <div class="hero"><div><h1>75 days to the show</h1><div class="sub">Cross off each day at bedtime · the number = days to go · ☆ = pick a reward with Mom</div></div><div class="side">Mon Oct 26 → Fri Jan 8</div></div>
+  <div class="hero"><div><h1>74 days to the show</h1><div class="sub">Cross off each day at bedtime · the number = days to go · ☆ = pick a reward with Mom</div></div><div class="side">Mon Oct 26 → Fri Jan 8</div></div>
   <table class="cd">
     <colgroup><col style="width:23mm"><col style="width:24mm"><col style="width:24mm"><col style="width:24mm"><col style="width:24mm"><col style="width:24mm"><col style="width:24mm"><col style="width:24mm"></colgroup>
     <tr><th>Week</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun · review</th></tr>
@@ -213,13 +213,13 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
   <div class="grid2">
     <div class="col">
       <div class="box">
-        <h2>The home session · 35–40 minutes</h2>
+        <h2>The home session · 35–45 minutes</h2>
         <table class="session">
           <tr><td>5 min</td><td><b>Warm up.</b> Jumping jacks, arm circles, leg swings, light jog. Always first.</td></tr>
           <tr><td>8 min</td><td><b>Strong.</b> Hollow hold + superman 3×20s · plank + side plank 2×20–30s · slow relevés 2×15 · one-leg balance 20s · lying leg lifts 2×10.</td></tr>
           <tr><td>7 min</td><td><b>Bendy</b>, after warm-up only. Right, left, middle split + straddle, 20–30s each. A stretch, never pain.</td></tr>
           <tr><td>5 min</td><td><b>Knees + technique.</b> Pliés in 1st and 2nd facing the mirror 2×8, knees over toes. Slow lunges 2×5 each side. Relevés. Tricks wait until the solo is memorized.</td></tr>
-          <tr><td>10 min</td><td><b>The dances.</b> Trio: this week's section (page 5). Solo: until Nov 9 from the top as far as you know; from Nov 9 <b>one full-out</b>, eyes up (two back to back on Sundays from Nov 30). Until Nov 29: <b>film one chunk</b>, watch it when you want, try again.</td></tr>
+          <tr><td>10 min</td><td><b>The dances.</b> Trio: this week's goal (Today's season card). Solo: until Nov 9 from the top as far as you know; from Nov 9 <b>one full-out</b>, eyes up (two back to back on Sundays from Nov 30). Until Nov 29: <b>film one chunk</b>, watch it when you want, try again.</td></tr>
           <tr><td>6 min</td><td><b>Show in your head</b> <span class="new">from Nov 9</span> The script on the right.</td></tr>
         </table>
         <div class="small muted" style="margin-top:4px">Monday at home: Hannah's videos and the solo in your head in the car, no dancing after three classes. Tue, Wed, Sat, a rehearsal or make-up day, the light week (Nov 23) and the night before the show: the <b style="color:#111">memory run</b> instead. Never more than 2 days without the solo.</div>
@@ -369,10 +369,10 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
 
 <!-- PAGE 5 · TRIO -->
 <section class="page">
-  <div class="hero"><div><h1>★ Trio · Enjoy the Silence</h1><div class="sub">Contemporary · choreography + teacher Larisa · with Hannah and Lauren · 2:17 slow cover, ~86 BPM</div></div><div class="side">Larisa's rule:<br>memorize first, clean in<br>privates</div></div>
+  <div class="hero"><div><h1>★ Trio · Enjoy the Silence</h1><div class="sub">Contemporary · choreography + teacher Larisa · with Hannah and Lauren · 2:24 final cut, ~86 BPM</div></div><div class="side">Larisa's rule:<br>memorize first, clean in<br>privates</div></div>
   <div class="box">
     <h2>Memory map</h2>
-    <div class="small muted" style="margin-bottom:3px">Video → with music → no help. Check a box only when it runs clean <b style="color:#111">twice</b>. One section per Thursday and Sunday (see the tracker).</div>
+    <div class="small muted" style="margin-bottom:3px">Video → with music → no help. Check a box only when it runs clean <b style="color:#111">twice</b>. This week's trio goal is on Today's season card and in every home session (Thu, Fri, Sun).</div>
     <table>
       <tr><th style="width:38px">Time</th><th>Section</th><th class="c" style="width:70px">Video</th><th class="c" style="width:70px">Music</th><th class="c" style="width:80px">No help ✓✓</th></tr>
       <tr><td>0:00</td><td>Kneeling opening</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
@@ -385,7 +385,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
       <tr><td>1:12</td><td>Arms-up phrase → lunges down to the floor</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
       <tr><td>1:36</td><td>THREE BRIDGES → lying</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
       <tr><td>1:50</td><td>Traveling triangle</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
-      <tr><td>2:06</td><td>Ending: three-level floor picture, hold past 2:12</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
+      <tr><td>2:06</td><td>Ending: three-level floor picture, hold through the silence to 2:24</td><td><span class="cb"></span></td><td><span class="cb"></span></td><td><span class="cb"></span></td></tr>
       <tr><td colspan="4"><b>WHOLE DANCE: no video, nobody marking · goal Sat Oct 31</b></td><td><span class="cb"></span></td></tr>
     </table>
   </div>
@@ -404,7 +404,7 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
     </div>
     <div class="box">
       <h2>The music won't help, so we do</h2>
-      <p style="margin:0 0 5px">The song stays almost the same volume until a small lift at 1:32 and fades at 2:12. The <b>three of you</b> make the big and small moments with stillness against speed.</p>
+      <p style="margin:0 0 5px">The song builds to a hit at 0:30, opens up at 1:06, runs full out from 1:36 and ends at 2:13; the last 11 seconds are silent: hold the picture to 2:24. The <b>three of you</b> make the big and small moments with stillness against speed.</p>
       <p style="margin:0"><b>Home trick:</b> the canon is the hardest part. Fill in the count sheet below for 0:42–1:04 with Larisa or from the video, then <b>say your counts out loud</b> while you mark.</p>
     </div>
   </div>
@@ -428,36 +428,35 @@ table.stk, table.cd { width: 100%; border-collapse: collapse; table-layout: fixe
   <div class="grid2">
     <div class="col">
       <div class="box">
-        <h2>Thursday · strong + bendy + trio</h2>
+        <h2>Thursday · the session + trio</h2>
         <ul class="list">
-          <li><span class="cb"></span>Warm up 5 min</li>
-          <li><span class="cb"></span>Strong 8 min</li>
-          <li><span class="cb"></span>Bendy 7 min</li>
-          <li><span class="cb"></span>TRIO section: ____________ (video → music → no help)</li>
+          <li><span class="cb"></span>Warm up 5 min · strong 8 min · bendy 7 min</li>
+          <li><span class="cb"></span>Knees + technique + this week's fix (from Nov 9: the trick)</li>
+          <li><span class="cb"></span>Aerial strength on the mat (from Nov 9)</li>
+          <li><span class="cb"></span>TRIO: this week's goal ____________, then once with music</li>
           <li><span class="cb"></span>Solo: from the top (from Nov 9: one full-out)</li>
           <li><span class="cb"></span>Film one chunk, watch it, try again (until Nov 29)</li>
           <li><span class="cb"></span>Show in your head 6 min (from Nov 9)</li>
         </ul>
       </div>
       <div class="box">
-        <h2>Friday · technique + trick</h2>
+        <h2>Friday · the session + trio</h2>
         <ul class="list">
-          <li><span class="cb"></span>Warm up 5 min</li>
-          <li><span class="cb"></span>Passé balances, pirouettes, kicks</li>
-          <li><span class="cb"></span>Trick: ____________ (until Nov 9: knees over toes drills)</li>
+          <li><span class="cb"></span>Warm up 5 min · strong 8 min · bendy 7 min</li>
+          <li><span class="cb"></span>Knees + technique + this week's fix (from Nov 9: the trick ____________)</li>
+          <li><span class="cb"></span>Aerial drills on the mat (from Nov 9)</li>
+          <li><span class="cb"></span>TRIO: this week's goal, then once with music</li>
           <li><span class="cb"></span>Solo: from the top (from Nov 9: one full-out), eyes up</li>
-          <li><span class="cb"></span>Film one chunk, watch it, try again (until Nov 29)</li>
-          <li><span class="cb"></span>Show in your head 6 min (from Nov 9)</li>
+          <li><span class="cb"></span>Film one chunk (until Nov 29) · Show in your head 6 min (from Nov 9)</li>
         </ul>
       </div>
       <div class="box">
-        <h2>Sunday · film it</h2>
+        <h2>Sunday · the session + film it</h2>
         <ul class="list">
-          <li><span class="cb"></span>Warm up 5 min</li>
+          <li><span class="cb"></span>Warm up 5 min · the session: strong, bendy, technique, your fix</li>
           <li><span class="cb"></span>Solo full out, FILMED from the side (from Nov 30: two back to back)</li>
           <li><span class="cb"></span>Fill in the Sunday sheet in the app (on Today)</li>
-          <li><span class="cb"></span>TRIO section: ____________</li>
-          <li><span class="cb"></span>Light stretch</li>
+          <li><span class="cb"></span>TRIO: this week's goal, then once with music</li>
           <li><span class="cb"></span>Show in your head 6 min (from Nov 9)</li>
           <li><span class="cb"></span>Film review (right) →</li>
         </ul>

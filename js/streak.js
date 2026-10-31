@@ -35,13 +35,19 @@ export function trioDone(rec){
 export const gateOpen = (rec, items = []) => planDone(rec) && (!(items || []).some(it => it && TRIO_ITEMS.includes(it.id)) || trioDone(rec));
 export function planDone(rec){
   if (!rec) return false;
-  if (Array.isArray(rec.runs) && rec.runs.length) return true;
+  // A run of the solo from the player (a run without a dance is the solo's, as in ready.js); a trio run is the trio's part
+  // (trioDone), never the plan (the Oct 30 re-audit: trio work alone showed ⭐ Plan done and opened Play).
+  if (Array.isArray(rec.runs) && rec.runs.some(r => r && (!r.danceId || r.danceId === "solo"))) return true;
   if (Array.isArray(rec.done) && rec.done.some(id => SOLO_ITEMS.includes(id))) return true;
-  const bites = Array.isArray(rec.bites) ? rec.bites : []; return bites.includes("plan") || bites.includes("memo");
+  // The "memo" bite is any dance's five Memorize steps: only the solo's finish the plan (a record from before the per-dance steps counts).
+  const bites = Array.isArray(rec.bites) ? rec.bites : []; const m = rec.memo && typeof rec.memo === "object" ? rec.memo : null;
+  return bites.includes("plan") || (bites.includes("memo") && (!m || (Array.isArray(m.solo) && new Set(m.solo).size >= 5)));
 }
 export function planDays(practice){ return Object.entries(practice || {}).filter(([d, r]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && planDone(r)).length; }
 const weekday = (iso) => new Date(iso + "T00:00:00").getDay();
-export const isBreak = (e) => /break/i.test(e.type || "") || /break/i.test(e.name || "");
+// A break pauses the streak, and so do a booked studio date (kind "class": a picked showing, a private on a home day) and a
+// show weekend (`paused`: the Winter Showcase) since 1.58.0: she is at the studio or on stage, not at home.
+export const isBreak = (e) => /break/i.test(e.type || "") || /break/i.test(e.name || "") || e.kind === "class" || !!e.paused;
 export function isPaused(iso, classes, events){
   const wd = weekday(iso);
   if ((classes || []).some(c => c.day === wd)) return true;

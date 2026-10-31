@@ -58,13 +58,14 @@ export function startButton({ kind, mins = 0, nDone = 0, total = 0 }){
   const left = total ? ` · ${Math.max(0, mins)} min` : ""; const prog = nDone && total ? ` <span class="today-prog">${nDone} of ${total}</span>` : ""; // the memory run says its own length
   if (total && nDone >= total) return { label: `✅ Practice done${left}`, go: "showPage('practice')", ghost: true };
   if (kind === "rest") return { label: "🧘 2-min stretch", go: "habitTired('stretch')", ghost: false };
+  if (kind === "show") return { label: "🎒 Show day checklist", go: "buddyScroll('#compCard')", ghost: false }; // show day: no session (1.58.0)
   const verb = nDone ? "▶ Keep going" : kind === "watch" ? "▶ Watch + picture" : kind === "memory" ? "▶ Memory run" : "▶ Start practice"; // the Pass's words (1.52.0)
   return { label: verb + left + prog, go: "showPage('practice');openPracticeMode()", ghost: false };
 }
 function renderHome(){
   const ne=nextEvent(); const today=todayStr();
   if(ne){ const d=daysUntil(ne.start); $("#stickerDays").textContent=d<=0?"0":d; $("#stickerWhat").textContent=shortEventName(ne.name); } // "Winter Showcase", not "(Winter Formal)" too
-  // Studio day = a weekly class or a one-off date (a booked solo rehearsal, a make-up class): the home plan is the 15-minute
+  // Studio day = a weekly class or a one-off date (a booked solo rehearsal, a make-up class): the home plan is the 
   // memory run, or on Monday (three classes) Hannah's videos and the solo in her head in the car. The kind of day comes from
   // daykind.js (the same answer Play, the week strip and the Schedule use), from the date string, never the clock (Build 4).
   const dow=weekdayOf(today); const cls=studioOn(today,CLASSES,studioDates()); const hp=HOME_DAYS[dow]; const kind=dayKindNow(today); const home=kind==="home";
@@ -76,13 +77,14 @@ function renderHome(){
   let what, sub;
   if(cls.length){ what="🏫 Studio day"; sub=`<div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div>${kind==="watch"?`<div class="today-sub">🏠 Hannah's videos, then picture the solo in the car. No dancing tonight.</div>`:""}`; }
   // A home day says what its session holds (plan.planSummary), not the weekday's old line from home-days.json.
-  else if(hp){ what="🏠 Home practice"; sub=`<div class="today-sub">${esc(planSummary(plan)||hp)}</div>${pd?"":`<div class="today-sub today-when">${BEST_TIME}</div>`}`; }
+  else if(kind==="show"){ const ev=nextEvent(); what="🌟 Show day"; sub=`<div class="today-sub">${esc(ev?shortEventName(ev.name):"The show")} ★ No practice today: dance your best on stage!</div>`; }
+  else if(home){ what="🏠 Home practice"; sub=`<div class="today-sub">${esc(planSummary(plan)||hp||"Home practice")}</div>${pd?"":`<div class="today-sub today-when">${BEST_TIME}</div>`}`; }
   else { what="🌙 Rest day"; sub=`<div class="today-sub">Stretch a little if you want.</div>`; }
-  const dayKind=kind==="watch"?"📹 Watch day":kind==="memory"?"🏫 Studio day":home?"🏠 Home day":"🌙 Rest day";
-  const ctx={practice:S.practice,classes:CLASSES,events:events(),totalItems:PRACTICE_ITEMS.length,today}; const streak=computeStreak(ctx); const skips=skipsLeft(ctx);
+  const dayKind=kind==="show"?"🌟 Show day":kind==="watch"?"📹 Watch day":kind==="memory"?"🏫 Studio day":home?"🏠 Home day":"🌙 Rest day";
+  const ctx={practice:S.practice,classes:CLASSES,events:[...events(),...studioDates()],totalItems:PRACTICE_ITEMS.length,today}; const streak=computeStreak(ctx); const skips=skipsLeft(ctx);
   const sb=startButton({kind,mins,nDone,total}); const gd=gateOpen(rec,plan);
   // Two days without the solo (plan rules.maxGap): one line on the card, not only inside the folded finish lines (the re-audit).
-  const gap=daysSinceDance(S.practice,today); const maxGap=(((activePlan(today)||{}).rules)||{}).maxGap||2; const gapLine=!pd&&kind!=="rest"&&Number.isFinite(gap)&&gap>=maxGap?`<div class="today-line small today-gap">🧠 ${gap} days without your solo: dance it today, even the memory run counts</div>`:"";
+  const gap=daysSinceDance(S.practice,today); const maxGap=(((activePlan(today)||{}).rules)||{}).maxGap||2; const gapLine=!pd&&(home||kind==="memory")&&Number.isFinite(gap)&&gap>=maxGap?`<div class="today-line small today-gap">🧠 ${gap} days without your solo: dance it today, even the memory run counts</div>`:"";
   // 🧠 Memorize opens the dance whose turn it is today (memo.todayPick: the solo and the trio take turns): the Memorize sheet for a
   // dance with a cue table, its Five steps on Dances otherwise (the trio; habit.js's own rule), the solo when nothing is picked.
   const mp=todayPick(dances(),S.settings,today); const memoGo=!mp?"openMemorize('solo','chunks')":isCueTable(mp.dance.cues)?`openMemorize('${mp.dance.id}','chunks')`:`showPage('dances');memoFocus('${mp.dance.id}')`;

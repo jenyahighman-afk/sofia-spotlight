@@ -29,11 +29,11 @@ test("the December dates: the group showing is a studio day; the solo-trio pair,
   assert.deepEqual([by["deadline-1107"].start, by["deadline-1107"].kind], ["2026-11-07", "deadline"]);
   S.events = {};
   assert.deepEqual(ST.studioDates().map(e => e.id).filter(id => /showing/.test(id)), ["grp-showing-1205"], "only the group showing until a date is picked");
-  assert.deepEqual(ST.calendarOnly().map(e => e.id), ["deadline-1107", "sdt-showing-1206", "sdt-showing-1212", "hold-1212"]);
+  assert.deepEqual(ST.calendarOnly().map(e => e.id), ["deadline-1107", "closed-thanksgiving", "sdt-showing-1206", "sdt-showing-1212", "hold-1212", "closed-winter"], "with the studio closures since 1.58.0");
   assert.ok(!ST.events().some(e => /showing|hold|deadline/.test(e.id)), "none is a show: no countdown, no comp mode");
   assert.equal(dayKind("2026-12-06", { ...dayOpts(), oneOffs: ST.studioDates() }), "home", "Sun Dec 6 stays a home day until it is picked");
   S.events = { "sdt-showing-1206": { chosen: true }, "sdt-showing-1212": { chosen: false } };
-  assert.ok(ST.studioDates().some(e => e.id === "sdt-showing-1206")); assert.ok(!ST.calendarOnly().some(e => e.id === "sdt-showing-1206")); assert.ok(ST.calendarOnly().some(e => e.id === "sdt-showing-1212"));
+  assert.ok(ST.studioDates().some(e => e.id === "sdt-showing-1206")); assert.ok(!ST.calendarOnly().some(e => e.id === "sdt-showing-1206")); assert.ok(!ST.calendarOnly().some(e => e.id === "sdt-showing-1212"), "1.58.0: once one is picked the other date leaves the calendar");
   assert.notEqual(dayKind("2026-12-06", { ...dayOpts(), oneOffs: ST.studioDates() }), "home", "picked: Dec 6 is a studio day (the memory run at home)");
   assert.equal(routineOf(ST.studioDates().find(e => e.id === "sdt-showing-1206")), "other", "a showing is not a trio private");
   assert.deepEqual(privatesStatus(ST.studioDates(), "2026-12").map(s => s.have), [0, 0]);

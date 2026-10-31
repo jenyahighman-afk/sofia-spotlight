@@ -209,7 +209,11 @@
    "d": "2026-12-06",
    "pick": "sdt-showing",
    "alt": "sign up: Dec 6 or Dec 12",
-   "t": "Solo + trio showing at the studio: both from memory, clean, eyes up"
+   "t": "Solo + trio showing at the studio: both from memory, clean, eyes up",
+   "dates": [
+    "2026-12-06",
+    "2026-12-12"
+   ]
   },
   {
    "d": "2026-12-06",

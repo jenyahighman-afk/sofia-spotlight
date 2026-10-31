@@ -18,7 +18,7 @@ export function rotate(pool, n, day, prefer = []){
 export function splitLine(s){ const m = String(s || "").replace(/\s+/g, " ").trim(); const i = m.search(/(?<=[.!?])\s/); return i < 0 ? { text: m, how: "" } : { text: m.slice(0, i).trim(), how: m.slice(i).trim() }; }
 
 // A studio class or rehearsal day: the short version, a memory run (the toolkit's rule). The run itself is the
-// 5-minute "Solo from the top" item; the whole list is the 15 minutes.
+// 5-minute "Solo from the top" item; the whole list is the memory run.
 export const MEMORY_RUN = [
   { id: "mem-warm", text: "Warm up 3 min: jumping jacks, arm circles, leg swings", secs: 180, pose: "jacks", kind: "warm" },
   { id: "mem-top", text: "Solo from the top · 5 min: the solo as far as you know, with the music, Lines off", secs: 300, pose: "hold", kind: "run" },
@@ -58,6 +58,7 @@ export const fixWho = (source) => { const w = String(source || "").trim(); retur
 export function buildPlan(opts){
   const { pool, date } = opts; const day = dayNumber(date); const wd = weekday(date); const items = [];
   const ses = opts.session || {};
+  if (ses.show) return []; // show day (1.58.0, Jenya): no home practice
   // The week after a comp (plan-spring.json weeks[].judges): the judges' audio feedback comes first, solo then trio, each
   // once that week (planToday marks the one already ticked this week as done), with "write the fixes" one tap away.
   // Listening is no extra dancing, so it also opens the short plans: the Monday after a comp starts with the judges.

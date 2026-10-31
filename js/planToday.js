@@ -1,5 +1,5 @@
 // The plan for a given date, built from app state (pure logic lives in plan.js).
-// On a studio class or rehearsal day, a light week or the night before the show it is the short version (15-minute memory
+// On a studio class or rehearsal day, a light week or the night before the show it is the short version (memory
 // run); until Nov 9 the trick drill is the Memory + knees block, after that the 15-week plan's trick(s) of the week; the
 // session rules add the clips, the Sunday review, the show in her head and the full-out line; a teacher's new note is in.
 import { PRACTICE_POOL, AERIAL, CLASSES, SKILLS } from "./data.js";

@@ -33,6 +33,6 @@ test("short plans and odd lists read sensibly", () => {
 
 test("Today's home-day subtitle comes from the plan, the weekday's old line only if the plan is empty", () => {
   const home = src("js/views/home.js"); assert.match(home, /import \{ planSummary \} from "\.\.\/plan\.js";/);
-  assert.match(home, /else if\(hp\)\{ what="🏠 Home practice"; sub=`<div class="today-sub">\$\{esc\(planSummary\(plan\)\|\|hp\)\}<\/div>\$\{pd\?"":`<div class="today-sub today-when">\$\{BEST_TIME\}<\/div>`\}`; \}/);
+  assert.match(home, /else if\(home\)\{ what="🏠 Home practice"; sub=`<div class="today-sub">\$\{esc\(planSummary\(plan\)\|\|hp\|\|"Home practice"\)\}<\/div>\$\{pd\?"":`<div class="today-sub today-when">\$\{BEST_TIME\}<\/div>`\}`; \}/);
   assert.match(src("js/version.js"), /APP_VERSION = "1\.(54\.[2-9]|5[5-9]|[6-9]\d)/);
 });

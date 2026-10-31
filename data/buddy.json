@@ -41,6 +41,11 @@
       "The streak is safe. The solo isn't done yet: ▶ Start practice and it is ⭐",
       "Games are for after the solo. Your solo misses you 🌸"
     ],
+    "trio": [
+      "Solo done ⭐ Now your trio: this week's goal, then once with the music 👯",
+      "The trio is next! Then the games open 👯",
+      "Hannah and Lauren need you: trio time 👯"
+    ],
     "game": [
       "Quick game today: {game}. Keeps your streak, and it's fun 🎮",
       "How about {game}? Practice in disguise 🥸"
