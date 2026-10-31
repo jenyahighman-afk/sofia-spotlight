@@ -711,8 +711,9 @@ html[data-season="fall"] .card,html[data-season="fall"] .modal-card{position:rel
 html[data-season="fall"] .card:before,html[data-season="fall"] .modal-card:before{content:"";position:absolute;top:-11px;right:-9px;width:40px;height:40px;background:url(../icons/season/fall/sprig.svg) no-repeat top right/contain;pointer-events:none;z-index:1}
 html[data-season="fall"] .card:nth-child(even):before{right:auto;left:-9px;transform:scaleX(-1)}
 html[data-season="fall"] #seasonFold:before{right:-9px;left:auto;transform:none}
-html[data-season="fall"] .card:nth-child(4n+1):after,html[data-season="fall"] .modal-card:after{content:"";position:absolute;top:0;right:42px;width:20px;height:35px;background:url(../icons/season/fall/acorn.svg) no-repeat top center/contain;transform-origin:top center;pointer-events:none;animation:fl-sway 3s ease-in-out infinite alternate}
-html[data-season="fall"] .card:nth-child(4n+3):after{content:"";position:absolute;top:0;left:36px;width:16px;height:28px;background:url(../icons/season/fall/acorn.svg) no-repeat top center/contain;transform-origin:top center;pointer-events:none;animation:fl-sway 3.8s ease-in-out infinite alternate-reverse}
+html[data-season="fall"] .card:nth-child(4n+1):after,html[data-season="fall"] .modal-card:after{content:"";position:absolute;top:-14px;right:42px;width:20px;height:35px;background:url(../icons/season/fall/acorn.svg) no-repeat top center/contain;transform-origin:top center;pointer-events:none;animation:fl-sway 3s ease-in-out infinite alternate}
+html[data-season="fall"] .card:nth-child(4n+3):after{content:"";position:absolute;top:-14px;left:36px;width:16px;height:28px;background:url(../icons/season/fall/acorn.svg) no-repeat top center/contain;transform-origin:top center;pointer-events:none;animation:fl-sway 3.8s ease-in-out infinite alternate-reverse}
+html[data-season="fall"] .modal-card:after{right:72px} /* the stems start above the card, so the acorns hang in its top padding, not over the title; a bottom sheet's hangs clear of its ✕ */
 html[data-season="fall"] .card h3:after,html[data-season="fall"] .modal-card h3:after{content:"";display:inline-block;width:16px;height:16px;margin-left:6px;vertical-align:-1px;background:url(../icons/season/fall/leaf.svg) no-repeat center/contain;transform:rotate(-18deg)}
 html[data-season="fall"] nav.tabs{position:relative}
 html[data-season="fall"] nav.tabs:before{content:"";position:absolute;left:0;right:0;top:-1px;height:22px;background:url(../icons/season/fall/garland.svg) no-repeat top/100% 22px;pointer-events:none}
@@ -724,9 +725,11 @@ html[data-season="fall"] .buddy-pet:before{content:"";position:absolute;top:-17p
 html[data-season="fall"] .pet-stage{position:relative;overflow:visible}
 html[data-season="fall"] .pet-stage:before{content:"";position:absolute;top:-11px;left:50%;width:52px;height:36px;margin-left:-25px;background:url(../icons/season/fall/beanie.svg) no-repeat center/contain;transform:rotate(-8deg);pointer-events:none;z-index:1}
 html[data-season="fall"] .stage,html[data-season="fall"] .gate{background-image:url(../icons/season/fall/pattern.svg);background-size:200px 200px}
-html[data-season="fall"] .stage:before,html[data-season="fall"] .gate:before{content:"";position:absolute;left:0;bottom:0;width:96px;height:96px;background:url(../icons/season/fall/sprig.svg) no-repeat top right/contain;transform:rotate(180deg);opacity:.85;pointer-events:none}
+html[data-season="fall"] .stage:before,html[data-season="fall"] .gate:before{content:"";position:absolute;left:0;bottom:0;width:96px;height:96px;background:url(../icons/season/fall/sprig.svg) no-repeat top right/contain;transform:rotate(180deg);opacity:.85;pointer-events:none;z-index:-1}
 html[data-season="fall"] .stage:after,html[data-season="fall"] .gate:after{content:"";position:absolute;top:calc(env(safe-area-inset-top,0px) + 50px);right:62px;width:22px;height:38px;background:url(../icons/season/fall/acorn.svg) no-repeat top center/contain;transform-origin:top center;pointer-events:none;animation:fl-sway 3.4s ease-in-out infinite alternate}
-html[data-season="fall"] .stage:after{top:env(safe-area-inset-top,0px);right:54px;z-index:2} /* hangs between the title and the ✕, never over them */
+html[data-season="fall"] .stage:after{top:calc(env(safe-area-inset-top,0px) - 10px);left:calc(50% - 8px);right:auto;width:16px;height:28px} /* hangs from the top in the middle, between the chips and ✕, small enough to end above a long title's letters */
+html[data-season="fall"] .stage:before{bottom:calc(env(safe-area-inset-bottom,0px) + 72px)} /* just above the button bar (Skip · Done) */
+html[data-season="fall"] .stage:after,html[data-season="fall"] .gate:after{z-index:-1} /* behind the sheet's own buttons and chips: the sheet is its own stacking context, so -1 stays above its paper */
 html[data-season="fall"] .gate:after{right:auto;left:30px}
 @keyframes fl-sway{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
 @keyframes fl-nod{0%,64%,100%{transform:rotate(0)}72%{transform:rotate(-7deg)}80%{transform:rotate(5deg)}88%{transform:rotate(-3deg)}}
@@ -771,7 +774,7 @@ html[data-season="christmas"] .pet-stage:before{content:"";position:absolute;top
 html[data-season="christmas"] .stage,html[data-season="christmas"] .gate{background-image:url(../icons/season/christmas/pattern.svg);background-size:200px 200px}
 html[data-season="christmas"] .stage:before,html[data-season="christmas"] .gate:before{content:"";position:absolute;left:0;bottom:0;width:96px;height:96px;background:url(../icons/season/christmas/holly.svg) no-repeat top right/contain;transform:rotate(180deg);opacity:.85;pointer-events:none;z-index:-1}
 html[data-season="christmas"] .stage:after,html[data-season="christmas"] .gate:after{content:"";position:absolute;top:calc(env(safe-area-inset-top,0px) + 50px);right:62px;width:22px;height:38px;background:url(../icons/season/christmas/ornament.svg) no-repeat top center/contain;transform-origin:top center;pointer-events:none;animation:fl-sway 3.4s ease-in-out infinite alternate}
-html[data-season="christmas"] .stage:after{top:env(safe-area-inset-top,0px);left:calc(50% - 11px);right:auto} /* hangs from the top in the middle, between the title and the chips and ✕ */
+html[data-season="christmas"] .stage:after{top:calc(env(safe-area-inset-top,0px) - 10px);left:calc(50% - 8px);right:auto;width:16px;height:28px} /* hangs from the top in the middle, between the chips and ✕, small enough to end above a long title's letters */
 html[data-season="christmas"] .stage:before{bottom:calc(env(safe-area-inset-bottom,0px) + 72px)} /* just above the button bar (Skip · Done) */
 html[data-season="christmas"] .stage:after,html[data-season="christmas"] .gate:after{z-index:-1} /* behind the sheet's own buttons and chips: the sheet is its own stacking context, so -1 stays above its paper */
 html[data-season="christmas"] .gate:after{right:auto;left:30px}

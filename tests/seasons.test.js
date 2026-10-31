@@ -89,7 +89,7 @@ test("Fall everywhere (1.53.0): leaf sprigs, acorns, a leaf after each title, a 
     assert.doesNotMatch(src(`icons/season/fall/${f}.svg`), /rgba\(/, f + ": solid colors with opacity, no rgba (MuPDF and some renderers draw rgba strokes black)");
   }
   const css = src("css/app.css"); const F = 'html[data-season="fall"]';
-  for (const sel of [`${F} header.hero{background:url(`, `${F} .wrap{background-image:`, `${F} .card:before`, `${F} .card h3:after`, `${F} nav.tabs:before`, `${F} nav.tabs:after`, `${F} nav.tabs button:last-child:before`, `${F} .buddy-pet:before`, `${F} .pet-stage:before`, `${F} .stage,${F} .gate{background-image`, `${F} .stage:after{top:env(safe-area-inset-top,0px);right:54px`]) assert.ok(css.includes(sel), sel);
+  for (const sel of [`${F} header.hero{background:url(`, `${F} .wrap{background-image:`, `${F} .card:before`, `${F} .card h3:after`, `${F} nav.tabs:before`, `${F} nav.tabs:after`, `${F} nav.tabs button:last-child:before`, `${F} .buddy-pet:before`, `${F} .pet-stage:before`, `${F} .stage,${F} .gate{background-image`]) assert.ok(css.includes(sel), sel);
   assert.ok(!css.includes(`${F} .stage-top:before`), "nothing over the sheet's ✕");
   const block = css.slice(css.indexOf("/* Fall everywhere"), css.indexOf("/* Fall's fliers")); const rules = block.match(/:(before|after)\{content:""[^}]*\}/g) || [];
   assert.ok(rules.length >= 10 && rules.every(r => r.includes("pointer-events:none") || r.includes("display:inline-block")), "every decoration lets taps through");
@@ -107,12 +107,24 @@ test("Christmas everywhere (1.55.0): holly, ornaments and bells, a candy cane af
   }
   assert.match(src("icons/season/christmas/lights.svg"), /<animate /, "the lights twinkle"); assert.doesNotMatch(src("icons/season/christmas/lights-still.svg"), /<animate/, "the still string doesn't");
   const css = src("css/app.css"); const X = 'html[data-season="christmas"]';
-  for (const sel of [`${X} header.hero{background:url(`, `${X} .wrap{background-image:`, `${X} .card:before`, `${X} .card h3:after`, `${X} nav.tabs:before`, `${X} nav.tabs:after`, `${X} nav.tabs button:last-child:before`, `${X} .buddy-pet:before`, `${X} .pet-stage:before`, `${X} .stage,${X} .gate{background-image`, `${X} .stage:after{top:env(safe-area-inset-top,0px);left:calc(50% - 11px)`]) assert.ok(css.includes(sel), sel);
+  for (const sel of [`${X} header.hero{background:url(`, `${X} .wrap{background-image:`, `${X} .card:before`, `${X} .card h3:after`, `${X} nav.tabs:before`, `${X} nav.tabs:after`, `${X} nav.tabs button:last-child:before`, `${X} .buddy-pet:before`, `${X} .pet-stage:before`, `${X} .stage,${X} .gate{background-image`]) assert.ok(css.includes(sel), sel);
   assert.ok(!css.includes(`${X} .stage-top:before`), "nothing over the sheet's ✕");
-  assert.ok(css.includes(`${X} .stage:after,${X} .gate:after{z-index:-1}`) && new RegExp(`${X.replace(/[[\]"]/g, "\\$&")} \\.stage:before,[^{]*\\.gate:before\\{[^}]*z-index:-1\\}`).test(css), "the sheet's holly and ornament sit behind its buttons and chips");
   const block = css.slice(css.indexOf("/* Christmas everywhere"), css.indexOf("/* Christmas's fliers")); const rules = block.match(/:(before|after)\{content:""[^}]*\}/g) || [];
   assert.ok(rules.length >= 10 && rules.every(r => r.includes("pointer-events:none") || r.includes("display:inline-block")), "every decoration lets taps through");
   assert.match(css, /\.xm-sleigh:before\{content:"";position:absolute;inset:0;pointer-events:none/);
   assert.match(css, /prefers-reduced-motion:reduce\)\{html\[data-season="christmas"\] \.card:after[^}]*\{animation:none\} html\[data-season="christmas"\] nav\.tabs:before\{background-image:url\(\.\.\/icons\/season\/christmas\/lights-still\.svg\)\}/, "with reduced motion nothing swings and the lights stay still");
   assert.ok(src("icons/season/christmas/hat.svg").includes("#FF5C93") && src("icons/season/christmas/holly.svg").includes("#FF5C93"), "her pink: a berry on the Santa hat's brim and on the holly");
+});
+
+test("Fall and Christmas hang clear (1.55.1): no acorn or ornament over a card's title, a sheet's title, its chips, Skip or the ✕", () => {
+  const css = src("css/app.css");
+  for (const id of ["fall", "christmas"]) {
+    const S = `html[data-season="${id}"]`, re = S.replace(/[[\]"]/g, "\\$&");
+    assert.match(css, new RegExp(`${re} \\.card:nth-child\\(4n\\+1\\):after,${re} \\.modal-card:after\\{content:"";position:absolute;top:-14px`), id + ": the stem starts above the card, so it hangs in the top padding, not over the title");
+    assert.match(css, new RegExp(`${re} \\.card:nth-child\\(4n\\+3\\):after\\{content:"";position:absolute;top:-14px`), id + ": the left-hand one too");
+    assert.ok(css.includes(`${S} .modal-card:after{right:72px}`), id + ": a bottom sheet's hangs clear of its ✕");
+    assert.ok(css.includes(`${S} .stage:after{top:calc(env(safe-area-inset-top,0px) - 10px);left:calc(50% - 8px);right:auto;width:16px;height:28px}`), id + ": a full-screen sheet's hangs in the middle, small enough to end above a long title");
+    assert.ok(css.includes(`${S} .stage:before{bottom:calc(env(safe-area-inset-bottom,0px) + 72px)}`), id + ": the sheet's sprig sits above Skip · Done");
+    assert.ok(css.includes(`${S} .stage:after,${S} .gate:after{z-index:-1}`) && new RegExp(`${re} \\.stage:before,[^{]*\\.gate:before\\{[^}]*z-index:-1\\}`).test(css), id + ": both behind the sheet's own buttons and chips");
+  }
 });
