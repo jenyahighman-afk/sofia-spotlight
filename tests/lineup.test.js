@@ -1,6 +1,7 @@
 // Trick progress lineup: the frames, the day a photo is from, one trick's photos oldest → newest (and the newest as the
 // card's art), first vs now, the saved sheet's grid, the schema-44 migration, and the lineup under a big card in the fake
-// DOM (add from learning on, pick a frame, change the day, take a photo off) plus the 📷 on started skill rows.
+// DOM (add from learning on, pick a frame, change the day, take a photo off) plus the 📷 on started skill rows; the saved
+// picture: the title stays on it, every frame draws, and the save path reads photos through media.download.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -56,6 +57,69 @@ test("the saved sheet's grid: one across for one photo, two up to four, three af
   }
   const one = Lp.gridLayout(1), titled = Lp.gridLayout(1, { top: 140 }); assert.equal(titled.H - one.H, 90, "a title adds room at the top");
   assert.equal(typeof Lp.drawFramed, "function"); assert.equal(typeof Lp.drawSheet, "function");
+});
+
+// A canvas that records its text. Wider than Fredoka really is (about 0.47 of the size per character on the longest names).
+const CHAR = 0.52;
+function fakeCanvas(){
+  const calls = [];
+  const ctx = new Proxy({}, {
+    get(t, k){
+      if (k === "measureText") return (s) => ({ width: String(s).length * parseFloat(((t.font || "").match(/([\d.]+)px/) || [])[1] || 10) * CHAR });
+      if (k === "fillText") return (s, x, y) => calls.push({ s, x, y, font: t.font, w: ctx.measureText(s).width });
+      return k in t ? t[k] : () => ({ addColorStop(){} });
+    },
+    set(t, k, v){ t[k] = v; return true; },
+  });
+  return { calls, cv: { getContext: () => ctx, width: 0, height: 0 } };
+}
+
+test("the saved picture's title stays on the picture: every real trick name fits, a long one splits at its · or shrinks", () => {
+  const measure = (t, px) => t.length * px * CHAR, W = Lp.SHEET_W - 80;
+  assert.deepEqual(Lp.titleFit("Calypso · my progress", W, measure), { px: 54, lines: ["Calypso · my progress"] }, "a short title is as before");
+  const long = "Elbow cartwheel: one elbow from standing"; const T = Lp.titleFit(long + " · my progress", W, measure);
+  assert.deepEqual(T.lines, [long, "my progress"], "breaks at the dot, and the dot goes"); assert.ok(T.px >= 30 && T.px < 54);
+  const names = Object.values(got.skills.styles).flatMap(s => s.skills.map(k => k.n)); assert.ok(names.length > 100);
+  for (const n of names) for (const title of [n, n + " · my progress"]) { const f = Lp.titleFit(title, W, measure); assert.ok(f.lines.length <= 2 && f.lines.every(l => measure(l, f.px) <= W), title); }
+  const words = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen"; const w = Lp.titleFit(words, W, measure);
+  assert.equal(w.lines.length, 2, "no dot: wraps"); assert.equal(w.lines.join(" "), words, "nothing lost"); assert.ok(w.lines.every(l => measure(l, w.px) <= W));
+});
+
+test("drawSheet draws every frame; a two-line title stays inside the sheet and moves the photos down", () => {
+  const name = "Elbow cartwheel: one elbow from standing";
+  const items = Lp.FRAMES.map(f => ({ img: { width: 600, height: 800 }, frame: f.id, stamp: { name, date: "Wed, Oct 28", stage: "Clean" }, color: "#FF5C93" }));
+  const { cv, calls } = fakeCanvas(); Lp.drawSheet(cv, items, { title: name + " · my progress", sub: "Sun, Sep 20 → Wed, Oct 28" });
+  const T = Lp.titleFit(name + " · my progress", Lp.SHEET_W - 80, (t, px) => t.length * px * CHAR); const lines = calls.slice(0, 2);
+  assert.deepEqual(lines.map(c => c.s), T.lines); for (const c of lines) { assert.ok(c.x - c.w / 2 >= 0 && c.x + c.w / 2 <= Lp.SHEET_W, c.s + " is on the picture"); assert.ok(c.font.includes(T.px + "px")); }
+  assert.equal(cv.width, Lp.SHEET_W); assert.equal(cv.height, Lp.gridLayout(6, { top: 140 + Math.round(T.px * 1.15), bottom: 150 }).H);
+  assert.ok(calls.slice(2).every(c => c.y > lines[1].y + T.px / 2), "everything else is below the title");
+  const short = fakeCanvas(); Lp.drawSheet(short.cv, items.slice(0, 2), { title: "Calypso" }); assert.equal(short.cv.height, Lp.gridLayout(2, { top: 140, bottom: 90 }).H, "one line: the same room as before");
+  const none = fakeCanvas(); Lp.drawSheet(none.cv, items.slice(0, 1), {}); assert.equal(none.cv.height, Lp.gridLayout(1, { top: 50, bottom: 90 }).H, "one photo: no title");
+});
+
+test("saving reads each photo through media.download (no-store, like the backup), never a crossOrigin <img>, and hands the picture to the share sheet; failures say what to do", async () => {
+  const { media } = await import("../js/sync.js"); resetDom(); for (const k of Object.keys(S)) S[k] = {};
+  const real = { download: media.download, create: document.createElement, Image: globalThis.Image, revoke: URL.revokeObjectURL }; const got1 = [], images = [], shared = [], revoked = [];
+  media.download = async (path, url) => { got1.push([path, url]); return new Blob(["jpeg"], { type: "image/jpeg" }); };
+  globalThis.Image = class { width = 600; height = 800; set src(v){ this._s = v; images.push(this); queueMicrotask(() => this.onload && this.onload()); } get src(){ return this._s; } };
+  document.createElement = (t) => { if (t !== "canvas") return real.create(t); const { cv } = fakeCanvas(); cv.toBlob = (cb) => cb(new Blob(["pic"], { type: "image/jpeg" })); return cv; };
+  URL.revokeObjectURL = (u) => revoked.push(u); navigator.canShare = () => true; navigator.share = async ({ title }) => { shared.push(title); };
+  try {
+    S.photos = { a: ph("s-calypso", "2026-09-01"), b: ph("s-calypso", "2026-10-20", { frame: "film" }) };
+    const c = { id: "s-calypso", n: "Calypso", color: "#FF5C93", state: "clean" }; Lp.renderLineup(c);
+    await window.lineupSave("all");
+    assert.deepEqual(got1, [["p/2026-09-01", "https://x/s-calypso-2026-09-01"], ["p/2026-10-20", "https://x/s-calypso-2026-10-20"]], "each photo's own path and url");
+    assert.equal(images.length, 2); assert.ok(images.every(i => i.crossOrigin === undefined && i.src === "blob:test"), "a blob: image, no crossOrigin");
+    assert.equal(revoked.length, 2, "the blob: urls are let go after drawing"); assert.match(shared[0], /^sofia-s-calypso-lineup-\d{4}-\d{2}-\d{2}\.jpg$/); assert.match(el("#lfStatus").textContent, /Saved/);
+    await window.lineupVs(); await window.lineupSave("vs"); assert.match(shared[1], /first-vs-now/);
+    window.lineupVs(); window.lineupPick("b"); await window.lineupSave("one"); assert.match(shared[2], /-photo-/); assert.equal(images.length, 5, "2 + 2 + 1");
+    media.download = async () => { throw new Error("download failed: 403"); }; const before = shared.length;
+    await window.lineupSave("all"); assert.match(el("#toast").textContent, /can't read the cloud photos/); assert.equal(shared.length, before, "nothing is shared when a photo can't be read");
+    navigator.onLine = false; await window.lineupSave("all"); assert.match(el("#toast").textContent, /Connect to the internet/);
+  } finally {
+    media.download = real.download; document.createElement = real.create; globalThis.Image = real.Image; URL.revokeObjectURL = real.revoke; navigator.onLine = true; delete navigator.canShare; delete navigator.share;
+    Lp.resetLineup(); resetDom(); for (const k of Object.keys(S)) S[k] = {};
+  }
 });
 
 test("schema 44: photos.frame kept only as a known frame, photos.taken only as a day, photos.stage only as learning / clean / checked; nothing invented", () => {

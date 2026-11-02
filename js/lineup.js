@@ -111,14 +111,25 @@ export function drawFramed(ctx, img, frame, stamp, cell, color = "#FF5C93"){
   ctx.font = `800 ${small}px Nunito, system-ui, sans-serif`; ctx.fillStyle = sub; ctx.fillText([stamp.date, stamp.stage].filter(Boolean).join("  ·  "), x + w / 2, ty - big / 2 + small * 0.9);
   ctx.restore();
 }
-// The saved picture: a blush sheet, a title line, the framed photos in a grid (a label pill over each cell for first vs
-// now), a line under them and the footer. items: [{ img, frame, stamp, color }]; o: { title, labels, sub }.
+// The title of a saved picture, kept on the picture: 54 px when it fits; else smaller, split at its " · " into two lines
+// when that fits, else wrapped into two lines. measure(text, px) → width. Returns { px, lines }.
+export function titleFit(text, maxW, measure){
+  if (measure(text, 54) <= maxW) return { px: 54, lines: [text] };
+  const fits = (lines, px) => lines.length <= 2 && lines.every(l => measure(l, px) <= maxW); const parts = text.split(" · ");
+  for (let px = 50; px >= 30; px -= 2) if (fits(parts, px)) return { px, lines: parts };
+  for (let px = 50; px >= 30; px -= 2) { const lines = wrapLines(text, maxW, t => measure(t, px)); if (fits(lines, px)) return { px, lines }; }
+  return { px: 30, lines: wrapLines(text, maxW, t => measure(t, 30)).slice(0, 2) };
+}
+// The saved picture: a blush sheet, a title (one or two lines), the framed photos in a grid (a label pill over each cell for
+// first vs now), a line under them and the footer. items: [{ img, frame, stamp, color }]; o: { title, labels, sub }.
 export function drawSheet(cv, items, o = {}){
-  const L = gridLayout(items.length, { top: o.title ? 140 : 50, bottom: o.sub ? 150 : 90 }); cv.width = L.W; cv.height = L.H; const ctx = cv.getContext("2d");
+  const ctx = cv.getContext("2d"); const titleFont = (px) => `600 ${px}px Fredoka, Nunito, sans-serif`;
+  const T = o.title ? titleFit(o.title, SHEET_W - 80, (t, px) => { ctx.font = titleFont(px); return ctx.measureText(t).width; }) : null; const leading = T ? Math.round(T.px * 1.15) : 0;
+  const L = gridLayout(items.length, { top: T ? 140 + (T.lines.length - 1) * leading : 50, bottom: o.sub ? 150 : 90 }); cv.width = L.W; cv.height = L.H;
   const g = ctx.createLinearGradient(0, 0, L.W, L.H); g.addColorStop(0, "#FFE6EF"); g.addColorStop(1, "#EBDDFF"); ctx.fillStyle = g; ctx.fillRect(0, 0, L.W, L.H);
   ctx.fillStyle = "rgba(255,255,255,.35)"; for (let i = 0; i < 16; i++) { ctx.beginPath(); ctx.arc((i * 211 + 97) % L.W, (i * 397 + 53) % L.H, 18 + (i % 4) * 14, 0, Math.PI * 2); ctx.fill(); }
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  if (o.title) { ctx.fillStyle = "#4A2340"; ctx.font = "600 54px Fredoka, Nunito, sans-serif"; ctx.fillText(o.title, L.W / 2, 72); }
+  if (T) { ctx.fillStyle = "#4A2340"; ctx.font = titleFont(T.px); T.lines.forEach((l, i) => ctx.fillText(l, L.W / 2, 72 + i * leading)); }
   items.forEach((it, i) => {
     const c = L.cells[i]; drawFramed(ctx, it.img, it.frame, it.stamp, c, it.color);
     if (o.labels && o.labels[i]) { ctx.font = "600 34px Fredoka, Nunito, sans-serif"; const t = o.labels[i], tw = ctx.measureText(t).width + 50; ctx.fillStyle = i ? "#FF5C93" : "rgba(74,35,64,.8)"; roundRect(ctx, c.x + c.w / 2 - tw / 2, c.y - 26, tw, 52, 26); ctx.fill(); ctx.fillStyle = "#fff"; ctx.fillText(t, c.x + c.w / 2, c.y); }
@@ -181,19 +192,27 @@ async function takeOff(pid){
   renderLineup(L.card);
 }
 // ---------- saving a picture (the share sheet, like Moments) ----------
-const loadImg = (url) => new Promise((res, rej) => { const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => res(im); im.onerror = () => rej(new Error("cloud photo")); im.src = url; });
+// A photo for the canvas: its bytes through media.download (no-store, like the backup: the copy the browser cached while
+// showing the photo has no CORS header, and it is cached for a year), then a blob: image, which never taints the canvas.
+async function loadImg(p){
+  let blob; try { blob = await media.download(p.path, p.url); } catch (e) { console.warn(e); throw new Error("cloud photo"); }
+  const url = URL.createObjectURL(blob);
+  return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => { URL.revokeObjectURL(url); rej(new Error("cloud photo")); }; im.src = url; });
+}
 const status = (t) => { const el = $("#lfStatus"); if (el) el.textContent = t; };
 async function save(kind){
   const c = L.card; if (!c) return; const list = lineup(c.id); const fn = firstVsNow(list);
   const picks = kind === "one" ? list.filter(p => p.id === L.sel) : kind === "vs" && fn ? [fn.first, fn.now] : list; if (!picks.length) return toast("Tap a photo first");
+  let imgs = [];
   try {
     status("Making the picture…"); try { await document.fonts.load("600 48px Fredoka"); } catch (e) {}
-    const imgs = await Promise.all(picks.map(p => loadImg(p.url)));
+    imgs = await Promise.all(picks.map(loadImg));
     const items = picks.map((p, i) => ({ img: imgs[i], frame: p.frame, stamp: stampFor(p, c.n), color: c.color }));
     const o = kind === "vs" ? { title: c.n, labels: ["FIRST", "NOW"], sub: grownLine(fn) } : kind === "all" ? { title: `${c.n} · my progress`, sub: list.length > 1 ? `${fmt(list[0].date)} → ${fmt(list[list.length - 1].date)}` : "" } : {};
     const cv = document.createElement("canvas"); drawSheet(cv, items, o);
     const blob = await new Promise((res, rej) => { try { cv.toBlob(b => b ? res(b) : rej(new Error("Couldn't make the picture")), "image/jpeg", 0.92); } catch (e) { rej(e); } });
     await saveBlob(blob, `sofia-${c.id}-${kind === "vs" ? "first-vs-now" : kind === "all" ? "lineup" : "photo"}-${todayStr()}.jpg`); status("Saved. Look in Photos (or Files).");
-  } catch (e) { console.warn(e); status(""); toast(/cloud photo|tainted|security/i.test(String((e && e.message) || e)) ? "This phone can't read the cloud photos into a picture. A grown-up can check the Storage CORS step in the README." : "Couldn't save: " + (e.message || e), 4000); }
+  } catch (e) { console.warn(e); status(""); toast(navigator.onLine === false ? "Connect to the internet, then save it again." : /cloud photo|tainted|security/i.test(String((e && e.message) || e)) ? "This phone can't read the cloud photos into a picture. A grown-up can check the Storage CORS step in the README." : "Couldn't save: " + (e.message || e), 4000); }
+  finally { for (const im of imgs) URL.revokeObjectURL(im.src); }
 }
 expose({ lineupAdd: addPhoto, lineupPick: pick, lineupVs: toggleVs, lineupFrame: setFrame, lineupDate: setDate, lineupOff: takeOff, lineupSave: save });

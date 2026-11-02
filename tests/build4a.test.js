@@ -65,7 +65,7 @@ test("Play decides the kind of day the way Today does: a Thursday with a make-up
   // the pages in the fake DOM: a booking today makes Today a studio day and Play ungated, whatever weekday it is
   resetDom(); clearS(); const today = todayStr(); const b = bookingRecord(today, "5:30 PM", "", "GHD", "r-today", "other"); S.events = { [b.id]: b };
   HM.renderHome(); const tc = el("#todayCard").innerHTML; assert.ok(/📹 Watch day|🏫 Studio day/.test(tc), "the one card says studio"); assert.doesNotMatch(tc, /🏠 Home day/);
-  assert.doesNotMatch(tc, /today-fun/, "nothing done yet: no link to Play");
+  assert.doesNotMatch(tc, /today-fun(?! today-morning)/, "nothing done yet: no link to Play (the weekday-morning line shares the class, 5 am to noon, and goes to the player)");
   assert.doesNotMatch(el("#habitCard").innerHTML, /Your solo first/, "the extras card doesn't call a studio day a home day either");
   PL.renderPlay(); const grid = el("#gameGrid").innerHTML; assert.doesNotMatch(grid, /game-gate/, "no 'Home day: the solo first' on a studio day"); assert.match(grid, /✨ Extras/); assert.match(grid, /🎉 Weekend games/);
   // the week strip: today's cell carries the memory run when today is a home weekday with the booking, never the full practice
