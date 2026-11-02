@@ -4,8 +4,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { installEnv } from "./_env.mjs";
+installEnv();
 const json = (f) => JSON.parse(readFileSync(new URL("../data/" + f + ".json", import.meta.url), "utf8"));
 const src = (f) => readFileSync(new URL("../" + f, import.meta.url), "utf8");
+const { applyData, DATA_FILES } = await import("../js/data.js");
+const got = {}; for (const f of DATA_FILES) got[f] = json(f); applyData(got);
+const { momWeekLines } = await import("../js/momweek.js");
 // What the page shows: no comments, no <style>, no tags.
 const shown = (html) => html.replace(/<!--[\s\S]*?-->/g, " ").replace(/<style[\s\S]*?<\/style>/g, " ").replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
@@ -25,7 +30,8 @@ test("the in-app Pass has the same words", () => {
   const pass = json("pass"), t = JSON.stringify(pass), name = (id) => pass.parts.find(p => p.id === id).n;
   assert.equal(name("time"), "Ways to fit it all in + when to use screens"); assert.equal(name("food"), "Food for dancing");
   assert.doesNotMatch(t, /\b(taper|full out|little audiences?|time-smart|screen-smart|refuel)\b/i);
-  assert.match(t, /Eat again after class/); assert.match(t, /your biggest, best dancing/);
+  assert.match(t, /Eat again after class/); assert.match(t, /Your biggest, best dancing/);
+  assert.match(pass.parts.find(p => p.id === "goal").lines[0], /^The big goal: [^:]+$/, "one colon");
 });
 
 test("the Toolkit's pages: Rest up, where you look, energy to the end, show someone", () => {
@@ -39,6 +45,7 @@ test("the app calls the last phase Rest up, and what she can read never says tap
   const plan = json("plan15"), spring = json("plan-spring");
   for (const w of [...plan.weeks, ...spring.weeks]) assert.doesNotMatch(`${w.solo} ${w.trio} ${w.fri || ""} ${w.extra || ""}`, /\btaper\b/i, `week ${w.w}`);
   for (const p of [...plan.phases, ...spring.phases, ...json("phases")]) assert.doesNotMatch(`${p.n} ${p.g || ""}`, /\btaper\b/i, p.n);
-  assert.match(src("js/momweek.js"), /" · rest-up days"/);
+  const wk = (d) => momWeekLines(d, {}).find(l => l.k === "week").text;
+  assert.equal(wk("2026-12-29"), "Week 14 of 15 · Perform it · rest-up days"); assert.equal(wk("2027-01-05"), "Week 15 of 15 · Rest up", "says it once");
   assert.ok(plan.rules.taper.from, "the rule keeps its name in the code");
 });
