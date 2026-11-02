@@ -37,7 +37,7 @@ test("one showDay field: the ★ checkpoint, the family mini show two days befor
   const moved = { ...plan, showDay: "2027-01-09" }; assert.equal(sessionRules("2027-01-08", moved).nightBefore, true, "move the show and the night before moves");
   assert.equal(checkpoints("2026-10-26", moved, []).find(c => /mini show/.test(c.t)).d, "2027-01-07");
   assert.ok(!("nightBefore" in (plan.rules || {})), "no second copy of the date in the rules");
-  assert.match(plan.phases.find(p => p.n === "Taper").g, /Fri Jan 8/); assert.match(json("phases").find(p => p.n === "Taper").g, /Fri Jan 8/);
+  assert.match(plan.phases.find(p => p.n === "Rest up").g, /Fri Jan 8/); assert.match(json("phases").find(p => p.n === "Rest up").g, /Fri Jan 8/);
   assert.match(plan.weeks[14].solo, /Wed Jan 6/); assert.match(plan.weeks[14].extra, /Thu Jan 7/);
 });
 

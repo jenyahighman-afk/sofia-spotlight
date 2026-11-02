@@ -75,7 +75,7 @@ test("never more than 2 days without the solo: days since the plan was last done
 test("mini audiences in weeks 10–14, the stage tape once, sleep in the last two weeks; the phase texts say the new rules", () => {
   const ex = (d) => weekOf(d).extra || ""; assert.match(ex("2026-12-01"), /Mini audience #1/); assert.match(ex("2026-12-15"), /Tape out the stage size/); assert.match(ex("2026-12-15"), /Mini audience #2/); assert.match(ex("2026-12-22"), /Mini audience #3/);
   assert.match(ex("2026-12-29"), /Sleep 9–12 hours/); assert.match(ex("2027-01-05"), /the night before/); assert.equal(ex("2026-11-02"), "");
-  const g = Object.fromEntries(plan.phases.map(p => [p.n, p.g])); assert.match(g["Own it"], /teacher's new correction right away/); assert.match(g["Clean it"], /two videos in a row/); assert.match(g["Perform it"], /one full-out every session/); assert.match(g["Taper"], /Night before the show/);
+  const g = Object.fromEntries(plan.phases.map(p => [p.n, p.g])); assert.match(g["Own it"], /teacher's new correction right away/); assert.match(g["Clean it"], /two videos in a row/); assert.match(g["Perform it"], /one full-out every session/); assert.match(g["Rest up"], /Night before the show/);
   assert.match(json("phases").find(p => p.n === "Clean it").g, /two videos in a row/);
 });
 test("schema 42: settings.fixSeen keeps real dates only, the last two, sorted", () => {
@@ -84,7 +84,7 @@ test("schema 42: settings.fixSeen keeps real dates only, the last two, sorted", 
 });
 test("the printed Practice Toolkit (tools/print source → files/) carries the same rules", () => {
   const html = readFileSync(new URL("../tools/print/Sofia-Practice-Toolkit.html", import.meta.url), "utf8");
-  for (const s of ["two videos in a row", "Show in your head", "Stand in your opening pose", "never let it push bedtime later", "one full-out", "two back to back on Sundays", "Night before: memory run only", "tape out the stage size", "mini audience #3", "Sleep 9–12 hours", "practise it right away", "Never more than 2 days without the solo", "Heel stretch", "0:48–2:04 from memory", "head ALL the way back. Don't tuck the chin"]) assert.ok(html.includes(s), s);
+  for (const s of ["two videos in a row", "Show in your head", "Stand in your opening pose", "never let it push bedtime later", "one full-out", "two back to back on Sundays", "Night before: memory run only", "tape out the stage size", "show someone #3", "Sleep 9–12 hours", "practise it right away", "Never more than 2 days without the solo", "Heel stretch", "0:48–2:04 from memory", "head ALL the way back. Don't tuck the chin"]) assert.ok(html.includes(s), s);
   assert.ok(!/ONE SHOULDER|chin tucked/i.test(html), "Hannah's donut roll, not over the shoulder");
   assert.ok(!/<img|https?:\/\/fonts\./.test(html), "no pictures, no web font: prints the same every time");
   const man = JSON.parse(readFileSync(new URL("../seed-data/manifest.json", import.meta.url), "utf8")).files.find(f => f.name === "Sofia-Practice-Toolkit.pdf");

@@ -80,7 +80,7 @@ test("the rest: kick-overs only in class (schema 54), the trio card, Mom's taper
   assert.ok(ST.SCHEMA_VERSION >= 54); const solo = ST.migrateDoc("dances", "solo", { _v: 53, tricks: ["x. Kick-overs only with a spotter."] }); assert.deepEqual(solo.tricks, ["x. Kick-overs and aerials only in class."]);
   assert.equal(ST.migrateDoc("dances", "trio", { _v: 53, rehearsal: ST.SOLO_V54.trio[0] }).rehearsal, ST.SOLO_V54.trio[1]); assert.equal(ST.migrateDoc("dances", "trio", { _v: 53, rehearsal: "ours" }).rehearsal, "ours");
   assert.doesNotMatch(src("data/dances.json"), /Kick-overs only with a spotter|mark it once a week at home/);
-  assert.match(src("js/momweek.js"), /plan\.rules\.taper\.from && date >= plan\.rules\.taper\.from\) \? " · taper"/);
+  assert.match(src("js/momweek.js"), /plan\.rules\.taper\.from && date >= plan\.rules\.taper\.from\) \? " · rest-up days"/);
   assert.match(src("js/season15.js"), /\[String\(new Date\(date \+ "T00:00:00"\)\.getDay\(\)\)\] === "watch"\) return "";/);
   assert.match(src("data/pass.json"), /dinner, the memory run on Tuesday, shower, bed/);
   assert.doesNotMatch(src("data/dances.json"), /girth d|inseam d|bust d|waist d|hips d/, "no measurements in the public data");

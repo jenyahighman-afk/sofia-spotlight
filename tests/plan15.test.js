@@ -17,10 +17,10 @@ const plan = json("plan15"), classes = json("classes"), pool = json("practice-po
 
 test("15 weeks, Monday to Sunday from Sep 28; the four phases; the weeks and goals as Jenya set them", () => {
   assert.equal(plan.weeks.length, 15); plan.weeks.forEach((w, i) => { assert.equal(w.w, i + 1); const d = new Date(w.of + "T00:00:00"); assert.equal(d.getDay(), 1, w.of + " is a Monday"); assert.equal(Math.round((d - new Date("2026-09-28T00:00:00")) / 86400000), i * 7); });
-  assert.deepEqual(plan.phases.map(p => [p.n, p.from, p.to]), [["Own it", 1, 6], ["Clean it", 7, 9], ["Perform it", 10, 14], ["Taper", 15, 15]]);
+  assert.deepEqual(plan.phases.map(p => [p.n, p.from, p.to]), [["Own it", 1, 6], ["Clean it", 7, 9], ["Perform it", 10, 14], ["Rest up", 15, 15]]);
   assert.equal(weekOf("2026-10-25").w, 4); assert.equal(weekOf("2026-10-26").w, 5); assert.equal(weekOf("2026-10-26").phase.n, "Own it");
   assert.equal(weekOf("2026-10-26").solo, "Whole solo from memory, on the counts"); assert.match(weekOf("2026-10-28").trio, /no video, by Sat Oct 31/);
-  assert.equal(weekOf("2026-11-09").phase.n, "Clean it"); assert.ok(weekOf("2026-11-25").light); assert.equal(weekOf("2026-12-01").phase.n, "Perform it"); assert.equal(weekOf("2027-01-09").w, 15); assert.equal(weekOf("2027-01-09").phase.n, "Taper");
+  assert.equal(weekOf("2026-11-09").phase.n, "Clean it"); assert.ok(weekOf("2026-11-25").light); assert.equal(weekOf("2026-12-01").phase.n, "Perform it"); assert.equal(weekOf("2027-01-09").w, 15); assert.equal(weekOf("2027-01-09").phase.n, "Rest up");
   assert.equal(weekOf("2026-09-27"), null); assert.equal(weekOf("2027-01-11"), null);
   assert.deepEqual(plan.weeks.map(w => w.tricks || []), [[1], [2], [], [], [], [], [1], [6], [], [8], [3, 4], [5], [7], [], []]);
   assert.equal(plan.weeks[13].weakest, true); assert.match(plan.weeks[14].fri, /Nothing new/);

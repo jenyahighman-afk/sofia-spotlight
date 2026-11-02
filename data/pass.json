@@ -42,11 +42,11 @@
   {
    "id": "goal", "e": "⭐", "n": "The big goal, in small steps", "mins": 2,
    "lines": [
-    "The big goal: dance your solo at the Winter Showcase from memory, full out, eyes up, holding the ending to the very last note. And love doing it.",
+    "The big goal: dance your solo at the Winter Showcase from memory: your biggest, best dancing, eyes up, holding the ending to the very last note. And love doing it.",
     "1 · Own it (to Nov 8): know every step by heart. Memory + knees, no new tricks yet.",
     "2 · Clean it (Nov 9–29): feet, knees, arms, eyes. One fix at a time. Show in your head starts.",
-    "3 · Perform it (Nov 30–Jan 3): dance it like the real show. Full out, costume on, little audiences.",
-    "4 · Taper (Jan 4 to the show): less work, more rest. Nothing new.",
+    "3 · Perform it (Nov 30–Jan 3): dance it like the real show. Your biggest, best dancing, costume on. Show your family at home.",
+    "4 · Rest up (Jan 4 to the show): fewer runs from Dec 28. Less work, more rest. Nothing new.",
     "Your finish lines are on Today's season card and on Toolkit page 1. When you make one, tap ✓ Made it with Mom, then pick a reward on page 2b.",
     "Tap How ready? on Today to see four bars for your solo. Pause & Predict fills Know, fixes that showed fill Clean, your eight tricks fill Tricks, full runs and Sunday films fill Perform.",
     "Tiny steps win: one 8-count at a time, one fix at a time, a short practice most days, never more than 2 days without your solo."
@@ -80,7 +80,7 @@
    "check": { "q": "Dance has felt like too much lately. What do you do?", "a": ["Keep it a secret", "Tell Mom", "Practice twice as much"], "ok": 1, "yay": "Yes. Tell Mom. A lighter day is allowed 💛", "hint": "Who helps you change the plan?" }
   },
   {
-   "id": "time", "e": "⏰", "n": "Time-smart and screen-smart", "mins": 2,
+   "id": "time", "e": "⏰", "n": "Ways to fit it all in + when to use screens", "mins": 2,
    "lines": [
     "Same time, same place: start practice at the same time on Thu, Fri and Sun.",
     "Big thing first: homework, then practice, then free time.",
@@ -95,7 +95,7 @@
    "check": { "q": "It's Thursday and you want today's countdown door. What first?", "a": ["The solo, then the door", "The door, it's quick", "A game to warm up"], "ok": 0, "yay": "Yes! Plan first, then the door opens ⭐", "hint": "What opens the door?" }
   },
   {
-   "id": "food", "e": "🍓", "n": "Fuel like a dancer", "mins": 2,
+   "id": "food", "e": "🍓", "n": "Food for dancing", "mins": 2,
    "lines": [
     "Dancing burns lots of energy. Food is your fuel.",
     "Every morning: oatmeal with berries, eggs and toast, yogurt with granola, or a waffle with peanut butter.",
@@ -160,7 +160,7 @@
   { "t": "Studio day! Is your water bottle in the bag? 💧", "when": ["studio"], "part": "food" },
   { "t": "A small snack 1–2 hours before class: banana + peanut butter, or apple + cheese 🍎", "when": ["studio"], "part": "food" },
   { "t": "Got a correction in class? Tell Mom and add it with ＋ Note. It's your fix right away ✏️", "when": ["studio", "after"], "part": "grab" },
-  { "t": "Refuel after class: chocolate milk, yogurt, eggs or a tuna sandwich 🥪", "when": ["after"], "part": "food" },
+  { "t": "Eat again after class: chocolate milk, yogurt, eggs or a tuna sandwich 🥪", "when": ["after"], "part": "food" },
   { "t": "Group rehearsal today! Any correction from your teacher goes in with ＋ Note ✏️", "when": ["sat"], "part": "grab" },
   { "t": "Sunday is film day 🎬 Open the Sunday sheet and go step by step.", "when": ["sun"], "part": "grab" },
   { "t": "Sunday plan time 📋 Fill in a fresh This week sheet (Toolkit page 6).", "when": ["sun"], "part": "time" },

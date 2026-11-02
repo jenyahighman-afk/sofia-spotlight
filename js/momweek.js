@@ -49,7 +49,7 @@ export function momWeekLines(date, { plan = activePlan(date), week = weekOf(date
   // 0. today (Build 4)
   if (today) out.push(momTodayLine(date, today));
   // 1. the week
-  if (week) out.push({ k: "week", ic: "📅", text: `Week ${week.w} of ${week.total}${week.phase ? " · " + week.phase.n : ""}${week.light ? " · light week" : ""}${week.taper || (plan && plan.rules && plan.rules.taper && plan.rules.taper.from && date >= plan.rules.taper.from) ? " · taper" : ""}${week.judges ? " · judges' week" : ""}`, sub: `Solo: ${week.solo}${week.fri ? ` · Friday: ${week.fri}` : ""}` });
+  if (week) out.push({ k: "week", ic: "📅", text: `Week ${week.w} of ${week.total}${week.phase ? " · " + week.phase.n : ""}${week.light ? " · light week" : ""}${week.taper || (plan && plan.rules && plan.rules.taper && plan.rules.taper.from && date >= plan.rules.taper.from) ? " · rest-up days" : ""}${week.judges ? " · judges' week" : ""}`, sub: `Solo: ${week.solo}${week.fri ? ` · Friday: ${week.fri}` : ""}` });
   else out.push({ k: "week", ic: "📅", text: "No plan week for this date", sub: "The plans run Sep 28 to the Showcase, then Jan 11 to the Ball." });
   // 2. the Sunday sheet — keyed by the plan week (schema 51): today's sheet on a Sunday, last Sunday's on the days after it
   const key = sundayOf(date); const rec = (sunday || {})[key]; const when = fmt(reviewSunday(date)).replace(/^\w+, /, "");

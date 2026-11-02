@@ -40,7 +40,7 @@ test("Toolkit p.2: a sticker when the app says ⭐ Plan done, and the rule strip
   assert.match(TK, /\.tx \{ font-family: "Segoe UI Symbol"/, "the ⭐ prints as a one-colour glyph (black-ink printer)");
 });
 
-test("Toolkit: Saturday has the memory run, trick 4 keeps kick-overs and aerials in class, pause-and-predict speaks to Sofia, every footer says updated Oct 30 (1.57.0: the December showings)", () => {
+test("Toolkit: Saturday has the memory run, trick 4 keeps kick-overs and aerials in class, pause-and-predict speaks to Sofia, every footer says updated Nov 2 (1.59.5: plainer words)", () => {
   assert.equal(pages.length, 8, "pages 1, 2, 2b, 2c, 3–6");
   const p1 = visible(pages[0]); assert.ok(p1.includes("Sat Co Tech · PITCH rehearsal + the memory run"), "page 1's My week");
   assert.ok(!/PITCH rehearsal(?! \+ the memory run)/.test(visible(TK).replace("Team PITCH", "")), "no Saturday line without the memory run");
@@ -50,8 +50,8 @@ test("Toolkit: Saturday has the memory run, trick 4 keeps kick-overs and aerials
   assert.ok(!/Mom pauses/.test(TK), "no grown-up's voice on Sofia's steps");
   assert.ok(visible(pages[4]).includes("Pause-and-predict. Ask a grown-up to pause the video anywhere: you say and show what comes next. When you never have to guess, the step is learned."));
   const feet = [...TK.matchAll(/<div class="foot">([^<]*)<\/div>/g)].map(m => m[1]); assert.equal(feet.length, 8, "one footer a page");
-  for (const f of feet) assert.ok(f.includes("updated Oct 30"), f); assert.ok(!/updated Oct 26/.test(TK.replace(/<!--[\s\S]*?-->/g, "")));
-  for (const s of ["practise it right away", "Never more than 2 days without the solo", "tape out the stage size", "mini audience #3", "Heel stretch", "0:48–2:04 from memory", "head ALL the way back. Don't tuck the chin"]) assert.ok(TK.includes(s), "research rule kept: " + s);
+  for (const f of feet) assert.ok(f.includes("updated Nov 2"), f); assert.ok(!/updated Oct 26/.test(TK.replace(/<!--[\s\S]*?-->/g, "")));
+  for (const s of ["practise it right away", "Never more than 2 days without the solo", "tape out the stage size", "show someone #3", "Heel stretch", "0:48–2:04 from memory", "head ALL the way back. Don't tuck the chin"]) assert.ok(TK.includes(s), "research rule kept: " + s);
 });
 
 test("the Bunny and the pet in words a 9-year-old owns: no babyish openers, a day off (not a free skip), a bite of practice, the Growing-up photo", () => {
