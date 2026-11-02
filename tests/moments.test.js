@@ -1,7 +1,9 @@
-// Moments: stickers suggest themselves from the day, then-vs-now pairs come from goal check-ins, the crop maths is right.
+// Moments: stickers suggest themselves from the day, then-vs-now pairs come from goal check-ins and are read through
+// media.download, the crop maths is right.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { installEnv } from "./_env.mjs";
+import { readFileSync } from "node:fs";
+import { installEnv, resetDom, el } from "./_env.mjs";
 installEnv();
 const { stickersFor, nudgeFor, coverRect, thenNowPairs, daysBetween, wrapLines, SIZES, MILESTONES } = await import("../js/moments.js");
 const { migrateDoc, SCHEMA_VERSION } = await import("../js/store.js");
@@ -35,6 +37,25 @@ test("then-vs-now pairs: the first and latest photo check-ins of goals that have
   const pairs = thenNowPairs(goals, photos); assert.equal(pairs.length, 1);
   assert.deepEqual(pairs[0], { goalId: "split", label: "Right split", then: { url: "u1", date: "2026-09-25" }, now: { url: "u3", date: "2026-10-13" }, days: 18 });
   assert.deepEqual(thenNowPairs({}, {}), []);
+});
+
+test("then vs now from goal check-ins reads each photo through media.download (no-store), never a crossOrigin <img>; if it can't, it says what to do", async () => {
+  const read = (f) => readFileSync(new URL("../" + f, import.meta.url), "utf8");
+  const { applyData, DATA_FILES } = await import("../js/data.js"); const got = {}; for (const f of DATA_FILES) got[f] = JSON.parse(read("data/" + f + ".json")); applyData(got);
+  const { S } = await import("../js/store.js"); const { media } = await import("../js/sync.js"); resetDom(); for (const k of Object.keys(S)) S[k] = {};
+  const real = { download: media.download, Image: globalThis.Image }; const urls = [], images = [];
+  media.download = async (path, url) => { urls.push(url); return new Blob(["jpeg"], { type: "image/jpeg" }); };
+  globalThis.Image = class { width = 600; height = 800; set src(v){ this._s = v; images.push(this); queueMicrotask(() => this.onload && this.onload()); } get src(){ return this._s; } };
+  try {
+    S.photos = { a: { url: "https://x/a", path: "p/a" }, b: { url: "https://x/b", path: "p/b" } };
+    S.goals = { g: { id: "g", name: "Right split", checkins: [{ date: "2026-10-01", photoId: "a" }, { date: "2026-10-20", photoId: "b" }] } };
+    await window.openMoments(); window.mmMode("two"); assert.ok(el("#momentsArea").innerHTML.includes("From my goal check-ins"), "the goal's pair is offered");
+    const sel = el("#mmPair"); sel.value = "0"; await sel.onchange();
+    assert.deepEqual(urls, ["https://x/a", "https://x/b"], "both photos, first then newest");
+    assert.ok(images.every(i => i.crossOrigin === undefined), "no crossOrigin <img>"); assert.ok(images.filter(i => i.src === "blob:test").length >= 2, "blob: images"); assert.equal(el("#mmStatus").textContent, "", "the loading line is gone");
+    media.download = async () => { throw new Error("download failed: 403"); };
+    await sel.onchange(); assert.match(el("#toast").textContent, /can't read those from the cloud/); assert.equal(el("#mmStatus").textContent, "");
+  } finally { media.download = real.download; globalThis.Image = real.Image; resetDom(); for (const k of Object.keys(S)) S[k] = {}; }
 });
 
 test("22 → 23: photos.moment is a boolean when present; settings.momentNudge must be a string", () => {

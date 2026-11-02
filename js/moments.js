@@ -53,8 +53,11 @@ export function wrapLines(text, maxW, measure){ const words = String(text).trim(
 
 // ---------- drawing ----------
 function roundRect(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-const loadImg = (url, cors) => new Promise((res, rej) => { const im = new Image(); if (cors) im.crossOrigin = "anonymous"; im.onload = () => res(im); im.onerror = () => rej(new Error("Couldn't read that picture")); im.src = url; });
+const loadImg = (url) => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error("Couldn't read that picture")); im.src = url; });
 async function fileImage(file){ const url = URL.createObjectURL(file); try { return await loadImg(url); } finally { setTimeout(() => URL.revokeObjectURL(url), 2000); } }
+// A goal check-in photo for the canvas: its bytes through media.download (no-store, like the backup and the trick lineup:
+// the copy the browser cached while showing the photo has no CORS header), then a blob: image, which never taints the canvas.
+const cloudImage = async (url) => fileImage(await media.download("", url));
 // Her avatar (arms up) as an image for the card corner.
 async function avatarImage(){
   try { const pose = P({ el: [-36, -40], er: [36, -40], hl: [-58, -52], hr: [58, -52], kr: [26, 26], fr: [8, 36] }); const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="90 30 120 230" width="240" height="460">${avatarSVG(pose)}</svg>`;
@@ -125,7 +128,7 @@ function render(){
     <div class="row" style="margin-top:8px"><button class="btn coral" onclick="mmSave()">💾 Save to Photos</button><button class="btn ghost" onclick="mmKeep()">✨ Keep in the app</button></div><p class="small muted" id="mmStatus"></p>`;
   const onFile = (id, slot) => { const el = $("#" + id); if (!el) return; el.onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { const im = await fileImage(f); if (M.mode === "one") M.imgs = [im]; else { M.imgs[slot] = im; M.labels = M.labels || ["THEN", "NOW"]; } preview(); } catch (err) { toast(err.message, 3000); } }; };
   onFile("mmPhoto", 0); onFile("mmThen", 0); onFile("mmNow", 1);
-  const sel = $("#mmPair"); if (sel) sel.onchange = async () => { const p = pairs[+sel.value]; if (!p) return; status("Loading the check-ins…"); try { M.imgs = await Promise.all([loadImg(p.then.url, true), loadImg(p.now.url, true)]); M.labels = [`THEN · ${fmt(p.then.date)}`, `NOW · ${fmt(p.now.date)}`]; M.sub = `${esc(p.label)} · ${p.days} days apart`; status(""); preview(); } catch (e) { status(""); toast("The app can't read those from the cloud on this phone. Pick the two photos from Photos instead.", 4000); } };
+  const sel = $("#mmPair"); if (sel) sel.onchange = async () => { const p = pairs[+sel.value]; if (!p) return; status("Loading the check-ins…"); try { M.imgs = await Promise.all([cloudImage(p.then.url), cloudImage(p.now.url)]); M.labels = [`THEN · ${fmt(p.then.date)}`, `NOW · ${fmt(p.now.date)}`]; M.sub = `${esc(p.label)} · ${p.days} days apart`; status(""); preview(); } catch (e) { status(""); toast("The app can't read those from the cloud on this phone. Pick the two photos from Photos instead.", 4000); } };
   preview();
 }
 const status = (t) => { const el = $("#mmStatus"); if (el) el.textContent = t; };
