@@ -29,7 +29,7 @@ test("the December dates: the group showing is a studio day; the solo-trio pair,
   assert.deepEqual([by["deadline-1107"].start, by["deadline-1107"].kind], ["2026-11-07", "deadline"]);
   S.events = {};
   assert.deepEqual(ST.studioDates().map(e => e.id).filter(id => /showing/.test(id)), ["grp-showing-1205"], "only the group showing until a date is picked");
-  assert.deepEqual(ST.calendarOnly().map(e => e.id), ["deadline-1107", "closed-thanksgiving", "sdt-showing-1206", "sdt-showing-1212", "hold-1212", "closed-winter"], "with the studio closures since 1.58.0");
+  assert.deepEqual(ST.calendarOnly().map(e => e.id), ["deadline-1107", "closed-thanksgiving", "sdt-showing-1206", "sdt-showing-1212", "hold-1212", "closed-winter", "closed-midwinter", "closed-spring", "closed-july", "closed-labor"], "with the studio closures since 1.58.0, the later ones since 1.59.0");
   assert.ok(!ST.events().some(e => /showing|hold|deadline/.test(e.id)), "none is a show: no countdown, no comp mode");
   assert.equal(dayKind("2026-12-06", { ...dayOpts(), oneOffs: ST.studioDates() }), "home", "Sun Dec 6 stays a home day until it is picked");
   S.events = { "sdt-showing-1206": { chosen: true }, "sdt-showing-1212": { chosen: false } };

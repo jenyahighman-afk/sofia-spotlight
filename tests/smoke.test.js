@@ -22,6 +22,8 @@ before(async () => {
 
 // A studio day (any weekly class or a one-off date) has the short memory run instead of the full plan.
 const shortDay = () => M.studio.isShortDay(M.util.todayStr(), JSON.parse(read("data/classes.json")), M.store.studioDates());
+// Monday is the watch day: Hannah's videos and the solo in her head, a short list and no memory run. This test reads the clock, so it has to hold on a Monday too (the UTC runner's Monday starts Sunday 4 pm in Seattle).
+const watchDay = () => shortDay() && new Date(M.util.todayStr() + "T00:00:00").getDay() === 1;
 const SCREENS = () => ({
   home: M.home.renderHome, dances: M.dances.renderDances, practice: M.practice.renderPractice, play: M.play.renderPlay, me: M.me.renderMe,
   events: M.events.renderEvents, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, notes: () => { M.notes.renderNotes(); M.notes.renderPhotos(); M.notes.renderFiles(); },
@@ -70,8 +72,8 @@ test("every screen initialises and renders with an empty family space (no throw,
     assert.equal((dl.match(/memo-how memo-rule/g) || []).length, cards, "the rules sit behind How does this work?"); assert.ok(dl.includes("“"), "the story itself stays in view"); }
   assert.match(read("js/views/dances.js"), /Google Photos/, "the links field says Google Photos albums go there");
   assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
-  assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > (shortDay() ? 5 : 10), "checklist rows rendered");
-  if (shortDay()) assert.ok(el("#practiceChecklist").innerHTML.includes("Solo from the top · 5 min"), "a studio day has the memory run (its run item is 'Solo from the top · 5 min' since Build 4)");
+  assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > (watchDay() ? 2 : shortDay() ? 5 : 10), "checklist rows rendered");
+  if (shortDay() && !watchDay()) assert.ok(el("#practiceChecklist").innerHTML.includes("Solo from the top · 5 min"), "a studio day has the memory run (its run item is 'Solo from the top · 5 min' since Build 4)");
   assert.ok(html.includes('<details class="more plan-fold" id="planFold">') && html.indexOf('id="planFold"') < html.indexOf('id="practiceChecklist"'), "the exercise list sits inside a closed fold on Practice");
   assert.match(el("#planCount").textContent, /^\d+ of \d+ done$/, "the fold's summary counts today's exercises");
   assert.ok(html.includes('<body class="pg-home">'), "the body starts on Today");

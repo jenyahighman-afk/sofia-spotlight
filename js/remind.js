@@ -11,6 +11,9 @@ import { $, esc, toast, expose, todayStr } from "./util.js";
 import { S, setSettings } from "./store.js";
 import { CLASSES, HOME_DAYS } from "./data.js";
 import { activePlan } from "./season15.js";
+import { dayKindNow } from "./daykind.js";
+import { shortKind } from "./planToday.js";
+import { shiftDate } from "./corrections.js";
 import { sync } from "./sync.js";
 import { coachConfig } from "./firebase-config.js";
 import { pushConfig } from "./push-config.js";
@@ -32,10 +35,19 @@ export function planWeekdays(classes = CLASSES, homeDays = HOME_DAYS, plan = act
   for (let wd = 0; wd < 7; wd++) { if ((classes || []).some(c => c && c.day === wd)) kinds[wd] = sd[String(wd)] === "watch" ? "watch" : "memory"; else if (homeDays && homeDays[wd]) kinds[wd] = "home"; }
   return { days: Object.keys(kinds).map(Number), kinds };
 }
+// The dates whose nudge isn't the weekday's usual one, for the next DATE_SPAN days (1.59.0): { "YYYY-MM-DD": kind }, kind as above
+// or "off" (no plan that day: show day, a rest day). It is the app's own answer for the day (daykind.dayKind, then the short plan
+// on a home day), so a studio closure's class day gets the full session's line and the last call, a light week's home day and a
+// booked studio date get the memory run's, and show day gets no practice nudge.
+export const DATE_SPAN = 150;
+export function reminderKind(date, kindOf = dayKindNow, short = shortKind){ const k = kindOf(date); if (k === "show" || k === "rest") return "off"; return k === "home" && short(date) === "memory" ? "memory" : k; }
+export function planDates(plan = planWeekdays(), from = todayStr(), span = DATE_SPAN, kindOf = reminderKind){
+  const out = {}; for (let i = 0; i < span; i++) { const d = shiftDate(from, i); const k = kindOf(d); if (k !== ((plan.kinds || {})[new Date(d + "T00:00:00").getDay()] || "off")) out[d] = k; } return out;
+}
 // "📹 Mon · 🧠 Tue, Wed, Sat · 🏠 Sun, Thu, Fri"
 export function daysLabel({ kinds = {} } = {}){ const by = {}; for (const [wd, k] of Object.entries(kinds)) (by[k] ||= []).push(DAY_NAMES[+wd]); return ["watch", "memory", "home"].filter(k => by[k]).map(k => `${KIND_ICON[k]} ${by[k].join(", ")}`).join(" · "); }
-// What the worker is told: the time, the plan days with their kinds, and the second nudge's time when it is on.
-export function subscribeBody(r, { familyId, endpoint, keys, tz, plan = planWeekdays() }){ const b = { familyId, endpoint, keys, h: r.h, m: r.m, tz, days: plan.days, kinds: plan.kinds }; if (r.second) { b.h2 = r.h2; b.m2 = r.m2; } return b; }
+// What the worker is told: the time, the plan days with their kinds, the dates that differ, and the second nudge's time when it is on.
+export function subscribeBody(r, { familyId, endpoint, keys, tz, plan = planWeekdays(), dates = planDates(plan) }){ const b = { familyId, endpoint, keys, h: r.h, m: r.m, tz, days: plan.days, kinds: plan.kinds }; if (Object.keys(dates).length) b.dates = dates; if (r.second) { b.h2 = r.h2; b.m2 = r.m2; } return b; }
 export function urlB64ToBytes(b64){ const pad = "=".repeat((4 - b64.length % 4) % 4); const raw = atob((b64 + pad).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(raw, c => c.charCodeAt(0)); }
 // Why reminders can't be turned on here, or "" when they can.
 export function pushBlocker({ standalone, hasPush, hasSw, workerUrl }){
@@ -77,10 +89,10 @@ async function subscribe(r){
   const j = sub.toJSON(); await post("/remind/subscribe", subscribeBody(r, { familyId: sync.familyId, endpoint: j.endpoint, keys: j.keys, tz: tz() }));
   try { localStorage.setItem(LS, j.endpoint); localStorage.setItem(SENT, sentSig(r)); } catch (e) {} return sub;
 }
-// What this phone last sent the worker: the times and the plan days. On open, a subscribed phone whose times or plan days
-// changed since (a new default, a migrated time, a new class) subscribes again, once per run, quietly.
+// What this phone last sent the worker: the times, the plan days and the dates that differ. On open, a subscribed phone whose
+// times or days changed since (a new default, a migrated time, a new class, a date booked or passed) subscribes again, once per run, quietly.
 const SENT = "spotlight:pushsent";
-export const sentSig = (r, plan = planWeekdays()) => JSON.stringify([r.h, r.m, r.second ? r.h2 : null, r.second ? r.m2 : null, plan.days, plan.kinds]);
+export const sentSig = (r, plan = planWeekdays(), dates = planDates(plan)) => JSON.stringify([r.h, r.m, r.second ? r.h2 : null, r.second ? r.m2 : null, plan.days, plan.kinds, dates]);
 let resynced = false;
 export function resyncReminder(){
   if (resynced || !subscribedHere() || !sync.familyId || pushBlocker(env())) return; resynced = true;

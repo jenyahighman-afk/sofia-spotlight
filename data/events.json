@@ -19,13 +19,25 @@
   "notes": "She performs unless you email your location's front desk to opt out by today. Tee shirt size by today on the form on the studio website's home page (otherwise picked by age). The $60 fee auto-charges Nov 8, no refunds."
  },
  {
+  "id": "pitch-jazz-1108",
+  "kind": "class",
+  "short": "PITCH extra rehearsal",
+  "name": "PITCH jazz extra rehearsal: choreo focus with Ms. Brittany and La",
+  "start": "2026-11-08",
+  "end": "2026-11-08",
+  "time": "10:00–12:00",
+  "room": "Studio 6",
+  "dances": "PITCH groups",
+  "notes": "An extra team rehearsal on the studio's Nov/Dec schedule."
+ },
+ {
   "id": "closed-thanksgiving",
   "kind": "closed",
   "short": "Studio closed",
   "name": "Studio closed: Thanksgiving Break",
   "start": "2026-11-25",
   "end": "2026-11-29",
-  "notes": "No classes (the studio's important dates). Her usual class days are home days."
+  "notes": "No classes (the studio's important dates). Her usual class days are home days. Privates can still run: La has a block on Sun Nov 29."
  },
  {
   "id": "grp-showing-1205",
@@ -35,10 +47,10 @@
   "name": "GROUP routine showings at the studio (every dancer) + holiday potluck",
   "start": "2026-12-05",
   "end": "2026-12-05",
-  "time": "",
-  "room": "",
+  "time": "3:30–7:00",
+  "room": "Studio 6",
   "dances": "PITCH groups",
-  "notes": "In-studio showings of the group routines: every dancer must be there. The holiday party potluck after is optional."
+  "notes": "In-studio run-through of the group routines (3:30–7:00): every dancer must be there. The holiday party potluck is after it, 7:00–8:30. The regular Saturday morning stays on the schedule."
  },
  {
   "id": "sdt-showing-1206",
@@ -49,10 +61,10 @@
   "name": "Solo/duo/trio showing at the studio",
   "start": "2026-12-06",
   "end": "2026-12-06",
-  "time": "",
-  "room": "",
+  "time": "10:15–12:15",
+  "room": "Studio 6",
   "dances": "Solo, trio",
-  "notes": "Required for every dancer with a solo, duo or trio: sign up for Sun Dec 6 OR Sat Dec 12."
+  "notes": "Required for every dancer with a solo, duo or trio: pick Sun Dec 6 OR Sat Dec 12, in costume. The studio says more info is coming."
  },
  {
   "id": "sdt-showing-1212",
@@ -63,10 +75,10 @@
   "name": "Solo/duo/trio showing at the studio",
   "start": "2026-12-12",
   "end": "2026-12-12",
-  "time": "",
-  "room": "",
+  "time": "3:30–6:30",
+  "room": "Studio 6",
   "dances": "Solo, trio",
-  "notes": "Required for every dancer with a solo, duo or trio: sign up for Sun Dec 6 OR Sat Dec 12."
+  "notes": "Required for every dancer with a solo, duo or trio: pick Sun Dec 6 OR Sat Dec 12, in costume. The studio says more info is coming."
  },
  {
   "id": "hold-1212",
@@ -84,7 +96,7 @@
   "name": "Studio closed: Winter Break",
   "start": "2026-12-19",
   "end": "2027-01-01",
-  "notes": "No classes (the studio's important dates). Her usual class days are full home days. Back Sat Jan 2 for the mandatory rehearsal."
+  "notes": "No classes (the studio's important dates). Her usual class days are full home days. Back Sat Jan 2 for the mandatory rehearsal. From the studio's Nov 1 email, not settled yet: Sat Dec 19 may have a rehearsal (tell the studio if she won't be there), and the return may move to Sun Jan 3."
  },
  {
   "id": "wf",
@@ -130,6 +142,15 @@
   "link": "https://www.hyatt.com/events/en-US/group-booking/SEARL/G-HC27",
   "fun": "The venue IS the hotel, right on Lake Washington in Renton. Founded by a real Hollywood talent agent, so scholarships can include agency exposure. Sunday ends with a Wrap Party where awards and scholarships are announced. Ballrooms are cold — bring the team jacket. Free class recaps show up on Vimeo afterward.",
   "pack": "comp"
+ },
+ {
+  "id": "closed-midwinter",
+  "kind": "closed",
+  "short": "Studio closed",
+  "name": "Studio closed: Mid-Winter Break",
+  "start": "2027-02-15",
+  "end": "2027-02-21",
+  "notes": "No classes (the studio's important dates). Her usual class days are home days. Ryze is the weekend of this week, with rehearsals Thu Feb 18."
  },
  {
   "id": "mwb",
@@ -183,6 +204,15 @@
   "charge": "Auto-charge Jan 1, 2027",
   "fun": "The free-everything comp: free to watch, free photos AND videos of every dancer, free livestream, free T-shirt and neck medals. Judges record spoken critiques you can listen to afterward. There's a $10 Cre8 improv challenge for a little extra stage time. Schedule only shows up on the G8 app the week of the event.",
   "pack": "comp"
+ },
+ {
+  "id": "closed-spring",
+  "kind": "closed",
+  "short": "Studio closed",
+  "name": "Studio closed: Spring Break",
+  "start": "2027-04-12",
+  "end": "2027-04-18",
+  "notes": "No classes (the studio's important dates). Her usual class days are home days."
  },
  {
   "id": "sb",
@@ -247,5 +277,23 @@
   "charge": "TBA",
   "fun": "Festival-style year-end show at Lake Sammamish State Park — outdoors, free, no tickets, food trucks, and every single dancer performs.",
   "pack": "comp"
+ },
+ {
+  "id": "closed-july",
+  "kind": "closed",
+  "short": "Studio closed",
+  "name": "Studio closed: Summer break (July 4 week)",
+  "start": "2027-06-28",
+  "end": "2027-07-04",
+  "notes": "No classes (the studio's important dates)."
+ },
+ {
+  "id": "closed-labor",
+  "kind": "closed",
+  "short": "Studio closed",
+  "name": "Studio closed: Summer break (Labor Day week)",
+  "start": "2027-08-30",
+  "end": "2027-09-06",
+  "notes": "No classes (the studio's important dates)."
  }
 ]

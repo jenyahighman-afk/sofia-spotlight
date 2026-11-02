@@ -131,7 +131,7 @@ test("the reminder follows the plan's days — Monday the watch day, the other s
   assert.equal(RM.daysLabel(pw), "📹 Mon · 🧠 Tue, Wed, Sat · 🏠 Sun, Thu, Fri"); assert.equal(RM.daysLabel({ kinds: {} }), "");
   assert.deepEqual(RM.reminderOf({ reminder: { on: true, h: 16, m: 30, second: false, h2: 20, m2: 0 } }), { on: true, h: 16, m: 30, second: false, h2: 20, m2: 0 }); assert.equal(RM.reminderOf({ reminder: { on: true, h: 16, m: 30 } }).second, true, "on unless turned off");
   const r = RM.reminderOf({ reminder: { on: true, h: 16, m: 30 } }); const base = { familyId: "F", endpoint: "https://e", keys: { p256dh: "p", auth: "a" }, tz: "America/Los_Angeles" };
-  const body = RM.subscribeBody(r, base); assert.deepEqual(body, { ...base, h: 16, m: 30, days: pw.days, kinds: pw.kinds, h2: 18, m2: 30 }, "the last call defaults to 6:30 pm since 1.56.0 (8:00 pm in Build 4)");
+  const body = RM.subscribeBody(r, { ...base, dates: {} }); assert.deepEqual(body, { ...base, h: 16, m: 30, days: pw.days, kinds: pw.kinds, h2: 18, m2: 30 }, "the last call defaults to 6:30 pm since 1.56.0 (8:00 pm in Build 4)");
   assert.equal("h2" in RM.subscribeBody({ ...r, second: false }, base), false, "second off: the worker is told nothing about it");
   // the worker: the request, the two slots, the plan days, the lines
   const good = { familyId: "ABCDEFGHJKLMNPQRSTUVWXYZ", endpoint: "https://web.push.apple.com/QAbcdefghijklmnop", keys: { p256dh: "B".repeat(87), auth: "a".repeat(22) }, h: 16, m: 30, tz: "America/Los_Angeles" };

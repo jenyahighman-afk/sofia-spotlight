@@ -52,6 +52,9 @@ export const funLink = ({ pd = false, kind = "", trio = false } = {}) => pd && t
 // The best time on a home day (Jenya, Oct 30: she practised right after eating and got a stomach ache, or waited until it was late):
 // a small snack after school, the session about 45 minutes later, dinner after it. Shown until the plan is done.
 export const BEST_TIME = "🍌 Snack first, dance 45 min later, dinner after";
+// An optional 5 minutes on a school morning (Jenya, Nov 1; the bus is at 7:20): after breakfast, listen once and picture the solo.
+// No stretching, no tricks, no full-out and no earlier alarm, because her muscles aren't warm yet. It isn't on the plan and ticks nothing. Pure: the clock comes in.
+export const morningLine = ({ hour, wd, kind, pd }) => !pd && kind !== "show" && wd >= 1 && wd <= 5 && hour >= 5 && hour < 12 ? `<button class="lnk today-fun today-morning" onclick="openPlayer('solo')">🌅 After breakfast: listen once, picture your solo. 5 min, no stretching ›</button>` : "";
 // Pure: the one action for the day. kind = "watch" | "memory" (a studio day) | "home" | "rest"; nDone / total = today's
 // session progress; mins = its length. Returns { label, go, ghost } for the big button.
 export function startButton({ kind, mins = 0, nDone = 0, total = 0 }){
@@ -92,7 +95,7 @@ function renderHome(){
   $("#todayCard").innerHTML=`<div class="today-date small">${esc(fmt(today))} · ${dayKind}${total?` · ${mins} min`:""}</div><div class="today-what">${what}</div>${sub}
     <div class="today-line small dp-line" id="dayPlan" hidden></div>
     <button class="btn ${sb.ghost?"ghost":"coral"} big-btn today-start" onclick="${sb.go}">${sb.label}</button>
-    ${metaLine({streak,pd,safe:doneToday,skips})}${gapLine}
+    ${metaLine({streak,pd,safe:doneToday,skips})}${gapLine}${morningLine({hour:new Date().getHours(),wd:dow,kind,pd})}
     <div class="today-media"><button class="btn sm violet" onclick="openPlayer('solo')">🎵 Solo</button><button class="btn sm violet" onclick="openPlayer('trio')">🎵 Trio</button><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="${memoGo}">🧠 Memorize</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${funLink({pd,kind,trio:home&&pd&&!gd})}`;
   // The dated line from plan10 on home days only (the re-audit: "★ Tricks start today" under "No dancing tonight" on a studio day).
   if(home) renderDayPlan(today); else { const dp=$("#dayPlan"); if(dp){ dp.hidden=true; dp.innerHTML=""; } }
