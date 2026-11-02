@@ -69,6 +69,8 @@ test("Me card and binder render in the fake DOM; a newly landed skill pops New c
     S.photos = { p1: { url: "https://x/p.jpg", card: "s-donut", at: "2026-10-06" } };
     renderCardsCard(); const card = el("#meCards").innerHTML;
     assert.ok(card.includes("🃏 My trick cards") && card.includes(`1 / ${total}`) && card.includes("openCards()"), "Me card shows the count and opens the binder");
+    assert.ok(card.includes("📷 1 progress photo so far") && card.includes("📈 Skills below"), "Me card counts the progress photos and says where to add more");
+    const hadPhotos = S.photos; S.photos = {}; renderCardsCard(); assert.match(el("#meCards").innerHTML, /Learning a trick\? Open it in 📈 Skills below and tap its 📷/, "with none yet, it says where they start"); S.photos = hadPhotos; renderCardsCard();
     await window.openCards(); const area = el("#cardsArea").innerHTML;
     assert.equal(el("#cardsArea").style.display, "block", "the binder moved into the stage");
     for (const st of Object.values(ladder.styles)) assert.ok(area.includes(st.n.replace(/&/g, "&amp;")), "group " + st.n);
