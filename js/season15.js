@@ -84,7 +84,7 @@ export function plansFrom(date){ const cur = activePlan(date); const list = [PLA
 export const planLabel = (plan) => plan === PLAN_SPRING ? "Spring: to the Glass House Ball" : "To the Winter Showcase";
 const firstSentence = (s) => String(s || "").split(/(?<=[.;])\s/)[0];
 // The session rules on `date` (plan15.json `rules`, from the research Jenya approved Oct 26). What the daily plan adds or
-// changes: { short (a light week or the night before the show: the memory run), nightBefore, imagery: {title,
+// changes: { short (a light week, the night before the show or a date in rules.memoryOnly: the memory run), nightBefore, imagery: {title,
 // how, secs} | null, clips: {text, secs} | null, review: {text, secs} | null (Sundays), run: {text, secs} (the solo run
 // line), trio: {text, secs} | null (the week's trio goal, the full day's trio item since 1.56.0), taper (fewer exercises, still one full-out: rules.taper.from, or a week flagged `taper` in the spring plan),
 // judges: {comp, solo, trio, how, secs} | null (the week after a comp: the judges' audio feedback comes first),
@@ -101,7 +101,7 @@ export function sessionRules(date, plan = activePlan(date)){
   const jg = r.judges; const judges = jg && wk && wk.judges ? { comp: String(wk.judges), solo: jg.solo, trio: jg.trio, how: jg.how || "", secs: jg.secs || 300 } : null;
   const ad = r.audition; const audition = ad && wk && wk.audition ? { pickup: ad.pickup ? { text: ad.pickup, how: ad.pickupHow || "", secs: ad.pickupSecs || 180 } : null, improv: ad.improv ? { text: ad.improv, how: ad.improvHow || "", secs: ad.improvSecs || 120 } : null } : null;
   const show = !!(showDay(plan) && date === showDay(plan)); // show day (1.58.0): no home practice, the plan is empty
-  return { short: nightBefore || !!(wk && wk.light), nightBefore, show, imagery, clips, review, run: run.text ? run : null, trio, taper, judges, audition };
+  return { short: nightBefore || (Array.isArray(r.memoryOnly) && r.memoryOnly.includes(date)) || !!(wk && wk.light), nightBefore, show, imagery, clips, review, run: run.text ? run : null, trio, taper, judges, audition };
 }
 // Whole days since she last danced her solo (streak.js planDone: a logged run, the solo part of a session, a plan box or
 // a Memorize chunk — a game or a dare doesn't reset this clock), 0 = today. Infinity if never.

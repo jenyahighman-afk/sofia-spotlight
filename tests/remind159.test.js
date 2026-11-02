@@ -15,6 +15,8 @@ const { studioOn } = await import("../js/studio.js");
 const { dayKind, dayOpts } = await import("../js/daykind.js");
 const { morningLine } = await import("../js/views/home.js");
 const W = await import("../worker/src/remind-core.js");
+const ST_SEASON = await import("../js/season15.js");
+const { planFor } = await import("../js/planToday.js");
 
 const WEEK = { days: [0, 1, 2, 3, 4, 5, 6], kinds: { 0: "home", 1: "watch", 2: "memory", 3: "memory", 4: "home", 5: "home", 6: "memory" } };
 const dates = () => RM.planDates(WEEK, "2026-11-01", 150);
@@ -22,7 +24,7 @@ const dates = () => RM.planDates(WEEK, "2026-11-01", 150);
 test("the dates that differ from the weekday: closures, the light week, the night before, show day; an ordinary week has none", () => {
   S.events = {}; S.practice = {}; const d = dates();
   for (const x of ["2026-11-26", "2026-11-27", "2026-11-29"]) assert.equal(d[x], "memory", x + ": Thanksgiving's home days are the light week's memory run");
-  for (const x of ["2026-12-21", "2026-12-22", "2026-12-23", "2026-12-26", "2026-12-28", "2026-12-30"]) assert.equal(d[x], "home", x + ": Winter Break's class days are full home days");
+  for (const x of ["2026-12-21", "2026-12-22", "2026-12-23", "2026-12-26", "2026-12-28"]) assert.equal(d[x], "home", x + ": Winter Break's class days are full home days");
   assert.equal(d["2027-01-07"], "memory", "the night before the show"); assert.equal(d["2027-01-08"], "off", "show day: no practice nudge");
   for (const x of ["2026-11-02", "2026-11-03", "2026-11-05", "2026-11-07", "2026-12-15"]) assert.equal(x in d, false, x + " is its weekday's usual kind");
   assert.equal(d["2027-02-15"], "home", "the Mid-Winter closure's Monday");
@@ -99,4 +101,12 @@ test("a picked showing never touches the countdown: neither date is a show, whic
     assert.equal(ST.events().find(e => e.id === "wf").start, "2027-01-08", "the Winter Showcase stays a show");
   }
   S.events = {};
+});
+
+test("memory-run-only days: the short plan, whatever the weekday, on Today's plan and in the reminders; the days around them stay full", () => {
+  S.events = {}; S.practice = {}; const { sessionRules } = ST_SEASON;
+  for (const x of ["2026-12-29", "2026-12-30", "2026-12-31", "2027-01-01"]) { assert.equal(sessionRules(x).short, true, x); assert.ok(planFor(x).some(i => i.id === "mem-top"), x + " is the memory run"); assert.equal(RM.reminderKind(x), "memory", x + " gets the memory run's line and no last call"); }
+  assert.equal(dates()["2026-12-31"], "memory", "a usual home Thursday"); assert.equal(dates()["2027-01-01"], "memory", "a usual home Friday"); assert.equal("2026-12-29" in dates(), false, "a usual memory-run Tuesday");
+  assert.equal(sessionRules("2026-12-28").short, false, "the day before stays a full session"); assert.equal(dates()["2026-12-28"], "home");
+  assert.equal(sessionRules("2027-01-03").short, false, "the Sunday after is back to normal");
 });
