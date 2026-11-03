@@ -72,7 +72,7 @@
    "lines": [
     "A happy dancer keeps four lights on. Each one gets some time every week.",
     "💃 Dance: classes plus short home practices. That's enough. More isn't always better.",
-    "📚 School: homework first on studio days. Read a little every day. Ask for help early.",
+    "📚 School: read a little every day. Ask for help early if something feels hard.",
     "🏠 Home: chores are teamwork. Pack your dance bag and put it by the door, help with dinner, tidy your dance spot.",
     "🎈 Fun: friends, playing outside, drawing, family time, even doing nothing at all.",
     "Feeling like it's too much? Always tired, grumpy about dance, a sore spot that won't go away, worries at bedtime? Tell Mom. A lighter day is part of the plan."
@@ -83,7 +83,7 @@
    "id": "time", "e": "⏰", "n": "Ways to fit it all in + when to use screens", "mins": 2,
    "lines": [
     "Same time, same place: start practice at the same time on Thu, Fri and Sun.",
-    "Big thing first: homework, then practice, then free time.",
+    "Big thing first: practice, then free time.",
     "Best time on a home day: a small snack after school, dance about 45 minutes later, dinner after. Never right after a big meal: wait 1½–2 hours.",
     "In the app too: on a home day the solo and the trio come first. The countdown door, the dare and the weekend games open once both are done ⭐. They live on Play, under 🎉 Weekend games and ✨ Extras.",
     "Let the timer be the boss. When the app says done, you're done.",
@@ -113,7 +113,7 @@
     "Dancers your age need 9–12 hours of sleep every night.",
     "While you sleep, your brain saves the steps you practiced, and your muscles repair and grow.",
     "Same bedtime every night, weekends too. Wake up at 7:00 → lights out by 9:00.",
-    "Late studio nights (Mon, Tue): dinner, the memory run on Tuesday, shower, bed. Homework is already done.",
+    "Late studio nights (Mon, Tue): dinner, the memory run on Tuesday, shower, bed.",
     "Wind down: shower, PJs, a paper book, lights out."
    ],
    "check": { "q": "How much sleep do dancers your age need?", "a": ["6 hours", "9–12 hours", "Only a lot on weekends"], "ok": 1, "yay": "Yes! 9–12 hours, every night 😴", "hint": "More than grown-ups need!" }
@@ -164,7 +164,7 @@
   { "t": "Group rehearsal today! Any correction from your teacher goes in with ＋ Note ✏️", "when": ["sat"], "part": "grab" },
   { "t": "Sunday is film day 🎬 Open the Sunday sheet and go step by step.", "when": ["sun"], "part": "grab" },
   { "t": "Sunday plan time 📋 Fill in a fresh This week sheet (Toolkit page 6).", "when": ["sun"], "part": "time" },
-  { "t": "No home practice today, so homework first and an early bed 📚", "when": ["rest"], "part": "balance" },
+  { "t": "No home practice today, so read a little and go to bed early 📚", "when": ["rest"], "part": "balance" },
   { "t": "Breakfast is dancer fuel 🥣 Oatmeal, eggs, yogurt… what's yours?", "when": ["morning"], "part": "food" },
   { "t": "Screens off 1 hour before bed 📵 Phones and tablets sleep outside your room.", "when": ["evening"], "part": "time" },
   { "t": "Sleep is secret practice 🌙 Your brain saves your steps while you sleep.", "when": ["evening"], "part": "sleep" },

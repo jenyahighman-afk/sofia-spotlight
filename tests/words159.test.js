@@ -26,6 +26,11 @@ test("the Rest up card says when the runs get fewer, so it agrees with Toolkit p
   assert.match(shown(src("tools/print/Sofia-Practice-Toolkit.html")), /Rest up Week 15 · Jan 4–8 Fewer runs from Dec 28/);
 });
 
+test("no school homework in either Pass (1.59.7, Jenya: Sofia has none); Ms. Brittany's homework is dance homework and stays", () => {
+  assert.doesNotMatch(shown(src("tools/print/Sofia-Backstage-Pass.html")).replace(/Ms\. Brittany's homework/g, ""), /homework/i);
+  assert.doesNotMatch(JSON.stringify(json("pass")), /homework/i);
+});
+
 test("the in-app Pass has the same words", () => {
   const pass = json("pass"), t = JSON.stringify(pass), name = (id) => pass.parts.find(p => p.id === id).n;
   assert.equal(name("time"), "Ways to fit it all in + when to use screens"); assert.equal(name("food"), "Food for dancing");
