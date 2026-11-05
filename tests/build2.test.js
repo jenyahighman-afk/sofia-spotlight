@@ -18,7 +18,7 @@ const { knownCues, soloReadiness, readinessHtml, readinessLines, KNOW_GOT, PERFO
 const P = await import("../js/pass.js");
 const B = await import("../js/buddy.js");
 const { teacherSummary } = await import("../js/teacher.js");
-const { startButton } = await import("../js/views/home.js");
+const { danceButtons, sessionLink } = await import("../js/views/home.js");
 const { cardsFor } = await import("../js/habit.js");
 const { quizSteps, quizDances } = await import("../js/games/nextmove.js");
 const plan15 = json("plan15"), spring = json("plan-spring"), dances = json("dances"), pass = json("pass"), buddy = json("buddy");
@@ -61,7 +61,7 @@ test("what Today lists: the next two to come, a passed one unticked for a week (
   assert.equal(nextCheckpoint("2026-10-26", plan15, [], {}).d, "2026-10-31"); assert.equal(nextCheckpoint("2026-11-03", plan15, [], {}).state, "passed", "a passed one is asked first"); assert.equal(nextCheckpoint("2026-11-03", plan15, [], { [trio]: { done: "2026-11-03" }, [soloCp]: { done: "2026-11-02" } }).state, "book");
   assert.equal(nextCheckpoint("2027-06-21", spring, [], {}).t, "Family mini show", "the week after the Ball still asks about the mini show and the Ball"); assert.equal(nextCheckpoint("2027-06-28", spring, [], {}), null, "a week later nothing is next");
   assert.deepEqual(plansFrom("2026-10-29").map(planLabel), ["To the Winter Showcase", "Spring: to the Glass House Ball"]); assert.deepEqual(plansFrom("2027-02-01").map(planLabel), ["Spring: to the Glass House Ball"]);
-  const row = cpRow({ id: "x:1", d: "2026-11-01", t: "Whole solo", state: "passed" }, "2026-11-03"); assert.match(row, /Did you make it\?/); assert.match(row, /cpTick\('x:1',true\)/);
+  const row = cpRow({ id: "x:1", d: "2026-11-01", t: "Whole solo", state: "passed" }, "2026-11-03"); assert.doesNotMatch(row, /Did you make it\?/, "1.60.0: no question on her screen"); assert.match(row, /cpTick\('x:1',true\)/);
   assert.match(cpRow({ id: "x:1", d: "2026-11-01", t: "Whole solo", state: "done", done: "2026-11-01" }), /✅[\s\S]*cpTick\('x:1',false\)/); assert.match(cpRow({ id: "x:2", d: "", t: "Next solo rehearsal", state: "book" }), /Book a private/);
   const s15 = src("js/season15.js"); assert.match(s15, /export async function tickCheckpoint/); assert.match(s15, /setSettings\(\{ checkpoints: ticks \}\)/); assert.match(s15, /openByWhen/); assert.ok(html.includes('id="byWhenArea"'));
 });
@@ -116,11 +116,12 @@ test("the Bunny: the Pass part is a step once the day counts; the tip of the day
 });
 
 test("Today = one card, one button: the day's action from the plan, the plan-done state, the solo count and the next checkpoint; the extras below; the page order", () => {
-  assert.deepEqual(startButton({ kind: "home", mins: 36, nDone: 0, total: 15 }), { label: "▶ Start practice · 36 min", go: "showPage('practice');openPracticeMode()", ghost: false });
-  assert.deepEqual(startButton({ kind: "memory", mins: 16, nDone: 0, total: 5 }).label, "▶ Memory run · 16 min", "the memory run shows its real minutes, like the other days (1.57.0: no \"15-min\" in its name)"); assert.equal(startButton({ kind: "watch", mins: 9, total: 3 }).label, "▶ Watch + picture · 9 min");
-  assert.match(startButton({ kind: "home", mins: 36, nDone: 7, total: 15 }).label, /^▶ Keep going · 36 min <span class="today-prog">7 of 15<\/span>$/);
-  assert.deepEqual(startButton({ kind: "home", mins: 36, nDone: 15, total: 15 }), { label: "✅ Practice done · 36 min", go: "showPage('practice')", ghost: true });
-  assert.deepEqual(startButton({ kind: "rest" }), { label: "🧘 2-min stretch", go: "habitTired('stretch')", ghost: false });
+  // 1.60.0 (Jenya, Nov 5): the big buttons are ▶ My solo and ▶ My trio on every day; the whole session is a link on a home day
+  const db = danceButtons({ kind: "home" }); assert.match(db, /Dance it once/); assert.match(db, /openPlayer\('solo',\{once:true\}\)">▶ My solo/); assert.match(db, /openPlayer\('trio',\{once:true\}\)">▶ My trio/);
+  assert.equal(danceButtons({ kind: "memory" }), db, "the same on a class day"); assert.equal(danceButtons({ kind: "rest" }), db, "and on a rest day");
+  assert.match(danceButtons({ kind: "home", solo: true }), /btn ghost big-btn" onclick="openPlayer\('solo',\{once:true\}\)">✅ My solo/, "danced today: ✅, and it can be danced again");
+  assert.match(sessionLink({ kind: "home", mins: 36, nDone: 0, total: 15 }), /📋 The whole session · 36 min ›/); assert.match(sessionLink({ kind: "home", mins: 36, nDone: 7, total: 15 }), /Keep going with the session · 7 of 15/); assert.match(sessionLink({ kind: "home", mins: 36, nDone: 15, total: 15 }), /The whole session is done/);
+  assert.equal(sessionLink({ kind: "memory", mins: 16, total: 5 }), "", "a class day asks nothing at home"); assert.equal(sessionLink({ kind: "rest" }), "");
   const at = (id) => html.indexOf(`id="${id}"`); const order = ["p-home", "todayCard", "seasonFold", "seasonCard", "sundayCard", "compCard", "goalReminder", "glowNudge", "p-dances"]; // 1.52.0: Today fits one screen; the rest moved (tests/today152.test.js)
   for (let i = 1; i < order.length; i++) assert.ok(at(order[i - 1]) < at(order[i]), `${order[i - 1]} before ${order[i]}`);
   const home = src("js/views/home.js"); assert.match(home, /class="today-date small"/); assert.match(home, /today-start/); assert.match(home, /onclick="\$\{memoGo\}">🧠 Memorize</); assert.match(home, /openMemorize\('solo','chunks'\)/); assert.match(home, /renderPassCard[,(]/); assert.match(home, /function renderHabit/); assert.ok(home.indexOf("choice-card") > home.indexOf("function renderHabit"), "the choice cards are drawn by the extras card, not the one card");
@@ -143,7 +144,7 @@ test("the screens render with Build 2 in place: the one card, the extras, the Pa
   const home = await import("../js/views/home.js"); const stage = await import("../js/stage.js"); const season = await import("../js/season15.js"); const ready = await import("../js/ready.js"); const nav = await import("../js/nav.js");
   nav.initNav(); stage.initStage(); season.initSeason(); ready.initReady(); P.initPass();
   assert.doesNotThrow(() => home.renderHome(), "Today renders");
-  const tc = el("#todayCard").innerHTML; assert.match(tc, /today-start/); assert.match(tc, /How ready\?/); assert.match(tc, /openReady\(\)/); assert.match(el("#seasonSum").innerHTML, /🎯 |🏁 My finish lines/); assert.match(tc, /🧠 Memorize/);
+  const tc = el("#todayCard").innerHTML; assert.match(tc, /today-once/); assert.match(tc, /How ready\?/); assert.match(tc, /openReady\(\)/); assert.match(el("#seasonSum").innerHTML, /🎯 |🏁 My finish lines/); assert.match(tc, /🧠 Memorize/);
   assert.match(el("#habitCard").innerHTML, /Pick one extra/); assert.equal((el("#habitCard").innerHTML.match(/choice-card/g) || []).length, 4);
   assert.match(el("#passCard").innerHTML, /Part 1 of 10 · 🎭 Meet your crew · 2 min/); assert.match(el("#passCard").innerHTML, /openPass\('crew'\)/); assert.match(el("#passCard").innerHTML, /Tip of the day/);
   const sc = el("#seasonCard").innerHTML; assert.match(sc, /cpTick\('2026-09-28:[a-z0-9]+',true\)|cpTick\('2027-01-11:[a-z0-9]+',true\)|Book a private|openByWhen\(\)/, "a checkpoint row or the by-when link");

@@ -17,7 +17,7 @@ const { planDone, gateOpen, isPaused } = await import("../js/streak.js");
 const { pickStep } = await import("../js/buddy.js");
 const { dayKind, dayOpts, homeLine } = await import("../js/daykind.js");
 const { planFor } = await import("../js/planToday.js");
-const { startButton } = await import("../js/views/home.js");
+const { danceButtons } = await import("../js/views/home.js");
 const { gamesFor } = await import("../js/views/play.js");
 const { studioOn } = await import("../js/studio.js");
 const { allCheckpoints, nextCheckpoint, sessionRules } = await import("../js/season15.js");
@@ -35,8 +35,9 @@ test("plan done is the solo's: a trio run or the trio's five Memorize steps neve
 
 test("the Bunny: once the solo is done but the trio isn't on a home day, the one next step is the trio", () => {
   const base = { dayDone: true, safe: true, fullDone: false, streak: 2, skips: 2, comp: null, compMode: false, plan: null, ticks: [], classes: [], restDay: false, cards: [], dare: false, door: false, glow: true };
-  assert.deepEqual(pickStep({ ...base, gate: true }, () => 0), { key: "trio", go: "showPage('practice')" });
-  assert.notEqual(pickStep({ ...base, gate: false }, () => 0).key, "trio");
+  // 1.60.0: the trio once is offered with the day's other small things, an invitation that opens the music
+  assert.deepEqual(pickStep({ ...base, trioOpen: true }, () => 0), { key: "trio", go: "openPlayer('trio',{once:true})" });
+  assert.notEqual(pickStep({ ...base, trioOpen: false }, () => 0).key, "trio");
   assert.ok(json("buddy").steps.trio.length >= 3, "the Bunny has trio lines");
 });
 
@@ -51,7 +52,7 @@ test("a pick settles its pair: the other date leaves the calendar; un-picking br
 test("show day (Fri Jan 8): no home practice, no Play lock, the checklist; the night before stays the marking memory run", () => {
   S.events = {}; S.practice = {};
   assert.equal(dayKind("2027-01-08", dayOpts()), "show"); assert.equal(sessionRules("2027-01-08").show, true); assert.deepEqual(planFor("2027-01-08"), []);
-  assert.equal(startButton({ kind: "show" }).label, "🎒 Show day checklist"); assert.equal(gamesFor("2027-01-08", { home: false, done: false }).gate, false);
+  assert.match(danceButtons({ kind: "show" }), /🎒 Show day checklist/); assert.doesNotMatch(danceButtons({ kind: "show" }), /openPlayer/); assert.equal(gamesFor("2027-01-08", { home: false, done: false }).gate, false);
   assert.equal(homeLine("2027-01-08", dayOpts()), "Show day ★"); assert.match(momTodayLine("2027-01-08", { kind: "show" }).text, /show day ★ no home practice/);
   assert.notEqual(dayKind("2027-01-07", dayOpts()), "show"); assert.ok(planFor("2027-01-07").length > 0, "the night before keeps its run");
   const wf = json("events").find(e => e.id === "wf"); assert.equal(wf.paused, true); assert.ok(isPaused("2027-01-08", [], [wf]), "the streak pauses on the Showcase weekend");
@@ -81,7 +82,7 @@ test("the rest: kick-overs only in class (schema 54), the trio card, Mom's taper
   assert.equal(ST.migrateDoc("dances", "trio", { _v: 53, rehearsal: ST.SOLO_V54.trio[0] }).rehearsal, ST.SOLO_V54.trio[1]); assert.equal(ST.migrateDoc("dances", "trio", { _v: 53, rehearsal: "ours" }).rehearsal, "ours");
   assert.doesNotMatch(src("data/dances.json"), /Kick-overs only with a spotter|mark it once a week at home/);
   assert.match(src("js/momweek.js"), /plan\.rules\.taper\.from && date >= plan\.rules\.taper\.from\)\) && !\(week\.phase && week\.phase\.n === "Rest up"\) \? " · rest-up days"/);
-  assert.match(src("js/season15.js"), /\[String\(new Date\(date \+ "T00:00:00"\)\.getDay\(\)\)\] === "watch"\) return "";/);
+  assert.doesNotMatch(src("js/season15.js"), /gapNudge|days without your solo/, "1.60.0: the gap nudge is gone on every day");
   assert.match(src("data/pass.json"), /dinner, the memory run on Tuesday, shower, bed/);
   assert.doesNotMatch(src("data/dances.json"), /girth d|inseam d|bust d|waist d|hips d/, "no measurements in the public data");
 });

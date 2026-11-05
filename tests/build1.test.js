@@ -61,11 +61,12 @@ test("safety gates: no aerial drills during Memory + knees, and in the mission's
 });
 
 test("filler games wait for the solo (and the trio, streak.gateOpen) on every home day; the solo games stay; the Today game card becomes What's Next?", () => {
-  const g = gamesFor("2026-11-05", { home: true, knees: true, done: false }); assert.equal(g.gate, true); assert.deepEqual(g.games.map(x => x.id), SOLO_GAMES);
+  // 1.60.0 (Jenya, Nov 5): the games are open every day; only Trick Quest still waits for Memory + knees
+  const g = gamesFor("2026-11-05", { home: true, knees: true, done: false }); assert.equal(g.gate, false); assert.ok(SOLO_GAMES.every(id => g.games.some(x => x.id === id))); assert.ok(g.games.some(x => x.id === "sparkle"), "a filler game on a home day"); assert.ok(!g.games.some(x => x.id === "quest"));
   assert.equal(gamesFor("2026-11-05", { home: true, knees: true, done: true }).gate, false, "plan done: everything opens");
   assert.equal(gamesFor("2026-11-04", { home: false, knees: true, done: false }).gate, false, "a studio day isn't gated");
-  const later = gamesFor("2026-11-12", { home: true, knees: false, done: false }); assert.equal(later.gate, true, "Jenya, Oct 30: solo first all season, not just until Nov 9");
-  assert.deepEqual(later.games.map(x => x.id), ["quest", "nextmove", "along", "count"], "after Own it Trick Quest is solo work, so the gate leaves it open");
+  const later = gamesFor("2026-11-12", { home: true, knees: false, done: false }); assert.equal(later.gate, false, "1.60.0 (Jenya, Nov 5): the games are open");
+  assert.ok(["quest", "nextmove", "along", "count", "sparkle", "oops"].every(id => later.games.some(x => x.id === id)), "after Own it Trick Quest is there too");
   assert.equal(gamesFor("2026-11-12", { home: true, knees: false, done: true }).games.length, GAMES.length, "done: nothing is hidden");
   const c = cardsFor("2026-11-05", { soloOnly: true }).find(x => x.id === "game"); assert.equal(c.sub, "What's Next?"); assert.match(c.go, /playOpen\('nextmove'\)/);
   assert.notEqual(cardsFor("2026-11-05", {}).find(x => x.id === "game").go, c.go);
@@ -87,10 +88,10 @@ test("tool buttons under a practice item: the music, Hannah's videos by name, Ch
 test("the Bunny: once the streak is safe but the solo isn't done, the one next step is the solo; plan done is what makes the day done", () => {
   const lines = json("buddy"); assert.ok(lines.steps.solo.length >= 2); assert.ok(lines.openers.length >= 12);
   const ctx = { name: "Sofia", pet: "Bun-Bun", dayDone: false, safe: true, fullDone: false, streak: 2, skips: 2, petDays: 3, comp: null, compMode: false, plan: null, ticks: [], classes: [], restDay: false, cards: [{ id: "game", sub: "Mirror", go: "x", done: false }], dare: null, door: null, glow: false, cardsEarned: 0, starsLeft: 0, unlock: "", event: null };
-  assert.equal(B.pickStep(ctx).key, "solo"); assert.equal(B.pickStep({ ...ctx, safe: false }).key, "game", "nothing done yet: a Today card");
+  assert.equal(B.pickStep(ctx, () => 0).key, "solo", "1.60.0: the solo is an invitation among the cards"); assert.equal(B.pickStep(ctx, () => 0).go, "openPlayer('solo',{once:true})"); assert.equal(B.pickStep({ ...ctx, safe: false }, () => 0.9).key, "game", "or a Today card");
   assert.equal(B.pickStep({ ...ctx, plan: { must: [{ id: "a", t: "Solo chunk", go: "memo:solo" }] } }).key, "plan", "a plan box comes first");
   for (const t of [...lines.steps["just-done"], ...lines.steps.plan, ...lines.steps.game, ...lines.openers]) assert.doesNotMatch(t, /today counts|Grown-up plan alert|carrot|whiskers|Knock knock/i, t);
-  const home = src("js/views/home.js"); assert.match(home, /⭐ Plan done/); assert.match(home, /Streak safe · solo next/); assert.match(home, /off left this week/); assert.doesNotMatch(home, /free skip/);
+  const home = src("js/views/home.js"); assert.match(home, /dance day/); assert.doesNotMatch(home, /Streak safe|off left this week|free skip|-day streak/, "1.60.0: counts that only go up");
   assert.match(src("js/dayplan.js"), /ticked is the day's "plan" bite/); // the tick rule stays; Build 4 took the box list off Today (tests/build4a.test.js)
 });
 

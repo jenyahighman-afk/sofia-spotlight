@@ -33,22 +33,23 @@ test("Today holds the one card, the folded finish lines and the cards that only 
 });
 
 test("the one card's lines: the streak and the day off, the finish line, the link to Play, a memory-run day adds no dated line", () => {
-  assert.match(HM.metaLine({ streak: 3, skips: 2 }), /🔥 3-day streak<\/span> · 2 days off left this week · <button class="lnk" onclick="openReady\(\)">How ready\?<\/button>/);
-  assert.match(HM.metaLine({ streak: 0, skips: 1 }), /1 day off left this week/); assert.match(HM.metaLine({ safe: true }), /✓ Streak safe · solo next/); assert.match(HM.metaLine({ pd: true, safe: true }), /⭐ Plan done/);
+  // 1.60.0 (Jenya, Nov 5): counts that only go up
+  assert.match(HM.metaLine({ days: 3, dances: 5 }), /⭐ 3 dance days<\/span> · 🎵 5 dances · <button class="lnk" onclick="openReady\(\)">How ready\?<\/button>/);
+  assert.match(HM.metaLine({ days: 1, dances: 1 }), /⭐ 1 dance day<\/span> · 🎵 1 dance · /); assert.match(HM.metaLine({}), /Your first dance day starts with one tap/); assert.doesNotMatch(HM.metaLine({ days: 3 }) + HM.metaLine({}), /-day streak|off left|Plan done/i);
   const d = "2026-11-08"; assert.equal(HM.finishLine(null), "🏁 My finish lines");
   assert.match(HM.finishLine({ state: "book", t: "Private with Hannah" }), /^🎯 <b>Book it:<\/b> Private with Hannah$/);
-  assert.match(HM.finishLine({ state: "passed", d, t: "Clean run" }), /did you make it\?/); assert.match(HM.finishLine({ state: "today", d, t: "Clean run" }), /^🎯 <b>Today!<\/b> Clean run$/);
+  assert.doesNotMatch(HM.finishLine({ state: "passed", d, t: "Clean run" }), /did you make it\?/i, "1.60.0: that question is on Mom's card"); assert.match(HM.finishLine({ state: "passed", d, t: "Clean run" }), /· Clean run$/); assert.match(HM.finishLine({ state: "today", d, t: "Clean run" }), /^🎯 <b>Today!<\/b> Clean run$/);
   assert.match(HM.finishLine({ state: "next", d: "2099-01-01", t: "Clean run" }), /\(\d+ days\)<\/span> · Clean run$/);
   assert.match(HM.finishLine({ state: "next", d, t: "<b>" }), /&lt;b&gt;/, "escaped");
   assert.equal(DP.dayNoteHtml({ label: "memory run", note: "short version" }), "", "the button says it"); assert.equal(DP.dayNoteHtml({ label: "", note: "Hold Sunday" }), "📋 Hold Sunday");
   const home = src("js/views/home.js"); assert.doesNotMatch(home, /todayCount|moves known|At home: /, "no second countdown, no solo count, no memory-run repeat");
-  assert.match(home, /<div class="today-line small dp-line" id="dayPlan" hidden><\/div>/); assert.match(home, /\$\{funLink\(\{pd,kind,trio:home&&pd&&!gd\}\)\}/);
+  assert.match(home, /<div class="today-line small dp-line" id="dayPlan" hidden><\/div>/); assert.match(home, /\$\{sessionLink\(\{kind,mins,nDone,total\}\)\}/); assert.equal(HM.PLAN_DONE, "⭐ Plan done: you danced your solo today", "the Pass and Toolkit p.2 point at these words");
   assert.doesNotMatch(home, /All games/, "the extras card is on Play: no button to Play on it");
 });
 
 test("the screens render: the one card on Today, the fold's line, the moved cards still drawn wherever they live", () => {
   resetDom(); clearS(); HM.renderHome();
-  const tc = el("#todayCard").innerHTML; assert.match(tc, /today-start/); assert.match(tc, /How ready\?/); assert.match(tc, /🧠 Memorize/); assert.doesNotMatch(tc, /chip coral|todayCount/);
+  const tc = el("#todayCard").innerHTML; assert.match(tc, /today-once/); assert.match(tc, /How ready\?/); assert.match(tc, /🧠 Memorize/); assert.doesNotMatch(tc, /chip coral|todayCount/);
   assert.match(el("#seasonSum").innerHTML, /^<span class="fl-text">(🎯|🏁)/); assert.equal(typeof el("#seasonFold").hidden, "boolean");
   assert.match(el("#habitCard").innerHTML, /✨ Pick one extra/); assert.ok(el("#petCard").innerHTML.length > 0, "the pet on Me"); assert.ok(el("#homeWeek").innerHTML.includes('class="day'), "the week on Me");
   PL.renderPlay(); assert.equal(el("#playToday").hidden, false);

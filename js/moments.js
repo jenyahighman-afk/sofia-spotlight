@@ -3,9 +3,9 @@
 // kept in the Photos tab. Stickers suggest themselves from the day (a gem, a badge, a streak milestone). Pure parts up
 // top (tested in Node); canvas drawing and the stage UI below.
 import { $, esc, toast, todayStr, uid, expose, saveBlob, daysUntil, fmt } from "./util.js";
-import { S, storeSet, setSettings, events, nextEvent, studioDates } from "./store.js";
-import { CLASSES, PRACTICE_ITEMS, P } from "./data.js";
-import { computeStreak, dayCounts } from "./streak.js";
+import { S, storeSet, setSettings, nextEvent } from "./store.js";
+import { PRACTICE_ITEMS, P } from "./data.js";
+import { danceDays, dayCounts } from "./streak.js";
 import { checkins } from "./goals.js";
 import { findSkill } from "./skills.js";
 import { avatarSVG } from "./avatar.js";
@@ -19,11 +19,11 @@ export const MILESTONES = [7, 14, 30, 50, 100];
 // ctx: { streak, bites, gemTrick, badges (labels earned today), fullPractice, drillTried, eventName, eventDays }
 export function stickersFor(ctx = {}){
   const out = []; const s = +ctx.streak || 0; const bites = Array.isArray(ctx.bites) ? ctx.bites : [];
-  if (MILESTONES.includes(s)) out.push({ key: "milestone", emoji: "🔥", text: `${s}-day streak!`, big: true });
+  if (MILESTONES.includes(s)) out.push({ key: "milestone", emoji: "⭐", text: `${s} dance days!`, big: true });
   if (ctx.gemTrick) out.push({ key: "gem", emoji: "💎", text: `Gem! ${ctx.gemTrick}`, big: true });
   for (const b of ctx.badges || []) out.push({ key: "badge", emoji: "🏅", text: String(b), big: true });
   if (ctx.fullPractice) out.push({ key: "practice", emoji: "✅", text: "Full practice done" });
-  if (s > 0 && !MILESTONES.includes(s)) out.push({ key: "streak", emoji: "🔥", text: `Day ${s}` });
+  if (s > 0 && !MILESTONES.includes(s)) out.push({ key: "streak", emoji: "⭐", text: `Dance day ${s}` });
   if (bites.includes("tired")) out.push({ key: "rest", emoji: "😴", text: "Rest day. Still here." });
   if (ctx.drillTried) out.push({ key: "drill", emoji: "📎", text: "Tried it from a clip" });
   if (bites.includes("trick") && !ctx.drillTried) out.push({ key: "trick", emoji: "⚔️", text: "Trick Quest day" });
@@ -92,7 +92,7 @@ export function drawMoment(cv, o){
 // ---------- today's context ----------
 export function todayContext(){
   const today = todayStr(); const rec = S.practice[today] || {};
-  const streak = computeStreak({ practice: S.practice, classes: CLASSES, events: [...events(), ...studioDates()], totalItems: PRACTICE_ITEMS.length, today });
+  const streak = danceDays(S.practice); // 1.60.0: the count that only goes up (the days she danced her solo or her trio), under the old name
   const gem = Object.values(S.skills || {}).find(k => k && k.quest && Array.isArray(k.quest.gems) && k.quest.gems.includes(today)); const gemTrick = gem ? ((findSkill(gem.id) || {}).n || "a trick") : "";
   const badges = Object.values(S.badges || {}).filter(b => b && !b.deleted && b.at === today).map(b => b.label);
   const ne = nextEvent();

@@ -102,7 +102,7 @@ test("3. a checkpoint is ticked only once its day is here or gone, and the tick 
   assert.equal(SE.canTick("today"), true); assert.equal(SE.canTick("passed"), true); for (const st of ["next", "book", "done", ""]) assert.equal(SE.canTick(st), false, st);
   assert.equal(SE.CP_CONFIRM, "Did you really make it?"); assert.match(src("js/season15.js"), /if \(on && !confirm\(CP_CONFIRM\)\) return;/);
   assert.doesNotMatch(SE.cpRow({ id: "x:1", d: "2026-12-20", t: "Costume run #1", state: "next" }, "2026-11-03"), /cpTick|Made it/, "a checkpoint still to come has no ✓");
-  assert.match(SE.cpRow({ id: "x:1", d: "2026-11-03", t: "Whole solo", state: "today" }, "2026-11-03"), /cpTick\('x:1',true\)[^<]*>✓ Made it/); assert.match(SE.cpRow({ id: "x:1", d: "2026-11-01", t: "Whole solo", state: "passed" }, "2026-11-03"), /Did you make it\?[\s\S]*cpTick\('x:1',true\)/);
+  assert.match(SE.cpRow({ id: "x:1", d: "2026-11-03", t: "Whole solo", state: "today" }, "2026-11-03"), /cpTick\('x:1',true\)[^<]*>✓ Made it/); assert.match(SE.cpRow({ id: "x:1", d: "2026-11-01", t: "Whole solo", state: "passed" }, "2026-11-03"), /cpTick\('x:1',true\)[^<]*>✓ Made it/);
   resetDom(); clearS(); const stage = await import("../js/stage.js"); stage.initStage(); SE.initSeason(); const today = todayStr();
   window.openByWhen(); const bw = el("#byWhenArea").innerHTML; const due = SE.plansFrom(today).flatMap(p => SE.allCheckpoints(p, [], today)).filter(c => c.d && c.d <= today).length;
   assert.equal((bw.match(/cpTick\('[^']+',true\)/g) || []).length, due, "a ✓ on the rows whose day is here or gone, none on the rest"); assert.ok((bw.match(/class="bw-row next"/g) || []).length >= 2);
@@ -136,8 +136,8 @@ test("5. the second nudge: a 6:30 pm last call (8:00 pm until 1.56.0) unless the
   assert.equal(W.dueSlot({ ...sub, kinds: { 2: "memory" } }, t2), null, "Tuesday is a memory-run day: no evening nudge"); assert.equal(W.dueSlot({ ...sub, kinds: { 1: "watch", 2: "watch" } }, t2), null);
   assert.deepEqual(W.dueSlot({ ...sub, kinds: { 2: "home" } }, t2), { slot: 2, date: "2026-10-13" }); assert.deepEqual(W.dueSlot(sub, t2), { slot: 2, date: "2026-10-13" }, "no kinds: as before");
   assert.deepEqual(W.dueSlot({ ...sub, lastSent: "", kinds: { 2: "memory" } }, t1), { slot: 1, date: "2026-10-13" }, "the dance-time nudge is not the second slot: it still goes");
-  assert.match(src("js/remind.js"), /plan = activePlan\(todayStr\(\)\)/); assert.doesNotMatch(src("js/remind.js"), /PLAN15/); assert.deepEqual(RM.planWeekdays(data.CLASSES, data.HOME_DAYS, spring).kinds, RM.planWeekdays(data.CLASSES, data.HOME_DAYS, plan15).kinds, "both plans keep Monday as the watch day");
-  resetDom(); clearS(); S.settings = {}; RM.renderReminder(); assert.match(el("#meReminder").innerHTML, /last call at <b>6:30 pm<\/b> on home days/); resetDom(); clearS();
+  assert.doesNotMatch(src("js/remind.js"), /PLAN15|activePlan/); assert.deepEqual(RM.planWeekdays(data.CLASSES, data.HOME_DAYS).kinds, { 0: "home", 4: "home", 5: "home" }, "1.60.0: the home days only, whatever the plan");
+  resetDom(); clearS(); S.settings = {}; RM.renderReminder(); assert.doesNotMatch(el("#meReminder").innerHTML, /last call/i, "1.60.0: the app never sends a second nudge"); resetDom(); clearS();
 });
 
 test("6. the Pass star only on a first-try right answer; a later right answer reads the part with a kind line; the hour is the caller's", () => {

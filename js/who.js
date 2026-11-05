@@ -22,7 +22,7 @@ export function namesLine(names){ const n = (names || []).map(x => String(x || "
 export function bestsAfter(bests, pick, game, score){ const out = { ...(bests || {}) }; const v = Math.round(+score || 0); for (const id of friendSlots(pick)) { const b = { ...(out[id] || {}) }; if (v > (+b[game] || 0)) b[game] = v; out[id] = b; } return out; }
 // The line under a Moment's sticker: who danced (unless it's Sofia alone, which reads as before) and the streak, which is
 // Sofia's, so it only shows when she is on the card.
-export function momentSub(names, streak, sofia = "Sofia"){ const who = (names || []).filter(Boolean); const alone = who.length === 1 && who[0] === sofia; return [who.length && !alone ? "💃 " + namesLine(who) : "", (!who.length || who.includes(sofia)) && streak > 0 ? `🔥 ${streak}-day streak` : ""].filter(Boolean).join("  ·  "); }
+export function momentSub(names, streak, sofia = "Sofia"){ const who = (names || []).filter(Boolean); const alone = who.length === 1 && who[0] === sofia; return [who.length && !alone ? "💃 " + namesLine(who) : "", (!who.length || who.includes(sofia)) && streak > 0 ? `⭐ ${streak} dance day${streak === 1 ? "" : "s"}` : ""].filter(Boolean).join("  ·  "); }
 
 // ---------- the pick on this phone ----------
 // Kept for the day only: tomorrow the app is Sofia's again, so a playdate's pick can't quietly stop her bites counting.

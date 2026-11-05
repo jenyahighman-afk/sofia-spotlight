@@ -11,8 +11,7 @@ import { speakBunny, stopSpeaking, nextVoice, canSpeak } from "./voice.js";
 import { S, events, dances } from "./store.js";
 import { BUDDY, CLASSES, HOME_DAYS, PRACTICE_ITEMS } from "./data.js";
 import { dayKindNow } from "./daykind.js";
-import { dayCounts, planDone, planDays, computeStreak, skipsLeft, gateOpen } from "./streak.js";
-import { planFor } from "./planToday.js";
+import { dayCounts, planDone, planDays, trioDone, danceDays } from "./streak.js";
 import { cardsFor } from "./habit.js";
 import { dayPlan, planTicks, goFor } from "./dayplan.js";
 import { compWeekend, todayMode } from "./mode.js";
@@ -42,17 +41,16 @@ export function pickStep(ctx, rng = Math.random){
     if (mustLeft.length) { const m = mustLeft[0]; return { key: "plan", vars: { item: m.t }, go: goFor(m.go) || "buddyScroll('#dayPlan')" }; }
     if (c.compMode) return { key: "comp-mode", go: "showPage('practice')" };
     if (c.restDay) return { key: "rest", go: "habitTired('stretch')" };
-    // Streak safe (a bite is done) but the solo isn't: the one next step is the solo, never another game.
-    if (c.safe) return { key: "solo", go: "showPage('practice')" };
-    const open = (c.cards || []).filter(x => !x.done); const card = pick(open.length ? open : (c.cards || []), rng);
+    // 1.60.0: an invitation, never an order — one dance of the solo with the music, or one of Today's cards, at random.
+    const open = (c.cards || []).filter(x => !x.done); const card = pick([{ id: "solo" }, ...(open.length ? open : (c.cards || []))], rng);
+    if (card && card.id === "solo") return { key: "solo", go: "openPlayer('solo',{once:true})" };
     if (card) { const key = { trick: "trick", game: "game", move: "move", memo: "memo" }[card.id] || "trick"; return { key, vars: { trick: card.sub, game: card.sub, move: card.sub, memo: card.sub }, go: card.go }; }
     return { key: "rest", go: "habitTired('stretch')" };
   }
-  // The solo is done but today's trio item isn't (streak.gateOpen): the trio is the one next step, before any extra (1.58.0).
-  if (c.gate) return { key: "trio", go: "showPage('practice')" };
   if (mustLeft.length) { const m = mustLeft[0]; return { key: "plan-more", vars: { item: m.t }, go: goFor(m.go) || "buddyScroll('#dayPlan')" }; }
   // The day counts: first the small "for today" things that are still open, then something fun.
   const tier1 = [];
+  if (c.trioOpen) tier1.push({ key: "trio", go: "openPlayer('trio',{once:true})" }); // the trio once, offered like the dare or the door (1.60.0)
   if (c.dare === false) tier1.push({ key: "dare", go: "showPage('play');buddyScroll('#playDare')" });
   if (c.door === false) tier1.push({ key: "door", go: "showPage('home');openAdvent()" });
   if (c.glow) tier1.push({ key: "glow", go: "showPage('me');buddyScroll('#meGlow')" });
@@ -70,8 +68,7 @@ export function pickStep(ctx, rng = Math.random){
 export function factsFor(c){
   const f = [];
   if (c.event && c.event.days >= 1 && c.event.days <= 90) f.push(["event", { event: c.event.name, eventDays: c.event.days }]);
-  if (c.streak >= 2) f.push(["streak", { streak: c.streak }]);
-  if (!c.dayDone && c.skips <= 1 && c.streak >= 1) f.push(["skips", { skips: c.skips }]);
+  if (c.danceDays >= 2) f.push(["days", { danceDays: c.danceDays }]); // a count that only goes up (1.60.0: no streak, no days off left)
   if (c.classes && c.classes.length && !c.dayDone) f.push(["class", { class: c.classes[0].name, time: c.classes[0].t }]);
   if (c.petDays >= 3) f.push(["pet", { petDays: c.petDays }]);
   return f;
@@ -83,7 +80,6 @@ export function compose(ctx, { rng = Math.random, last = "", lines = BUDDY, just
   const fresh = opts.filter(x => x.id !== last); const chosen = pick(fresh.length ? fresh : opts, rng) || { t: "", id: "" };
   let opener;
   if (justDone) opener = pick(((lines.steps || {})["just-done"] || []).map(t => fill(t, vars)).filter(Boolean), rng);
-  else if (!c.dayDone && c.streak === 0 && c.petDays > 0 && !c.comp) opener = pick(((lines.steps || {}).comeback || []).map(t => fill(t, vars)).filter(Boolean), rng);
   if (!opener) opener = pick((lines.openers || []).map(t => fill(t, vars)).filter(Boolean), rng) || "";
   let fact = "", tipUsed = false; const fs = factsFor(c);
   // The Backstage Pass's tip of the day rides along the first time the Bunny speaks that day (c.tip, pass.js); else a true fact, sometimes.
@@ -96,7 +92,7 @@ export function compose(ctx, { rng = Math.random, last = "", lines = BUDDY, just
 // ---------- what the app knows right now ----------
 export function buddyContext(date = todayStr()){
   const total = PRACTICE_ITEMS.length; const rec = S.practice[date]; const dow = new Date(date + "T00:00:00").getDay();
-  const evs = events(); const ctxS = { practice: S.practice, classes: CLASSES, events: evs, totalItems: total, today: date };
+  const evs = events();
   const bites = rec && Array.isArray(rec.bites) ? rec.bites : [];
   const mp = todayPick(dances(), S.settings, date); const memo = mp ? { danceId: mp.dance.id, label: mp.run ? `${shortName(mp.dance)} · full run` : `${shortName(mp.dance)} · ${mp.chunk.n}` } : null;
   const plan = dayPlan(date); const classes = CLASSES.filter(c => c.day === dow).sort((a, b) => String(a.t).localeCompare(String(b.t)));
@@ -104,13 +100,12 @@ export function buddyContext(date = todayStr()){
   const nu = nextUnlock(); const ps = petState(date); const cc = cardCounts(cardList());
   return {
     date, name: String(((S.settings || {}).avatar || {}).name || "").trim() || "Sofia", pet: ps.name,
-    dayDone: planDone(rec), gate: dayKindNow(date) === "home" && !gateOpen(rec, planFor(date)), safe: dayCounts(rec, total), fullDone: !!rec && dayCounts({ done: rec.done, total: rec.total }, total),
-    streak: computeStreak(ctxS), skips: skipsLeft(ctxS), petDays: planDays(S.practice),
+    dayDone: planDone(rec), trioOpen: !trioDone(rec), fullDone: !!rec && dayCounts({ done: rec.done, total: rec.total }, total),
+    danceDays: danceDays(S.practice), petDays: planDays(S.practice),
     comp: compWeekend(date, evs), compMode: todayMode().mode === "comp",
     // The dated box lists no items since 1.49.0 (the one card is the step), so the plan's must boxes are not offered.
     plan: plan && { ...plan, must: [] }, ticks: planTicks(rec), classes, restDay: !classes.length && !HOME_DAYS[dow] && !plan,
-    // On a home day before the plan is done the game card is What's Next? (solo work), never a filler game (Build 3).
-    cards: cardsFor(date, { skills: S.skills, bites, memo, soloOnly: dayKindNow(date) === "home" && !gateOpen(rec, planFor(date)) }),
+    cards: cardsFor(date, { skills: S.skills, bites, memo }),
     dare: shownDare(date) ? dareDoneOn(date) : null,
     door: door && showEvent() ? openedDates().includes(date) : null,
     glow: showNudge(date), cardsEarned: cc.earned,

@@ -78,3 +78,8 @@ export function bestStreak({ practice = {}, classes = [], events = [], totalItem
   return Math.max(best, computeStreak({ practice, classes, events, totalItems, today }));
 }
 export function practicedDays(practice, totalItems){ return Object.entries(practice || {}).filter(([d, r]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && dayCounts(r, totalItems)).length; }
+// Counts that only go up (1.60.0, Jenya Nov 5): a dance day is a day she danced her solo or her trio, a dance is one run of
+// either from the player. Today and Me show these; nothing on her screens counts days without dancing.
+export const danced = (rec) => planDone(rec) || trioDone(rec);
+export function danceDays(practice){ return Object.entries(practice || {}).filter(([d, r]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && danced(r)).length; }
+export function danceCount(practice){ return Object.entries(practice || {}).reduce((n, [d, r]) => n + (/^\d{4}-\d{2}-\d{2}$/.test(d) && r && Array.isArray(r.runs) ? r.runs.length : 0), 0); }

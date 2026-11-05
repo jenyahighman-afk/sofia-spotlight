@@ -52,9 +52,9 @@ test("one answer to what kind of day it is (daykind.js): a home weekday with not
 test("Play decides the kind of day the way Today does: a Thursday with a make-up class is not gated, a real home day is; Today's link to Play shows once the plan is done (1.52.0); no clock reads in the render paths", () => {
   const home = (d, one) => DK.dayKind(d, opts(one)) === "home";
   assert.equal(PL.gamesFor("2026-10-29", { home: home("2026-10-29", [ACRO]), knees: true, done: false }).gate, false, "the studio day opens every game");
-  assert.equal(PL.gamesFor("2026-10-29", { home: home("2026-10-29"), knees: true, done: false }).gate, true, "the same Thursday with nothing booked gates the fillers until the plan is done");
+  assert.equal(PL.gamesFor("2026-10-29", { home: home("2026-10-29"), knees: true, done: false }).gate, false, "1.60.0: a home day locks nothing either");
   assert.deepEqual(PL.playSections("2026-10-29", { home: home("2026-10-29", [ACRO]), knees: true, done: false, doors: true }).sections.map(s => s.id), ["solo", "weekend", "extras"]);
-  assert.match(HM.funLink({ pd: true }), /Pick something fun on Play/); assert.match(HM.funLink({ kind: "rest" }), /on Play/, "a rest day has no plan to finish"); assert.equal(HM.funLink({ pd: false, kind: "home" }), ""); assert.equal(HM.funLink({ pd: false, kind: "memory" }), "");
+  assert.equal(HM.funLink, undefined, "1.60.0: the games are open, so Today has no plan-done link to Play"); assert.match(HM.sessionLink({ kind: "home", mins: 40, total: 15 }), /The whole session · 40 min/); assert.equal(HM.sessionLink({ kind: "memory", mins: 18, total: 6 }), "");
   const h = src("js/views/home.js"), p = src("js/views/play.js"), sch = src("js/views/schedule.js");
   assert.doesNotMatch(h, /gateExtras|extrasGate/, "1.52.0: Today has no extras to gate");
   assert.match(p, /home: dayKindNow\(today\) === "home"/); assert.match(h, /const kind=dayKindNow\(today\)/);
@@ -70,7 +70,7 @@ test("Play decides the kind of day the way Today does: a Thursday with a make-up
   PL.renderPlay(); const grid = el("#gameGrid").innerHTML; assert.doesNotMatch(grid, /game-gate/, "no 'Home day: the solo first' on a studio day"); assert.match(grid, /✨ Extras/); assert.match(grid, /🎉 Weekend games/);
   // the week strip: today's cell carries the memory run when today is a home weekday with the booking, never the full practice
   const cell = (el("#homeWeek").innerHTML.match(/<div class="day today">[\s\S]*?(?=<div class="day |$)/) || [""])[0]; assert.ok(cell, "today's cell");
-  if (data.HOME_DAYS[DK.weekdayOf(today)]) { assert.match(cell, /Home: memory run/); assert.doesNotMatch(cell, /Strength \+ flex|Technique \+ run|Full-out run/); } else assert.doesNotMatch(cell, /Home:/);
+  assert.doesNotMatch(cell, /Home:|Home day|memory run|Strength \+ flex|Technique \+ run|Full-out run/, "1.60.0: a studio day asks nothing at home, so its cell has no home line");
   resetDom(); clearS();
 });
 
@@ -83,18 +83,18 @@ test("the dated plan10 line inside the one card is its headline and note only (1
   DP.renderDayPlan("2026-11-01"); assert.equal(el("#dayPlan").hidden, false); assert.match(el("#dayPlan").innerHTML, /📋 <b>★ solo checkpoint<\/b>/); assert.doesNotMatch(el("#dayPlan").innerHTML, /home day/);
   // the data model is untouched: a must box ticked is still the "plan" bite, the ▶ targets still resolve (the Bunny reads them)
   const p = DP.dayPlan("2026-10-29"); assert.deepEqual(p.must.map(m => m.id), ["trio-run", "solo-top"]); assert.equal(DP.tickPlan({ done: [] }, p, "trio-run").mustDone, true); assert.equal(DP.goFor("player:solo"), "openPlayer('solo')");
-  assert.match(src("js/views/home.js"), /renderDayPlan\(today\)/, "Today passes its date"); assert.ok(src("js/views/home.js").includes('<div class="today-line small dp-line" id="dayPlan" hidden></div>'), "the dated line sits inside the one card (1.52.0)");
-  resetDom(); clearS(); HM.renderHome(); assert.ok(el("#todayCard").innerHTML.includes("today-start"), "the one card is always there, so nothing is blank when the box hides"); resetDom(); clearS();
+  assert.doesNotMatch(src("js/views/home.js"), /renderDayPlan/, "1.60.0: Today no longer shows the dated line (nothing follows \"That's all.\")"); assert.ok(src("js/views/home.js").includes('<div class="today-line small dp-line" id="dayPlan" hidden></div>'), "the dated line sits inside the one card (1.52.0)");
+  resetDom(); clearS(); HM.renderHome(); assert.ok(el("#todayCard").innerHTML.includes("today-once"), "the one card is always there, so nothing is blank when the box hides"); resetDom(); clearS();
 });
 
 test("the Practice hero speaks the one card's two tiers, never the old 60% line", () => {
-  assert.equal(PR.practiceState({}), "⭐ Plan done when the solo items are ticked · ✓ streak safe at 60%");
-  assert.equal(PR.practiceState({ safe: true }), "✓ Streak safe · solo next ⭐"); assert.equal(PR.practiceState({ pd: true, safe: true, pct: 40 }), "⭐ Plan done · the rest is extra"); assert.equal(PR.practiceState({ pd: true, pct: 100 }), "All done. Go you! 🎉");
-  const s = src("js/views/practice.js"); assert.doesNotMatch(s, /today counts/); assert.doesNotMatch(s, /counts as a practice day/); assert.match(s, /practiceState\(\{pd:planDone\(rec\),safe:dayCounts\(rec,PRACTICE_ITEMS\.length\),pct\}\)/);
+  assert.equal(PR.practiceState({}), "Do as much as you like. One thing counts."); // 1.60.0: offered, never expected
+  assert.equal(PR.practiceState({ pd: true, pct: 40 }), "⭐ You danced your solo today · the rest is extra"); assert.equal(PR.practiceState({ pd: true, pct: 100 }), "All done. Go you! 🎉");
+  const s = src("js/views/practice.js"); assert.doesNotMatch(s, /today counts/); assert.doesNotMatch(s, /counts as a practice day/); assert.match(s, /practiceState\(\{pd:planDone\(rec\),pct\}\)/);
   resetDom(); clearS(); const today = todayStr(); PR.initPractice();
-  PR.renderPractice(); assert.match(el("#practiceHead").innerHTML, /Plan done when the solo items are ticked/);
-  S.practice = { [today]: { done: [], bites: ["tired"] } }; PR.renderPractice(); assert.match(el("#practiceHead").innerHTML, /✓ Streak safe · solo next ⭐/);
-  S.practice = { [today]: { done: ["mem-top"] } }; PR.renderPractice(); assert.match(el("#practiceHead").innerHTML, /⭐ Plan done/);
+  PR.renderPractice(); assert.match(el("#practiceHead").innerHTML, /Do as much as you like/);
+  S.practice = { [today]: { done: [], bites: ["tired"] } }; PR.renderPractice(); assert.doesNotMatch(el("#practiceHead").innerHTML, /Streak safe|streak/);
+  S.practice = { [today]: { done: ["mem-top"] } }; PR.renderPractice(); assert.match(el("#practiceHead").innerHTML, /⭐ You danced your solo today/);
   resetDom(); clearS();
 });
 

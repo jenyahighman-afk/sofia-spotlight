@@ -7,7 +7,7 @@ import { normalizeCues, cueAt, fmtTime, fmtCueTime, isCueTable, trickAhead, lyri
 import { srcFor, trackUrl } from "./track.js";
 import { cuePhoto } from "./cuecards.js";
 import { pingDone } from "./remind.js";
-import { planDone } from "./streak.js";
+import { planDone, danced, danceCount } from "./streak.js";
 import { prompterHtml, karaokeHtml, wordWipes } from "./prompter.js";
 export { srcFor };
 
@@ -167,12 +167,25 @@ async function runEnded(){
   checkBadges();
 }
 function runClose(){ $("#plRun").hidden = true; $("#plRun").innerHTML = ""; }
+// ---- Dance it once (1.60.0) ----
+// Today's ▶ Solo and ▶ Trio open the player with { once: true }: the music starts, and when the track plays to its end the
+// dance is logged as a run (no 3-2-1, no questions), so the counts on Today and Me go up. Pure: what the box says.
+export const onceLine = (n) => `⭐ You danced it! That's ${n} dance${n === 1 ? "" : "s"} so far.`;
+async function onceEnded(){
+  const d = PL.dance; if (!d) return; const date = todayStr(); const rec = S.practice[date] || { done: [], note: "", runs: [] };
+  const next = { ...rec, runs: [...(rec.runs || []), { at: new Date().toISOString(), danceId: d.id, speed: PL.speed, full: true, once: true }] }; await storeSet("practice", date, next);
+  if (danced(next)) try { pingDone(); } catch (e) {} // she danced: no reminder tonight
+  const box = $("#plRun"); box.hidden = false;
+  box.innerHTML = `<div class="run-q">${onceLine(danceCount(S.practice))}</div><div class="row run-yn"><button class="btn coral" onclick="closePlayer()">Done</button><button class="btn ghost" onclick="plOnceAgain()">Again</button></div>`;
+  checkBadges();
+}
+function onceAgain(){ runClose(); if (!PL.audio) return; PL.audio.currentTime = 0; play(); }
 
 // ---- open / close ----
 // opts (the Memorize card): { speed: 50|75|100, loop: {a, b} seconds, counts: "voice"|"click"|"off" (turns the 8-count on), testMe: true|false }.
 export async function openPlayer(danceId, opts = {}){
   const d = dances().find(x => x.id === danceId); if (!d) return toast("That dance isn't here");
-  closePlayer(true); PL.dance = d; PL.lastHtml = ""; PL.a = null; PL.b = null; PL.speed = 100; PL.lastCount = -1; PL.run = null; PL.revealed = -1; PL.lastCueIdx = -2; PL.showList = false; PL.timing = null;
+  closePlayer(true); PL.dance = d; PL.lastHtml = ""; PL.a = null; PL.b = null; PL.speed = 100; PL.lastCount = -1; PL.run = null; PL.revealed = -1; PL.lastCueIdx = -2; PL.showList = false; PL.timing = null; PL.once = !!opts.once;
   if (opts.speed) PL.speed = Math.max(50, Math.min(100, Math.round(+opts.speed))); if (opts.loop && Number.isFinite(+opts.loop.a) && Number.isFinite(+opts.loop.b)) { PL.a = +opts.loop.a; PL.b = +opts.loop.b; }
   if (opts.counts) { PL.counts = true; PL.voice = opts.counts; if (opts.counts === "click") ensureCtx(); } if (typeof opts.testMe === "boolean") PL.testMe = opts.testMe;
   $("#player").hidden = false; document.body.classList.add("modal");
@@ -182,12 +195,13 @@ export async function openPlayer(danceId, opts = {}){
   if (!src) { setStatus(`<span class="bad">No music file yet.<br>Ask a grown-up: More ▸ Add music file.</span>`); return; }
   setStatus(`Loading music…`);
   const audio = new Audio(); audio.preload = "auto"; audio.preservesPitch = true; audio.mozPreservesPitch = true; audio.webkitPreservesPitch = true; PL.audio = audio;
-  audio.addEventListener("ended", () => { $("#plPlay").textContent = "▶"; if (PL.run) runEnded(); });
+  audio.addEventListener("ended", () => { $("#plPlay").textContent = "▶"; if (PL.run) runEnded(); else if (PL.once && PL.a === null) onceEnded(); });
   audio.addEventListener("loadedmetadata", () => { renderPresets(); setStatus(navigator.onLine ? "" : "Offline · playing the saved copy"); });
   audio.addEventListener("error", () => setStatus(`<span class="bad">The music didn't load.<br>Check the connection, or re-add the file under More ▸.</span>`));
   // Download once (through the service worker's media cache, so it plays offline next time) and play the local copy: no range requests, no buffering.
   const got = await trackUrl(d); if (PL.audio !== audio || !got) return; audio.src = got.url; if (got.streamed && got.link) setStatus(`Streaming from the link · works online only`);
   audio.playbackRate = PL.speed / 100; cancelAnimationFrame(PL.raf); tick();
+  if (PL.once) play(); // the tap on ▶ Solo or ▶ Trio starts the music; if the phone blocks it, ▶ is right there
 }
 export function closePlayer(silent){
   cancelAnimationFrame(PL.raf); if (PL.audio) { try { PL.audio.pause(); PL.audio.src = ""; } catch (e) {} } PL.audio = null; PL.run = null; try { speechSynthesis.cancel(); } catch (e) {}
@@ -202,4 +216,4 @@ export function initPlayer(){
   $("#plAddCue").onclick = addCue; $("#plLines").onclick = async () => { await setSettings({ prompter: !S.settings.prompter }); cueSheetUI(); }; $("#plTestMe").onclick = toggleTestMe; $("#plTimeWords").onclick = timeWords; $("#plCueList").onclick = () => { PL.showList = !PL.showList; cueSheetUI(); };
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#player").hidden) { if (PL.run) runStop(); else closePlayer(); } });
 }
-expose({ openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose, plRunStop: runStop, plReveal: reveal, plSeek, plCueEdit: cueEdit, plCueDel: cueDel, plTimeTap: timeTap, plTimeBack: timeBack, plTimeDone: timeDone });
+expose({ openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose, plRunStop: runStop, plOnceAgain: onceAgain, plReveal: reveal, plSeek, plCueEdit: cueEdit, plCueDel: cueDel, plTimeTap: timeTap, plTimeBack: timeBack, plTimeDone: timeDone });

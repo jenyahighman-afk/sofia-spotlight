@@ -11,13 +11,13 @@ export const DEFAULT_TZ = "America/Los_Angeles";
 export const WINDOW_MIN = 20; // a cron that fires a little late still sends; later than this and the moment has passed
 // Seven short lines, one per day, never nagging. [title, body]
 export const LINES = [
-  ["Dance bite time ✨", "Pick one card. Two minutes counts."],
-  ["Your streak is waiting 🔥", "One bite keeps it. A tired day counts too."],
+  ["Dance time ✨", "Pick one thing. Two minutes counts."],
+  ["Your music is ready 🎵", "One dance, if you feel like it."],
   ["Hey Sofia 💃", "Trick, game or move? You choose."],
   ["Two minutes 🩰", "Open Spotlight and pick one."],
   ["Spotlight time ✿", "A move, a game or a trick. Then you're done."],
   ["Ready? 🎀", "Open the app, tap one card."],
-  ["Dance o'clock 🕺", "One bite. Then free time."],
+  ["Dance o'clock 🕺", "One little thing. Then free time."],
 ];
 // The line for a kind of plan day (the app's planWeekdays kinds), and the second nudge's lines.
 export const KINDS = ["watch", "memory", "home"];
@@ -28,7 +28,7 @@ export const kindOn = (sub, date) => dateKind(sub, date) || ((sub || {}).kinds |
 export const KIND_LINES = {
   watch: ["Watch day 📹", "Hannah's two videos, then the solo in your head."],
   memory: ["Memory run 🧠", "The solo from the top, Lines off, then a little trio."],
-  home: ["Home practice 🏠", "Tap ▶ Start. Your solo first ⭐"],
+  home: ["Dance time 🎵", "Your music is ready. One dance, about 2 minutes ⭐"], // 1.60.0: the button is ▶ My solo, nothing is "first"
 };
 // The last call (6:30 pm since 1.56.0, Jenya Oct 30): start now, so practice is done long before bed.
 export const SECOND_LINES = [

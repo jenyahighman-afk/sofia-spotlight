@@ -79,6 +79,6 @@ test("Trick Quest: an acro boss asks for the mat and a grown-up first; the other
 });
 
 test("the Bunny's last app word: no 'one bite' in what she reads", () => {
-  assert.doesNotMatch(JSON.stringify(json("buddy")), /one bite/i); assert.match(JSON.stringify(json("buddy")), /Just one little thing today/);
+  assert.doesNotMatch(JSON.stringify(json("buddy")), /one bite/i); assert.match(JSON.stringify(json("buddy")), /One little thing today\?/);
   assert.match(src("js/version.js"), /APP_VERSION = "1\.(5[4-9]|[6-9]\d)/);
 });

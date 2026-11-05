@@ -11,9 +11,9 @@ const { migrateDoc, SCHEMA_VERSION } = await import("../js/store.js");
 test("stickers: big moments first (milestone, gem, badge), then the day's smaller ones, always ending with a plain one", () => {
   const big = stickersFor({ streak: 7, gemTrick: "Calypso", badges: ["Aerial mission ¼"], fullPractice: true, bites: ["trick", "tired"], eventName: "Winter Showcase (Winter Formal)", eventDays: 87 });
   assert.deepEqual(big.map(s => s.key), ["milestone", "gem", "badge", "practice", "rest", "trick", "event", "dance"]);
-  assert.equal(big[0].text, "7-day streak!"); assert.equal(big[1].text, "Gem! Calypso"); assert.ok(big.slice(0, 3).every(s => s.big) && big.slice(3).every(s => !s.big));
+  assert.equal(big[0].text, "7 dance days!", "1.60.0: the count that only goes up"); assert.equal(big[1].text, "Gem! Calypso"); assert.ok(big.slice(0, 3).every(s => s.big) && big.slice(3).every(s => !s.big));
   assert.equal(nudgeFor(big).key, "milestone"); assert.equal(big[6].text, "87 days to Winter Showcase", "the bracketed part of an event name is dropped");
-  const quiet = stickersFor({ streak: 3 }); assert.deepEqual(quiet.map(s => s.key), ["streak", "dance"]); assert.equal(quiet[0].text, "Day 3"); assert.equal(nudgeFor(quiet), null);
+  const quiet = stickersFor({ streak: 3 }); assert.deepEqual(quiet.map(s => s.key), ["streak", "dance"]); assert.equal(quiet[0].text, "Dance day 3"); assert.equal(nudgeFor(quiet), null);
   assert.deepEqual(stickersFor({}).map(s => s.key), ["dance"]); assert.equal(stickersFor({ eventName: "Show", eventDays: 0 })[0].text, "Show day!");
   assert.deepEqual(MILESTONES, [7, 14, 30, 50, 100]); assert.equal(SIZES.story.w, 1080); assert.equal(SIZES.story.h, 1920); assert.equal(SIZES.post.h, 1350);
 });

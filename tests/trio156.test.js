@@ -16,7 +16,7 @@ const { gamesFor } = await import("../js/views/play.js");
 const { buildPlan, MEMORY_TRIO, planSummary } = await import("../js/plan.js");
 const { sessionRules } = await import("../js/season15.js");
 const { todayPick } = await import("../js/memo.js");
-const { funLink, BEST_TIME } = await import("../js/views/home.js");
+const { BEST_TIME } = await import("../js/views/home.js");
 const RM = await import("../js/remind.js");
 const ST = await import("../js/store.js");
 const W = await import("../worker/src/remind-core.js");
@@ -24,7 +24,7 @@ const pool = json("practice-pool");
 const dances = [{ id: "solo" }, { id: "trio" }];
 
 test("the gate: every home day of the season, until the solo and today's trio item are done; Trick Quest stays with the solo work", () => {
-  for (const d of ["2026-11-05", "2026-11-12", "2026-12-10", "2027-02-04"]) assert.equal(gamesFor(d, { home: true, knees: false, done: false }).gate, true, d);
+  for (const d of ["2026-11-05", "2026-11-12", "2026-12-10", "2027-02-04"]) assert.equal(gamesFor(d, { home: true, knees: false, done: false }).gate, false, d + ": 1.60.0, the games are open every day");
   assert.equal(gamesFor("2026-11-12", { home: false, done: false }).gate, false, "a studio day is never gated");
   const items = [{ id: "solo-run" }, { id: "trio-mark" }];
   assert.equal(gateOpen({ done: ["solo-run"] }, items), false, "the solo alone isn't enough when the plan has a trio item"); assert.equal(planDone({ done: ["solo-run"] }), true, "…but ⭐ Plan done (the streak, the reminders) is still the solo");
@@ -33,9 +33,8 @@ test("the gate: every home day of the season, until the solo and today's trio it
   assert.deepEqual(TRIO_ITEMS, ["trio-mark", "mem-trio"]);
   assert.ok(trioDone({ runs: [{ danceId: "trio" }] }), "a trio run from the player"); assert.ok(!trioDone({ runs: [{ danceId: "solo" }] }));
   assert.ok(trioDone({ memo: { trio: ["story", "mark", "count", "test", "picture"] } }), "all five Memorize steps"); assert.ok(!trioDone({ memo: { trio: ["story", "mark"] } })); assert.ok(!trioDone(null));
-  const play = src("js/views/play.js"); assert.match(play, /done: gateOpen\(rec, planFor\(today\)\)/); assert.match(play, /Now your trio 👯/); assert.match(play, /the solo and the trio first/);
-  assert.match(funLink({ pd: true, kind: "home", trio: true }), /Now your trio 👯/); assert.match(funLink({ pd: true, kind: "home" }), /Pick something fun on Play/);
-  const pass = JSON.stringify(json("pass")); assert.match(pass, /the solo and the trio come first/); assert.doesNotMatch(pass, /the solo comes first/);
+  const play = src("js/views/play.js"); assert.doesNotMatch(play, /Now your trio 👯|the solo and the trio first|game-gate/, "1.60.0: no gate banner");
+  const pass = JSON.stringify(json("pass")); assert.match(pass, /the games are open every day/); assert.doesNotMatch(pass, /the solo comes first|open once both are done/);
 });
 
 test("the trio's time: the week's trio goal on a full day, two minutes of trio in the memory run, its chunks one tap away", () => {
@@ -60,7 +59,7 @@ test("Memorize takes turns: the solo one day, the trio the next, until every chu
 
 test("the best time: a snack, then about 45 minutes later, dinner after; on Today on a home day until the plan is done, and in the Pass", () => {
   assert.equal(BEST_TIME, "🍌 Snack first, dance 45 min later, dinner after");
-  assert.match(src("js/views/home.js"), /\$\{pd\?"":`<div class="today-sub today-when">\$\{BEST_TIME\}<\/div>`\}/);
+  assert.match(src("js/views/home.js"), /\$\{pd\|\|td\?"":`<div class="today-sub today-when">\$\{BEST_TIME\}<\/div>`\}/);
   const pass = json("pass"); assert.ok(JSON.stringify(pass).includes("Best time on a home day: a small snack after school, dance about 45 minutes later, dinner after."));
   assert.ok(pass.tips.some(t => t.when.includes("home") && /45 min later/.test(t.t)), "a home-day tip");
   assert.match(src("tools/print/Sofia-Backstage-Pass.html"), /<b>Best time on a home day:<\/b>/, "the paper Pass says it too (next print)");
@@ -75,7 +74,7 @@ test("the 6:30 pm last call: the default, old default times moved by schema 53 (
   assert.deepEqual(mig({ on: true, h2: 21, m2: 15 }), { on: true, h2: 21, m2: 15 }, "a time the family picked stays"); assert.deepEqual(mig({ on: false }), { on: false });
   assert.deepEqual(ST.migrateDoc("practice", "main", { _v: 52, reminder: { h2: 20, m2: 0 } }).reminder, { h2: 20, m2: 0 }, "only the settings doc");
   const r = RM.reminderOf({ reminder: { on: true } }); const plan = { days: [4], kinds: { 4: "home" } };
-  assert.notEqual(RM.sentSig(r, plan), RM.sentSig({ ...r, h2: 20, m2: 0 }, plan), "a changed time is a new signature"); assert.equal(RM.sentSig(r, plan), RM.sentSig({ ...r }, plan));
+  assert.notEqual(RM.sentSig(r, plan), RM.sentSig({ ...r, h: 17 }, plan), "a changed time is a new signature"); assert.equal(RM.sentSig(r, plan), RM.sentSig({ ...r, h2: 20, m2: 0 }, plan), "1.60.0: the last call's time is never sent, so it changes nothing");
   assert.notEqual(RM.sentSig(r, plan), RM.sentSig(r, { days: [4, 5], kinds: { 4: "home", 5: "home" } }), "so are new plan days");
   assert.match(src("js/app.js"), /if \(settled\("settings"\)\) try \{ resyncReminder\(\); \}/);
   for (const [title, body] of W.SECOND_LINES) { assert.match(title, /^Last call/); assert.doesNotMatch(body, /15 minutes|memory run is enough/, "the full session stays on offer"); }

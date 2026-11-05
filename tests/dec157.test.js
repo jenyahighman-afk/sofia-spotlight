@@ -17,7 +17,7 @@ const { routineOf, privatesStatus, calendarHtml, upcomingHtml } = await import("
 const { dayKind, dayOpts } = await import("../js/daykind.js");
 const { momWeekLines } = await import("../js/momweek.js");
 const { sheetFix } = await import("../js/sunday.js");
-const { startButton } = await import("../js/views/home.js");
+const { sessionLink } = await import("../js/views/home.js");
 const plan15 = json("plan15");
 const ev = json("events");
 
@@ -71,14 +71,14 @@ test("the Winter Showcase from the studio's FAQ: the theater, the fee and its da
 test("the memory run has no '15-minute' anywhere (it is about 18 with the trio, Jenya chose the name); the button shows its minutes", () => {
   for (const f of ["js/daykind.js", "js/views/home.js", "js/studio.js", "js/season15.js", "data/pass.json", "data/plan10.json", "tools/print/Sofia-Backstage-Pass.html", "tools/print/Sofia-Practice-Toolkit.html", "index.html", "README.md"])
     assert.doesNotMatch(src(f), /15[- ]min(ute)? memory run/i, f);
-  assert.equal(startButton({ kind: "memory", mins: 18, total: 6 }).label, "▶ Memory run · 18 min");
+  assert.equal(sessionLink({ kind: "memory", mins: 18, total: 6 }), "", "1.60.0: a class day asks nothing at home, so Today has no memory-run button");
   assert.doesNotMatch(src("tools/print/Sofia-Practice-Toolkit.html"), /(the|a|·) <b[^>]*>Memory run/, "no capital mid-sentence");
 });
 
 test("the re-audit's fix-soon items: the dated line on home days only, the 2-day gap on the card, the week strip on Me, the Sunday sheet's fix, safe renders, the words", () => {
   const home = src("js/views/home.js");
-  assert.match(home, /if\(home\) renderDayPlan\(today\); else \{ const dp=\$\("#dayPlan"\);/);
-  assert.match(home, /gap>=maxGap\?`<div class="today-line small today-gap">🧠 \$\{gap\} days without your solo: dance it today, even the memory run counts<\/div>`/); assert.match(home, /\$\{metaLine\(\{streak,pd,safe:doneToday,skips\}\)\}\$\{gapLine\}/);
+  assert.doesNotMatch(home, /renderDayPlan/, "1.60.0: the dated line is off Today on every day");
+  assert.doesNotMatch(home, /today-gap|days without your solo|gapLine/, "1.60.0: nothing on her screen counts days without dancing"); assert.match(home, /\$\{metaLine\(\{days:danceDays\(S\.practice\),dances:danceCount\(S\.practice\)\}\)\}/);
   assert.match(home, /document\.addEventListener\("page",e=>\{ if\(e&&e\.detail==="me"\) setTimeout\(weekToToday,0\); \}\)/);
   assert.match(home, /for\(const f of \[renderNews,renderPet,renderGlowNudge,/);
   // the Sunday sheet on a weekday: the fix of the week it closes, never this week's

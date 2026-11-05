@@ -1,18 +1,14 @@
 // Daily reminder ("⏰ My dance time" on Me): a push notification at her time, from this phone's own subscription (iPhone
-// needs the app on the Home Screen). The worker sends it (worker/src/remind.js) unless the plan was already done that
-// day (pingDone). Build 3: the nudge follows the plan's days — every weekday with a plan (a home day, Monday's watch day,
-// the memory-run studio days: planWeekdays) with a line for that kind of day — and a second nudge later in the evening
-// (settings.reminder.second / h2 / m2, on unless turned off, schema 50) goes out only if the plan still isn't done — on home
-// days only since Build 4 (the worker skips watch and memory-run kinds), at 6:30 pm unless the family set a time: a last call
-// (Jenya, Oct 30), so practice never runs into bedtime (lights out 9:00). It was 7:30 (in the car after class), then 8:00.
-// A subscribed phone sends its times again when they change (resyncReminder), so an old 7:30 or 8:00 doesn't stay at the worker.
+// needs the app on the Home Screen). The worker sends it (worker/src/remind.js) unless she already danced that day (pingDone).
+// 1.60.0 (Jenya, Nov 5: "let her choose when she wants to have a reminder"): it is off until Sofia turns it on and picks the
+// time; one nudge a day, on home days only (a class day asks nothing at home), and no last call: the second nudge's time is
+// never sent to the worker, and a phone that was subscribed before 1.60.0 is switched off once (OFF160). The stored
+// settings.reminder keeps its second / h2 / m2 fields; nothing reads them.
 // Pure parts up top (tested in Node).
 import { $, esc, toast, expose, todayStr } from "./util.js";
 import { S, setSettings } from "./store.js";
 import { CLASSES, HOME_DAYS } from "./data.js";
-import { activePlan } from "./season15.js";
 import { dayKindNow } from "./daykind.js";
-import { shortKind } from "./planToday.js";
 import { shiftDate } from "./corrections.js";
 import { sync } from "./sync.js";
 import { coachConfig } from "./firebase-config.js";
@@ -27,27 +23,25 @@ const num = (v, max, d) => Number.isInteger(v) && v >= 0 && v <= max ? v : d;
 export const reminderOf = (settings) => { const r = (settings || {}).reminder; const o = r && typeof r === "object" ? r : {}; return { on: !!o.on, h: num(o.h, 23, DEFAULT_TIME.h), m: num(o.m, 59, DEFAULT_TIME.m), second: o.second !== false, h2: num(o.h2, 23, DEFAULT_SECOND.h), m2: num(o.m2, 59, DEFAULT_SECOND.m) }; };
 export const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export const KIND_ICON = { watch: "📹", memory: "🧠", home: "🏠" };
-// The weekdays a nudge makes sense on — every day with a plan: a studio day (Monday = the watch day, the plan's rules.studioDays;
-// the memory run otherwise) or a home day (data/home-days.json). { days: [weekday numbers], kinds: { weekday: "watch" | "memory" | "home" } }.
-// The plan is the one today falls in (season15.activePlan: plan15, then the spring plan), not plan15 for ever (Build 4).
-export function planWeekdays(classes = CLASSES, homeDays = HOME_DAYS, plan = activePlan(todayStr())){
-  const kinds = {}; const sd = ((plan || {}).rules || {}).studioDays || {};
-  for (let wd = 0; wd < 7; wd++) { if ((classes || []).some(c => c && c.day === wd)) kinds[wd] = sd[String(wd)] === "watch" ? "watch" : "memory"; else if (homeDays && homeDays[wd]) kinds[wd] = "home"; }
+// The weekdays a nudge goes out on: the home days (data/home-days.json) without a weekly class. { days: [weekday numbers],
+// kinds: { weekday: "home" } }. Until 1.60.0 the class days were in too (the watch day, the memory run).
+export function planWeekdays(classes = CLASSES, homeDays = HOME_DAYS){
+  const kinds = {};
+  for (let wd = 0; wd < 7; wd++) if (!(classes || []).some(c => c && c.day === wd) && homeDays && homeDays[wd]) kinds[wd] = "home";
   return { days: Object.keys(kinds).map(Number), kinds };
 }
-// The dates whose nudge isn't the weekday's usual one, for the next DATE_SPAN days (1.59.0): { "YYYY-MM-DD": kind }, kind as above
-// or "off" (no plan that day: show day, a rest day). It is the app's own answer for the day (daykind.dayKind, then the short plan
-// on a home day), so a studio closure's class day gets the full session's line and the last call, a light week's home day and a
-// booked studio date get the memory run's, and show day gets no practice nudge.
+// The dates whose nudge isn't the weekday's usual one, for the next DATE_SPAN days (1.59.0): { "YYYY-MM-DD": "home" | "off" }.
+// It is the app's own answer for the day (daykind.dayKind): a studio closure's class day is a home day and gets the nudge; a
+// home weekday with a studio date booked, show day and a rest day get none.
 export const DATE_SPAN = 150;
-export function reminderKind(date, kindOf = dayKindNow, short = shortKind){ const k = kindOf(date); if (k === "show" || k === "rest") return "off"; return k === "home" && short(date) === "memory" ? "memory" : k; }
+export function reminderKind(date, kindOf = dayKindNow){ return kindOf(date) === "home" ? "home" : "off"; }
 export function planDates(plan = planWeekdays(), from = todayStr(), span = DATE_SPAN, kindOf = reminderKind){
   const out = {}; for (let i = 0; i < span; i++) { const d = shiftDate(from, i); const k = kindOf(d); if (k !== ((plan.kinds || {})[new Date(d + "T00:00:00").getDay()] || "off")) out[d] = k; } return out;
 }
-// "📹 Mon · 🧠 Tue, Wed, Sat · 🏠 Sun, Thu, Fri"
-export function daysLabel({ kinds = {} } = {}){ const by = {}; for (const [wd, k] of Object.entries(kinds)) (by[k] ||= []).push(DAY_NAMES[+wd]); return ["watch", "memory", "home"].filter(k => by[k]).map(k => `${KIND_ICON[k]} ${by[k].join(", ")}`).join(" · "); }
-// What the worker is told: the time, the plan days with their kinds, the dates that differ, and the second nudge's time when it is on.
-export function subscribeBody(r, { familyId, endpoint, keys, tz, plan = planWeekdays(), dates = planDates(plan) }){ const b = { familyId, endpoint, keys, h: r.h, m: r.m, tz, days: plan.days, kinds: plan.kinds }; if (Object.keys(dates).length) b.dates = dates; if (r.second) { b.h2 = r.h2; b.m2 = r.m2; } return b; }
+// "Thu, Fri, Sun": the home days, Monday first.
+export function daysLabel({ kinds = {} } = {}){ return Object.keys(kinds).map(Number).sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map(wd => DAY_NAMES[wd]).join(", "); }
+// What the worker is told: the time, the home days, the dates that differ. Never a second time (h2 / m2): no last call since 1.60.0.
+export function subscribeBody(r, { familyId, endpoint, keys, tz, plan = planWeekdays(), dates = planDates(plan) }){ const b = { familyId, endpoint, keys, h: r.h, m: r.m, tz, days: plan.days, kinds: plan.kinds }; if (Object.keys(dates).length) b.dates = dates; return b; }
 export function urlB64ToBytes(b64){ const pad = "=".repeat((4 - b64.length % 4) % 4); const raw = atob((b64 + pad).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(raw, c => c.charCodeAt(0)); }
 // Why reminders can't be turned on here, or "" when they can.
 export function pushBlocker({ standalone, hasPush, hasSw, workerUrl }){
@@ -70,19 +64,13 @@ const subscribedHere = () => { try { return localStorage.getItem(LS) || ""; } ca
 
 export function renderReminder(){
   const el = $("#meReminder"); if (!el) return; const r = reminderOf(S.settings); const here = !!subscribedHere(); const block = pushBlocker(env()); const pw = planWeekdays();
-  el.innerHTML = `<div class="row"><h3 class="grow">⏰ My dance time</h3>${r.on ? `<span class="chip coral">on · ${esc(timeLabel(r))}</span>` : `<span class="chip">off</span>`}</div>
-    <p class="small muted">One little nudge on plan days, from the app, not from Mom. It stays quiet once the plan is done.</p>
+  el.innerHTML = `<div class="row"><h3 class="grow">⏰ My dance time</h3>${r.on && here ? `<span class="chip coral">on · ${esc(timeLabel(r))}</span>` : `<span class="chip">off</span>`}</div>
+    <p class="small muted">Want a nudge? You pick the time. One a day, on home days only, and none once you've danced.</p>
     <div class="row"><input type="time" id="rmTime" value="${timeValue(r)}" step="900" style="max-width:150px" ${block ? "disabled" : ""}>
       ${block ? `<span class="small muted">${esc(block)}</span>` : here ? `<button class="btn sm ghost" onclick="rmOff()">Turn off on this phone</button><button class="btn sm ghost" onclick="rmTest()">Send a test</button>` : `<button class="btn sm coral" onclick="rmOn()">Remind me on this phone</button>`}</div>
-    <div class="small muted rm-days">Plan days: ${esc(daysLabel(pw)) || "none right now"}</div>
-    <div class="rm-second"><div class="row"><span class="grow">⏰ A last call at <b>${esc(timeLabel({ h: r.h2, m: r.m2 }))}</b> on home days if the plan isn't done yet</span><button class="btn sm ${r.second ? "coral" : "ghost"}" onclick="rmSecond()">${r.second ? "On" : "Off"}</button></div>
-      ${r.second ? `<div class="row" style="margin-top:6px"><input type="time" id="rmTime2" value="${timeValue({ h: r.h2, m: r.m2 })}" step="900" style="max-width:150px" ${block ? "disabled" : ""}><span class="small muted">Never more than two a day.</span></div>` : ""}</div>
-    ${r.on && !here && !block ? `<p class="small muted">Reminders are on for the family. Tap the button to get them on this phone too.</p>` : ""}`;
+    <div class="small muted rm-days">Home days: ${esc(daysLabel(pw)) || "none right now"}</div>`;
   const t = $("#rmTime"); if (t) t.onchange = () => { const p = timeParts(t.value); if (!p) return; setSettings({ reminder: { ...r, ...p } }).then(() => { if (subscribedHere()) subscribe(reminderOf(S.settings)).catch(e => toast(e.message, 3000)); renderReminder(); }); };
-  const t2 = $("#rmTime2"); if (t2) t2.onchange = () => { const p = timeParts(t2.value); if (!p) return; setSettings({ reminder: { ...r, h2: p.h, m2: p.m } }).then(() => { if (subscribedHere()) subscribe(reminderOf(S.settings)).catch(e => toast(e.message, 3000)); renderReminder(); }); };
 }
-// The second nudge on or off (the family setting); this phone's subscription follows right away.
-async function second(){ const r = reminderOf(S.settings); await setSettings({ reminder: { ...r, second: !r.second } }); if (subscribedHere()) subscribe(reminderOf(S.settings)).catch(e => toast(e.message, 3000)); toast(r.second ? "Last call off" : "Last call on ⏰"); renderReminder(); }
 async function subscribe(r){
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription(); if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToBytes(pushConfig.publicKey) });
@@ -92,10 +80,15 @@ async function subscribe(r){
 // What this phone last sent the worker: the times, the plan days and the dates that differ. On open, a subscribed phone whose
 // times or days changed since (a new default, a migrated time, a new class, a date booked or passed) subscribes again, once per run, quietly.
 const SENT = "spotlight:pushsent";
-export const sentSig = (r, plan = planWeekdays(), dates = planDates(plan)) => JSON.stringify([r.h, r.m, r.second ? r.h2 : null, r.second ? r.m2 : null, plan.days, plan.kinds, dates]);
+export const sentSig = (r, plan = planWeekdays(), dates = planDates(plan)) => JSON.stringify([r.h, r.m, plan.days, plan.kinds, dates]);
+// 1.60.0: a phone subscribed before this version is switched off once, quietly; from then on a reminder exists only if she turns it on.
+const OFF160 = "spotlight:remind160";
 let resynced = false;
 export function resyncReminder(){
-  if (resynced || !subscribedHere() || !sync.familyId || pushBlocker(env())) return; resynced = true;
+  if (resynced) return; resynced = true;
+  let seen = "1"; try { seen = localStorage.getItem(OFF160) || ""; localStorage.setItem(OFF160, "1"); } catch (e) {}
+  if (!seen && subscribedHere()) { off(true).catch(e => console.warn("reminder off", e)); return; }
+  if (!subscribedHere() || !sync.familyId || pushBlocker(env())) return;
   let last = ""; try { last = localStorage.getItem(SENT) || ""; } catch (e) {}
   const r = reminderOf(S.settings); if (!r.on || last === sentSig(r)) return;
   try { if (typeof Notification !== "undefined" && Notification.permission !== "granted") return; } catch (e) { return; }
@@ -104,16 +97,16 @@ export function resyncReminder(){
 async function on(){
   const block = pushBlocker(env()); if (block) return toast(block, 4000);
   try { const perm = await Notification.requestPermission(); if (perm !== "granted") return toast("Reminders need permission. You can allow them in Settings → Spotlight → Notifications.", 4000);
-    const r = reminderOf(S.settings); const p = timeParts(($("#rmTime") || {}).value) || { h: r.h, m: r.m }; const next = { ...r, on: true, h: p.h, m: p.m }; await subscribe(next); await setSettings({ reminder: next }); toast(`⏰ Reminder set for ${timeLabel(p)}`); renderReminder(); }
+    const r = reminderOf(S.settings); const p = timeParts(($("#rmTime") || {}).value) || { h: r.h, m: r.m }; const next = { ...r, on: true, h: p.h, m: p.m }; await subscribe(next); await setSettings({ reminder: next }); try { localStorage.setItem(OFF160, "1"); } catch (e) {} toast(`⏰ Reminder set for ${timeLabel(p)}`); renderReminder(); }
   catch (e) { console.warn(e); toast("Couldn't turn reminders on: " + (e.message || e), 4000); }
 }
-async function off(){
+async function off(quiet){
   try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); const endpoint = sub ? sub.endpoint : subscribedHere();
     if (sub) await sub.unsubscribe(); if (endpoint) await post("/remind/unsubscribe", { endpoint }).catch(() => {}); } catch (e) { console.warn(e); }
   try { localStorage.removeItem(LS); } catch (e) {}
-  await setSettings({ reminder: { ...reminderOf(S.settings), on: false } }); toast("Reminders off on this phone"); renderReminder();
+  await setSettings({ reminder: { ...reminderOf(S.settings), on: false } }); if (quiet !== true) toast("Reminders off on this phone"); renderReminder();
 }
-async function test(){ try { const reg = await navigator.serviceWorker.ready; await reg.showNotification("Dance bite time ✨", { body: "This is what the reminder looks like.", icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "dance-bite-test" }); } catch (e) { toast("Couldn't show it: " + (e.message || e), 3000); } }
-// Called when a bite is marked: tells the worker today is done, so no reminder is sent to the family tonight.
+async function test(){ try { const reg = await navigator.serviceWorker.ready; await reg.showNotification("Dance time 🎵", { body: "This is what the reminder looks like.", icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "dance-bite-test" }); } catch (e) { toast("Couldn't show it: " + (e.message || e), 3000); } }
+// Called once she has danced today: tells the worker, so no reminder is sent to the family tonight.
 export function pingDone(){ if (!base() || !sync.familyId) return; fetch(base() + "/remind/done", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ familyId: sync.familyId, tz: tz() }), keepalive: true }).catch(() => {}); }
-expose({ rmOn: on, rmOff: off, rmTest: test, rmSecond: second });
+expose({ rmOn: on, rmOff: () => off(), rmTest: test });

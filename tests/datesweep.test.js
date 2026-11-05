@@ -31,7 +31,7 @@ test("every day of the switch windows renders Today, Practice, Play, Me, the dan
         if (state === "planDone") { const plan = M.planToday.planFor(day); M.store.S.practice = { [day]: { done: plan.map(i => i.id), total: plan.length, runs: [{ at: day, speed: 100, full: true }] } }; }
         const screens = { home: M.home.renderHome, practice: M.practice.renderPractice, play: M.play.renderPlay, me: M.me.renderMe, dances: M.dances.renderDances, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, coach: M.coachhub.renderCoachHub };
         for (const [name, render] of Object.entries(screens)) assert.doesNotThrow(render, `${day} ${state}: ${name}`);
-        const tc = el("#todayCard").innerHTML; assert.ok(tc.includes("today-start") || tc.includes("Practice done") || tc.includes("✅"), `${day} ${state}: Today's card has its button`);
+        const tc = el("#todayCard").innerHTML; assert.ok(tc.includes("today-start") || tc.includes("today-once"), `${day} ${state}: Today's card has its button`);
       }
     }
   } finally { globalThis.Date = RealDate; }

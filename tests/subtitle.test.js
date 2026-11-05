@@ -31,8 +31,9 @@ test("short plans and odd lists read sensibly", () => {
   assert.equal(planSummary([{ id: "fix-a", kind: "fix" }, { id: "new-b", kind: "fix" }, { id: "solo-run", kind: "run" }]), "Your fix · solo", "two fixes say it once");
 });
 
-test("Today's home-day subtitle comes from the plan, the weekday's old line only if the plan is empty", () => {
-  const home = src("js/views/home.js"); assert.match(home, /import \{ planSummary \} from "\.\.\/plan\.js";/);
-  assert.match(home, /else if\(home\)\{ what="🏠 Home practice"; sub=`<div class="today-sub">\$\{esc\(planSummary\(plan\)\|\|hp\|\|"Home practice"\)\}<\/div>\$\{pd\?"":`<div class="today-sub today-when">\$\{BEST_TIME\}<\/div>`\}`; \}/);
+test("1.60.0: Today's home day says the one ask, not the session's contents; the plan's summary stays on Mom's card", () => {
+  const home = src("js/views/home.js"); assert.doesNotMatch(home, /planSummary/);
+  assert.match(home, /else if\(home\)\{ what="🏠 Home day"; sub=`<div class="today-sub">\$\{pd\|\|td\?DAY_ASK\.homeDone:DAY_ASK\.home\}<\/div>/);
+  assert.match(src("js/momweek.js"), /planSummary\(items\)/);
   assert.match(src("js/version.js"), /APP_VERSION = "1\.(54\.[2-9]|5[5-9]|[6-9]\d)/);
 });

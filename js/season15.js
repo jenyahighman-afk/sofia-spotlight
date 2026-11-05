@@ -111,19 +111,17 @@ export function daysSinceDance(practice, today){
 }
 
 // ---- DOM (Today) ----
-// Never more than 2 days without the solo: after two days without it the card asks for the memory run today.
-function gapNudge(date){ if ((((activePlan(date) || {}).rules || {}).studioDays || {})[String(new Date(date + "T00:00:00").getDay())] === "watch") return ""; const max = ((activePlan(date).rules || {}).maxGap) || 2; const gap = daysSinceDance(S.practice, date); return Number.isFinite(gap) && gap >= max ? `<div class="sw-next sw-gap">🧠 ${gap} days without your solo: do the memory run today <button class="btn sm coral" onclick="showPage('practice')">▶ Go</button></div>` : ""; }
 // A checkpoint can be ticked once its day is here or gone (Build 4: never ahead of time — the Showcase and the Ball are not
 // "made" in October), and cpTick asks once before saving. Pure.
 export const canTick = (state) => state === "today" || state === "passed";
 export const CP_CONFIRM = "Did you really make it?";
-// One checkpoint row on the season card: ✓ Made it on today's or a passed one (a passed one asks "did you make it?"), undo
+// One checkpoint row on the season card: ✓ Made it on today's or a passed one (no question on her screen since 1.60.0), undo
 // on a ticked one, a Book a private button on the undated rehearsal one, the date alone on one still to come.
 export function cpRow(c, date = todayStr()){
   const when = c.d ? `<b>${esc(fmt(c.d))}</b>${c.state === "today" ? " <b>· today!</b>" : c.state === "next" ? ` <span class="muted">(${daysUntil(c.d)} day${daysUntil(c.d) === 1 ? "" : "s"})</span>` : ""}` : "";
   if (c.state === "done") return `<div class="sw-next cp cp-done"><span class="grow">✅ <b>${esc(fmt(c.done))}</b> · ${esc(c.t)}</span><button class="lnk" onclick="cpTick('${c.id}',false)">undo</button></div>`;
   if (c.state === "book") return `<div class="sw-next cp cp-book"><span class="grow">📅 <b>Book it:</b> ${esc(c.t)}</span><button class="btn sm coral" onclick="openRehearsal('solo')">📅 Book a private</button></div>`;
-  if (c.state === "passed") return `<div class="sw-next cp cp-passed"><span class="grow">🎯 ${when} · ${esc(c.t)}<div class="small muted">Did you make it?</div></span><button class="btn sm coral" onclick="cpTick('${c.id}',true)">✓ Made it</button></div>`;
+  if (c.state === "passed") return `<div class="sw-next cp cp-passed"><span class="grow">🎯 ${when} · ${esc(c.t)}</span><button class="btn sm ghost" onclick="cpTick('${c.id}',true)">✓ Made it</button></div>`;
   if (c.state === "today") return `<div class="sw-next cp"><span class="grow">🎯 ${when} · ${esc(c.t)}</span><button class="btn sm ghost" onclick="cpTick('${c.id}',true)">✓ Made it</button></div>`;
   return `<div class="sw-next cp"><span class="grow">🎯 ${when} · ${esc(c.t)}</span></div>`;
 }
@@ -136,7 +134,6 @@ export function renderSeasonCard(date = todayStr()){
   el.innerHTML = `${wk ? `<div class="row"><b class="grow">📅 Week ${wk.w} of ${wk.total}${wk.phase ? " · " + esc(wk.phase.n) : ""}${wk.light ? " · light week" : ""}</b><span class="chip">${esc(fmt(wk.of).replace(/^\w+, /, ""))} – ${esc(fmt(wk.to).replace(/^\w+, /, ""))}</span></div>
     <div class="sw-goal">🌸 <b>Solo:</b> ${esc(wk.solo)}</div><div class="sw-goal">👯 <b>Trio:</b> ${esc(wk.trio)}</div>${fri ? `<div class="sw-goal">⭐ <b>Friday:</b> ${esc(fri)}</div>` : ""}` : ""}
     ${wk && wk.judges ? `<div class="sw-goal">🎧 <b>Judges' week:</b> their recordings first, then the fixes they named</div>` : ""}${wk && wk.audition ? `<div class="sw-goal">🎟 <b>Audition weeks:</b> the panel teaches on the day — a pick-up drill and improv every full day, nothing to film</div>` : ""}${wk && wk.extra ? `<div class="sw-goal">${esc(wk.extra)}</div>` : ""}
-    ${gapNudge(date)}
     ${cps.map(c => cpRow(c, date)).join("")}
     <div class="row sw-foot"><button class="lnk" onclick="openByWhen()">📍 All checkpoints</button></div>
     ${pins.length ? `<div class="sw-pins"><div class="small"><b>📌 Ms. Brittany's homework</b></div>${pins.map(c => `<button class="fixchip pin" onclick="showMe('${c.id}')">${c.tag === "memory" ? "🧠" : "🦵"} ${esc(firstSentence(c.text))}</button>`).join("")}</div>` : ""}`;

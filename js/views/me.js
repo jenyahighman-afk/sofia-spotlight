@@ -1,11 +1,11 @@
 // Me tab: avatar (tap = customize, long-press = Grown-ups), streak, badge case, personal bests, skill rings, repeated notes.
-import { $, esc, todayStr, toast, expose } from "../util.js";
-import { CLASSES, PRACTICE_ITEMS, SKILLS } from "../data.js";
-import { S, events, studioDates } from "../store.js";
+import { $, esc, toast, expose } from "../util.js";
+import { PRACTICE_ITEMS, SKILLS } from "../data.js";
+import { S } from "../store.js";
 import { avRender, avToggle } from "../avatar.js";
 import { renderPaletteRow, applyPalette } from "../palette.js";
 import { renderRitualCard } from "../mind.js";
-import { computeStreak, bestStreak, practicedDays } from "../streak.js";
+import { danceDays, danceCount, practicedDays } from "../streak.js";
 import { earned, AUTO_BADGES, checkBadges } from "../badges.js";
 import { styleProgress, skillState, kidCycle, STATE_EMOJI, STATE_LABEL, levelGroups, focusLabel } from "../skills.js";
 import { patterns, TAG_LABEL, TAG_EMOJI, closeCorrection, closedCount, isOpen } from "../corrections.js";
@@ -26,12 +26,10 @@ const ring = (pct, ic) => { const r = 26, c = 2 * Math.PI * r; return `<svg view
 
 function renderMe(){
   avRender(); renderGoalsCard(); renderPaletteRow(); applyPalette(); renderRitualCard();
-  const today = todayStr(); const streak = computeStreak({ practice: S.practice, classes: CLASSES, events: [...events(), ...studioDates()], totalItems: PRACTICE_ITEMS.length, today });
-  const best = bestStreak({ practice: S.practice, classes: CLASSES, events: [...events(), ...studioDates()], totalItems: PRACTICE_ITEMS.length, today });
   renderReminder(); renderFriends(); renderCardsCard(); renderCostumeCard(); renderGlowCard();
   $("#meMoments").innerHTML = `<div class="row"><h3 class="grow">📸 Moments</h3><span class="chip violet">${momentCount()} kept</span></div><p class="small muted">Turn a photo into a card with a sticker, your streak and your avatar. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
   const nu = nextUnlock(); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;
-  $("#meStreak").innerHTML = `<div class="stat"><b>${streak}</b><span>day streak 🔥</span></div><div class="stat"><b>${best}</b><span>best streak</span></div><div class="stat"><b>${practicedDays(S.practice, PRACTICE_ITEMS.length)}</b><span>practice days</span></div><div class="stat"><b>${closedCount(S.corrections)}</b><span>fixes closed ✅</span></div>`;
+  $("#meStreak").innerHTML = `<div class="stat"><b>${danceDays(S.practice)}</b><span>dance days ⭐</span></div><div class="stat"><b>${danceCount(S.practice)}</b><span>dances 🎵</span></div><div class="stat"><b>${practicedDays(S.practice, PRACTICE_ITEMS.length)}</b><span>practice days</span></div><div class="stat"><b>${closedCount(S.corrections)}</b><span>fixes closed ✅</span></div>`;
   // badge case
   const got = earned(); const gotKeys = new Set(got.map(b => b.key));
   const locked = AUTO_BADGES.filter(b => !gotKeys.has(b.key));

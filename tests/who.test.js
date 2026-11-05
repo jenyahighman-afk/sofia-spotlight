@@ -28,9 +28,9 @@ test("the picker: Sofia, Hannah, Lauren or all three; never nobody; names come f
 
 test("names line and the Moment label: 'Sofia, Hannah & Lauren'; the streak stays on the card and is Sofia's", () => {
   assert.equal(namesLine(["Sofia"]), "Sofia"); assert.equal(namesLine(["Sofia", "Hannah"]), "Sofia & Hannah"); assert.equal(namesLine(["Sofia", "Hannah", "Lauren"]), "Sofia, Hannah & Lauren"); assert.equal(namesLine([]), ""); assert.equal(namesLine(["", "Hannah"]), "Hannah");
-  assert.equal(momentSub(["Sofia"], 5), "🔥 5-day streak", "alone: unchanged from before"); assert.equal(momentSub(["Sofia"], 0), ""); assert.equal(momentSub([], 5), "🔥 5-day streak");
-  assert.equal(momentSub(["Sofia", "Hannah", "Lauren"], 5), "💃 Sofia, Hannah & Lauren  ·  🔥 5-day streak"); assert.equal(momentSub(["Hannah", "Lauren"], 0), "💃 Hannah & Lauren");
-  assert.equal(momentSub(["Hannah"], 5), "💃 Hannah", "a friend alone is named, and Sofia's streak stays off her card"); assert.equal(momentSub(["Sofi"], 5, "Sofi"), "🔥 5-day streak", "Sofia's own avatar name counts as alone");
+  assert.equal(momentSub(["Sofia"], 5), "⭐ 5 dance days", "alone: her count (1.60.0: dance days, not a streak)"); assert.equal(momentSub(["Sofia"], 0), ""); assert.equal(momentSub([], 1), "⭐ 1 dance day");
+  assert.equal(momentSub(["Sofia", "Hannah", "Lauren"], 5), "💃 Sofia, Hannah & Lauren  ·  ⭐ 5 dance days"); assert.equal(momentSub(["Hannah", "Lauren"], 0), "💃 Hannah & Lauren");
+  assert.equal(momentSub(["Hannah"], 5), "💃 Hannah", "a friend alone is named, and Sofia's streak stays off her card"); assert.equal(momentSub(["Sofi"], 5, "Sofi"), "⭐ 5 dance days", "Sofia's own avatar name counts as alone");
   const m = src("js/moments.js"); assert.match(m, /M\.names = pickedNames\(\)/, "the card starts with who's dancing"); assert.match(m, /mmWho\(/, "and the names can be toggled on the stage"); assert.match(m, /momentSub\(M\.names, M\.streak, dancers\(\)\[0\]\.n\)/, "with her own name, so a renamed avatar still reads as alone");
 });
 

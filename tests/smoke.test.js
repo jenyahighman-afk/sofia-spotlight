@@ -59,7 +59,7 @@ test("every screen initialises and renders with an empty family space (no throw,
   for (const init of inits()) init();
   for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
   const tc = el("#todayCard").innerHTML, hc = el("#habitCard").innerHTML; assert.equal((hc.match(/class="choice-card/g) || []).length, 4, "the extras card has four choice cards (the fourth is Memorize it)"); assert.ok(hc.includes("memoFocus(") || hc.includes("openMemorize("), "the Memorize card points at the dance or the memorize sheet"); assert.ok(hc.includes("habitTired('stretch')"), "the extras card has the tired-day row");
-  assert.ok(tc.includes("today-start") && tc.includes("openPracticeMode()") && tc.includes("off left this week"), "Today's one card has the one button and the skips left"); assert.equal((tc.match(/class="choice-card/g) || []).length, 0, "no choice cards on the one card");
+  assert.ok(tc.includes("today-once") && tc.includes("openPlayer('solo',{once:true})") && tc.includes("dance day") && !tc.includes("off left this week"), "Today's one card has ▶ My solo and ▶ My trio and a count that only goes up (1.60.0)"); assert.equal((tc.match(/class="choice-card/g) || []).length, 0, "no choice cards on the one card");
   assert.ok(hc.includes("openMoments()"), "the extras card has the Moment button"); assert.ok(el("#meMoments").innerHTML.includes("openMoments()"), "Me has the Moments card");
   assert.ok(el("#danceList").innerHTML.includes("openPlayer('solo')"), "solo cover has ▶ Practice");
   assert.ok(el("#danceList").innerHTML.includes("More ▸"), "More ▸ is collapsed by default");
@@ -120,7 +120,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#weekFix").innerHTML.includes("Point your foot") && el("#weekFix").innerHTML.includes("This week's fix"), "Today shows this week's fix");
   assert.ok(el("#badgeCase").innerHTML.includes("badge on"), "earned badge lit");
   assert.ok(el("#practiceHead").innerHTML.includes("1 run"), "run shown on Practice");
-  assert.ok(el("#todayCard").innerHTML.includes("1-day streak"), "a run makes today count");
+  assert.ok(el("#todayCard").innerHTML.includes("1 dance day"), "a run makes today a dance day");
   assert.ok(el("#reportList").innerHTML.includes("it froze"), "report listed for Mom");
   assert.ok(el("#reviewList").innerHTML.includes("Great reach") && !el("#reviewList").innerHTML.includes("Mom can see"), "review card renders for Grown-ups");
   assert.ok(el("#coachHub").innerHTML.includes("Solo") && el("#coachHub").innerHTML.includes("Fixes the coach gave") && el("#coachHub").innerHTML.includes("Point your foot"), "Coach corner groups the review under its dance with the fix");

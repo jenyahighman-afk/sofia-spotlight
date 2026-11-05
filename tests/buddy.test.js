@@ -24,7 +24,9 @@ test("before the day counts: comp weekend, then the plan's must-box, then comp m
   assert.equal(B.pickStep({ ...base, compMode: true }).key, "comp-mode");
   assert.equal(B.pickStep({ ...base, restDay: true }).key, "rest");
   const c = B.pickStep(base, seq(0.5)); assert.equal(c.key, "game"); assert.equal(c.vars.game, "Mirror"); assert.equal(c.go, "go_game()");
-  const d = B.pickStep({ ...base, cards: [card("trick", "Leap", true), card("move", "Passé", false)] }, seq(0)); assert.equal(d.key, "move", "a card already done is skipped");
+  // 1.60.0: one dance of the solo is offered next to Today's cards, as an invitation
+  const inv = B.pickStep(base, seq(0)); assert.equal(inv.key, "solo"); assert.equal(inv.go, "openPlayer('solo',{once:true})");
+  const d = B.pickStep({ ...base, cards: [card("trick", "Leap", true), card("move", "Passé", false)] }, seq(0.6)); assert.equal(d.key, "move", "a card already done is skipped");
 });
 
 test("once the day counts: plan bonus, the small open things, then fun; all done when nothing is left", () => {
@@ -45,8 +47,9 @@ test("lines: every situation has lines, placeholders are filled from real values
   for (let i = 0; i < 200; i++) { const m = B.compose({ ...base, dayDone: i % 2 === 0, door: false, glow: i % 3 === 0 }, { rng: Math.random, lines }); const all = [m.opener, m.text, m.fact, m.button].join(" "); assert.ok(!/undefined|null|\{\w+\}/.test(all), all); assert.ok(m.text.length > 5, m.key); }
   const first = B.compose(base, { rng: () => 0, lines }); const second = B.compose(base, { rng: () => 0, lines, last: first.id }); assert.notEqual(second.id, first.id, "never the same step line twice in a row");
   const jd = B.compose({ ...base, dayDone: true }, { rng: () => 0, lines, justDone: true }); assert.ok(lines.steps["just-done"].includes(jd.opener), "right after a bite it cheers first");
-  const back = B.compose({ ...base, streak: 0 }, { rng: () => 0, lines }); assert.ok(lines.steps.comeback.includes(back.opener), "a broken streak gets a fresh-start cheer, not a scolding");
-  const f = B.factsFor({ ...base, skips: 1, classes: [{ name: "Mini Ballet III", t: "4:30–5:30" }] }).map(x => x[0]); assert.deepEqual(f.sort(), ["class", "event", "pet", "skips", "streak"].sort());
+  const back = B.compose({ ...base, streak: 0 }, { rng: () => 0, lines }); assert.ok(lines.openers.map(t => B.fill(t, { name: "Sofia", pet: "Bun-Bun" })).includes(back.opener), "1.60.0: a gap gets the same hello as any day, no streak talk");
+  for (const t of [...Object.values(lines.steps).flat(), ...Object.values(lines.facts).flat(), ...lines.openers]) assert.doesNotMatch(t, /streak|days off|misses you|\bfirst\b.*\bthen\b/i, t);
+  const f = B.factsFor({ ...base, danceDays: 5, classes: [{ name: "Mini Ballet III", t: "4:30–5:30" }] }).map(x => x[0]); assert.deepEqual(f.sort(), ["class", "days", "event", "pet"].sort());
   assert.ok(!B.factsFor({ ...base, event: { name: "Far", days: 200 } }).some(x => x[0] === "event"), "far-off events stay quiet");
 });
 

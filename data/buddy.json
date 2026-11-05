@@ -1,5 +1,5 @@
 {
-  "_note": "The talking helper (js/buddy.js): her dance pet pops up with ONE next step. A message = an opener + the step for the situation + sometimes a true fact. Every {placeholder} is filled from the app's own data (her name, the pet's name, today's plan item, streak, skips, stars, events). Keep lines short, kind, funny; never invent facts.",
+  "_note": "The talking helper (js/buddy.js): her dance pet pops up with ONE next step. A message = an opener + the step for the situation + sometimes a true fact. Every {placeholder} is filled from the app's own data (her name, the pet's name, today's plan item, her dance days, stars, events). Since 1.60.0 every step is an invitation: no streak, no days off left, nothing about a day without dancing. Keep lines short, kind, funny; never invent facts.",
   "openers": [
     "Psst, {name}! 🐰",
     "Hi {name}! {pet} here.",
@@ -37,17 +37,17 @@
       "Technique time ✨ {move}. Pointy toes, proud chest!"
     ],
     "solo": [
-      "Streak safe ✅ Now the solo, then the trio ⭐",
-      "The streak is safe. The solo isn't done yet: ▶ Start practice and it is ⭐",
-      "Games are for after the solo. Your solo misses you 🌸"
+      "Feel like dancing your solo once? Two minutes, with the music 🎵",
+      "One dance with the music? Your solo is ready when you are 🌸",
+      "Want to dance your solo once? I'll watch. I'm very good at watching 👀"
     ],
     "trio": [
-      "Solo done ⭐ Now your trio: this week's goal, then once with the music 👯",
-      "The trio is next! Then the games open 👯",
-      "Hannah and Lauren need you: trio time 👯"
+      "Want to dance your trio once, with the music? 👯",
+      "Trio time, if you feel like it: one dance, two minutes 👯",
+      "Your trio music is ready when you are 👯"
     ],
     "game": [
-      "Quick game today: {game}. Keeps your streak, and it's fun 🎮",
+      "Quick game today: {game}. Just for fun 🎮",
       "How about {game}? Practice in disguise 🥸"
     ],
     "memo": [
@@ -67,11 +67,11 @@
       "No class, no plan today. Rest is part of training! Feel like a tiny stretch? 🧘"
     ],
     "comeback": [
-      "New streak starts today! One little thing = day one 🔥",
-      "I missed you! Let's start a fresh streak. Just one little thing today 🐰"
+      "Hi again! One little thing today? 🐰",
+      "You're here! Pick anything you like 🐰"
     ],
     "just-done": [
-      "Yesss! Streak safe ✅",
+      "Yesss! ✅",
       "WOOHOO! 🎉 That one is in the book.",
       "Look at you go! ✅",
       "*does a happy hop* 🐰"
@@ -125,8 +125,7 @@
   },
   "facts": {
     "event": ["{eventDays} days to {event}! 🏆", "{event} is in {eventDays} days. We're getting ready! ✨"],
-    "streak": ["🔥 {streak}-day streak. Don't tell the other bunnies, they'll be jealous.", "🔥 {streak} days in a row! That's a lot of hops."],
-    "skips": ["Heads up: days off left this week: {skips}. A bite of practice keeps the 🔥 going."],
+    "days": ["⭐ {danceDays} dance days so far. Don't tell the other bunnies, they'll be jealous.", "⭐ {danceDays} dance days! That's a lot of hops."],
     "class": ["Studio today: {class} at {time} 🏫"],
     "pet": ["We've danced together on {petDays} days 🐰💕"],
     "tip": ["🎟 Backstage Pass tip: {tip}", "From your Backstage Pass: {tip}"]

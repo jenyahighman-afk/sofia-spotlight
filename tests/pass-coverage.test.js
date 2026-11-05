@@ -38,7 +38,8 @@ function readmeFeatures(md){
 // Covered: the key → words Sofia reads in data/pass.json.
 const PHRASES = {
   "coach-corner": "Coach corner",
-  "solo-and-trio-first": "the solo and the trio come first",
+  "solo-and-trio-first": "Best time on a home day",
+  "asking-less": "open every day",
   "solos-cue-table-cue-cards-and-memorize-mode": "🧠 Memorize",
   "15-week-plan-teacher-homework-studio-dates": "Own it",
   "practice-rules-from-the-research": "two videos in a row",
@@ -128,11 +129,12 @@ test("the sentences the two Passes share read the same (emoji and ★/⭐ aside:
     "It walks you and Mom through it: watch the last run, say what went well, then ✓ It showed or Not yet for your one fix.",
     "Your finish lines are on Today's season card and on Toolkit page 1. When you make one, tap ✓ Made it with Mom, then pick a reward",
     "Tap How ready? on Today to see four bars for your solo. Pause & Predict fills Know, fixes that showed fill Clean, your eight tricks fill Tricks, full runs and Sunday films fill Perform.",
-    "In the app too: on a home day the solo and the trio come first. The countdown door, the dare and the weekend games open once both are done",
     "Best time on a home day: a small snack after school, dance about 45 minutes later, dinner after. Never right after a big meal: wait 1½–2 hours.",
     "pack your dance bag and put it by the door, help with dinner",
   ];
   for (const s of SHARED) { const n = norm(s); assert.ok(app.includes(n), "app: " + s); assert.ok(print.includes(n), "paper: " + s); }
+  // 1.60.0 (Jenya, Nov 5: no more reprints): the games are open every day in the app; the printed Pass keeps its Nov 2 line
+  assert.ok(app.includes(norm("the countdown door, the dare and the games are open every day")), "app: the games are open"); assert.ok(print.includes(norm("open once both are done")), "paper: as printed");
   assert.doesNotMatch(paper + kid, /make your bed|send it to Coach me|Chunks or Cue cards|Tap Done/i, "the old lines are gone from both");
   assert.ok(/Co Tech · PITCH rehearsal\s+10:00–12:15\s+\+ memory run/.test(paper), "Saturday carries the memory run on paper, like Wednesday");
   assert.ok(pass.parts.find(p => p.id === "week").lines.some(l => /^Sat .*memory run/.test(l)), "and in the app");
