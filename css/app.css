@@ -618,6 +618,13 @@ body.modal{overflow:hidden}
 .kev-done{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
 .me-tile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;font:inherit;color:var(--ink)} .me-tile .mt-ic{font-size:1.8rem} .me-tile b{display:block;font-family:Fredoka;font-size:1.1rem} .me-tile small{display:block;color:var(--ink-2);font-weight:700} .me-tile .mt-go{font-size:1.4rem;color:var(--ink-2)}
 .page-back{margin-bottom:10px}
+/* 1.62.0: the Dances tab opens on small tiles; a tile opens the dance's page */
+.dance-tile{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:10px 12px;margin:0 0 10px;box-shadow:var(--shadow);cursor:pointer}
+.dance-tile.coral{border-color:var(--coral)} .dance-tile.sun{border-color:var(--sun)} .dance-tile.violet{border-color:var(--violet)} .dance-tile.aqua{border-color:var(--aqua)}
+.dance-tile .cover-art{width:52px;height:52px;font-size:1.6rem;border-radius:14px} .dance-tile b{display:block;font-family:Fredoka;font-size:1.02rem;line-height:1.2} .dance-tile small{display:block;color:var(--ink-2);font-weight:700;font-size:.78rem;margin-top:2px}
+.dance-tile .dt-music{flex:none;font-size:1.2rem;padding:8px 12px} .dance-tile .dt-go{flex:none;font-size:1.4rem;color:var(--ink-2)}
+.class-fold .dance-tile{box-shadow:none;margin:8px 0 0;padding:8px 10px} .class-fold .dance-tile .cover-art{width:40px;height:40px;font-size:1.25rem}
+.dance-tricks{margin:8px 0 4px} .dance-tricks .fixchips{flex-direction:row;flex-wrap:wrap} .dance-tricks .fixchip{padding:6px 10px;font-size:.82rem;box-shadow:none}
 .today .today-media{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px} .today .today-media .btn.sm{padding:7px 2px;font-size:.78rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.15}
 .season-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.95rem;line-height:1.35} .season-fold>summary .fl-text{flex:1;min-width:0}
 html[data-season="halloween"] #seasonFold:before{right:0;left:auto;transform:none;width:46px;height:46px}

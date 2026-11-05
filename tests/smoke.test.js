@@ -54,6 +54,9 @@ test("the five kid tabs and every Grown-ups page exist; nothing text-heavy was d
   assert.ok(html.includes('id="showme"') && html.includes('id="player"'));
 });
 
+// 1.62.0: the Dances tab opens on tiles and a dance's card is on its own page. Every dance's page, one after the other.
+const dancePages = () => { const out = M.store.dances().map(d => { M.dances.danceOpen(d.id); return el("#danceList").innerHTML; }).join("\n"); M.dances.danceOpen(null); return out; };
+
 test("every screen initialises and renders with an empty family space (no throw, content produced)", async () => {
   resetDom(); for (const k of Object.keys(M.store.S)) M.store.S[k] = {};
   for (const init of inits()) init();
@@ -61,17 +64,17 @@ test("every screen initialises and renders with an empty family space (no throw,
   const tc = el("#todayCard").innerHTML, hc = el("#habitCard").innerHTML; assert.equal((hc.match(/class="choice-card/g) || []).length, 4, "the extras card has four choice cards (the fourth is Memorize it)"); assert.ok(hc.includes("memoFocus(") || hc.includes("openMemorize("), "the Memorize card points at the dance or the memorize sheet"); assert.ok(hc.includes("habitTired('stretch')"), "the extras card has the tired-day row");
   assert.ok(tc.includes("today-once") && tc.includes("openPlayer('solo',{once:true})") && tc.includes("dance day") && !tc.includes("off left this week"), "Today's one card has ▶ My solo and ▶ My trio and a count that only goes up (1.60.0)"); assert.equal((tc.match(/class="choice-card/g) || []).length, 0, "no choice cards on the one card");
   assert.ok(hc.includes("openMoments()"), "the extras card has the Moment button"); assert.ok(el("#meMoments").innerHTML.includes("openMoments()"), "Me has the Moments card");
-  assert.ok(el("#danceList").innerHTML.includes("openPlayer('solo')"), "solo cover has ▶ Practice");
-  assert.ok(el("#danceList").innerHTML.includes("More ▸"), "More ▸ is collapsed by default");
-  assert.ok(el("#danceList").innerHTML.includes('data-memo="solo"') && el("#danceList").innerHTML.includes('data-memo="trio"'), "the solo and the trio get a Memorize card");
-  assert.ok(el("#danceList").innerHTML.includes("Today's chunk:") && el("#danceList").innerHTML.includes("memoPlay('trio','test')"), "the card names today's chunk and opens Test me");
-  assert.ok(!el("#danceList").innerHTML.includes('data-memo="wf-tap"'), "a dance without chunks gets none");
-  { const dl = el("#danceList").innerHTML; assert.ok(/<div class="memo-via-sheet"><details class="more memo" data-memo="solo" >/.test(dl), "the solo's Memorize it starts folded and out of view: the sheet's Five steps opens it (Build 4)"); assert.ok(/<details class="more memo" data-memo="trio" >/.test(dl), "the trio's fold stays in view");
+  assert.ok(dancePages().includes("openPlayer('solo')"), "solo cover has ▶ Practice");
+  assert.ok(dancePages().includes("More ▸"), "More ▸ is collapsed by default");
+  assert.ok(dancePages().includes('data-memo="solo"') && dancePages().includes('data-memo="trio"'), "the solo and the trio get a Memorize card");
+  assert.ok(dancePages().includes("Today's chunk:") && dancePages().includes("memoPlay('trio','test')"), "the card names today's chunk and opens Test me");
+  assert.ok(!dancePages().includes('data-memo="wf-tap"'), "a dance without chunks gets none");
+  { const dl = dancePages(); assert.ok(/<div class="memo-via-sheet"><details class="more memo" data-memo="solo" >/.test(dl), "the solo's Memorize it starts folded and out of view: the sheet's Five steps opens it (Build 4)"); assert.ok(/<details class="more memo" data-memo="trio" >/.test(dl), "the trio's fold stays in view");
     const cards = (dl.match(/data-memo="/g) || []).length; assert.ok(cards >= 2);
     assert.equal((dl.match(/class="memo-how"/g) || []).length, cards * 6, "each of the five steps and the full run explain themselves behind How?, on every Memorize card");
     assert.equal((dl.match(/memo-how memo-rule/g) || []).length, cards, "the rules sit behind How does this work?"); assert.ok(dl.includes("“"), "the story itself stays in view"); }
   assert.match(read("js/views/dances.js"), /Google Photos/, "the links field says Google Photos albums go there");
-  assert.ok(!el("#danceList").innerHTML.includes("<details class=\"more\" open"), "no More opened by default");
+  assert.ok(!dancePages().includes("<details class=\"more\" open"), "no More opened by default");
   assert.ok(el("#practiceChecklist").innerHTML.split("pchk").length > (watchDay() ? 2 : shortDay() ? 5 : 10), "checklist rows rendered");
   if (shortDay() && !watchDay()) assert.ok(el("#practiceChecklist").innerHTML.includes("Solo from the top · 5 min"), "a studio day has the memory run (its run item is 'Solo from the top · 5 min' since Build 4)");
   assert.ok(html.includes('<details class="more plan-fold" id="planFold">') && html.indexOf('id="planFold"') < html.indexOf('id="practiceChecklist"'), "the exercise list sits inside a closed fold on Practice");
@@ -105,7 +108,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   S.goals = { g1: { id: "g1", name: "Right split", preset: "split-r", unit: "deg", target: 180, emoji: "🦵", createdAt: "2026-09-01", checkins: [{ id: "c1", date: "2026-09-01", value: 150 }, { id: "c2", date: "2026-09-15", value: 160 }] } };
   S.reports = { r1: { page: "home", note: "it froze", error: "TypeError: x", at: t + "T10:00:00Z", version: "1.1.0" } };
   for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
-  const dl = el("#danceList").innerHTML;
+  const dl = dancePages();
   assert.ok(dl.includes("fixchip") && dl.includes("showMe('a')"), "chip opens Show me");
   { window.meStyle("acro"); const sl = el("#skillList").innerHTML;
     assert.ok(sl.includes("Glass House Dance") && sl.includes("her group: <b>Level 2–3</b>"), "the acro list names the studio chart and her group");
@@ -130,14 +133,14 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#coachNew").innerHTML.includes("Run check"), "Coach corner offers a run check");
   assert.ok(el("#modeRow").innerHTML.includes("setMode('comp')"), "Settings has the mode row");
   assert.ok(el("#bitesCard").innerHTML.includes("How are you today?") && el("#bitesCard").innerHTML.includes("biteFeel('e',1)"), "Today asks how she feels"); assert.ok(el("#paletteRow").innerHTML.includes("setPalette('ocean')"), "Me has the color schemes"); assert.ok(el("#mindCard").innerHTML.includes("mindTry()"), "Today shows this week's mind skill"); assert.ok(el("#ritualCard").innerHTML.includes("ritualToggle('shake')") && el("#ritualCard").innerHTML.includes("ritualRun()"), "Me builds the pre-stage routine"); assert.ok(el("#coachNew").innerHTML.length > 0); assert.ok(el("#teacherText").value.startsWith("Sofia — practice summary"), "teacher summary renders on Coach reviews"); assert.ok(html.includes('id="compCard"'), "Today has a comp card");
-  S.dances = { solo: { id: "solo", links: ["Original choreo | https://photos.app.goo.gl/abc", "https://example.com/x"] } }; M.dances.danceEdit("solo"); M.dances.danceEdit(null); const dh = el("#danceList").innerHTML; assert.ok(dh.includes(">🔗 Original choreo<") && dh.includes(">🔗 Link 2<") && dh.includes("href=\"https://photos.app.goo.gl/abc\""), "dance links take a name before a |"); S.dances = {};
+  S.dances = { solo: { id: "solo", links: ["Original choreo | https://photos.app.goo.gl/abc", "https://example.com/x"] } }; M.dances.danceEdit("solo"); M.dances.danceEdit(null); const dh = dancePages(); assert.ok(dh.includes(">🔗 Original choreo<") && dh.includes(">🔗 Link 2<") && dh.includes("href=\"https://photos.app.goo.gl/abc\""), "dance links take a name before a |"); S.dances = {};
   assert.ok(el("#quickRow").innerHTML.includes("openQuick('strength')") && el("#quickRow").innerHTML.includes("openQuick('flex')"), "Practice offers the two quick sessions");
   assert.ok(el("#workoutRow").innerHTML.includes("My workouts") && el("#workoutRow").innerHTML.includes("woAdd()"), "Practice has the My workouts row with an Add button"); assert.ok(el("#workoutRow").innerHTML.includes("woPreset(0)") && el("#workoutRow").innerHTML.includes("Core Control"), "the suggested Dance Masterclass programs are offered");
   assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");
   assert.ok(el("#goalRings").innerHTML.includes("Right split") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Me");
   assert.ok(el("#goalReminder").innerHTML.includes("Check-in time"), "goal due after 14 days shows on Today");
   M.goals.openGoal("g1"); assert.ok(el("#goalBody").innerHTML.includes("openCoach('','Right split')"), "a goal's sheet has a coach button for that goal");
-  assert.ok(el("#danceList").innerHTML.includes("openCoach('solo')"), "Coach me on the dance cover");
+  assert.ok(dancePages().includes("openCoach('solo')"), "Coach me on the dance cover");
   if (!shortDay()) assert.ok(el("#practiceChecklist").innerHTML.includes("openCoach('',"), "Coach me on tricks in Practice");
   assert.ok(el("#skillCheckList").innerHTML.includes("Hannah"), "teacher name shown");
   M.showme.showMe("a"); assert.ok(el("#showmeStage").innerHTML.includes("Flexed foot") && el("#showmeStage").innerHTML.includes("Point your foot"), "Show me renders both sides");

@@ -99,7 +99,9 @@ test("the Practice hero speaks the one card's two tiers, never the old 60% line"
 });
 
 test("the solo card has one memorize door: its 🧠 Memorize it fold is out of view until the sheet's Five steps opens it; the trio keeps its fold", async () => {
-  const { renderDances, initDances } = await import("../js/views/dances.js"); resetDom(); clearS(); initDances(); renderDances(); const dl = el("#danceList").innerHTML;
+  const { initDances, danceOpen } = await import("../js/views/dances.js"); resetDom(); clearS(); initDances();
+  // 1.62.0: a dance's card is on its own page (the tab opens on tiles); the two pages, one after the other
+  danceOpen("solo"); const soloPage = el("#danceList").innerHTML; danceOpen("trio"); const dl = soloPage + el("#danceList").innerHTML; danceOpen(null);
   assert.ok(/<div class="memo-via-sheet"><details class="more memo" data-memo="solo" >/.test(dl), "the solo's fold is wrapped, closed");
   assert.ok(/<details class="more memo" data-memo="trio" >/.test(dl) && !/memo-via-sheet"><details class="more memo" data-memo="trio"/.test(dl), "the trio's fold stays in view");
   const solo = dl.slice(dl.indexOf('data-id="solo"'), dl.indexOf('data-id="trio"')); assert.equal((solo.match(/🧠 Memorize</g) || []).length, 1, "one 🧠 Memorize button on the solo card");

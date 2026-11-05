@@ -1,5 +1,7 @@
-// Dances tab: one "cover" card per dance — art, song, ▶ Practice, the top three fixes as chips (tap = Show me), a quick
-// "＋ Note from class", and everything text-heavy under "More ▸" (collapsed). Edit mode lives inside More.
+// Dances tab. Since 1.62.0 (Jenya, Nov 5) it opens on small tiles: the competition dances first, each with 🎵 to play its
+// music straight away, and the class dances folded into one row at the bottom. A tile opens that dance's page: what she uses
+// most on top (🎵 Play music, Hannah's videos, 🧠 Memorize, the tricks in the dance), then ＋ Note and the top three fixes as
+// chips (tap = Show me), and everything text-heavy under "More ▸" (collapsed). Edit mode lives inside More.
 import { $, esc, growAll, toast, uid, expose, roText, roList, edText, edList, todayStr } from "../util.js";
 import { S, storeSet, dances, events } from "../store.js";
 import { media, friendlyError } from "../sync.js";
@@ -11,6 +13,8 @@ import { videosRow, videosEdit } from "../cuecards.js";
 import { memoDances, memoCard, bindMemo } from "../memo.js";
 import { readyFold } from "../ready.js";
 import { PIN_MSG } from "../sunday.js";
+import { SKILLS } from "../data.js";
+import { skillState, STATE_EMOJI } from "../skills.js";
 import { openGrownups } from "../grownups.js";
 
 const STYLE_EMOJI = { lyrical:"🌸", jazz:"⚡", contemporary:"🌊", "hip hop":"🎧", hiphop:"🎧", ballet:"🩰", acro:"🤸", ballroom:"💃", tap:"👟" };
@@ -18,10 +22,21 @@ export const danceEmoji = (d) => STYLE_EMOJI[String(d.style || "").toLowerCase()
 const musicButton=(d)=>`<label class="btn sm ghost" for="dmusic-${d.id}">🎵 ${d.musicFile&&d.musicFile.url?"Replace music file":"Add music file"}</label><input type="file" id="dmusic-${d.id}" hidden onchange="addMusic(this.files[0],'${d.id}');this.value=''">`;
 const musicPlayer=(d)=>d.musicFile&&d.musicFile.url?`<div class="field-lab">Music file · ${esc(d.musicFile.name||"")}</div><audio controls preload="none" src="${esc(d.musicFile.url)}" style="width:100%;margin-top:4px"></audio>`:"";
 async function addMusic(file,danceId){ if(!file) return; await uploadMusic(file,danceId); }
-export function danceEdit(id){ editDance=id; if(id) moreOpen.add(id); renderDances(); }
+export function danceEdit(id){ editDance=id; if(id){ moreOpen.add(id); openDance=id; } renderDances(); }
+// A class dance (the Winter Formal class dances) is not one she practises at home: it goes in the folded row. Pure.
+export const isClassDance = (d) => /class dance/i.test((d && d.name) || "") || /^wf-/.test((d && d.id) || "");
+// The Dances tab's first screen: { comp: [...], cls: [...] } in the list's own order. Pure.
+export function danceGroups(list){ const all = list || []; return { comp: all.filter(d => !isClassDance(d)), cls: all.filter(isClassDance) }; }
+// The tricks in a dance, as the Skills page knows them (data/skills.json styles.<danceId>; today the solo's). Pure.
+export function danceTricks(d, ladder = SKILLS){ const st = ((ladder || {}).styles || {})[(d && d.id) || ""]; return st && Array.isArray(st.skills) ? st.skills : []; }
+// One dance open at a time (null = the tiles). Tapping the Dances tab comes back to the tiles.
+let openDance=null;
+export function danceOpen(id){ const was=openDance; openDance=id||null; if(was!==openDance){ noteFor=null; editDance=null; } renderDances(); if(was!==openDance){ const w=document.querySelector(".wrap"); if(w) w.scrollTop=0; try{ window.scrollTo({top:0}); }catch(e){} } }
+export const openDanceId = () => openDance;
 export function initDances(){
   document.addEventListener("memochanged",()=>renderDances());
-  $("#addDance").onclick=async()=>{ const n=$("#newDanceName").value.trim(); if(!n) return; const id="d"+uid(); await storeSet("dances",id,{id,name:n,song:"",style:"",choreo:"",costume:"",shoes:"",hair:"",color:"coral",music:"",map:"",strengths:[],corrections:[],notes:"",links:[],teacher:"",rehearsal:"",musicUrl:"",bpm:""}); $("#newDanceName").value=""; editDance=id; moreOpen.add(id); };
+  document.addEventListener("page",(e)=>{ if(e&&e.detail==="dances"&&openDance&&!editDance){ openDance=null; noteFor=null; renderDances(); } });
+  $("#addDance").onclick=async()=>{ const n=$("#newDanceName").value.trim(); if(!n) return; const id="d"+uid(); await storeSet("dances",id,{id,name:n,song:"",style:"",choreo:"",costume:"",shoes:"",hair:"",color:"coral",music:"",map:"",strengths:[],corrections:[],notes:"",links:[],teacher:"",rehearsal:"",musicUrl:"",bpm:""}); $("#newDanceName").value=""; editDance=id; moreOpen.add(id); openDance=id; };
 }
 let editDance=null, noteFor=null, noteTag="other"; const moreOpen=new Set();
 function coverArt(d){ const ph=Object.values(S.photos).filter(p=>p.dance===d.id&&p.kind!=="video").sort((a,b)=>(b.at||"").localeCompare(a.at||""))[0]; return ph&&ph.url?`<img src="${esc(ph.url)}" alt="" loading="lazy">`:`<span>${danceEmoji(d)}</span>`; }
@@ -57,11 +72,13 @@ function fullList(d){
 function renderDances(){
   if(editDance&&document.querySelector(`.card[data-id="${editDance}"] .dfield`)) return; // keep an edit in progress when a sync update arrives
   if(noteFor&&document.querySelector(`[data-note="${noteFor}"] input`)&&document.querySelector(`[data-note="${noteFor}"] input`).value) return; // keep a note being typed
-  const list=dances();
-  $("#danceList").innerHTML=list.map(d=>{
+  const list=dances(); if(openDance&&!list.some(d=>d.id===openDance)) openDance=null;
+  const addRow=$("#addDanceRow"); if(addRow) addRow.hidden=!!openDance; const title=$("#dancesTitle"); if(title) title.hidden=!!openDance;
+  if(!openDance){ $("#danceList").innerHTML=tilesHtml(list); return; }
+  $("#danceList").innerHTML=`<div class="row noprint page-back"><button class="btn sm ghost" onclick="danceOpen(null)">‹ All dances</button></div>`+list.filter(d=>d.id===openDance).map(d=>{
     const editing=editDance===d.id; const open=moreOpen.has(d.id);
     const cover=`<div class="cover-top"><div class="cover-art ${d.color||""}">${coverArt(d)}</div><div class="grow"><h3>${esc(d.name)}</h3><div class="small muted">${esc(d.song||"song TBD")}</div>${d.story?`<div class="story">🎭 ${esc(d.story)}</div>`:""}</div></div>
-      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}')">▶ Practice</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>${isCueTable(d.cues)?tableTools(d):videosRow(d)}${memoFold(d)}
+      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}')">🎵 Play music</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>${isCueTable(d.cues)?tableTools(d):videosRow(d)}${memoFold(d)}${tricksRow(d)}
       ${noteFor===d.id?noteForm(d):""}${chips(d)}${patternLine(d)}`;
     const mapbar=d.id==="solo"?`<div class="mapbar" style="margin:8px 0"><div class="soft">soft 0:00–0:48</div><div class="loud">full 0:48–1:52</div><div class="fade">fade</div></div>`:"";
     const photos=`<div class="field-lab">Photos for this dance</div><div class="photos" style="margin-top:6px">${Object.entries(S.photos).filter(([,p])=>p.dance===d.id).map(([pid,p])=>`<div class="ph">${photoTile(p)}${p.cap?`<div class="cap">${esc(p.cap)}</div>`:""}<button class="del" onclick="delPhoto('${pid}')">✕</button></div>`).join("")}</div>
@@ -92,6 +109,19 @@ function renderDances(){
   $("#danceList").querySelectorAll("details.more").forEach(el=>el.addEventListener("toggle",()=>{ el.open?moreOpen.add(el.dataset.more):moreOpen.delete(el.dataset.more); }));
   growAll($("#danceList"));
 }
+// The tiles (1.62.0). A competition dance's tile opens its page; its 🎵 plays the music without opening it. The class dances
+// sit in one folded row at the bottom, smaller, with no music button (they have no track here).
+const openFixes=(d)=>forDance(S.corrections,d.id).filter(c=>c.status!=="done").length;
+export function danceTile(d,{music=true,fixes=0}={}){
+  return `<div class="dance-tile ${d.color||""}" role="button" tabindex="0" onclick="danceOpen('${d.id}')" onkeydown="if(event.key==='Enter')danceOpen('${d.id}')"><span class="cover-art ${d.color||""}">${coverArt(d)}</span><span class="grow"><b>${esc(d.name)}</b><small>${esc(d.song||"song TBD")}${fixes?` · ${fixes} fix${fixes===1?"":"es"}`:""}</small></span>${music?`<button class="btn sm coral dt-music" onclick="event.stopPropagation();openPlayer('${d.id}')" aria-label="Play the music: ${esc(d.name)}">🎵</button>`:""}<span class="dt-go">›</span></div>`;
+}
+function tilesHtml(list){
+  const { comp, cls } = danceGroups(list);
+  return (comp.length?comp.map(d=>danceTile(d,{fixes:openFixes(d)})).join(""):`<p class="small muted">No dances yet.</p>`)
+    + (cls.length?`<details class="card acc class-fold"><summary>🎓 Class dances <span class="chip">${cls.length}</span></summary>${cls.map(d=>danceTile(d,{music:false,fixes:openFixes(d)})).join("")}</details>`:"");
+}
+// ⭐ The tricks in this dance: each opens its trick card (the binder's page for it, with her progress photos).
+function tricksRow(d){ const ts=danceTricks(d); if(!ts.length) return ""; return `<div class="dance-tricks"><div class="small muted">⭐ Tricks in this dance</div><div class="fixchips">${ts.map(t=>`<button class="fixchip" onclick="openCards('${t.id}')">${STATE_EMOJI[skillState(S.skills,t.id)]||"○"} ${esc(t.n)}</button>`).join("")}</div></div>`; }
 function collectDance(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const d={...dances().find(x=>x.id===id)}; card.querySelectorAll(".dfield").forEach(el=>{ d[el.dataset.k]=el.dataset.cues?parseCueText(el.value):el.dataset.list?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value; }); if(d.bpm!==""&&d.bpm!==undefined){ const n=parseFloat(d.bpm); d.bpm=Number.isFinite(n)&&n>0?n:""; }
   // Data-owned fields stay out of the stored copy, so later data updates (Hannah's words, a new pin) still show through:
   // the pinned teacher notes, and a cue table the family hasn't overridden (nudges live in cueTimes).
@@ -101,7 +131,7 @@ async function delDance(id){ if(!confirm("Remove this dance from the list?")) re
 
 // ---- quick note ----
 let rec=null;
-function noteOpen(id){ noteFor=id; noteTag="other"; renderDances(); setTimeout(()=>{ const i=$("#noteText-"+id); if(i) i.focus(); },30); }
+function noteOpen(id){ openDance=id; noteFor=id; noteTag="other"; renderDances(); setTimeout(()=>{ const i=$("#noteText-"+id); if(i) i.focus(); },30); }
 function noteCancel(){ noteFor=null; stopMic(); renderDances(); }
 function noteTagSet(t){ noteTag=t; document.querySelectorAll(".tagpick .chip").forEach(b=>b.classList.toggle("coral",b.textContent.trim().endsWith(TAG_LABEL[t]))); }
 async function noteSave(id){ const text=($("#noteText-"+id)||{}).value||""; if(!text.trim()) return toast("Type or say the note first"); const src=($("#noteSrc-"+id)||{}).value||"me"; const tag=noteTag==="other"?inferTag(text):noteTag; await addCorrection({danceId:id,text,tag,source:src}); noteFor=null; stopMic(); renderDances(); toast("Saved ✓"); }
@@ -120,7 +150,7 @@ async function gotIt(id){ const p=S.corrections[id]; if(p&&p.pinned){ toast(PIN_
 async function reopenFix(id){ await reopenCorrection(id); }
 async function removeFix(id){ if(confirm("Remove this note?")) await removeCorrection(id); }
 export { renderDances, saveDance, delDance };
-expose({ danceEdit, saveDance, delDance, addMusic, noteOpen, noteCancel, noteTagSet, noteSave, noteMic, gotIt, reopenFix, removeFix });
+expose({ danceOpen, danceEdit, saveDance, delDance, addMusic, noteOpen, noteCancel, noteTagSet, noteSave, noteMic, gotIt, reopenFix, removeFix });
 
 // Song words (1.44.0): how many sung lines are typed and timed; the words themselves show in the player, not on the card.
 const wordsLine=(d)=>{ const n=lyricLines(d.lyrics).length; if(!n) return ""; const t=lyricTimesFor(d.lyrics,d.lyricTimes,d.lyricKeys).filter(x=>x!==null).length; return `<div class="small muted" style="margin-top:6px">🎤 ${n} sung lines · ${t===n?"all timed ⭐":t+" timed — ⏱ Time the words in the player"}</div>`; };
@@ -141,5 +171,5 @@ async function addJudgesClip(files,danceId){ const list=[...(files||[])]; if(!li
     catch(e){ console.warn(e); toast("Upload failed: "+friendlyError(e),3500); } }
   await storeSet("dances",danceId,{...(S.dances[danceId]||{}),id:danceId,judgesClips:cur.slice(-JUDGES_MAX)}); moreOpen.add(danceId); renderDances(); toast("Saved to the family space ✓"); }
 async function delJudgesClip(danceId,i){ const d=dances().find(x=>x.id===danceId); const clips=Array.isArray(d&&d.judgesClips)?[...d.judgesClips]:[]; const c=clips[i]; if(!c||!confirm("Remove this recording?")) return; clips.splice(i,1); await storeSet("dances",danceId,{...(S.dances[danceId]||{}),id:danceId,judgesClips:clips}); try{ if(c.path) await media.remove(c.path); }catch(e){ console.warn(e); } renderDances(); }
-function judgesOpen(id){ moreOpen.add(id); renderDances(); setTimeout(()=>{ const el=$("#judges-"+id); if(el) el.scrollIntoView({behavior:"smooth",block:"center"}); },60); }
+function judgesOpen(id){ openDance=id; moreOpen.add(id); renderDances(); setTimeout(()=>{ const el=$("#judges-"+id); if(el) el.scrollIntoView({behavior:"smooth",block:"center"}); },60); }
 expose({ lyricsFromNotes, addJudgesClip, delJudgesClip, judgesOpen });

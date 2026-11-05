@@ -115,5 +115,6 @@ function memoPicture(danceId){
   PIC.timer = setInterval(async () => { PIC.left -= 1; const el = document.querySelector(`[data-memo="${danceId}"] .memo-clock`); if (el) el.textContent = PIC.left + "s"; if (PIC.left <= 0) { clearInterval(PIC.timer); PIC.timer = null; await saveStep(danceId, "picture"); rerender(); } }, 1000);
 }
 async function memoKnown(danceId, name){ const on = !isKnown(S.settings, danceId, name); await setSettings({ memo: setKnown(S.settings, danceId, name, on) }); toast(on ? `${name}: marked known` : `${name}: back in the plan`); rerender(); }
-function memoFocus(danceId){ const el = document.querySelector(`[data-memo="${danceId}"]`); if (el) { el.open = true; el.scrollIntoView({ behavior: "smooth", block: "start" }); } }
+function memoFocus(danceId){ if (typeof window !== "undefined" && typeof window.danceOpen === "function") window.danceOpen(danceId); // 1.62.0: the fold lives on that dance's page
+  const el = document.querySelector(`[data-memo="${danceId}"]`); if (el) { el.open = true; el.scrollIntoView({ behavior: "smooth", block: "start" }); } }
 expose({ memoDone, memoPlay, memoTested, memoPicture, memoKnown, memoFocus });
