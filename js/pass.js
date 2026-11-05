@@ -1,4 +1,5 @@
-// Sofia's Backstage Pass inside the app (data/pass.json: the printed Pass's own words, in 10 short parts). Today shows
+// Sofia's Backstage Pass inside the app (data/pass.json: the printed Pass in 10 short parts; since 1.64.1 its words follow
+// what the app asks, and the printed Pass keeps its own). Me shows
 // the next part until all ten are read; reading a part = getting its one check right (settings.pass.read[part] = the
 // day, schema 49; a star). Then the Bunny's tip of the day from the same pages, picked for the kind of day it is (a
 // studio day, a home day, Sunday…), the same tip all day; the Bunny says it once per phone per day, and asks for the

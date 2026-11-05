@@ -1,15 +1,16 @@
 {
- "_note": "Sofia's Backstage Pass inside the app (js/pass.js, wired in 1.47.0, Build 2 of the Oct 28 review; the file lived in tools/pass/backstage.json until then): the same guide as files/Sofia-Backstage-Pass.pdf (source tools/print/Sofia-Backstage-Pass.html), in 10 short parts. Each part has lines to read and one quick check (q, a = answers, ok = the right one's index, yay = what the right answer shows, hint = what a wrong one shows). Reading a part = getting its check right: settings.pass.read[partId] = date (schema 49), a star. Today shows the next part until all 10 are read, then the tip of the day; the Bunny asks for the next part once nothing has been read for 2 days, and says the day's tip once per phone per day. tips = the Bunny's regular reminders from the pass: when = the moments a tip fits (any, morning, evening, studio = a studio day before class, after = a studio day after class, home = a home practice day, rest = Mon/Tue no home practice, sat, sun), part = the part it comes from. Food is meat-free (Sofia is pescatarian). Keep the week in step with data/classes.json and home-days.json. Build 4, Part B (Oct 29): the one 🧠 Memorize door, the 🎬 Sunday sheet, ✓ Made it and the finish lines, How ready?, plan first on Play, the sticker on ⭐ Plan done, the 8-page Toolkit, the Saturday memory run. tests/pass-coverage.test.js checks that every README feature is named in Sofia's words here or allowed out with a reason (the allowlist lives in the test, not here), that the Toolkit's page count is the one both Passes name, and that the binder's six dividers are in both.",
+ "_note": "Sofia's Backstage Pass inside the app (js/pass.js, wired in 1.47.0, Build 2 of the Oct 28 review; the file lived in tools/pass/backstage.json until then): the same guide as files/Sofia-Backstage-Pass.pdf (source tools/print/Sofia-Backstage-Pass.html), in 10 short parts. Each part has lines to read and one quick check (q, a = answers, ok = the right one's index, yay = what the right answer shows, hint = what a wrong one shows). Reading a part = getting its check right: settings.pass.read[partId] = date (schema 49), a star. Today shows the next part until all 10 are read, then the tip of the day; the Bunny asks for the next part once nothing has been read for 2 days, and says the day's tip once per phone per day. tips = the Bunny's regular reminders from the pass: when = the moments a tip fits (any, morning, evening, studio = a studio day before class, after = a studio day after class, home = a home practice day, rest = Mon/Tue no home practice, sat, sun), part = the part it comes from. Food is meat-free (Sofia is pescatarian). Keep the week in step with data/classes.json and home-days.json. Build 4, Part B (Oct 29): the one 🧠 Memorize door, the 🎬 Sunday sheet, ✓ Made it and the finish lines, How ready?, plan first on Play, the sticker on ⭐ Plan done, the 8-page Toolkit, the Saturday memory run. tests/pass-coverage.test.js checks that every README feature is named in Sofia's words here or allowed out with a reason (the allowlist lives in the test, not here), that the Toolkit's page count is the one both Passes name, and that the binder's six dividers are in both. 1.64.1 (Nov 5, Jenya: no more reprints): these words follow what the app asks since 1.60.0 (class days ask nothing at home, a home day asks one thing she picks, the games are open, counts only go up) and where things are since 1.61.0 (four tabs); the printed Pass keeps its Nov 2 words, so the two differ on the week, the memory run and what comes first, and the crew part says to go with the app. tests/pass1641.test.js.",
  "title": "My Backstage Pass",
  "parts": [
   {
    "id": "crew", "e": "🎭", "n": "Meet your crew", "mins": 2,
    "lines": [
     "You have three helpers this season. Each one has its own job, like a stage crew.",
-    "📱 Spotlight app = TODAY. It tells you what to do today: the plan, ▶ Start practice, the practice player and 🧠 Memorize for your solo, the 🎬 Sunday sheet, stars and games.",
+    "📱 Spotlight app = TODAY. Four tabs at the bottom: Today, Dances, Skills and Me. On Today, ▶ My solo and ▶ My trio open the practice player with your music. 🧠 Memorize, the 🎬 Sunday sheet, stars and games are in the app too.",
     "📋 Practice Toolkit = HOW. Paper, 8 pages: the plan, your sticker tracker (Thu, Fri, Sun, My one fix, the ◀ THIS WEEK clip), the countdown and My rewards, My week, how to practice, your solo map, the trio and This week.",
     "📕 Season Workbook = EVERYTHING ELSE. 16 pages, 6 in your binder: group dances, show day, packing lists, music and people, count sheets.",
-    "If two helpers say different things, your teachers win. After that the app wins, because it's the newest."
+    "If two helpers say different things, your teachers win. After that the app wins, because it's the newest.",
+    "The paper pages were printed before the app got simpler, so some of them ask for more. When they don't match, go with the app."
    ],
    "check": { "q": "Where do you look to see what to do TODAY?", "a": ["The Spotlight app", "The Season Workbook", "A count sheet"], "ok": 0, "yay": "Yes! App = today 📱", "hint": "Which helper knows what day it is?" }
   },
@@ -29,12 +30,16 @@
   {
    "id": "grab", "e": "🎒", "n": "What do I grab?", "mins": 2,
    "lines": [
-    "Home practice day: tap ▶ Start practice in the app. Keep Toolkit page 4 open next to you for your fixes.",
+    "Home day (Thu, Fri, Sun): pick one thing, about 10 minutes. ▶ My solo on Today is a good one: your music plays, and one dance to the end counts.",
     "Finished? When the app says ⭐ Plan done, put a sticker on Toolkit page 2.",
+    "Want more? On Today tap 📋 The whole session, then ▶ Start practice. Keep Toolkit page 4 open next to you for your fixes. It's there when you want it.",
+    "Want to watch it first? 📹 Videos on Today has Hannah's videos. On a video that plays inside the app, 🪞 Mirror flips it so you can follow it like a mirror.",
     "A part of your solo keeps slipping? Dances, your solo, 🧠 Memorize. Chunks plays one piece at a time, Pause & Predict asks what comes next. One 8-count at a time.",
     "A teacher gave you a correction (Saturday group rehearsal too)? Tell Mom and add it with ＋ Note. It becomes your fix right away.",
-    "Learning a trick? Tap 📷 next to it in Me, Skills, then 📷 Add a photo. One every few weeks and your photos line up, so you can see how far you've come.",
-    "Sunday: film your solo, then open the 🎬 Sunday sheet on Today. It walks you and Mom through it: watch the last run, say what went well, then ✓ It showed or Not yet for your one fix.",
+    "Something feels off while your music plays? Tap 📝 Fix here in the practice player. It saves a note with that spot in the music.",
+    "Learning a trick? Tap Skills (the third tab at the bottom), then 📷 next to the trick, then 📷 Add a photo. One every few weeks and your photos line up, so you can see how far you've come.",
+    "⭐ My skill this month is on Skills too. You choose it, and you can change it any time.",
+    "Sunday is film day: film your solo with Mom (that can be your one thing), then open the 🎬 Sunday sheet on Today. It walks you and Mom through it: watch the last run, say what went well, then ✓ It showed or Not yet for your one fix.",
     "Butterflies before a show? Open the Show time tab, then smell the flower, blow out the candle."
    ],
    "check": { "q": "A teacher gives you a correction. What now?", "a": ["Wait and see if she says it again", "Tell Mom and add it with ＋ Note", "Fix it on show day"], "ok": 1, "yay": "Yes! Teachers win, and their notes go in right away ✏️", "hint": "Teachers win, and their notes go in right away." }
@@ -49,23 +54,24 @@
     "4 · Rest up (Jan 4 to the show): fewer runs from Dec 28. Less work, more rest. Nothing new.",
     "Your finish lines are on Today's season card and on Toolkit page 1. When you make one, tap ✓ Made it with Mom, then pick a reward on page 2b.",
     "Tap How ready? on Today to see four bars for your solo. Pause & Predict fills Know, fixes that showed fill Clean, your eight tricks fill Tricks, full runs and Sunday films fill Perform.",
-    "Tiny steps win: one 8-count at a time, one fix at a time, a short practice most days, never more than 2 days without your solo."
+    "Tiny steps win: one 8-count at a time, one fix at a time, one dance at a time. Every dance you finish adds to your count, and the count only goes up."
    ],
    "check": { "q": "When is a fix done?", "a": ["When it shows on two videos in a row", "After one good try", "When you're tired of it"], "ok": 0, "yay": "That's it! Two videos in a row, then the next fix 🎬", "hint": "Think about your Sunday videos…" }
   },
   {
    "id": "week", "e": "📅", "n": "Your week", "mins": 1,
    "lines": [
-    "Mon · Ballet, Acro, Jazz Tech at the studio (4:30–7:30). At home: watch Hannah's two videos, and dance the solo in your head in the car. No dancing tonight.",
-    "Tue · Hip Hop, Ballroom (5:30–7:30) + the memory run.",
-    "Wed · Contemporary (6:30–7:30) + the memory run. Solo rehearsal when one is booked.",
-    "Thu · Home: strong + bendy + technique, your fix, knees or a trick, aerial strength (from Nov 9), solo + trio (35–45 min).",
-    "Fri · Home: the same as Thursday, with aerial drills (from Nov 9) (35–45 min).",
-    "Sat · Co Tech + PITCH rehearsal (10:00–12:15) + the memory run. The big groups practice here.",
-    "Sun · Home: the session, then film the solo + trio + film review (the 🎬 Sunday sheet). Plan your week on Toolkit page 6.",
+    "Mon · Ballet, Acro, Jazz Tech at the studio (4:30–7:30). No home practice: class is your dancing today.",
+    "Tue · Hip Hop, Ballroom (5:30–7:30). No home practice.",
+    "Wed · Contemporary (6:30–7:30). Solo rehearsal when one is booked. No home practice.",
+    "Thu · Home day: pick one thing, about 10 minutes.",
+    "Fri · Home day: pick one thing, about 10 minutes.",
+    "Sat · Co Tech + PITCH rehearsal (10:00–12:15). The big groups practice here. No home practice.",
+    "Sun · Home day: pick one thing. It's film day too: the 🎬 Sunday sheet is on Today. Plan your week on Toolkit page 6.",
+    "On a home day the whole session is one tap away: Today, then 📋 The whole session. It's there when you want it.",
     "Studio closed Nov 25–29 and Dec 19–Jan 1: your class days are home days. Show day has no home practice: dance your best on stage!"
    ],
-   "check": { "q": "Which days are home practice days?", "a": ["Mon, Tue, Wed", "Thu, Fri, Sun", "Every single day"], "ok": 1, "yay": "Yes! Thu, Fri and Sun at home 🏠", "hint": "Mon is videos and picturing; Tue, Wed and Sat get the short memory run." }
+   "check": { "q": "Which days are home practice days?", "a": ["Mon, Tue, Wed", "Thu, Fri, Sun", "Every single day"], "ok": 1, "yay": "Yes! Thu, Fri and Sun at home 🏠", "hint": "Mon, Tue, Wed and Sat are class days. Class is enough on those." }
   },
   {
    "id": "balance", "e": "🔦", "n": "Four spotlights", "mins": 2,
@@ -82,17 +88,17 @@
   {
    "id": "time", "e": "⏰", "n": "Ways to fit it all in + when to use screens", "mins": 2,
    "lines": [
-    "Same time, same place: start practice at the same time on Thu, Fri and Sun.",
-    "Big thing first: practice, then free time.",
+    "Same time, same place makes it easy: on Thu, Fri and Sun, dance at about the same time.",
+    "Your one thing is short: about 10 minutes, and that's all for the day.",
     "Best time on a home day: a small snack after school, dance about 45 minutes later, dinner after. Never right after a big meal: wait 1½–2 hours.",
-    "In the app: the countdown door, the dare and the games are open every day. They live on Play, under 🎉 Weekend games and ✨ Extras.",
-    "Let the timer be the boss. When the app says done, you're done.",
+    "In the app: the countdown door, the dare and the games are open every day. They live on Play, under 🎉 Weekend games and ✨ Extras. Play is a button on Me.",
+    "When your music ends, that's one dance. You can stop there.",
     "Plan on Sunday with Toolkit page 6. Pack your dance bag the night before.",
-    "Stuck? Do the tiniest step: put on dance clothes and start the warm-up.",
-    "The app is a tool: open it, practice, close it.",
+    "Don't feel like it? Do the tiniest step: tap ▶ My solo and just listen to your music.",
+    "The app is a tool: open it, dance, close it.",
     "Screens off 1 hour before bed. Phones and tablets sleep outside your room."
    ],
-   "check": { "q": "It's Thursday and you want today's countdown door. What first?", "a": ["The solo, then the door", "The door, it's quick", "A game to warm up"], "ok": 0, "yay": "Yes! Plan first, then the door opens ⭐", "hint": "What opens the door?" }
+   "check": { "q": "When are the countdown door and the games open?", "a": ["Every day", "Only after the whole session", "Only on weekends"], "ok": 0, "yay": "Yes! Every day. They're on Play 🎮", "hint": "Look for the words open every day." }
   },
   {
    "id": "food", "e": "🍓", "n": "Food for dancing", "mins": 2,
@@ -113,7 +119,7 @@
     "Dancers your age need 9–12 hours of sleep every night.",
     "While you sleep, your brain saves the steps you practiced, and your muscles repair and grow.",
     "Same bedtime every night, weekends too. Wake up at 7:00 → lights out by 9:00.",
-    "Late studio nights (Mon, Tue): dinner, the memory run on Tuesday, shower, bed.",
+    "Late studio nights (Mon, Tue): dinner, shower, bed.",
     "Wind down: shower, PJs, a paper book, lights out."
    ],
    "check": { "q": "How much sleep do dancers your age need?", "a": ["6 hours", "9–12 hours", "Only a lot on weekends"], "ok": 1, "yay": "Yes! 9–12 hours, every night 😴", "hint": "More than grown-ups need!" }
@@ -141,6 +147,7 @@
   { "t": "One fix at a time. It's done when it shows on two videos in a row 🎬", "when": ["any", "sun"], "part": "goal" },
   { "t": "Made a finish line? Tap ✓ Made it with Mom, then pick a reward on Toolkit page 2b 🏁", "when": ["any"], "part": "goal" },
   { "t": "How ready is your solo? Tap How ready? on Today and look at the four bars 🌸", "when": ["any"], "part": "goal" },
+  { "t": "⭐ My skill this month is on the Skills tab. You choose it.", "when": ["any"], "part": "grab" },
   { "t": "Four spotlights: dance, school, home, fun. Is any light dark this week? 🔦", "when": ["any"], "part": "balance" },
   { "t": "Fun is part of the plan! Play outside, draw, hang out with friends 🎈", "when": ["any", "rest"], "part": "balance" },
   { "t": "Feeling like it's too much? Tell Mom. A lighter day is allowed 💛", "when": ["any"], "part": "balance" },
@@ -149,14 +156,16 @@
   { "t": "Acro only on the mat or with a spotter 🤸", "when": ["any", "home"], "part": "body" },
   { "t": "Nervous? Smell the flower, blow out the candle. Three times 🌸", "when": ["any"], "part": "body" },
   { "t": "Be kind to yourself. Mistakes are how dancers learn 💛", "when": ["any"], "part": "body" },
-  { "t": "Same time, same place makes practice easy. Is it practice o'clock? ⏰", "when": ["home"], "part": "time" },
+  { "t": "Same time, same place makes dancing easy ⏰", "when": ["home"], "part": "time" },
+  { "t": "Tap ▶ My solo on Today. Your music plays, and one dance to the end counts ⭐", "when": ["home"], "part": "grab" },
   { "t": "Home day: pick one thing, about 10 minutes. The games are open every day.", "when": ["home"], "part": "time" },
   { "t": "Snack first, dance about 45 min later, dinner after. Never right after a big meal 🍌", "when": ["home"], "part": "food" },
   { "t": "Keep Toolkit page 4 open while you practice. Your fixes are right there 👀", "when": ["home"], "part": "grab" },
-  { "t": "🎬 Coach corner (on Practice): your solo tricks, and how feet, knees, eyes and arms did in your reviews.", "when": ["home"], "part": "grab" },
+  { "t": "🎬 Coach corner (Today, then 📋 The whole session): your solo tricks, and how feet, knees, eyes and arms did in your reviews.", "when": ["home"], "part": "grab" },
   { "t": "When the app says ⭐ Plan done, a sticker goes on Toolkit page 2.", "when": ["home"], "part": "grab" },
   { "t": "Warm up first, always. Then the bendy stuff 🧘", "when": ["home"], "part": "body" },
   { "t": "Stop before you're too tired. Tired teaches your body the wrong way.", "when": ["home"], "part": "body" },
+  { "t": "Class day: class is your dancing today. No home practice 💛", "when": ["studio"], "part": "week" },
   { "t": "Studio day! Is your water bottle in the bag? 💧", "when": ["studio"], "part": "food" },
   { "t": "A small snack 1–2 hours before class: banana + peanut butter, or apple + cheese 🍎", "when": ["studio"], "part": "food" },
   { "t": "Got a correction in class? Tell Mom and add it with ＋ Note. It's your fix right away ✏️", "when": ["studio", "after"], "part": "grab" },

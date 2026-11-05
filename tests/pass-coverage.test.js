@@ -59,7 +59,7 @@ const PHRASES = {
   "two-tiers-of-done": "⭐ Plan done",
   "daily-practice-plan": "▶ Start practice",
   "practice-mode": "▶ Start practice",
-  "todays-plan": "It tells you what to do today",
+  "todays-plan": "pick one thing",
   "memorize-it": "🧠 Memorize",
   "show-countdown": "countdown door",
   "dance-dares": "the dare",
@@ -137,6 +137,7 @@ test("the sentences the two Passes share read the same (emoji and ★/⭐ aside:
   assert.ok(app.includes(norm("the countdown door, the dare and the games are open every day")), "app: the games are open"); assert.ok(print.includes(norm("open once both are done")), "paper: as printed");
   assert.doesNotMatch(paper + kid, /make your bed|send it to Coach me|Chunks or Cue cards|Tap Done/i, "the old lines are gone from both");
   assert.ok(/Co Tech · PITCH rehearsal\s+10:00–12:15\s+\+ memory run/.test(paper), "Saturday carries the memory run on paper, like Wednesday");
-  assert.ok(pass.parts.find(p => p.id === "week").lines.some(l => /^Sat .*memory run/.test(l)), "and in the app");
+  // 1.64.1 (no more reprints): a class day asks nothing at home, so the in-app Pass has no memory run; the paper keeps its line
+  assert.ok(pass.parts.find(p => p.id === "week").lines.some(l => /^Sat .*No home practice/.test(l)), "the app: Saturday asks nothing at home"); assert.doesNotMatch(kid, /memory run/);
   assert.ok(!/[\u{1F000}-\u{1FFFF}]/u.test(paper), "no color emoji on paper (black-ink printer)");
 });

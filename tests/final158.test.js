@@ -83,6 +83,6 @@ test("the rest: kick-overs only in class (schema 54), the trio card, Mom's taper
   assert.doesNotMatch(src("data/dances.json"), /Kick-overs only with a spotter|mark it once a week at home/);
   assert.match(src("js/momweek.js"), /plan\.rules\.taper\.from && date >= plan\.rules\.taper\.from\)\) && !\(week\.phase && week\.phase\.n === "Rest up"\) \? " · rest-up days"/);
   assert.doesNotMatch(src("js/season15.js"), /gapNudge|days without your solo/, "1.60.0: the gap nudge is gone on every day");
-  assert.match(src("data/pass.json"), /dinner, the memory run on Tuesday, shower, bed/);
+  assert.match(src("data/pass.json"), /Late studio nights \(Mon, Tue\): dinner, shower, bed\./); // 1.64.1: no memory run on a class day
   assert.doesNotMatch(src("data/dances.json"), /girth d|inseam d|bust d|waist d|hips d/, "no measurements in the public data");
 });

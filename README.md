@@ -119,6 +119,8 @@ Jenya's decisions of Nov 5, from the Nov 4 structure review (step 1 of the reorg
 - **The Bunny invites** (`buddy.js pickStep`, `data/buddy.json`): one dance of the solo is offered among Today's cards, the trio among the day's small things; no step says what comes first, and no line mentions a streak or a day off.
 - `tests/less160.test.js`; the tests of the earlier builds that pinned the old words now pin these.
 
+**1.64.1:** the in-app Backstage Pass (`data/pass.json`) follows these asks and the four tabs. The week says "No home practice" on class days and "pick one thing, about 10 minutes" on Thu, Fri and Sun, with the whole session one tap away; the memory run, "practice, then free time", the timer line and "never more than 2 days without your solo" are gone; ▶ My solo, 📹 Videos and 🪞 Mirror, 📝 Fix here, the Skills tab and ⭐ My skill this month are named where they live; the check on the screens part asks when the games are open. The printed Pass keeps its Nov 2 words (no more reprints, Jenya), and the crew part says to go with the app where the two differ. Parts already read stay read. `tests/pass1641.test.js`.
+
 ### The map (1.61.0): four tabs, one Skills page, Events on Today, Play behind a tile
 Step 2 of the reorganization (Jenya's decisions of Nov 5). No stored family data changes; one new setting, `settings.skillsName`.
 
