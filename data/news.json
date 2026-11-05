@@ -1,44 +1,58 @@
 {
-  "id": "today-1.52",
-  "title": "3 new things in your app!",
-  "intro": "Today fits on one screen now: your one card and your next finish line. Your pet, your Backstage Pass and the week moved to Me. The extras wait on Play, under the games.",
-  "mom": "New for Mom: Today is one screen: the card, the next finish line (tap it for ✓ Made it) and the Sunday sheet on Sundays. The pet, the Pass, What's new and the week strip are on Me; the extras on Play; this week's fix on Practice.",
+  "id": "map-1.64",
+  "title": "4 new things in your app!",
+  "intro": "Your app got simpler. Four tabs at the bottom now: Today, Dances, Skills and Me. Your music is one tap away, and the games are always open.",
+  "mom": "New for Mom: four tabs (Today · Dances · Skills · Me). Practice opens from Today, Play from a tile on Me. Class days ask nothing at home; reminders are off until she turns one on. 🎀 Events on Today needs no PIN; costs and hotels stay locked.",
   "items": [
     {
       "id": "today",
-      "e": "☀️",
-      "n": "Today fits one screen",
+      "e": "🎵",
+      "n": "Dance it once",
       "where": "Today",
-      "pitch": "One card with two big buttons. Your next finish line is the line under it.",
+      "pitch": "Two big buttons: your solo and your trio. Tap one and your music plays.",
       "steps": [
-        "Today is one card: tap “My solo” or “My trio” and your music plays.",
+        "Tap “My solo” or “My trio”. Your music starts.",
+        "Dance it to the end. That's one dance, and your count goes up.",
         "Under the buttons: “📹 Videos” and “🧠 Memorize”.",
-        "Tap the 🎯 line under the card: your finish lines open, with ✓ Made it.",
-        "On a home day, “📋 The whole session” is one tap away."
+        "“🎀 Events” under the card shows every comp and what to pack."
+      ]
+    },
+    {
+      "id": "dances",
+      "e": "💃",
+      "n": "Your dances are small cards",
+      "where": "Dances",
+      "pitch": "Tap a dance to open it. The 🎵 button plays its music.",
+      "steps": [
+        "Tap Dances at the bottom. Your comp dances come first.",
+        "Tap 🎵 on a card and the music plays.",
+        "Tap the card: “🎵 Play music” and “🧠 Memorize” are on top.",
+        "“‹ All dances” takes you back."
+      ]
+    },
+    {
+      "id": "skills",
+      "e": "⭐",
+      "n": "A Skills tab and a skill of the month",
+      "where": "Skills",
+      "pitch": "Everything you're learning is on one tab. Pick one skill for this month.",
+      "steps": [
+        "Tap Skills at the bottom.",
+        "In “⭐ My skill this month”, pick the one you want.",
+        "“📷 My photos” keeps a Before and a Now picture.",
+        "“✏️ Name this page” lets you call the tab what you like."
       ]
     },
     {
       "id": "me",
-      "e": "🐰",
-      "n": "Your pet and your Pass on Me",
+      "e": "🎮",
+      "n": "Play and your own settings on Me",
       "where": "Me",
-      "pitch": "Your pet, your Backstage Pass and the week live on Me now, right under your dancer.",
+      "pitch": "Play is one button on Me. Don't like your dancer or your pet? Put it away.",
       "steps": [
-        "Tap Me at the bottom. Your pet is right under your dancer.",
-        "Under the pet: “My Backstage Pass”, then “This week”.",
-        "A pink dot on Me means something new is waiting there."
-      ]
-    },
-    {
-      "id": "extras",
-      "e": "✨",
-      "n": "Extras on Play",
-      "where": "Play",
-      "pitch": "Pick one extra, how you feel today and this week's mind skill are on Play, under the games.",
-      "steps": [
-        "Open Play and scroll past the games.",
-        "“✨ Pick one extra” has a trick, a game, a move and Memorize it.",
-        "“✨ More for today” has how you feel and this week's mind skill."
+        "Tap Me, then “Play”. All the games are there, always open.",
+        "At the bottom of Me, open “⚙️ My app”.",
+        "“👀 What's showing” puts your dancer or your pet away, or brings it back."
       ]
     }
   ]

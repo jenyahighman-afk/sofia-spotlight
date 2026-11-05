@@ -132,9 +132,13 @@ export async function migrateDanceCorrections(){
   } finally { migrating = false; }
   return n;
 }
-export async function addCorrection({ danceId, text, tag, source }){
+// 1.64.0: a fix can point to a moment in the music (`t`, seconds, one decimal): ▶ on its chip plays that spot. Pure helpers.
+export const fixMoment = (t) => t === null || t === undefined || t === "" || !Number.isFinite(+t) || +t < 0 ? null : Math.round(+t * 10) / 10;
+export const fixLoop = (t) => ({ a: Math.max(0, Math.round((+t - 4) * 10) / 10), b: Math.round((+t + 8) * 10) / 10 });
+export async function addCorrection({ danceId, text, tag, source, t }){
   const id = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const rec = { id, danceId, text: String(text).trim(), tag: TAGS.includes(tag) ? tag : inferTag(text), source: source || "me", date: todayStr(), status: "working" };
+  const at = fixMoment(t); if (at !== null) rec.t = at;
   await storeSet("corrections", id, rec); return rec;
 }
 export async function closeCorrection(id){ const c = S.corrections[id]; if (!c || c.status === "done") return null; await storeSet("corrections", id, { ...c, status: "done", doneAt: todayStr() }); return c; }

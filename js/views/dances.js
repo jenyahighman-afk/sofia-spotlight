@@ -6,7 +6,7 @@ import { $, esc, growAll, toast, uid, expose, roText, roList, edText, edList, to
 import { S, storeSet, dances, events } from "../store.js";
 import { media, friendlyError } from "../sync.js";
 import { photoTile, uploadMusic } from "./notes.js";
-import { TAGS, TAG_LABEL, TAG_EMOJI, topFixes, forDance, patterns, addCorrection, closeCorrection, reopenCorrection, removeCorrection, inferTag } from "../corrections.js";
+import { TAGS, TAG_LABEL, TAG_EMOJI, topFixes, forDance, patterns, addCorrection, closeCorrection, reopenCorrection, removeCorrection, inferTag, fixMoment, fixLoop } from "../corrections.js";
 import { checkBadges } from "../badges.js";
 import { normalizeCues, parseCueText, formatCueText, fmtTime, fmtCueTime, isCueTable, lyricLines, lyricTimesFor } from "../cues.js";
 import { videosRow, videosEdit } from "../cuecards.js";
@@ -42,7 +42,8 @@ let editDance=null, noteFor=null, noteTag="other"; const moreOpen=new Set();
 function coverArt(d){ const ph=Object.values(S.photos).filter(p=>p.dance===d.id&&p.kind!=="video").sort((a,b)=>(b.at||"").localeCompare(a.at||""))[0]; return ph&&ph.url?`<img src="${esc(ph.url)}" alt="" loading="lazy">`:`<span>${danceEmoji(d)}</span>`; }
 function chips(d){
   const top=topFixes(S.corrections,d.id); if(!top.length) return `<div class="small muted">No fixes yet. Add a note from class.</div>`;
-  return `<div class="fixchips">${top.map(c=>`<button class="fixchip ${c.pinned?"pin":""}" onclick="showMe('${c.id}')">${c.pinned?"📌 ":""}${TAG_EMOJI[c.tag]||"✨"} ${esc(c.text)}${c.pinned?` <span class="small muted">· ${esc(c.source||"")}</span>`:""}</button>`).join("")}</div>`;
+  // 1.64.0: a fix with a moment gets ▶ m:ss next to it; the tap plays that spot of the music, looped.
+  return `<div class="fixchips">${top.map(c=>{ const at=fixMoment(c.t); const chip=`<button class="fixchip ${c.pinned?"pin":""}${at!==null?" grow":""}" onclick="showMe('${c.id}')">${c.pinned?"📌 ":""}${TAG_EMOJI[c.tag]||"✨"} ${esc(c.text)}${c.pinned?` <span class="small muted">· ${esc(c.source||"")}</span>`:""}</button>`; return at===null?chip:`<div class="fix-row">${chip}<button class="fixchip fix-at" onclick="fixPlay('${c.id}')" aria-label="Play this spot">▶ ${fmtTime(at)}</button></div>`; }).join("")}</div>`;
 }
 function patternLine(d){
   const ps=patterns(S.corrections,{danceId:d.id}); if(!ps.length) return "";
@@ -147,10 +148,11 @@ function noteMic(id){
 }
 // A pinned teacher note isn't closed from the kid's screens: a grown-up checks it off in Skills & awards (Build 3).
 async function gotIt(id){ const p=S.corrections[id]; if(p&&p.pinned){ toast(PIN_MSG,3200); openGrownups("skillcheck"); return; } const c=await closeCorrection(id); if(c) toast("Got it! ✅"); checkBadges(); }
+function fixPlay(id){ const c=S.corrections[id]; const at=c?fixMoment(c.t):null; if(at===null) return; window.openPlayer(c.danceId,{loop:fixLoop(at)}); }
 async function reopenFix(id){ await reopenCorrection(id); }
 async function removeFix(id){ if(confirm("Remove this note?")) await removeCorrection(id); }
 export { renderDances, saveDance, delDance };
-expose({ danceOpen, danceEdit, saveDance, delDance, addMusic, noteOpen, noteCancel, noteTagSet, noteSave, noteMic, gotIt, reopenFix, removeFix });
+expose({ danceOpen, danceEdit, saveDance, delDance, addMusic, noteOpen, noteCancel, noteTagSet, noteSave, noteMic, gotIt, reopenFix, removeFix, fixPlay });
 
 // Song words (1.44.0): how many sung lines are typed and timed; the words themselves show in the player, not on the card.
 const wordsLine=(d)=>{ const n=lyricLines(d.lyrics).length; if(!n) return ""; const t=lyricTimesFor(d.lyrics,d.lyricTimes,d.lyricKeys).filter(x=>x!==null).length; return `<div class="small muted" style="margin-top:6px">🎤 ${n} sung lines · ${t===n?"all timed ⭐":t+" timed — ⏱ Time the words in the player"}</div>`; };

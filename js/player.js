@@ -3,6 +3,7 @@
 import { $, esc, toast, expose, todayStr } from "./util.js";
 import { S, storeSet, dances, setSettings } from "./store.js";
 import { checkBadges } from "./badges.js";
+import { addCorrection } from "./corrections.js";
 import { normalizeCues, cueAt, fmtTime, fmtCueTime, isCueTable, trickAhead, lyricLines, lyricAt, normalizeLyricTimes, lyricTimesFor, countAt, snapTime } from "./cues.js";
 import { srcFor, trackUrl } from "./track.js";
 import { cuePhoto } from "./cuecards.js";
@@ -167,6 +168,13 @@ async function runEnded(){
   checkBadges();
 }
 function runClose(){ $("#plRun").hidden = true; $("#plRun").innerHTML = ""; }
+// ---- 📝 Fix here (1.64.0) ----
+// A fix written at the spot the music is at: saved as a note on the dance with its moment, so ▶ on the chip plays that spot.
+async function fixHere(){
+  if (!PL.audio || !PL.dance) return toast("Play the music first, then tap at the spot"); const t = PL.audio.currentTime; pause();
+  const text = prompt(`What's the fix at ${fmtT(t)}?`); if (!text || !text.trim()) return;
+  await addCorrection({ danceId: PL.dance.id, text: text.trim().slice(0, 140), source: "me", t }); toast(`Saved ✓ ▶ ${fmtT(t)} is on the dance's page`, 2800);
+}
 // ---- Dance it once (1.60.0) ----
 // Today's ▶ Solo and ▶ Trio open the player with { once: true }: the music starts, and when the track plays to its end the
 // dance is logged as a run (no 3-2-1, no questions), so the counts on Today and Me go up. Pure: what the box says.
@@ -213,7 +221,7 @@ export function initPlayer(){
   $("#plA").onclick = markA; $("#plB").onclick = markB; $("#plClear").onclick = clearLoop;
   $("#plCounts").onclick = toggleCounts; ["off", "click", "voice"].forEach(v => { $("#plV_" + v).onclick = () => setVoice(v); }); $("#plTap").onclick = tapOne;
   $("#plRunBtn").onclick = runIt;
-  $("#plAddCue").onclick = addCue; $("#plLines").onclick = async () => { await setSettings({ prompter: !S.settings.prompter }); cueSheetUI(); }; $("#plTestMe").onclick = toggleTestMe; $("#plTimeWords").onclick = timeWords; $("#plCueList").onclick = () => { PL.showList = !PL.showList; cueSheetUI(); };
+  $("#plAddCue").onclick = addCue; { const fh = $("#plFixHere"); if (fh) fh.onclick = fixHere; } $("#plLines").onclick = async () => { await setSettings({ prompter: !S.settings.prompter }); cueSheetUI(); }; $("#plTestMe").onclick = toggleTestMe; $("#plTimeWords").onclick = timeWords; $("#plCueList").onclick = () => { PL.showList = !PL.showList; cueSheetUI(); };
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#player").hidden) { if (PL.run) runStop(); else closePlayer(); } });
 }
 expose({ openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose, plRunStop: runStop, plOnceAgain: onceAgain, plReveal: reveal, plSeek, plCueEdit: cueEdit, plCueDel: cueDel, plTimeTap: timeTap, plTimeBack: timeBack, plTimeDone: timeDone });

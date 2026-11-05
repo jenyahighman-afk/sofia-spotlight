@@ -103,11 +103,34 @@ async function hvLink(danceId){
 }
 async function hvOffset(danceId, i){ const d = dances().find(x => x.id === danceId); const list = [...((d && d.hannahVideos) || [])]; if (!list[i]) return; if (!list[i].path) return toast("Only uploaded videos can be synced"); const o = askOffset(list[i].offset); if (o === null) return; list[i] = { ...list[i], offset: o }; await saveVideos(danceId, list); }
 async function hvDel(danceId, i){ const d = dances().find(x => x.id === danceId); const list = [...((d && d.hannahVideos) || [])]; const v = list[i]; if (!v || !confirm(`Remove "${v.name || "this video"}"?`)) return; list.splice(i, 1); await saveVideos(danceId, list); if (v.path) { try { await media.remove(v.path); } catch (e) { console.warn(e); } } }
+// 1.64.0 (one of the four ideas Jenya picked): 🪞 Mirror flips an uploaded video left to right, so she can follow Hannah as in
+// a mirror, and A / B loop a part, like the music player. With Mirror on the video's own controls would be flipped too, so they
+// are switched off and three plain buttons stand in (play, −5 s, +5 s). Nothing is stored. Pure: the label and where a loop jumps.
+const HV = { a: null, b: null, mirror: false };
+const hvT = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+export const hvLoopLabel = (a, b) => a === null ? "Tap A, then B, to loop a part" : b === null ? `A at ${hvT(a)} · tap B` : `Loop ${hvT(a)} – ${hvT(b)}`;
+export const hvLoopTo = (t, a, b) => a !== null && b !== null && (t >= b || t < a) ? a : null;
+function hvUI(){
+  const el = $("#hvVideo"); if (!el) return; el.classList.toggle("hv-mirror", HV.mirror); el.controls = !HV.mirror;
+  const m = $("#hvMirror"); if (m) m.classList.toggle("coral", HV.mirror); const own = $("#hvOwn"); if (own) own.hidden = !HV.mirror; const p = $("#hvPlay"); if (p) p.textContent = el.paused ? "▶" : "❚❚";
+  const a = $("#hvA"); if (a) a.classList.toggle("sun", HV.a !== null); const b = $("#hvB"); if (b) b.classList.toggle("sun", HV.b !== null);
+  const lab = $("#hvLoopLab"); if (lab) lab.textContent = hvLoopLabel(HV.a, HV.b); const c = $("#hvClear"); if (c) c.hidden = HV.a === null;
+}
+function hvToggle(){ const el = $("#hvVideo"); if (!el) return; if (el.paused) el.play().catch(() => {}); else el.pause(); }
+function hvMarkA(){ const el = $("#hvVideo"); HV.a = el.currentTime; HV.b = null; hvUI(); }
+function hvMarkB(){ const el = $("#hvVideo"); if (HV.a === null) return hvMarkA(); if (el.currentTime <= HV.a + 0.5) return toast("Tap B after A"); HV.b = el.currentTime; el.currentTime = HV.a; hvUI(); }
 function hvWatch(danceId, i){
   const d = dances().find(x => x.id === danceId); const v = d && (d.hannahVideos || [])[i]; if (!v) return;
   if (!v.path) { window.open(v.url, "_blank", "noopener"); return; }
-  $("#hvTitle").textContent = "📹 " + (v.name || "Hannah's video"); const el = $("#hvVideo"); el.src = v.url; $("#hvideo").hidden = false; document.body.classList.add("modal"); el.play().catch(() => {});
+  $("#hvTitle").textContent = "📹 " + (v.name || "Hannah's video"); const el = $("#hvVideo"); el.src = v.url; $("#hvideo").hidden = false; document.body.classList.add("modal");
+  HV.a = null; HV.b = null; HV.mirror = false; hvUI(); el.play().catch(() => {});
 }
 function hvClose(){ const el = $("#hvVideo"); try { el.pause(); } catch (e) {} el.removeAttribute("src"); try { el.load(); } catch (e) {} $("#hvideo").hidden = true; document.body.classList.remove("modal"); }
-export function initVideos(){ $("#hvClose").onclick = hvClose; }
+export function initVideos(){
+  $("#hvClose").onclick = hvClose; const el = $("#hvVideo");
+  const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
+  on("#hvMirror", () => { HV.mirror = !HV.mirror; hvUI(); }); on("#hvA", hvMarkA); on("#hvB", hvMarkB); on("#hvClear", () => { HV.a = null; HV.b = null; hvUI(); });
+  on("#hvPlay", hvToggle); on("#hvBack", () => { el.currentTime = Math.max(0, el.currentTime - 5); }); on("#hvFwd", () => { el.currentTime = el.currentTime + 5; });
+  if (el && el.addEventListener) { el.addEventListener("timeupdate", () => { const j = hvLoopTo(el.currentTime, HV.a, HV.b); if (j !== null) el.currentTime = j; }); el.addEventListener("play", hvUI); el.addEventListener("pause", hvUI); el.addEventListener("click", () => { if (HV.mirror) hvToggle(); }); }
+}
 expose({ openCueCards, closeCueCards, ccMusic: playMusic, ccClip: playClip, hvAdd, hvLink, hvOffset, hvDel, hvWatch, openVideos });

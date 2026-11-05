@@ -11,8 +11,11 @@ import { openStage, closeStage } from "./stage.js";
 const KEY = "spotlight:news";
 // Where "▶ Try it" goes for each item: the page, then the feature's own opener when it has one.
 export const TRY = {
+  // 1.64.0 (the reorganization: four tabs)
+  dances: { page: "dances" },
+  skills: { page: "skills", scroll: "#monthSkill" },
+  me: { page: "me", scroll: "#mePlay" },
   // 1.52.0 (Today fits one screen)
-  me: { page: "me", scroll: "#petCard" },
   extras: { page: "play", scroll: "#habitCard" },
   // 1.48.0 (Build 3 from the Oct 28 review)
   sunday: { page: "home", call: "openSunday" },
