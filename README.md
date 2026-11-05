@@ -136,6 +136,14 @@ Step 3 of the reorganization (Jenya's decisions of Nov 5). No stored data change
 - The ways in from elsewhere land on the right page: `memoFocus`, `noteOpen`, `judgesOpen` and `danceEdit` open the dance first.
 - `tests/dances162.test.js`.
 
+### Me, tidied (1.63.0): hers first, the set-once things folded, her dancer and her pet can be put away
+Step 4 of the reorganization (Jenya's decisions of Nov 5). One new setting, `settings.hide`; nothing stored is removed.
+
+- **Me's order**: her dancer and counts, What's new, 🎮 Play, 📸 Moments, the week, the pet, the Pass, stars and costumes, badges, the notes that keep coming back, the growing-up photo; then **⚙️ My app**, folded: ⏰ My dance time, 🎨 Colors & seasons, the pre-stage routine and 👀 What's showing. The cards moved whole, ids intact.
+- **Three cards left Me.** ⭐ Personal bests is gone (each game's best is on its tile on Play; the stored bests stay). 👯 My dance friends sits under Who's dancing on Play, folded. ✨ Pick one extra is one line on Play (✨ One more thing to pick) until she opens it.
+- **👀 What's showing** (`views/me.js hidden`, `meHide`; `settings.hide = { avatar, pet }`): her dancer on Me and her pet can each be put away and brought back, by her. With the pet away its card on Me is hidden and the helper in the corner doesn't show or pop up (`buddy.js petHidden`). Her dancer's look, the pet's growth and its name are kept.
+- `tests/me163.test.js`.
+
 ### Two tiers of done (1.43.0, from the Oct 28 review)
 `js/streak.js`: **streak safe** (`dayCounts`: any bite, a game, the tired stretch, a quick session, 60% of the list) keeps the streak and the free skips as before; **plan done** (`planDone`: a run logged from the player, a solo item of the session — `SOLO_ITEMS`: the solo run, the memory run's top and chunk, a watch-day video, the show in her head —, a must-box of the dated plan, or a Memorize chunk) is what grows the pet (`planDays`), silences the reminder (`pingDone` from `markBite` only when the record is plan done, from practice mode on a solo item, from the player after a run) and resets the 2-day clock. Today says it in plain words: **⭐ Plan done** · **✓ Streak safe · solo next** · "N days off left this week"; the week strip shows ⭐ / ✓; the dated plan's foot says "tick a solid box = plan done ⭐". The Bunny's `dayDone` is the plan tier and `safe` the streak tier: streak safe but no solo → its one next step is the solo (`steps.solo`), never another game.
 

@@ -72,7 +72,7 @@ const PHRASES = {
 // Left out on purpose, with one word why: grown-up (Mom's side or set-up), self-explaining (she finds it by tapping),
 // spring (after the Showcase; the Pass gets its spring words then).
 const ALLOW = {
-  "map": "self-explaining", "dances-as-tiles": "self-explaining", "ai-coach": "grown-up", "skeleton-view": "grown-up", "goals": "self-explaining",
+  "map": "self-explaining", "dances-as-tiles": "self-explaining", "me-tidied": "self-explaining", "ai-coach": "grown-up", "skeleton-view": "grown-up", "goals": "self-explaining",
   "studios-december-dates": "grown-up", "spring-plan": "spring", "whats-next": "self-explaining",
   "pinned-notes-close-through-grown-ups": "grown-up", "this-week-for-mom": "grown-up", "nudges-that-follow-the-plan": "grown-up",
   "worker-must-be-redeployed": "grown-up", "dance-along-with-hannahs-videos": "grown-up",

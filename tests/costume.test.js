@@ -99,7 +99,7 @@ test("Me card and designer sheet render; Keep saves, Wear it sets costumeOn; ids
     window.cosPick("leo", "gold"); await window.cosKeep(); assert.notEqual(S.settings.costumes[0].leo, "gold", "locked colour can't be picked with 0 stars");
     assert.ok(writes.every(w => w.col === "settings" && Array.isArray(w.rec.costumes)));
   } finally { setBackend(null); reset(); }
-  const html = src("index.html"); assert.ok(html.indexOf('id="meStars"') < html.indexOf('id="meCostumes"') && html.indexOf('id="meCostumes"') < html.indexOf('id="meMoments"'), "right after the stars card");
+  const html = src("index.html"); assert.ok(html.indexOf('id="meStars"') < html.indexOf('id="meCostumes"') && html.indexOf('id="meCostumes"') < html.indexOf('id="costumeArea"'), "right after the stars card (1.63.0: Moments moved up, next to Play)");
   assert.match(html, /<div id="costumeArea" style="display:none"><\/div>/); assert.ok(html.indexOf('id="costumeArea"') > html.indexOf('id="p-me"'));
   assert.match(src("sw.js"), /"\.\/js\/costume\.js"/); assert.match(src("sw.js"), /"\.\/data\/costumes\.json"/); assert.match(src("js/app.js"), /initCostume\(\)/); assert.match(src("js/views/me.js"), /renderCostumeCard\(\)/);
 });

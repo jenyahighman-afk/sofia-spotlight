@@ -28,7 +28,7 @@ const ring = (pct, ic) => { const r = 26, c = 2 * Math.PI * r; return `<svg view
 function renderMe(){
   avRender(); renderGoalsCard(); renderPaletteRow(); applyPalette(); renderRitualCard(); renderSkillsName();
   renderReminder(); renderFriends(); renderCardsCard(); renderCostumeCard(); renderGlowCard();
-  $("#meMoments").innerHTML = `<div class="row"><h3 class="grow">📸 Moments</h3><span class="chip violet">${momentCount()} kept</span></div><p class="small muted">Turn a photo into a card with a sticker, your streak and your avatar. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
+  $("#meMoments").innerHTML = `<div class="row"><h3 class="grow">📸 Moments</h3><span class="chip violet">${momentCount()} kept</span></div><p class="small muted">Turn a photo into a card with a sticker, your dance days and your dancer. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
   const nu = nextUnlock(); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;
   $("#meStreak").innerHTML = `<div class="stat"><b>${danceDays(S.practice)}</b><span>dance days ⭐</span></div><div class="stat"><b>${danceCount(S.practice)}</b><span>dances 🎵</span></div><div class="stat"><b>${practicedDays(S.practice, PRACTICE_ITEMS.length)}</b><span>practice days</span></div><div class="stat"><b>${closedCount(S.corrections)}</b><span>fixes closed ✅</span></div>`;
   // badge case
@@ -36,8 +36,7 @@ function renderMe(){
   const locked = AUTO_BADGES.filter(b => !gotKeys.has(b.key));
   $("#badgeCase").innerHTML = (got.length ? got.map(b => `<div class="badge on" title="${esc(b.at || "")}"><span>${b.emoji}</span><small>${esc(b.label)}</small></div>`).join("") : "") + locked.map(b => `<div class="badge"><span>${b.emoji}</span><small>${esc(b.label)}</small></div>`).join("");
   $("#badgeCount").textContent = got.length + " earned";
-  // personal bests
-  const s = S.settings; $("#meBests").innerHTML = [["🎀 Step & Sparkle", s.gameBest || 0], ["👀 Spot the Oops", (s.jeBest || 0) + "/10"], ["🎒 Comp Day", s.cdBest || 0], ["👯 Trio", s.tfBest || 0]].map(([n, v]) => `<div class="stat"><b>${v}</b><span>${n}</span></div>`).join("");
+  renderHide();
   // skills
   const prog = styleProgress(S.skills);
   $("#skillRings").innerHTML = Object.entries(prog).map(([k, p]) => `<button class="skill-ring ${styleOpen === k ? "on" : ""}" onclick="meStyle('${k}')">${ring(p.pct, p.ic)}<small>${esc(p.n)}</small><small class="muted">${p.checked}★ ${p.clean}◉</small></button>`).join("");
@@ -55,6 +54,15 @@ function renderMe(){
   const ps = patterns(S.corrections);
   $("#mePatterns").innerHTML = ps.length ? ps.map(p => { const open = Object.values(S.corrections).filter(c => isOpen(c) && c.tag === p.tag).sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0]; return `<div class="row pattern"><span class="grow">${TAG_EMOJI[p.tag]} You've had this note ${p.n} times: <b>${TAG_LABEL[p.tag]}</b></span>${open ? `<button class="btn sm sun" onclick="meGotIt('${open.id}')">Got it!</button>` : `<span class="chip mint">all closed</span>`}</div>`; }).join("") : `<span class="small muted">No repeats. Nice.</span>`;
 }
+// What's showing (1.63.0): her dancer on Me and her pet (the card on Me and the helper in the corner) can each be put away and
+// brought back, by her. settings.hide = { avatar, pet }; nothing is deleted, and both show until she says otherwise. Pure.
+export const hidden = (settings) => { const h = (settings || {}).hide; const o = h && typeof h === "object" ? h : {}; return { avatar: !!o.avatar, pet: !!o.pet }; };
+function renderHide(){
+  const h = hidden(S.settings); const av = $("#avWrap"); if (av) av.hidden = h.avatar; const tip = $("#avTip"); if (tip) tip.hidden = h.avatar; const pc = $("#petCard"); if (pc) pc.hidden = h.pet;
+  const el = $("#meHide"); if (!el) return; const row = (k, name, on) => `<div class="row" style="margin-top:6px"><span class="grow">${name}</span><button class="btn sm ${on ? "ghost" : "coral"}" onclick="meHide('${k}')">${on ? "Hidden · show" : "Showing · hide"}</button></div>`;
+  el.innerHTML = `<h3>👀 What's showing</h3><p class="small muted">Don't like something? Put it away. You can bring it back here any time.</p>${row("avatar", "💃 My dancer", h.avatar)}${row("pet", "🐰 My pet", h.pet)}`;
+}
+async function meHide(k){ const h = hidden(S.settings); if (!(k in h)) return; await setSettings({ hide: { ...h, [k]: !h[k] } }); renderHide(); try { document.dispatchEvent(new CustomEvent("hidechanged")); } catch (e) {} toast(hidden(S.settings)[k] ? "Put away. It's under ⚙️ My app if you want it back." : "It's back ✨"); }
 // The Skills tab's name (1.61.0, Jenya: "let her name it, with Skills as the default"): settings.skillsName, up to 12 letters. Pure.
 export const skillsName = (settings) => { const n = String((settings || {}).skillsName || "").replace(/\s+/g, " ").trim().slice(0, 12); return n || "Skills"; };
 function renderSkillsName(){ const n = skillsName(S.settings); const t = $("#skillsTitle"); if (t) t.textContent = n; const b = $("#tabSkills"); if (b) b.textContent = n; }
@@ -73,4 +81,4 @@ export function initMe(){
   $("#meGrownups").onclick = () => openGrownups();
 }
 export { renderMe };
-expose({ meStyle, meSkill, meGotIt, skillsRename });
+expose({ meStyle, meSkill, meGotIt, skillsRename, meHide });

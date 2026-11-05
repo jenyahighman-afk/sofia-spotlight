@@ -92,9 +92,9 @@ test("wiring: the ids sit where they should in index.html, Today and Me render t
   const html = src("index.html");
   assert.ok(html.indexOf('id="glowNudge"') > html.indexOf('id="todayCard"') && html.indexOf('id="glowNudge"') < html.indexOf('id="p-dances"'), "the nudge sits on Today under the one card (1.52.0: Today fits one screen)");
   assert.match(html, /id="glowNudge"[^>]*hidden/);
-  const me = html.indexOf('id="p-me"'), card = html.indexOf('id="meGlow"'), area = html.indexOf('id="glowArea"'), friends = html.indexOf('id="meFriends"');
-  assert.ok(me < card && card < area && area < friends, "meGlow and glowArea right before meFriends inside p-me");
-  assert.ok(html.indexOf("</section>", me) > friends);
+  const me = html.indexOf('id="p-me"'), card = html.indexOf('id="meGlow"'), area = html.indexOf('id="glowArea"'), setup = html.indexOf('id="meSetup"');
+  assert.ok(me < card && card < area && area < setup, "meGlow and glowArea inside p-me, before ⚙️ My app (1.63.0: My dance friends moved to Play)");
+  assert.ok(html.indexOf("</section>", me) > setup);
   assert.match(src("js/views/home.js"), /renderGlowNudge[,(]/); assert.match(src("js/views/me.js"), /renderGlowCard\(\)/); assert.match(src("js/app.js"), /initGlow\(\)/);
   const g = src("js/glow.js"); assert.match(g, /media\.upload\("photos"/); assert.match(g, /storeSet\("photos"/); assert.match(g, /resizeImage/);
   assert.ok(!/firestore\.rules|public|publish/i.test(g.replace(/^\/\/.*$/gm, "")), "no public sharing code");

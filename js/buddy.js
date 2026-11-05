@@ -122,8 +122,10 @@ const lastId = () => { try { return (JSON.parse(localStorage.getItem(KEY) || "{}
 const quietToday = () => { try { return JSON.parse(localStorage.getItem(KEY) || "{}").quiet === todayStr(); } catch (e) { return false; } };
 function save(patch){ try { const cur = JSON.parse(localStorage.getItem(KEY) || "{}"); localStorage.setItem(KEY, JSON.stringify({ ...cur, ...patch })); } catch (e) {} }
 const blocked = () => document.body.classList.contains("modal");
+// 1.63.0: her pet can be put away (Me → ⚙️ My app → What's showing): the corner helper goes with it, and nothing pops up.
+export const petHidden = (settings = S.settings) => !!((settings || {}).hide && settings.hide.pet);
 export function renderBuddy(){
-  const el = $("#buddy"); if (!el) return; let ps; try { ps = petState(); } catch (e) { return; }
+  const el = $("#buddy"); if (!el) return; if (petHidden()) { msg = null; el.hidden = true; return; } let ps; try { ps = petState(); } catch (e) { return; }
   const pet = $("#buddyPet"); if (pet) pet.innerHTML = petSVG({ fur: furFor(ps.fur), outfit: ps.outfit, scale: 1 });
   const b = $("#buddyBubble"); if (!b) return;
   if (!msg) { b.hidden = true; b.innerHTML = ""; el.classList.remove("talking"); return; }
@@ -135,7 +137,7 @@ export function renderBuddy(){
     <button class="lnk buddy-quiet" onclick="buddyQuiet()">🤫 Quiet today</button>`;
 }
 export function showBuddy({ justDone = false } = {}){
-  let ctx; try { ctx = buddyContext(); } catch (e) { console.warn("buddy", e); return null; }
+  if (petHidden()) return null; let ctx; try { ctx = buddyContext(); } catch (e) { console.warn("buddy", e); return null; }
   msg = compose(ctx, { last: lastId(), justDone }); save({ last: msg.id }); if (msg.tipUsed) markTipSaid(); renderBuddy(); return msg;
 }
 export function hideBuddy(){ msg = null; stopSpeaking(); renderBuddy(); }
@@ -160,9 +162,10 @@ export function buddyAuto(ready){
 }
 export function initBuddy(){
   renderBuddy();
+  document.addEventListener("hidechanged", () => { const el = $("#buddy"); if (el && !petHidden()) el.hidden = false; renderBuddy(); });
   document.addEventListener("bitedone", () => { if (quietToday()) return; if (blocked()) { pending = true; return; } setTimeout(() => showBuddy({ justDone: true }), 900); });
   const later = () => { if (pending && !blocked()) { pending = false; setTimeout(() => showBuddy({ justDone: true }), 600); } };
   document.addEventListener("stageclosed", later);
-  document.addEventListener("page", (e) => { const el = $("#buddy"); if (el) el.hidden = !KID_PAGES.includes(e.detail); if (msg && e.detail !== "home") hideBuddy(); later(); });
+  document.addEventListener("page", (e) => { const el = $("#buddy"); if (el) el.hidden = petHidden() || !KID_PAGES.includes(e.detail); if (msg && e.detail !== "home") hideBuddy(); later(); });
 }
 expose({ buddyTap: tap, buddyHide: hideBuddy, buddyMore: () => showBuddy(), buddySay: say, buddyVoice: voice, buddyQuiet: quiet, buddyScroll: scrollTo });
