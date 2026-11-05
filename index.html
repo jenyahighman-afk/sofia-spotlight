@@ -36,6 +36,8 @@
   <div class="card violet sunday-card" id="sundayCard" hidden></div>
   <div class="card coral" id="compCard" hidden></div>
   <div class="card aqua" id="goalReminder" hidden></div>
+  <details class="card sun events-fold" id="eventsFold"><summary><span class="grow">🎀 Events</span><span class="chip sun" id="eventsCount"></span></summary><div id="kidEvents"></div></details>
+  <div id="kidPackArea" style="display:none"></div>
   <div class="nudge glow-nudge" id="glowNudge" hidden></div>
   <div id="adventArea" style="display:none"></div>
   <div id="readyArea" style="display:none"></div>
@@ -50,8 +52,42 @@
   <div class="card"><div class="row"><input type="text" id="newDanceName" placeholder="Add a dance"><button class="btn sm" id="addDance">Add</button></div></div>
 </section>
 
+<!-- SKILLS (1.61.0): one home for every skill. The cards moved here whole, ids intact, from Me (the skill lists, the trick
+     cards, the goals) and from Practice (the aerial mission, the drill box, the safety rules); their modules draw them as before. -->
+<section class="page" id="p-skills">
+  <div class="row"><h2 class="grow" id="skillsTitle" style="margin:0">Skills</h2><button class="lnk small" onclick="skillsRename()">✏️ Name this page</button></div>
+  <p class="small muted">Everything you're learning, in one place. Tap a skill to say how it's going. 📷 keeps your progress photos.</p>
+  <div class="card violet">
+    <h3>📈 Skills</h3>
+    <div class="skill-rings" id="skillRings"></div>
+    <div id="skillList"></div>
+  </div>
+  <div class="card coral" id="meCards"></div>
+  <div id="cardsArea" style="display:none"></div>
+  <div class="card sun">
+    <h3>🎯 Goals</h3>
+    <div class="goal-grid" id="goalRings"></div>
+  </div>
+  <details class="card acc violet"><summary>🤸 Aerial mission <span class="chip violet" id="aerialPct">0%</span></summary>
+    <p class="small muted">Learned in Monday Acro with a spotter. Mat under you for every drill.</p>
+    <div id="aerialList"></div>
+  </details>
+  <details class="card acc coral"><summary>📎 Drill box <span class="chip coral" id="drillCount"></span></summary>
+    <div id="drillBox"><div id="drillForm"></div><div id="drillList"></div><div id="drillArea" style="display:none"></div></div>
+  </details>
+  <details class="card acc aqua"><summary>🛟 Safety rules</summary>
+    <ul class="clean small">
+      <li>Warm up before every stretch. A stretch should feel like a stretch, never pain.</li>
+      <li>No oversplits, no forced stretching, no bridges unless Hannah says yes.</li>
+      <li>Acro tricks at home only on the mat, or with a spotter, until cleared in class.</li>
+      <li>Stop anything that hurts. Sleep and water are part of training.</li>
+    </ul>
+  </details>
+</section>
+
 <!-- PRACTICE -->
 <section class="page" id="p-practice">
+  <div class="row noprint page-back"><button class="btn sm ghost" onclick="showPage('home')">‹ Today</button><h2 class="grow" style="margin:0">Practice</h2></div>
   <div class="card sun">
     <div class="row practice-head" id="practiceHead"></div>
     <div class="today-actions" style="margin-bottom:0"><button class="btn coral big-btn" id="startPractice">▶ Start practice</button><button class="btn big-btn" onclick="openCoachHub()">🎬 Coach corner</button></div>
@@ -65,28 +101,13 @@
     <textarea id="practiceNote" placeholder="One line."></textarea>
     <div class="row" style="margin-top:8px"><button class="btn sm coral" id="saveNote">Save</button><span class="grow"></span><label class="small muted">Day <input type="date" id="practiceDate" style="max-width:150px;display:inline-block"></label></div>
   </details>
-  <details class="card acc violet"><summary>🤸 Aerial mission <span class="chip violet" id="aerialPct">0%</span></summary>
-    <p class="small muted">Learned in Monday Acro with a spotter. Mat under you for every drill.</p>
-    <div id="aerialList"></div>
-  </details>
-  <details class="card acc coral"><summary>📎 Drill box <span class="chip coral" id="drillCount"></span></summary>
-    <div id="drillBox"><div id="drillForm"></div><div id="drillList"></div><div id="drillArea" style="display:none"></div></div>
-  </details>
   <details class="card acc"><summary>🗺️ The 15-week plan</summary><div id="phases"></div></details>
-  <details class="card acc aqua"><summary>🛟 Safety rules</summary>
-    <ul class="clean small">
-      <li>Warm up before every stretch. A stretch should feel like a stretch, never pain.</li>
-      <li>No oversplits, no forced stretching, no bridges unless Hannah says yes.</li>
-      <li>Acro tricks at home only on the mat, or with a spotter, until cleared in class.</li>
-      <li>Stop anything that hurts. Sleep and water are part of training.</li>
-    </ul>
-  </details>
   <details class="card acc"><summary>📅 History</summary><div id="practiceHistory" class="small"></div></details>
 </section>
 
 <!-- PLAY -->
 <section class="page" id="p-play">
-  <h2>Play</h2>
+  <div class="row noprint page-back"><button class="btn sm ghost" onclick="showPage('me')">‹ Me</button><h2 class="grow" style="margin:0">Play</h2></div>
   <p class="small muted">Every game pays stars ⭐ — they unlock new looks for your dancer on Me.</p>
   <div class="card aqua who-row" id="whoRow"></div>
   <div class="game-grid" id="gameGrid"></div>
@@ -200,26 +221,16 @@
     <h3>This week</h3>
     <div class="week" id="homeWeek"></div>
   </div>
+  <button class="card violet me-tile" id="mePlay" onclick="showPage('play')"><span class="mt-ic">🎮</span><span class="grow"><b>Play</b><small>games, dares, costumes</small></span><span class="mt-go">›</span></button>
   <div class="card sun stars-card" id="meStars"></div>
   <div class="card violet cos-card" id="meCostumes"></div>
   <div id="costumeArea" style="display:none"></div>
   <div class="card violet" id="meMoments"></div>
-  <div class="card coral" id="meCards"></div>
-  <div id="cardsArea" style="display:none"></div>
   <div class="card aqua" id="meReminder"></div>
   <div id="momentsArea" style="display:none"></div>
   <div class="card sun">
     <div class="row"><h3 class="grow">🏅 Badges</h3><span class="chip sun" id="badgeCount">0 earned</span></div>
     <div class="badges" id="badgeCase"></div>
-  </div>
-  <div class="card violet">
-    <h3>📈 Skills</h3>
-    <div class="skill-rings" id="skillRings"></div>
-    <div id="skillList"></div>
-  </div>
-  <div class="card sun">
-    <h3>🎯 Goals</h3>
-    <div class="goal-grid" id="goalRings"></div>
   </div>
   <div class="card aqua">
     <h3>🔁 Notes that keep coming back</h3>
@@ -253,7 +264,7 @@
 <!-- GROWN-UPS HUB -->
 <section class="page" id="p-grownups">
   <div class="row"><h2 class="grow" style="margin:0">Grown-ups</h2><button class="btn sm ghost" id="grownupsLock">🔒 Lock</button></div>
-  <p class="small muted">Everything text-heavy lives here. Sofia sees Today, Dances, Practice, Play and Me.</p>
+  <p class="small muted">Everything text-heavy lives here. Sofia sees Today, Dances, Skills and Me. Practice opens from Today, Play from Me.</p>
   <div class="hub">
     <button class="hub-btn sun" onclick="showPage('events')">🎀<span>Events</span><small>costs, notes, hotels</small></button>
     <button class="hub-btn violet" onclick="showPage('schedule')">📅<span>Schedule</span><small id="hubPrivates">classes, privates, calendar</small></button>
@@ -675,8 +686,7 @@
 <nav class="tabs">
   <button data-p="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7v9a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z" fill="url(#tg-pink)" stroke="#FF5C93" stroke-width="1.2" stroke-linejoin="round"/><path d="M2.4 11.6 12 3.4l9.6 8.2" fill="none" stroke="#FF5C93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.3 21v-3.6a2.7 2.7 0 0 1 5.4 0V21" fill="#fff" stroke="#FF5C93" stroke-width="1.1"/><ellipse cx="8.2" cy="9.4" rx="2" ry="1" transform="rotate(-30 8.2 9.4)" fill="#fff" opacity="0.6"/><path d="M12 2.9c.9-1.3 2.6-.5 2 .9-.4.9-2 1.9-2 1.9s-1.6-1-2-1.9c-.6-1.4 1.1-2.2 2-.9z" fill="#FF3D8A"/><circle cx="9.5" cy="12.8" r="1.2" fill="#4A2340"/><circle cx="14.5" cy="12.8" r="1.2" fill="#4A2340"/><circle cx="9.95" cy="12.350000000000001" r=".42" fill="#fff"/><circle cx="14.95" cy="12.350000000000001" r=".42" fill="#fff"/><path d="M10.4 14.9q1.6 1.4 3.2 0" stroke="#4A2340" stroke-width="1.05" fill="none" stroke-linecap="round"/><circle cx="7.4" cy="13.9" r="1.1" fill="#FF8FB4" opacity=".75"/><circle cx="16.6" cy="13.9" r="1.1" fill="#FF8FB4" opacity=".75"/></svg>Today</button>
   <button data-p="dances"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 19 5 22.3M17.5 19 19 22.3" stroke="#FF5C93" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="4.4" r="2.5" fill="url(#tg-rose)"/><path d="M8.7 4.6 10.3 3.4v2.4zM11 4.6 9.4 3.4v2.4z" fill="#FF3D8A" transform="translate(-1.2 -.2)"/><path d="M4.3 13c0-4.2 3.2-8 7.7-8s7.7 3.8 7.7 8-2 7.4-7.7 7.4-7.7-3.2-7.7-7.4z" fill="url(#tg-pink)" stroke="#FF5C93" stroke-width="1.2"/><path d="M7.4 9.9c1.9-2.1 7.3-2.1 9.2 0" stroke="#FF5C93" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="8.4" cy="11.6" rx="2" ry="1" transform="rotate(-30 8.4 11.6)" fill="#fff" opacity="0.6"/><circle cx="9.5" cy="14.6" r="1.2" fill="#4A2340"/><circle cx="14.5" cy="14.6" r="1.2" fill="#4A2340"/><circle cx="9.95" cy="14.15" r=".42" fill="#fff"/><circle cx="14.95" cy="14.15" r=".42" fill="#fff"/><path d="M10.4 16.7q1.6 1.4 3.2 0" stroke="#4A2340" stroke-width="1.05" fill="none" stroke-linecap="round"/><circle cx="7.4" cy="15.7" r="1.1" fill="#FF8FB4" opacity=".75"/><circle cx="16.6" cy="15.7" r="1.1" fill="#FF8FB4" opacity=".75"/></svg>Dances</button>
-  <button data-p="practice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8l3 6.1 6.7.9-4.9 4.7 1.2 6.7L12 17l-6 3.2 1.2-6.7L2.3 8.8l6.7-.9z" fill="url(#tg-gold)" stroke="#E3A63A" stroke-width="1.2" stroke-linejoin="round"/><ellipse cx="9" cy="7.4" rx="1.7" ry="0.9" transform="rotate(-35 9 7.4)" fill="#fff" opacity="0.6"/><circle cx="9.5" cy="11.8" r="1.2" fill="#4A2340"/><circle cx="14.5" cy="11.8" r="1.2" fill="#4A2340"/><circle cx="9.95" cy="11.350000000000001" r=".42" fill="#fff"/><circle cx="14.95" cy="11.350000000000001" r=".42" fill="#fff"/><path d="M10.4 13.9q1.6 1.4 3.2 0" stroke="#4A2340" stroke-width="1.05" fill="none" stroke-linecap="round"/><circle cx="7.4" cy="12.9" r="1.1" fill="#FF8FB4" opacity=".75"/><circle cx="16.6" cy="12.9" r="1.1" fill="#FF8FB4" opacity=".75"/></svg>Practice</button>
-  <button data-p="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4.6 7 2.1M16 4.6l1-2.5" stroke="#FF5C93" stroke-width="1.5" stroke-linecap="round"/><circle cx="6.7" cy="1.9" r="1.4" fill="url(#tg-rose)"/><circle cx="17.3" cy="1.9" r="1.4" fill="url(#tg-rose)"/><path d="M4.6 9.4a7.4 7.4 0 0 1 14.8 0v5.8a4.4 4.4 0 0 1-4.4 4.4H9a4.4 4.4 0 0 1-4.4-4.4z" fill="url(#tg-violet)" stroke="#8A5FD0" stroke-width="1.2"/><ellipse cx="8.6" cy="7.2" rx="2.1" ry="1.1" transform="rotate(-30 8.6 7.2)" fill="#fff" opacity="0.6"/><circle cx="9" cy="12.3" r="1.3" fill="#4A2340"/><circle cx="15" cy="12.3" r="1.3" fill="#4A2340"/><circle cx="9.45" cy="11.850000000000001" r=".42" fill="#fff"/><circle cx="15.45" cy="11.850000000000001" r=".42" fill="#fff"/><path d="M10.4 14.6q1.6 1.4 3.2 0" stroke="#4A2340" stroke-width="1.05" fill="none" stroke-linecap="round"/><circle cx="7" cy="13.8" r="1.1" fill="#FF8FB4" opacity=".75"/><circle cx="17" cy="13.8" r="1.1" fill="#FF8FB4" opacity=".75"/></svg>Play</button>
+  <button data-p="skills"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8l3 6.1 6.7.9-4.9 4.7 1.2 6.7L12 17l-6 3.2 1.2-6.7L2.3 8.8l6.7-.9z" fill="url(#tg-gold)" stroke="#E3A63A" stroke-width="1.2" stroke-linejoin="round"/><ellipse cx="9" cy="7.4" rx="1.7" ry="0.9" transform="rotate(-35 9 7.4)" fill="#fff" opacity="0.6"/><circle cx="9.5" cy="11.8" r="1.2" fill="#4A2340"/><circle cx="14.5" cy="11.8" r="1.2" fill="#4A2340"/><circle cx="9.95" cy="11.350000000000001" r=".42" fill="#fff"/><circle cx="14.95" cy="11.350000000000001" r=".42" fill="#fff"/><path d="M10.4 13.9q1.6 1.4 3.2 0" stroke="#4A2340" stroke-width="1.05" fill="none" stroke-linecap="round"/><circle cx="7.4" cy="12.9" r="1.1" fill="#FF8FB4" opacity=".75"/><circle cx="16.6" cy="12.9" r="1.1" fill="#FF8FB4" opacity=".75"/></svg><span id="tabSkills">Skills</span></button>
   <button data-p="me"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.4" fill="url(#tg-pink)" stroke="#FF5C93" stroke-width="1.2"/><path d="M5 20.4q7-7.6 14 0A10.4 10.4 0 0 1 5 20.4z" fill="url(#tg-rose)"/><circle cx="12" cy="10.6" r="4.6" fill="url(#tg-skin)"/><path d="M7.3 10q4.7-6.1 9.4 0-.4-4-4.7-4.2-4.3.2-4.7 4.2z" fill="#F2C86B"/><path d="M15.6 7.4l1.3-1.5" stroke="#FF3D8A" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="7.4" cy="7.6" rx="1.8" ry="0.9" transform="rotate(-30 7.4 7.6)" fill="#fff" opacity="0.5"/><circle cx="10.4" cy="10.8" r="0.85" fill="#4A2340"/><circle cx="13.6" cy="10.8" r="0.85" fill="#4A2340"/><circle cx="10.85" cy="10.350000000000001" r=".42" fill="#fff"/><circle cx="14.049999999999999" cy="10.350000000000001" r=".42" fill="#fff"/><path d="M10.4 12.9q1.6 1.4 3.2 0" stroke="#4A2340" stroke-width="1.05" fill="none" stroke-linecap="round"/><circle cx="8.6" cy="12.1" r="0.9" fill="#FF8FB4" opacity=".75"/><circle cx="15.4" cy="12.1" r="0.9" fill="#FF8FB4" opacity=".75"/></svg>Me</button>
 </nav>
 <div class="buddy" id="buddy"><div class="buddy-bubble" id="buddyBubble" hidden></div><button class="buddy-pet" id="buddyPet" onclick="buddyTap()" aria-label="Ask my dance pet what to do next"></button></div>

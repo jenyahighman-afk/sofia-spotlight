@@ -9,7 +9,7 @@ import { S, events, nextEvent, storeSet, dances, studioDates, calendarOnly } fro
 import { todayPick, chunkLabel, shortName } from "../memo.js";
 import { planDone, trioDone, danced, danceDays, danceCount } from "../streak.js";
 import { cardsFor, trickCard, moveOfDay, TIRED, KNEES } from "../habit.js";
-import { renderSeasonCard, trickFocus, nextCheckpoint, checkpointsToShow, checkpointTicks, activePlan } from "../season15.js";
+import { renderSeasonCard, trickFocus, checkpointsToShow, checkpointTicks, activePlan } from "../season15.js";
 import { planFor } from "../planToday.js";
 import { studioOn } from "../studio.js";
 import { dayKindNow, weekdayOf } from "../daykind.js";
@@ -100,7 +100,7 @@ function renderHome(){
   renderSeasonCard(today);
   // The next finish line is the fold's one line; the season card (✓ Made it, the week, the pinned notes) opens under it.
   // 1.60.0: the line names the next one to come, never one whose day has gone by (those stay inside the fold, with ✓ Made it).
-  let cp=null; try{ cp=nextCheckpoint(today,activePlan(today),studioDates(),checkpointTicks()); if(cp&&cp.state==="passed") cp=checkpointsToShow(today,activePlan(today),studioDates(),checkpointTicks()).find(c=>["today","next","book"].includes(c.state))||null; }catch(e){ console.warn(e); }
+  let cp=null; try{ const list=checkpointsToShow(today,activePlan(today),studioDates(),checkpointTicks()); cp=["today","next","book"].map(st=>list.find(c=>c.state===st)).find(Boolean)||null; }catch(e){ console.warn(e); }
   const sc=$("#seasonCard"); $("#seasonSum").innerHTML=`<span class="fl-text">${finishLine(cp,today)}</span>`; $("#seasonFold").hidden=!cp&&!!(sc&&sc.hidden);
   renderHabit(today,{rec});
   // The other pages' cards drawn from here (1.52.0) each in their own guard, so one error leaves the rest drawn (the re-audit).

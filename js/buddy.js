@@ -25,7 +25,7 @@ import { petState, petSVG, furFor } from "./pet.js";
 import { nudgeFor as passNudge, todayTip, tipSaidToday, markTipSaid, clockHour } from "./pass.js";
 
 const KEY = "spotlight:buddy";
-const KID_PAGES = ["home", "dances", "practice", "play", "me"];
+const KID_PAGES = ["home", "dances", "skills", "practice", "play", "me"];
 const short = (t) => String(t || "").replace(/\s*\([^)]*\)/g, "").trim();
 const pick = (arr, rng = Math.random) => arr.length ? arr[Math.min(arr.length - 1, Math.floor(rng() * arr.length))] : null;
 // Fill {placeholders}; a line with a placeholder that has no value is not used (so nothing says "undefined").
@@ -60,7 +60,7 @@ export function pickStep(ctx, rng = Math.random){
   if (c.passPart) tier1.push({ key: "pass", vars: { part: c.passPart }, go: "openPass()" });
   if (tier1.length) return pick(tier1, rng);
   const fun = [{ key: "all-done", go: "showPage('play')" }, { key: "teach", go: "showPage('play');playOpen('teach')" }, { key: "count", go: "showPage('play');playOpen('count')" }, { key: "costume", go: "showPage('me');openCostumes()" }];
-  if (c.cardsEarned > 0) fun.push({ key: "cards", vars: { cards: c.cardsEarned }, go: "showPage('me');openCards()" });
+  if (c.cardsEarned > 0) fun.push({ key: "cards", vars: { cards: c.cardsEarned }, go: "showPage('skills');openCards()" });
   if (c.starsLeft > 0 && c.starsLeft <= 5 && c.unlock) fun.push({ key: "stars", vars: { starsLeft: c.starsLeft, unlock: c.unlock }, go: "showPage('play')" });
   return pick(fun, rng);
 }

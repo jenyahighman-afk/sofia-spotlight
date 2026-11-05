@@ -611,6 +611,13 @@ body.modal{overflow:hidden}
 .today .today-once{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 8px} .today .today-once .big-btn{width:100%;text-align:center;padding:14px 6px}
 .today .today-media.three{grid-template-columns:repeat(3,1fr)}
 .today .today-done{font-weight:800;color:#2E8B6A}
+/* 1.61.0: the Events card on Today, the Play tile on Me, the way back on a page that isn't a tab */
+.events-fold>summary{display:flex;align-items:center;gap:8px;cursor:pointer;font-family:Fredoka;font-size:1.05rem;list-style:none} .events-fold>summary::-webkit-details-marker{display:none}
+.kev{border-top:1px dashed var(--line);padding:8px 0} .kev>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none} .kev>summary::-webkit-details-marker{display:none}
+.kev .kev-when{display:block;font-weight:600} .kev .kev-f{margin-top:8px;font-size:.92rem} .kev .kev-f b{display:block;font-size:.8rem;color:var(--ink-2)} .kev .kev-f div{white-space:pre-wrap}
+.kev-done{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+.me-tile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;font:inherit;color:var(--ink)} .me-tile .mt-ic{font-size:1.8rem} .me-tile b{display:block;font-family:Fredoka;font-size:1.1rem} .me-tile small{display:block;color:var(--ink-2);font-weight:700} .me-tile .mt-go{font-size:1.4rem;color:var(--ink-2)}
+.page-back{margin-bottom:10px}
 .today .today-media{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px} .today .today-media .btn.sm{padding:7px 2px;font-size:.78rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.15}
 .season-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.95rem;line-height:1.35} .season-fold>summary .fl-text{flex:1;min-width:0}
 html[data-season="halloween"] #seasonFold:before{right:0;left:auto;transform:none;width:46px;height:46px}

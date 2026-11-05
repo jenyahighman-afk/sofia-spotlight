@@ -45,11 +45,11 @@ test("every element id looked up in the code exists in index.html", () => {
 });
 
 test("the five kid tabs and every Grown-ups page exist; nothing text-heavy was deleted, only moved", () => {
-  for (const p of ["home","dances","practice","play","me","pin","grownups","events","schedule","notes","lists","skillcheck","reviews","reports","settings"]) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
+  for (const p of ["home","dances","skills","practice","play","me","pin","grownups","events","schedule","notes","lists","skillcheck","reviews","reports","settings"]) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
   for (const id of ["coach","goal","mirror","goalRings","goalReminder","reviewList"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const p of []) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
   const tabs = [...html.matchAll(/<button data-p="([a-z]+)"/g)].map(m => m[1]);
-  assert.deepEqual(tabs, ["home","dances","practice","play","me"]);
+  assert.deepEqual(tabs, ["home","dances","skills","me"], "1.61.0: Today · Dances · Skills · Me");
   for (const id of ["eventList","calGrid","packList","todoList","noteList","fileList","photoGrid","setExport","setImportFile","setLeave","aerialList","phases","momentsArea","meMoments","meReminder"]) assert.ok(html.includes(`id="${id}"`), id + " still present");
   assert.ok(html.includes('id="showme"') && html.includes('id="player"'));
 });

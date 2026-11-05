@@ -69,8 +69,8 @@ test("Me card and binder render in the fake DOM; a newly landed skill pops New c
     S.photos = { p1: { url: "https://x/p.jpg", card: "s-donut", at: "2026-10-06" } };
     renderCardsCard(); const card = el("#meCards").innerHTML;
     assert.ok(card.includes("🃏 My trick cards") && card.includes(`1 / ${total}`) && card.includes("openCards()"), "Me card shows the count and opens the binder");
-    assert.ok(card.includes("📷 1 progress photo so far") && card.includes("📈 Skills below"), "Me card counts the progress photos and says where to add more");
-    const hadPhotos = S.photos; S.photos = {}; renderCardsCard(); assert.match(el("#meCards").innerHTML, /Learning a trick\? Open it in 📈 Skills below and tap its 📷/, "with none yet, it says where they start"); S.photos = hadPhotos; renderCardsCard();
+    assert.ok(card.includes("📷 1 progress photo so far") && card.includes("📈 Skills above"), "Me card counts the progress photos and says where to add more");
+    const hadPhotos = S.photos; S.photos = {}; renderCardsCard(); assert.match(el("#meCards").innerHTML, /Learning a trick\? Open it in 📈 Skills above and tap its 📷/, "with none yet, it says where they start"); S.photos = hadPhotos; renderCardsCard();
     await window.openCards(); const area = el("#cardsArea").innerHTML;
     assert.equal(el("#cardsArea").style.display, "block", "the binder moved into the stage");
     for (const st of Object.values(ladder.styles)) assert.ok(area.includes(st.n.replace(/&/g, "&amp;")), "group " + st.n);
@@ -86,8 +86,9 @@ test("Me card and binder render in the fake DOM; a newly landed skill pops New c
     renderCardsCard(); assert.ok(el("#meCards").innerHTML.includes(`2 / ${total}`) && el("#meCards").innerHTML.includes("2 shiny"));
     assert.ok(writes.every(w => w.col === "skills"), "only skill writes; the cards store nothing of their own");
   } finally { setBackend(null); resetDom(); for (const k of Object.keys(S)) S[k] = {}; }
-  const html = src("index.html"); const me = html.slice(html.indexOf('id="p-me"'), html.indexOf("</section>", html.indexOf('id="p-me"')));
-  assert.match(me, /id="meMoments"><\/div>\s*<div class="card coral" id="meCards"><\/div>/, "Me card right after Moments"); assert.ok(me.includes('id="cardsArea" style="display:none"'), "binder area inside p-me, hidden");
+  // 1.61.0: the trick cards card lives on the Skills page, right under the skill lists (its id is unchanged)
+  const html = src("index.html"); const sk = html.slice(html.indexOf('id="p-skills"'), html.indexOf("</section>", html.indexOf('id="p-skills"')));
+  assert.match(sk, /id="skillList"><\/div>\s*<\/div>\s*<div class="card coral" id="meCards"><\/div>/, "the card right under 📈 Skills"); assert.ok(sk.includes('id="cardsArea" style="display:none"'), "binder area inside p-skills, hidden");
   assert.match(src("js/views/me.js"), /renderCardsCard\(\)/); assert.match(src("js/app.js"), /initCards\(\)/); assert.match(src("sw.js"), /"\.\/js\/cards\.js"/);
   assert.match(src("css/app.css"), /prefers-reduced-motion:reduce\)\{\.tcard\.tc-shiny::after\{animation:none/);
 });

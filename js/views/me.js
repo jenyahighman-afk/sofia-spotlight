@@ -1,7 +1,8 @@
-// Me tab: avatar (tap = customize, long-press = Grown-ups), streak, badge case, personal bests, skill rings, repeated notes.
+// Me tab: avatar (tap = customize, long-press = Grown-ups), her counts, badge case, personal bests, repeated notes. Since 1.61.0
+// the skill rings and lists it draws live on the Skills page (index.html #p-skills), with the page's own name.
 import { $, esc, toast, expose } from "../util.js";
 import { PRACTICE_ITEMS, SKILLS } from "../data.js";
-import { S } from "../store.js";
+import { S, setSettings } from "../store.js";
 import { avRender, avToggle } from "../avatar.js";
 import { renderPaletteRow, applyPalette } from "../palette.js";
 import { renderRitualCard } from "../mind.js";
@@ -25,7 +26,7 @@ let styleOpen = null;
 const ring = (pct, ic) => { const r = 26, c = 2 * Math.PI * r; return `<svg viewBox="0 0 64 64" class="mini-ring"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" transform="rotate(-90 32 32)" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/><text x="32" y="32" class="ring-ic">${ic}</text></svg>`; };
 
 function renderMe(){
-  avRender(); renderGoalsCard(); renderPaletteRow(); applyPalette(); renderRitualCard();
+  avRender(); renderGoalsCard(); renderPaletteRow(); applyPalette(); renderRitualCard(); renderSkillsName();
   renderReminder(); renderFriends(); renderCardsCard(); renderCostumeCard(); renderGlowCard();
   $("#meMoments").innerHTML = `<div class="row"><h3 class="grow">📸 Moments</h3><span class="chip violet">${momentCount()} kept</span></div><p class="small muted">Turn a photo into a card with a sticker, your streak and your avatar. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
   const nu = nextUnlock(); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;
@@ -54,6 +55,10 @@ function renderMe(){
   const ps = patterns(S.corrections);
   $("#mePatterns").innerHTML = ps.length ? ps.map(p => { const open = Object.values(S.corrections).filter(c => isOpen(c) && c.tag === p.tag).sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0]; return `<div class="row pattern"><span class="grow">${TAG_EMOJI[p.tag]} You've had this note ${p.n} times: <b>${TAG_LABEL[p.tag]}</b></span>${open ? `<button class="btn sm sun" onclick="meGotIt('${open.id}')">Got it!</button>` : `<span class="chip mint">all closed</span>`}</div>`; }).join("") : `<span class="small muted">No repeats. Nice.</span>`;
 }
+// The Skills tab's name (1.61.0, Jenya: "let her name it, with Skills as the default"): settings.skillsName, up to 12 letters. Pure.
+export const skillsName = (settings) => { const n = String((settings || {}).skillsName || "").replace(/\s+/g, " ").trim().slice(0, 12); return n || "Skills"; };
+function renderSkillsName(){ const n = skillsName(S.settings); const t = $("#skillsTitle"); if (t) t.textContent = n; const b = $("#tabSkills"); if (b) b.textContent = n; }
+async function skillsRename(){ const cur = skillsName(S.settings); const next = prompt("What do you want to call this page? (up to 12 letters)", cur); if (next === null) return; await setSettings({ skillsName: String(next).replace(/\s+/g, " ").trim().slice(0, 12) }); renderSkillsName(); toast(`It's called ${skillsName(S.settings)} now ✨`); }
 function meStyle(k){ styleOpen = styleOpen === k ? null : k; renderMe(); }
 async function meSkill(id){ const next = await kidCycle(id); if (next === "checked") toast("Teacher-checked ★ stays"); }
 async function meGotIt(id){ const p = S.corrections[id]; if (p && p.pinned) { toast(PIN_MSG, 3200); openGrownups("skillcheck"); return; } const c = await closeCorrection(id); if (c) toast("Got it! ✅"); checkBadges(); }
@@ -68,4 +73,4 @@ export function initMe(){
   $("#meGrownups").onclick = () => openGrownups();
 }
 export { renderMe };
-expose({ meStyle, meSkill, meGotIt });
+expose({ meStyle, meSkill, meGotIt, skillsRename });

@@ -33,7 +33,7 @@ export const TRY = {
   games: { page: "play" },
   // 1.30 (the poll features; kept so an old link still goes somewhere)
   dares: { page: "play", scroll: "#playDare" },
-  cards: { page: "me", call: "openCards" },
+  cards: { page: "skills", call: "openCards" },
   costume: { page: "me", call: "openCostumes" },
   glow: { page: "me", scroll: "#meGlow" },
   teach: { page: "play", game: "teach" },
