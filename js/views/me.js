@@ -11,7 +11,7 @@ import { earned, AUTO_BADGES, checkBadges } from "../badges.js";
 import { styleProgress, skillState, kidCycle, STATE_EMOJI, STATE_LABEL, levelGroups, focusLabel } from "../skills.js";
 import { patterns, TAG_LABEL, TAG_EMOJI, closeCorrection, closedCount, isOpen } from "../corrections.js";
 import { openGrownups } from "../grownups.js";
-import { renderGoalsCard } from "../goals.js";
+import { renderGoalsCard, splitRowsHtml } from "../goals.js";
 import { totalStars, nextUnlock, unlockedList } from "../stars.js";
 import { momentCount } from "../moments.js";
 import { renderReminder } from "../remind.js";
@@ -49,7 +49,8 @@ function renderMe(){
     return `<div class="small muted" style="margin:6px 0">${esc(st.src || "")}${focusLabel(st) ? ` · her group: <b>${esc(focusLabel(st))}</b>` : ""}. Tap a skill: learning → clean. A grown-up marks ★ teacher-checked.</div>${up.map(reqLine).join("")}`
       + groups.map(g => { const done = g.skills.filter(k => ["clean", "checked"].includes(skillState(S.skills, k.id))).length; return `<details class="lvl" ${g.focus ? "open" : ""}><summary>${esc(g.label)}${g.focus && !g.bonus ? ` <span class="chip coral">her group</span>` : ""} <span class="chip">${done}/${g.skills.length}</span></summary>${g.bonus ? `<div class="small muted">Not on the studio chart: her own extras.</div>` + g.skills.map(row).join("") : bySection(g.skills)}</details>`; }).join(""); };
   const bySection = (list) => (st.sections || [""]).map(sec => { const part = list.filter(k => (k.sec || "") === sec || (!sec && !k.sec)); return part.length ? (sec ? `<div class="lvl-sec">${esc(sec)}</div>` : "") + part.map(row).join("") : ""; }).join("");
-  $("#skillList").innerHTML = !st ? "" : groups ? leveled() : `<div class="small muted" style="margin:6px 0">Tap a skill: learning → clean. A grown-up marks ★ teacher-checked.</div>` + st.skills.map(row).join("");
+  // The three splits are rows here from the start (1.64.2), above the open style's list.
+  $("#skillList").innerHTML = splitRowsHtml(S.goals) + (!st ? "" : groups ? leveled() : `<div class="small muted" style="margin:6px 0">Tap a skill: learning → clean. A grown-up marks ★ teacher-checked.</div>` + st.skills.map(row).join(""));
   // patterns
   const ps = patterns(S.corrections);
   $("#mePatterns").innerHTML = ps.length ? ps.map(p => { const open = Object.values(S.corrections).filter(c => isOpen(c) && c.tag === p.tag).sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0]; return `<div class="row pattern"><span class="grow">${TAG_EMOJI[p.tag]} You've had this note ${p.n} times: <b>${TAG_LABEL[p.tag]}</b></span>${open ? `<button class="btn sm sun" onclick="meGotIt('${open.id}')">Got it!</button>` : `<span class="chip mint">all closed</span>`}</div>`; }).join("") : `<span class="small muted">No repeats. Nice.</span>`;

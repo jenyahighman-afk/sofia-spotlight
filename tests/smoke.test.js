@@ -105,7 +105,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   S.skills = { "a-cartwheel": { state: "checked", teacher: "Hannah" }, "a-onehand": { state: "learning" } };
   S.corrections.e = { id: "e", danceId: "pitch-jazz", text: "Feet again", tag: "feet", status: "working", date: t, source: "Isadora" }; S.corrections.f = { id: "f", danceId: "pitch-jazz", text: "And again", tag: "feet", status: "working", date: t, source: "Isadora" };
   S.reviews = { v1: { id: "v1", danceId: "solo", kind: "video", date: t, at: t + "T09:00:00Z", thumbs: [], pose: { knee: 176 }, review: { loved: "Great reach", fix: "Point your foot", tag: "feet", feet: "flexed", knees: "✓", eyes: "✓", arms: "✓", try: "" } } };
-  S.goals = { g1: { id: "g1", name: "Right split", preset: "split-r", unit: "deg", target: 180, emoji: "🦵", createdAt: "2026-09-01", checkins: [{ id: "c1", date: "2026-09-01", value: 150 }, { id: "c2", date: "2026-09-15", value: 160 }] } };
+  S.goals = { g1: { id: "g1", name: "Right split", preset: "split-r", unit: "deg", target: 180, emoji: "🦵", createdAt: "2026-09-01", checkins: [{ id: "c1", date: "2026-09-01", value: 150 }, { id: "c2", date: "2026-09-15", value: 160 }] }, g2: { id: "g2", name: "Bridge", preset: "bridge", unit: "sec", target: 20, emoji: "🌉", createdAt: "2026-09-01", checkins: [{ id: "c3", date: "2026-09-01", value: 8 }] } };
   S.reports = { r1: { page: "home", note: "it froze", error: "TypeError: x", at: t + "T10:00:00Z", version: "1.1.0" } };
   for (const [name, render] of Object.entries(SCREENS())) assert.doesNotThrow(render, name + " render");
   const dl = dancePages();
@@ -137,8 +137,9 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#quickRow").innerHTML.includes("openQuick('strength')") && el("#quickRow").innerHTML.includes("openQuick('flex')"), "Practice offers the two quick sessions");
   assert.ok(el("#workoutRow").innerHTML.includes("My workouts") && el("#workoutRow").innerHTML.includes("woAdd()"), "Practice has the My workouts row with an Add button"); assert.ok(el("#workoutRow").innerHTML.includes("woPreset(0)") && el("#workoutRow").innerHTML.includes("Core Control"), "the suggested Dance Masterclass programs are offered");
   assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");
-  assert.ok(el("#goalRings").innerHTML.includes("Right split") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Me");
-  assert.ok(el("#goalReminder").innerHTML.includes("Check-in time"), "goal due after 14 days shows on Today");
+  assert.ok(el("#goalRings").innerHTML.includes("Bridge") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Skills");
+  assert.ok(!el("#goalRings").innerHTML.includes("Right split") && el("#skillList").innerHTML.includes("splitOpen('split-r')") && el("#skillList").innerHTML.includes("▲ 10° since your first one"), "1.64.2: a split is a row in the skill list, with her change since her first check-in");
+  assert.ok(el("#goalReminder").innerHTML.includes("Check-in time: Bridge") && !el("#goalReminder").innerHTML.includes("split"), "goal due after 14 days shows on Today; a split is never due");
   M.goals.openGoal("g1"); assert.ok(el("#goalBody").innerHTML.includes("openCoach('','Right split')"), "a goal's sheet has a coach button for that goal");
   assert.ok(dancePages().includes("openCoach('solo')"), "Coach me on the dance cover");
   if (!shortDay()) assert.ok(el("#practiceChecklist").innerHTML.includes("openCoach('',"), "Coach me on tricks in Practice");
