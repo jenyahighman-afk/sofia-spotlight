@@ -68,9 +68,9 @@ test("Me card and binder render in the fake DOM; a newly landed skill pops New c
     S.skills = { "s-donut": { id: "s-donut", state: "checked", at: "2026-10-05", checkedAt: "2026-10-05", teacher: "Miss A" } };
     S.photos = { p1: { url: "https://x/p.jpg", card: "s-donut", at: "2026-10-06" } };
     renderCardsCard(); const card = el("#meCards").innerHTML;
-    assert.ok(card.includes("🃏 My trick cards") && card.includes(`1 / ${total}`) && card.includes("openCards()"), "Me card shows the count and opens the binder");
-    assert.ok(card.includes("📷 1 progress photo so far") && card.includes("📈 Skills above"), "Me card counts the progress photos and says where to add more");
-    const hadPhotos = S.photos; S.photos = {}; renderCardsCard(); assert.match(el("#meCards").innerHTML, /Learning a trick\? Open it in 📈 Skills above and tap its 📷/, "with none yet, it says where they start"); S.photos = hadPhotos; renderCardsCard();
+    assert.ok(!card.includes(`/ ${total}`) && el("#cardsCount").textContent === "1 earned" && card.includes("openCards()"), "1.65.0: the fold shows a count that only goes up, and the card opens the binder");
+    assert.ok(card.includes("📷 1 progress photo so far") && card.includes("⭐ I'm working on"), "the card counts the progress photos and says where to add more");
+    const hadPhotos = S.photos; S.photos = {}; renderCardsCard(); assert.match(el("#meCards").innerHTML, /Learning a trick\? Pick it in ⭐ I'm working on and tap its 📷/, "with none yet, it says where they start"); S.photos = hadPhotos; renderCardsCard();
     await window.openCards(); const area = el("#cardsArea").innerHTML;
     assert.equal(el("#cardsArea").style.display, "block", "the binder moved into the stage");
     for (const st of Object.values(ladder.styles)) assert.ok(area.includes(st.n.replace(/&/g, "&amp;")), "group " + st.n);
@@ -83,12 +83,12 @@ test("Me card and binder render in the fake DOM; a newly landed skill pops New c
     await kidCycle("j-iso"); assert.equal(el("#toast").textContent, "", "learning is not a card yet");
     await kidCycle("j-iso"); assert.match(el("#toast").textContent, /New card! Isolations/);
     el("#toast").textContent = ""; await teacherCheck("j-iso", "Miss B", "2026-10-10"); assert.match(el("#toast").textContent, /Shiny card! Isolations/);
-    renderCardsCard(); assert.ok(el("#meCards").innerHTML.includes(`2 / ${total}`) && el("#meCards").innerHTML.includes("2 shiny"));
+    renderCardsCard(); assert.ok(el("#cardsCount").textContent === "2 earned" && el("#meCards").innerHTML.includes("2 shiny"));
     assert.ok(writes.every(w => w.col === "skills"), "only skill writes; the cards store nothing of their own");
   } finally { setBackend(null); resetDom(); for (const k of Object.keys(S)) S[k] = {}; }
-  // 1.61.0: the trick cards card lives on the Skills page, right under the skill lists (its id is unchanged)
+  // 1.61.0: the trick cards card lives on the Skills page, right under the skill lists (its id is unchanged); 1.65.0: both are folds
   const html = src("index.html"); const sk = html.slice(html.indexOf('id="p-skills"'), html.indexOf("</section>", html.indexOf('id="p-skills"')));
-  assert.match(sk, /id="skillList"><\/div>\s*<\/div>\s*<div class="card coral" id="meCards"><\/div>/, "the card right under 📈 Skills"); assert.ok(sk.includes('id="cardsArea" style="display:none"'), "binder area inside p-skills, hidden");
+  assert.match(sk, /id="skillList"><\/div>\s*<\/details>\s*<details class="card acc coral" id="cardsFold"><summary>🃏 My trick cards <span class="chip violet" id="cardsCount"><\/span><\/summary><div id="meCards"><\/div><\/details>/, "the fold right under 📚 All skills"); assert.ok(sk.includes('id="cardsArea" style="display:none"'), "binder area inside p-skills, hidden");
   assert.match(src("js/views/me.js"), /renderCardsCard\(\)/); assert.match(src("js/app.js"), /initCards\(\)/); assert.match(src("sw.js"), /"\.\/js\/cards\.js"/);
   assert.match(src("css/app.css"), /prefers-reduced-motion:reduce\)\{\.tcard\.tc-shiny::after\{animation:none/);
 });

@@ -627,8 +627,13 @@ body.modal{overflow:hidden}
 /* 1.63.0: Me's set-once things, Play's friends and extra picks, each under one line */
 .me-setup,.friends-fold,.habit-fold{margin:10px 0} .me-setup>summary,.friends-fold>summary,.habit-fold>summary{font-family:Fredoka;font-size:1.05rem;padding:10px 4px;cursor:pointer} .me-setup .card,.friends-fold .card,.habit-fold .card{margin-top:8px}
 /* 1.64.0: the four ideas */
-.month-skill .ms-name{font-size:1.1rem;margin:6px 0 2px} .ms-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px} .ms-pick .chip{cursor:pointer;border:0;font:inherit;font-weight:700}
-.ms-vs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px} .ms-shot{margin:0;border-radius:14px;overflow:hidden;background:var(--blush);text-align:center} .ms-shot img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block} .ms-shot figcaption{font-weight:800;font-size:.8rem;padding:4px} .ms-shot.ms-empty{display:grid;place-items:center;padding:10px;font-size:.82rem;color:var(--ink-2);font-weight:700}
+.ms-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px} .ms-pick .chip{cursor:pointer;border:0;font:inherit;font-weight:700}
+/* 1.65.0: ⭐ I'm working on, her own list on top of Skills */
+.work-card .wk-row{border-top:1px dashed var(--line);padding:10px 0 6px} .work-card h3+.wk-row{border-top:0;padding-top:4px} .wk-top{display:flex;align-items:center;gap:10px} .wk-st{font-size:1.3rem;width:1.7rem;text-align:center;flex:none}
+.wk-top b{display:block;font-family:Fredoka;font-size:1.08rem;font-weight:500;line-height:1.2} .wk-top small{display:block;color:var(--ink-2);font-weight:700;font-size:.78rem} .wk-x{background:none;border:0;color:var(--ink-2);font-size:1rem;padding:8px 6px;cursor:pointer;flex:none}
+.wk-tip{margin:2px 0 0 calc(1.7rem + 10px)} .wk-acts{margin-top:8px;gap:8px;flex-wrap:wrap} .wk-more{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.wk-vs{display:flex;gap:8px;margin:8px 0 0 calc(1.7rem + 10px)} .wk-shot{margin:0;width:84px;border-radius:12px;overflow:hidden;background:var(--blush);text-align:center} .wk-shot img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block} .wk-shot figcaption{font-weight:800;font-size:.7rem;padding:2px}
+#stageBody details.card.acc{margin:8px 0}
 #hvVideo.hv-mirror{transform:scaleX(-1)} .hv-tools{margin-top:8px;flex-wrap:wrap}
 .fix-row{display:flex;gap:6px;align-items:stretch} .fix-row .fix-at{flex:none;white-space:nowrap;background:var(--card);border:2px solid var(--coral)}
 .kev-wear{margin-top:8px} .kev-wear>summary{cursor:pointer;font-weight:800}

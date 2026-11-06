@@ -33,13 +33,13 @@
     {
       "id": "skills",
       "e": "⭐",
-      "n": "A Skills tab and a skill of the month",
+      "n": "A Skills tab with your own list",
       "where": "Skills",
-      "pitch": "Everything you're learning is on one tab. Pick one skill for this month.",
+      "pitch": "Pick the skills you're working on. Keep track of each one.",
       "steps": [
         "Tap Skills at the bottom.",
-        "In “⭐ My skill this month”, pick the one you want.",
-        "“📷 My photos” keeps a Before and a Now picture.",
+        "In “⭐ I'm working on”, tap “＋ Pick a skill”.",
+        "“📷 Add a photo” keeps a Before and a Now picture.",
         "“✏️ Name this page” lets you call the tab what you like."
       ]
     },

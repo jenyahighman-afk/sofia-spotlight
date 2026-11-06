@@ -13,7 +13,7 @@ const KEY = "spotlight:news";
 export const TRY = {
   // 1.64.0 (the reorganization: four tabs)
   dances: { page: "dances" },
-  skills: { page: "skills", scroll: "#monthSkill" },
+  skills: { page: "skills", scroll: "#workingCard" },
   me: { page: "me", scroll: "#mePlay" },
   // 1.52.0 (Today fits one screen)
   extras: { page: "play", scroll: "#habitCard" },

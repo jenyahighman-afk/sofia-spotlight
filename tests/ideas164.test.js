@@ -18,21 +18,14 @@ const D = await import("../js/views/dances.js");
 const clearS = () => { for (const k of Object.keys(S)) S[k] = {}; };
 const html = src("index.html");
 
-test("⭐ My skill this month: hers to pick, one per month, a before and a now from the trick's own photos", () => {
+test("⭐ My skill this month: the pick is kept, one per month; since 1.65.0 it starts her own list on Skills", () => {
   assert.equal(MS.monthKey("2026-11-05"), "2026-11"); assert.equal(MS.monthName("2026-12-01"), "December");
   assert.equal(MS.monthSkill({}, "2026-11-05"), null); assert.equal(MS.monthSkill({ monthSkills: { "2026-11": "s-cartwheel" } }, "2026-11-05").n, "Cartwheel");
   assert.equal(MS.monthSkill({ monthSkills: { "2026-11": "s-cartwheel" } }, "2026-12-01"), null, "a new month starts with nothing picked: last month's stays in the record");
   assert.equal(MS.monthSkill({ monthSkills: { "2026-11": "nope" } }, "2026-11-05"), null);
-  const list = MS.pickList({ "s-leap": { state: "learning" }, "s-cartwheel": { state: "clean" } }); assert.equal(list[0].id, "s-leap", "what she's learning comes first"); assert.ok(list.findIndex(s => s.id === "s-cartwheel") > list.findIndex(s => s.id === "s-donut"), "a clean one comes after the ones still to learn");
-  const none = MS.monthCardHtml({ date: "2026-11-05", list: list.slice(0, 3) }); assert.match(none, /⭐ My skill this month/); assert.match(none, /November/); assert.match(none, /You choose\./); assert.equal((none.match(/msPick\('/g) || []).length, 3);
-  const sk = { id: "s-cartwheel", n: "Cartwheel", tip: "Reach, look, place." };
-  const empty = MS.monthCardHtml({ date: "2026-11-05", skill: sk, state: "learning" }); assert.match(empty, /◔ <b>Cartwheel<\/b>/); assert.match(empty, /Take a photo now/); assert.match(empty, /openCards\('s-cartwheel'\)">📷 My photos/); assert.match(empty, /msPicking\(true\)">Pick a different one/);
-  const one = MS.monthCardHtml({ date: "2026-11-05", skill: sk, shots: [{ url: "a.jpg", date: "2026-11-01" }] }); assert.match(one, /Before/); assert.doesNotMatch(one, />Now</);
-  const two = MS.monthCardHtml({ date: "2026-11-05", skill: sk, shots: [{ url: "a.jpg", date: "2026-11-01" }, { url: "b.jpg", date: "2026-11-20" }] }); assert.match(two, /a\.jpg[\s\S]*Before[\s\S]*b\.jpg[\s\S]*Now/);
-  assert.doesNotMatch(none + empty + two, /due|days left|streak|missed/i, "nothing is asked for");
-  resetDom(); clearS(); MS.renderMonthSkill(); assert.match(el("#monthSkill").innerHTML, /You choose\./); S.settings = { monthSkills: { [MS.monthKey()]: "s-leap" } }; MS.renderMonthSkill(); assert.match(el("#monthSkill").innerHTML, /Leap on the swell/);
-  const sk2 = html.slice(html.indexOf('id="p-skills"')); assert.ok(sk2.indexOf('id="monthSkill"') < sk2.indexOf('id="skillRings"'), "on top of the Skills page");
-  assert.match(src("sw.js"), /"\.\/js\/monthskill\.js"/); resetDom(); clearS();
+  const sk2 = html.slice(html.indexOf('id="p-skills"')); assert.ok(!html.includes('id="monthSkill"'), "its card is gone"); assert.ok(sk2.indexOf('id="workingCard"') < sk2.indexOf('id="skillRings"'), "her list is on top of the Skills page");
+  assert.match(src("js/working.js"), /const m = monthSkill\(settings, date, ladder\); return m \? \[m\.id\] : \[\];/, "the month's pick starts the list");
+  assert.match(src("sw.js"), /"\.\/js\/monthskill\.js", "\.\/js\/working\.js"/);
 });
 
 test("🪞 Mirror and an A–B loop on Hannah's videos", () => {

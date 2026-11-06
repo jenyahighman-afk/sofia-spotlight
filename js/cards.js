@@ -58,9 +58,9 @@ export function cardHTML(c, { big = false, photo = null } = {}){
 // ---------- Me card ----------
 export function renderCardsCard(){
   const el = $("#meCards"); if (!el) return; const cards = cardList(); const n = cardCounts(cards); const shots = Object.values(lineupCounts()).reduce((a, b) => a + b, 0);
-  el.innerHTML = `<div class="row"><h3 class="grow">🃏 My trick cards</h3><span class="chip violet">${n.earned} / ${n.total}</span></div>
-    <p class="small muted">Land a trick clean and its card is yours. Teacher-checked tricks turn shiny ✨${n.shiny ? ` · ${n.shiny} shiny` : ""}</p>
-    <p class="small muted">${shots ? `📷 ${shots} progress photo${shots === 1 ? "" : "s"} so far. Add more with the 📷 on a trick in 📈 Skills above.` : "📷 Learning a trick? Open it in 📈 Skills above and tap its 📷. Your photos line up."}</p>
+  const cc = $("#cardsCount"); if (cc) cc.textContent = `${n.earned} earned`; // 1.65.0: the title and the count sit on the fold
+  el.innerHTML = `<p class="small muted">Land a trick clean and its card is yours. Teacher-checked tricks turn shiny ✨${n.shiny ? ` · ${n.shiny} shiny` : ""}</p>
+    <p class="small muted">${shots ? `📷 ${shots} progress photo${shots === 1 ? "" : "s"} so far. Add more with the 📷 on a skill in ⭐ I'm working on.` : "📷 Learning a trick? Pick it in ⭐ I'm working on and tap its 📷. Your photos line up."}</p>
     <div class="row"><button class="btn sm coral" onclick="openCards()">🃏 Open my binder</button></div>`;
   const a = $("#cardsArea"); if (a && a.style.display === "block") renderBinder(); // the binder is open: keep it live
 }
