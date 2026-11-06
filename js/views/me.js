@@ -23,6 +23,11 @@ import { renderGlowCard } from "../glow.js";
 import { PIN_MSG } from "../sunday.js";
 
 let styleOpen = null;
+// The four class lists (1.64.3, Jenya Nov 5: "keep the four, folded under My classes"). Ballet, Jazz, Contemporary and Hip hop
+// are general lists written for the app, not a teacher's chart, so their rings sit in one fold under the Solo tricks and Acro
+// rings. Pure.
+export const CLASS_STYLES = ["ballet", "jazz", "contemporary", "hiphop"];
+export const ringGroups = (prog) => { const all = Object.entries(prog || {}); return { main: all.filter(([k]) => !CLASS_STYLES.includes(k)), classes: all.filter(([k]) => CLASS_STYLES.includes(k)) }; };
 const ring = (pct, ic) => { const r = 26, c = 2 * Math.PI * r; return `<svg viewBox="0 0 64 64" class="mini-ring"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" transform="rotate(-90 32 32)" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/><text x="32" y="32" class="ring-ic">${ic}</text></svg>`; };
 
 function renderMe(){
@@ -38,8 +43,13 @@ function renderMe(){
   $("#badgeCount").textContent = got.length + " earned";
   renderHide();
   // skills
-  const prog = styleProgress(S.skills);
-  $("#skillRings").innerHTML = Object.entries(prog).map(([k, p]) => `<button class="skill-ring ${styleOpen === k ? "on" : ""}" onclick="meStyle('${k}')">${ring(p.pct, p.ic)}<small>${esc(p.n)}</small><small class="muted">${p.checked}★ ${p.clean}◉</small></button>`).join("");
+  const rg = ringGroups(styleProgress(S.skills));
+  const ringBtn = ([k, p]) => `<button class="skill-ring ${styleOpen === k ? "on" : ""}" onclick="meStyle('${k}')">${ring(p.pct, p.ic)}<small>${esc(p.n)}</small><small class="muted">${p.checked}★ ${p.clean}◉</small></button>`;
+  $("#skillRings").innerHTML = rg.main.map(ringBtn).join("");
+  // 🩰 My classes: the four class lists, folded; open while one of them is the open list.
+  const cf = $("#classFold"); if (cf) { cf.hidden = !rg.classes.length; if (CLASS_STYLES.includes(styleOpen)) cf.open = true; }
+  const cr = $("#classRings"); if (cr) cr.innerHTML = rg.classes.map(ringBtn).join("");
+  const cn = $("#classNames"); if (cn) cn.textContent = rg.classes.map(([, p]) => p.n).join(", ");
   const st = styleOpen && SKILLS.styles[styleOpen];
   // A started skill's row gets a small 📷 (with its count) that opens the trick's progress lineup (js/lineup.js, in the binder).
   const shots = lineupCounts();

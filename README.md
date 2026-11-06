@@ -131,6 +131,7 @@ Step 2 of the reorganization (Jenya's decisions of Nov 5). No stored family data
 - **🎀 Events** on Today (`js/kidevents.js`, folded): the season's events to come, soonest first, each opening to which dances, where, when to be there, the fun line and **🧳 Packing list** (a sheet she can tick: the same list and ticks as Grown-ups → Lists). No Calendar tab: she uses her own calendars (Jenya). Costs, charge dates, hotels, links and notes are never drawn there (`KID_FIELDS`); editing events and lists stays behind the PIN; school breaks are left out.
 - The printed pages are not reprinted (Jenya): where paper says "Practice → Aerial mission" or "Play", the page still exists, one tap further (Today → 📋 The whole session, Me → 🎮 Play), and the aerial mission is on Skills.
 - `tests/map161.test.js`.
+- **1.64.3:** on 📈 Skills the Solo tricks and Acro rings stay in view and the four class lists (Ballet, Jazz, Contemporary, Hip hop: general lists written for the app, not a teacher's chart) sit in one fold, **🩰 My classes** (Jenya, Nov 5: "keep the four, folded under My classes"; `views/me.js CLASS_STYLES`, `ringGroups`, `#classFold`). A ring in the fold opens its list as before, and the fold stays open while one of its lists is open. Nothing stored changes. `tests/classes1643.test.js`.
 
 ### Dances as tiles (1.62.0): the competition dances first, a page per dance, the class dances folded
 Step 3 of the reorganization (Jenya's decisions of Nov 5). No stored data changes.
