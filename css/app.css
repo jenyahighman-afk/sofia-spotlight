@@ -631,7 +631,7 @@ body.modal{overflow:hidden}
 /* 1.65.0: ⭐ I'm working on, her own list on top of Skills */
 .work-card .wk-row{border-top:1px dashed var(--line);padding:10px 0 6px} .work-card h3+.wk-row{border-top:0;padding-top:4px} .wk-top{display:flex;align-items:center;gap:10px} .wk-st{font-size:1.3rem;width:1.7rem;text-align:center;flex:none}
 .wk-top b{display:block;font-family:Fredoka;font-size:1.08rem;font-weight:500;line-height:1.2} .wk-top small{display:block;color:var(--ink-2);font-weight:700;font-size:.78rem} .wk-x{background:none;border:0;color:var(--ink-2);font-size:1rem;padding:8px 6px;cursor:pointer;flex:none}
-.wk-tip{margin:2px 0 0 calc(1.7rem + 10px)} .wk-acts{margin-top:8px;gap:8px;flex-wrap:wrap} .wk-more{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.wk-top .btn.sm{flex:none;padding:7px 11px} .wk-tip{margin:2px 0 0 calc(1.7rem + 10px)} .wk-acts{margin-top:8px;gap:8px;flex-wrap:wrap} .wk-more{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
 .wk-vs{display:flex;gap:8px;margin:8px 0 0 calc(1.7rem + 10px)} .wk-shot{margin:0;width:84px;border-radius:12px;overflow:hidden;background:var(--blush);text-align:center} .wk-shot img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block} .wk-shot figcaption{font-weight:800;font-size:.7rem;padding:2px}
 #stageBody details.card.acc{margin:8px 0}
 #hvVideo.hv-mirror{transform:scaleX(-1)} .hv-tools{margin-top:8px;flex-wrap:wrap}

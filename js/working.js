@@ -4,8 +4,10 @@
 // settings.working = [id, …]: skill ids and split keys in the order she picked them, up to WORK_MAX. Until she picks, the
 // list starts with this month's ⭐ skill (settings.monthSkills, 1.64.0), so what she chose there is not lost. Picking a
 // skill she hasn't started marks it "learning", the same record a tap in a list writes. Nothing is counted or due.
+// 🎬 Coach me on a row starts the app's AI coach for that skill (js/coach.js: a photo or a short clip, stills only leave the
+// phone, one thing done well and one fix come back); the latest fix it gave for the skill shows on the row.
 // Pure parts up top (tested in Node).
-import { $, esc, todayStr, expose, toast } from "./util.js";
+import { $, esc, todayStr, expose, toast, fmt } from "./util.js";
 import { S, setSettings } from "./store.js";
 import { SKILLS } from "./data.js";
 import { findSkill, skillState, kidCycle, levelGroups, STATE_EMOJI } from "./skills.js";
@@ -14,6 +16,7 @@ import { monthSkill } from "./monthskill.js";
 import { lineup, firstVsNow } from "./lineup.js";
 import { openStage } from "./stage.js";
 import { CLASS_STYLES } from "./views/me.js";
+import { lastTrickReview } from "./coachhub.js";
 
 export const WORK_MAX = 6;
 const isSplitKey = (id) => SPLIT_KEYS.includes(id);
@@ -25,18 +28,23 @@ export function workingIds(settings, date = todayStr(), ladder = SKILLS){
 }
 // One row's facts: a split says her change since her first check-in, a skill says how it's going. On her list a skill she
 // hasn't marked yet reads "Working on it", never "Not yet". Pure.
-export function workRow(id, { skills = {}, goals = {}, shots = [] } = {}, ladder = SKILLS){
-  if (isSplitKey(id)) { const p = PRESETS.find(x => x.key === id); const g = splitGoal(goals, id); return { id, split: true, n: p.name, ic: p.emoji, note: g && (g.checkins || []).length ? splitNote(g) : "No photo yet" }; }
+export function workRow(id, { skills = {}, goals = {}, shots = [], reviews = {} } = {}, ladder = SKILLS){
+  const fix = (n) => { const rv = lastTrickReview(reviews, n); return rv && rv.review.fix ? { date: rv.date || "", text: String(rv.review.fix) } : null; };
+  if (isSplitKey(id)) { const p = PRESETS.find(x => x.key === id); const g = splitGoal(goals, id); return { id, split: true, n: p.name, ic: p.emoji, dance: "", fix: fix(p.name), note: g && (g.checkins || []).length ? splitNote(g) : "No photo yet" }; }
   const s = findSkill(id, ladder); if (!s) return null; const state = skillState(skills, id);
-  return { id, split: false, n: s.n, tip: s.tip || "", state, ic: STATE_EMOJI[state === "notyet" ? "learning" : state], label: state === "checked" ? "Teacher-checked" : state === "clean" ? "Clean" : "Working on it", shots };
+  return { id, split: false, n: s.n, tip: s.tip || "", dance: s.style === "solo" ? "solo" : "", fix: fix(s.n), state, ic: STATE_EMOJI[state === "notyet" ? "learning" : state], label: state === "checked" ? "Teacher-checked" : state === "clean" ? "Clean" : "Working on it", shots };
 }
+// 🎬 Coach me for a row: the coach's own sheet, named for the skill (a solo trick goes with the solo's notes). And the
+// last fix the coach gave for it, in place of the cue. Pure.
+const coachBtn = (r) => `<button class="btn sm" onclick="openCoach('${r.dance || ""}','${esc(r.n).replace(/'/g, "&#39;")}')">🎬 Coach me</button>`;
+const coachLine = (r) => r.fix ? `<div class="small wk-tip">🎬 Coach${/^\d{4}-\d{2}-\d{2}$/.test(r.fix.date) ? ", " + esc(fmt(r.fix.date)) : ""}: ${esc(r.fix.text)}</div>` : "";
 export function workRowHtml(r){
-  const top = (sub) => `<div class="wk-top"><span class="wk-st">${r.ic}</span><span class="grow"><b>${esc(r.n)}</b><small>${esc(sub)}</small></span><button class="wk-x" onclick="wkRemove('${r.id}')" aria-label="Take ${esc(r.n)} off my list">✕</button></div>`;
-  if (r.split) return `<div class="wk-row">${top(r.note)}<div class="row wk-acts"><button class="btn sm" onclick="splitOpen('${r.id}')">📷 Add a photo</button></div></div>`;
+  const top = (sub, got = "") => `<div class="wk-top"><span class="wk-st">${r.ic}</span><span class="grow"><b>${esc(r.n)}</b><small>${esc(sub)}</small></span>${got}<button class="wk-x" onclick="wkRemove('${r.id}')" aria-label="Take ${esc(r.n)} off my list">✕</button></div>`;
+  if (r.split) return `<div class="wk-row">${top(r.note)}${coachLine(r)}<div class="row wk-acts"><button class="btn sm" onclick="splitOpen('${r.id}')">📷 Add a photo</button>${coachBtn(r)}</div></div>`;
   const vs = firstVsNow(r.shots); const pic = (p, lab) => `<figure class="wk-shot"><img src="${esc(p.url)}" alt="" loading="lazy"><figcaption>${lab}</figcaption></figure>`;
   const photos = vs ? `<div class="wk-vs">${pic(vs.first, "Before")}${pic(vs.now, "Now")}</div>` : r.shots.length ? `<div class="wk-vs">${pic(r.shots[0], "Before")}</div>` : "";
-  const got = r.state === "checked" ? `<span class="chip mint">★ Teacher-checked</span>` : r.state === "clean" ? `<button class="btn sm ghost" onclick="wkGot('${r.id}')">↩ Still working on it</button>` : `<button class="btn sm coral" onclick="wkGot('${r.id}')">✓ I've got it clean</button>`;
-  return `<div class="wk-row ${r.state}">${top(r.label)}${r.tip ? `<div class="small muted wk-tip">${esc(r.tip)}</div>` : ""}${photos}<div class="row wk-acts">${got}<button class="btn sm" onclick="openCards('${r.id}')">📷 ${r.shots.length ? "My photos · " + r.shots.length : "Add a photo"}</button></div></div>`;
+  const got = r.state === "checked" ? "" : r.state === "clean" ? `<button class="btn sm ghost" onclick="wkGot('${r.id}')" aria-label="${esc(r.n)}: still working on it">↩ Undo</button>` : `<button class="btn sm coral" onclick="wkGot('${r.id}')" aria-label="${esc(r.n)}: I've got it clean">✓ Got it</button>`;
+  return `<div class="wk-row ${r.state}">${top(r.label, got)}${coachLine(r) || (r.tip ? `<div class="small muted wk-tip">${esc(r.tip)}</div>` : "")}${photos}<div class="row wk-acts"><button class="btn sm" onclick="openCards('${r.id}')">📷 ${r.shots.length ? "My photos · " + r.shots.length : "Add a photo"}</button>${coachBtn(r)}</div></div>`;
 }
 export function workingCardHtml(rows, max = WORK_MAX){
   const head = `<h3>⭐ I'm working on</h3>`;
@@ -70,7 +78,7 @@ export function pickerHtml(groups, { count = 0, max = WORK_MAX } = {}){
 // ---- DOM ----
 export function renderWorking(){
   const el = $("#workingCard"); if (!el) return;
-  el.innerHTML = workingCardHtml(workingIds(S.settings).map(id => workRow(id, { skills: S.skills, goals: S.goals, shots: isSplitKey(id) ? [] : lineup(id) })).filter(Boolean));
+  el.innerHTML = workingCardHtml(workingIds(S.settings).map(id => workRow(id, { skills: S.skills, goals: S.goals, reviews: S.reviews, shots: isSplitKey(id) ? [] : lineup(id) })).filter(Boolean));
 }
 async function save(ids){ await setSettings({ working: ids }); renderWorking(); }
 // A chip in the picker: on the list, or off it. A skill she hasn't started becomes "learning" when she picks it.
@@ -85,7 +93,7 @@ async function wkToggle(id, btn){
   toast(on ? "Off your list" : "On your list ⭐");
 }
 async function wkRemove(id){ const ids = workingIds(S.settings); if (!ids.includes(id)) return; await save(ids.filter(x => x !== id)); toast("Off your list. It's still under 📚 All skills."); }
-// "I've got it clean" and back. Teacher-checked stays.
+// ✓ Got it (clean) and ↩ Undo (back to working on it). Teacher-checked stays.
 async function wkGot(id){
   const cur = skillState(S.skills, id); if (cur === "checked" || !findSkill(id)) return;
   if (cur === "notyet") await kidCycle(id); await kidCycle(id); renderWorking();
