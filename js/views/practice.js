@@ -12,6 +12,7 @@ import { PRACTICE_POOL } from "../data.js";
 import { poolItems } from "../plan.js";
 import { checkBadges } from "../badges.js";
 import { renderDrillBox, drillStrip } from "../drills.js";
+import { showPage } from "../nav.js";
 
 const KIND = { warm:"🔥", core:"💪", legs:"🦵", str:"💪", flex:"🧘", tech:"🩰", run:"▶️", fix:"🎯", trick:"✨", aerial:"🤸", mind:"🧠" };
 const GROUP = { warm:"Warm-up", core:"Core", legs:"Legs", flex:"Flex", tech:"Technique", fix:"This week's fix", trick:"Trick", aerial:"Aerial mission", run:"Runs", mind:"Picture it" };
@@ -92,4 +93,7 @@ export function initPractice(){
   $("#saveNote").onclick=saveNote;
 }
 export { renderPractice, toggleAerial };
-expose({ toggleAerial, swapOpen, swapPick });
+// The aerial mission's checklist moved to Skills in 1.61.0, and the printed Aerial Mission p.2 still says "Practice → Aerial
+// mission" (no reprints, Jenya). So Practice keeps one row that goes to Skills and opens the checklist (1.64.4).
+function aerialGo(){ showPage("skills"); const a = $("#aerialFold"); if (!a) return; a.open = true; if (a.scrollIntoView) a.scrollIntoView({ block: "start" }); }
+expose({ toggleAerial, swapOpen, swapPick, aerialGo });

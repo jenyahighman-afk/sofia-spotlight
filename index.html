@@ -70,7 +70,7 @@
     <h3>🎯 Goals</h3>
     <div class="goal-grid" id="goalRings"></div>
   </div>
-  <details class="card acc violet"><summary>🤸 Aerial mission <span class="chip violet" id="aerialPct">0%</span></summary>
+  <details class="card acc violet" id="aerialFold"><summary>🤸 Aerial mission <span class="chip violet" id="aerialPct">0%</span></summary>
     <p class="small muted">Learned in Monday Acro with a spotter. Mat under you for every drill.</p>
     <div id="aerialList"></div>
   </details>
@@ -103,6 +103,7 @@
     <textarea id="practiceNote" placeholder="One line."></textarea>
     <div class="row" style="margin-top:8px"><button class="btn sm coral" id="saveNote">Save</button><span class="grow"></span><label class="small muted">Day <input type="date" id="practiceDate" style="max-width:150px;display:inline-block"></label></div>
   </details>
+  <button class="card violet me-tile" id="practiceAerial" onclick="aerialGo()"><span class="mt-ic">🤸</span><span class="grow"><b>Aerial mission</b><small>Your checklist is on Skills. Tap to go there.</small></span><span class="mt-go">›</span></button>
   <details class="card acc"><summary>🗺️ The 15-week plan</summary><div id="phases"></div></details>
   <details class="card acc"><summary>📅 History</summary><div id="practiceHistory" class="small"></div></details>
 </section>
