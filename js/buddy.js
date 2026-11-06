@@ -18,7 +18,6 @@ import { compWeekend, todayMode } from "./mode.js";
 import { todayPick, shortName } from "./memo.js";
 import { doneOn as dareDoneOn, shownDare } from "./dares.js";
 import { doorsFor, openedDates, showEvent } from "./advent.js";
-import { showNudge } from "./glow.js";
 import { cardList, cardCounts } from "./cards.js";
 import { nextUnlock, totalStars } from "./stars.js";
 import { petState, petSVG, furFor } from "./pet.js";
@@ -53,7 +52,6 @@ export function pickStep(ctx, rng = Math.random){
   if (c.trioOpen) tier1.push({ key: "trio", go: "openPlayer('trio',{once:true})" }); // the trio once, offered like the dare or the door (1.60.0)
   if (c.dare === false) tier1.push({ key: "dare", go: "showPage('play');buddyScroll('#playDare')" });
   if (c.door === false) tier1.push({ key: "door", go: "showPage('home');openAdvent()" });
-  if (c.glow) tier1.push({ key: "glow", go: "showPage('me');buddyScroll('#meGlow')" });
   const memo = (c.cards || []).find(x => x.id === "memo" && !x.done); if (memo) tier1.push({ key: "memo", vars: { memo: memo.sub }, go: memo.go });
   if (!c.fullDone && !c.restDay) tier1.push({ key: "full", go: "showPage('practice')" });
   // The Backstage Pass: the next part to read, once nothing has been read for two days (pass.js nudgeFor).
@@ -108,7 +106,7 @@ export function buddyContext(date = todayStr()){
     cards: cardsFor(date, { skills: S.skills, bites, memo }),
     dare: shownDare(date) ? dareDoneOn(date) : null,
     door: door && showEvent() ? openedDates().includes(date) : null,
-    glow: showNudge(date), cardsEarned: cc.earned,
+    cardsEarned: cc.earned,
     starsLeft: nu ? nu[2] - totalStars() : 0, unlock: nu ? nu[3] : "",
     event: ev ? { name: short(ev.name), days: daysUntil(ev.start) } : null,
     passPart: (() => { const p = passNudge(S.settings, date); return p ? `${p.e || ""} ${p.n}`.trim() : ""; })(),

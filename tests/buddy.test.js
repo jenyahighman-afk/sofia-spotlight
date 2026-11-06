@@ -32,8 +32,8 @@ test("before the day counts: comp weekend, then the plan's must-box, then comp m
 test("once the day counts: plan bonus, the small open things, then fun; all done when nothing is left", () => {
   const done = { ...base, dayDone: true };
   assert.equal(B.pickStep({ ...done, plan: { must: [{ id: "a", t: "Kicks" }] } }).key, "plan-more");
-  const keys = new Set(); for (let i = 0; i < 40; i++) keys.add(B.pickStep({ ...done, door: false, glow: true }, () => i / 40).key);
-  assert.deepEqual([...keys].sort(), ["dare", "door", "full", "glow"].sort(), "only the open 'for today' things");
+  const keys = new Set(); for (let i = 0; i < 40; i++) keys.add(B.pickStep({ ...done, door: false }, () => i / 40).key);
+  assert.deepEqual([...keys].sort(), ["dare", "door", "full"].sort(), "only the open 'for today' things (1.66.2: no flipbook nudge)");
   const fun = new Set(); for (let i = 0; i < 40; i++) fun.add(B.pickStep({ ...done, dare: true, fullDone: true }, () => i / 40).key);
   assert.ok(fun.has("all-done") && fun.has("teach") && fun.has("count") && fun.has("cards")); assert.ok(!fun.has("stars"), "stars only when the next unlock is close (≤ 5)");
   const near = new Set(); for (let i = 0; i < 60; i++) near.add(B.pickStep({ ...done, dare: true, fullDone: true, starsLeft: 2 }, () => i / 60).key); assert.ok(near.has("stars"));
@@ -41,10 +41,10 @@ test("once the day counts: plan bonus, the small open things, then fun; all done
 });
 
 test("lines: every situation has lines, placeholders are filled from real values only, no 'undefined', no repeats in a row", () => {
-  for (const k of ["plan", "plan-more", "trick", "move", "game", "memo", "comp-weekend", "comp-mode", "rest", "comeback", "just-done", "dare", "door", "glow", "full", "cards", "costume", "teach", "count", "stars", "all-done"]) assert.ok((lines.steps[k] || []).length >= 1, k);
+  for (const k of ["plan", "plan-more", "trick", "move", "game", "memo", "comp-weekend", "comp-mode", "rest", "comeback", "just-done", "dare", "door", "full", "cards", "costume", "teach", "count", "stars", "all-done"]) assert.ok((lines.steps[k] || []).length >= 1, k);
   assert.ok(lines.openers.length >= 12, "plenty of openers so it feels unpredictable");
   assert.equal(B.fill("Hi {name}", { name: "Sofia" }), "Hi Sofia"); assert.equal(B.fill("{event} in {eventDays}", { event: "X" }), null, "a missing value drops the line");
-  for (let i = 0; i < 200; i++) { const m = B.compose({ ...base, dayDone: i % 2 === 0, door: false, glow: i % 3 === 0 }, { rng: Math.random, lines }); const all = [m.opener, m.text, m.fact, m.button].join(" "); assert.ok(!/undefined|null|\{\w+\}/.test(all), all); assert.ok(m.text.length > 5, m.key); }
+  for (let i = 0; i < 200; i++) { const m = B.compose({ ...base, dayDone: i % 2 === 0, door: false }, { rng: Math.random, lines }); const all = [m.opener, m.text, m.fact, m.button].join(" "); assert.ok(!/undefined|null|\{\w+\}/.test(all), all); assert.ok(m.text.length > 5, m.key); }
   const first = B.compose(base, { rng: () => 0, lines }); const second = B.compose(base, { rng: () => 0, lines, last: first.id }); assert.notEqual(second.id, first.id, "never the same step line twice in a row");
   const jd = B.compose({ ...base, dayDone: true }, { rng: () => 0, lines, justDone: true }); assert.ok(lines.steps["just-done"].includes(jd.opener), "right after a bite it cheers first");
   const back = B.compose({ ...base, streak: 0 }, { rng: () => 0, lines }); assert.ok(lines.openers.map(t => B.fill(t, { name: "Sofia", pet: "Bun-Bun" })).includes(back.opener), "1.60.0: a gap gets the same hello as any day, no streak talk");

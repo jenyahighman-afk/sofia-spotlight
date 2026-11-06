@@ -80,7 +80,7 @@ test("the re-audit's fix-soon items: the dated line on home days only, the 2-day
   assert.doesNotMatch(home, /renderDayPlan/, "1.60.0: the dated line is off Today on every day");
   assert.doesNotMatch(home, /today-gap|days without your solo|gapLine/, "1.60.0: nothing on her screen counts days without dancing"); assert.match(home, /\$\{metaLine\(\{days:danceDays\(S\.practice\),dances:danceCount\(S\.practice\)\}\)\}/);
   assert.match(home, /document\.addEventListener\("page",e=>\{ if\(e&&e\.detail==="me"\) setTimeout\(weekToToday,0\); \}\)/);
-  assert.match(home, /for\(const f of \[renderNews,renderPet,renderGlowNudge,/);
+  assert.match(home, /for\(const f of \[renderNews,renderPet,\(\)=>renderSundayCard/);
   // the Sunday sheet on a weekday: the fix of the week it closes, never this week's
   const corr = { a: { id: "a", text: "Point the feet", tag: "feet" }, b: { id: "b", text: "Eyes up", tag: "eyes" }, p: { id: "p", text: "Knees", tag: "knees", pinned: true, source: "Ms. Brittany" } };
   assert.equal(sheetFix("2026-11-04", { weekFix: { id: "a", week: "2026-10-26" } }, corr).id, "a", "Wed Nov 4 reviews Sun Nov 1, the week of Oct 26");

@@ -4,7 +4,8 @@
 //                 ✓ Did it, and all the steps in a fold (the mission's own checklist, practice.js). A measure: her change.
 //   my photos     a skill and the aerial: the trick's own lineup (js/lineup.js: add, frames, first vs now, save).
 //                 A measure: Before and Now from her check-ins; 📷 Add opens the check-in sheet (js/goals.js: photo or
-//                 clip, the pose tool's angle, the timeline).
+//                 clip, the pose tool's angle, the timeline). ▶ Play flips through any goal's photos (js/glow.js;
+//                 1.66.2: the Growing-up Flipbook's photos moved onto their goals, and this is its player).
 //   the coach     its last tip for this goal, older ones folded, 🎬 Coach me (js/coach.js).
 //   done          take it off her goals, or put it on.
 // 📸 My album on Skills is what the trick cards fold was: the newest photo of every goal she has, and of every skill she is
@@ -19,6 +20,7 @@ import { CARD_COLORS } from "./cards.js";
 import { aerialHow } from "./views/practice.js";
 import { skillState } from "./skills.js";
 import { checkins, openGoal } from "./goals.js";
+import { openFlip, migrateFlipbook } from "./glow.js";
 
 const day = (d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d || "")) ? fmt(d) : "";
 const quote = (n) => esc(n).replace(/'/g, "&#39;");
@@ -36,12 +38,14 @@ export function nextHtml(r){
   const got = r.state === "checked" ? "" : r.state === "clean" ? `<button class="btn sm ghost" onclick="gpGot('${r.id}')">↩ Undo</button>` : `<button class="btn sm coral" onclick="gpGot('${r.id}')">✓ Got it</button>`;
   return `<div class="row"><h3 class="grow">How it's going</h3>${got}</div><p class="gp-how">${esc(r.how)}${r.where ? ` <span class="small muted">· ${esc(r.where)}</span>` : ""}</p>${r.tip ? `<p class="small muted">${esc(r.tip)}</p>` : ""}`;
 }
+// ▶ Play, once there are two photos to flip between. Pure.
+export const playBtn = (r) => r.shots.length >= 2 ? `<button class="btn sm aqua" onclick="gpPlay('${r.id}')">▶ Play</button>` : "";
 // A measure's photos: Before and Now, then every one in a row. Pure.
 export function measurePhotosHtml(r){
   const vs = firstVsNow(r.shots), pic = (p, lab) => `<figure class="gp-shot"><img src="${esc(p.url)}" alt="" loading="lazy"><figcaption>${lab}${day(p.date) ? " · " + esc(day(p.date)) : ""}</figcaption></figure>`;
   const top = vs ? `<div class="gp-vs">${pic(vs.first, "Before")}${pic(vs.now, "Now")}</div>` : r.shots.length ? `<div class="gp-vs">${pic(r.shots[0], "Before")}</div>` : `<p class="small muted">Take one now. Take another in a few weeks, and you'll see the before and the after.</p>`;
   const strip = r.shots.length > 2 ? `<div class="gp-strip">${r.shots.map(p => `<img src="${esc(p.url)}" alt="${esc(day(p.date))}" loading="lazy">`).join("")}</div>` : "";
-  return `<div class="row"><h3 class="grow">📷 My photos</h3>${r.shots.length ? `<span class="chip violet">${r.shots.length}</span>` : ""}</div>${top}${strip}<div class="row" style="margin-top:10px"><button class="btn sm" onclick="gpCheckIn('${r.id}')">📷 Add a photo or video</button></div>${r.measure ? `<p class="small muted">Pick a photo and the pose tool fills in the angle for you.</p>` : ""}`;
+  return `<div class="row"><h3 class="grow">📷 My photos</h3>${playBtn(r)}${r.shots.length ? `<span class="chip violet">${r.shots.length}</span>` : ""}</div>${top}${strip}<div class="row" style="margin-top:10px"><button class="btn sm" onclick="gpCheckIn('${r.id}')">📷 Add a photo or video</button></div>${r.measure ? `<p class="small muted">Pick a photo and the pose tool fills in the angle for you.</p>` : ""}`;
 }
 export function coachHtml(r, tips){
   const last = tips[0];
@@ -74,7 +78,7 @@ export function albumHtml(items, { all = false, cap = ALBUM_CAP } = {}){
 
 // ---- DOM ----
 let cur = "", showAll = false;
-export function renderAlbum(){ const el = $("#albumCard"); if (!el) return; const items = albumItems(); el.innerHTML = albumHtml(items, { all: showAll }); const n = $("#albumCount"); if (n) n.textContent = items.length ? String(items.length) : ""; }
+export function renderAlbum(){ migrateFlipbook(); const el = $("#albumCard"); if (!el) return; const items = albumItems(); el.innerHTML = albumHtml(items, { all: showAll }); const n = $("#albumCount"); if (n) n.textContent = items.length ? String(items.length) : ""; }
 // The two cards on Skills fold (1.66.1, Jenya: "make the cards in skills collapsable"): open until she closes one, and this
 // phone remembers which she closed. Nothing is stored in the family space.
 const FOLDS = "spotlight:skillsFolds";
@@ -91,7 +95,7 @@ export function renderGoalPage(){
   if (r.kind === "measure") ph.innerHTML = measurePhotosHtml(r);
   else {
     const old = $("#cardsArea"); if (old) old.innerHTML = ""; // the retired binder kept a #tcLineup of its own
-    ph.innerHTML = `<div class="row"><h3 class="grow">📷 My photos</h3></div><div id="tcLineup"></div>`;
+    ph.innerHTML = `<div class="row"><h3 class="grow">📷 My photos</h3>${playBtn(r)}</div><div id="tcLineup"></div>`;
     renderLineup({ id: r.id, n: r.n, color: CARD_COLORS[r.style] || CARD_COLORS.solo, state: r.state === "notyet" && r.on ? "learning" : r.state });
   }
   $("#gpCoach").innerHTML = coachHtml(r, coachTips(S.reviews, r.n)); $("#gpFoot").innerHTML = footHtml(r);
@@ -105,5 +109,7 @@ async function gpGot(id){ await gotIt(id); renderGoalPage(); }
 async function gpOn(id, want){ const next = await setOnGoals(id, want); if (!next) return; toast(want ? "It's one of your goals ⭐" : "Off your goals. You can pick it again any time."); if (want) renderGoalPage(); else showPage("skills"); }
 // A measure's check-in sheet: its document when it has one, else the draft (written at her first check-in).
 function gpCheckIn(id){ const g = goalDoc(S.goals, id); openGoal(g ? g.id : "new:" + id); }
+// Flip through a goal's photos, oldest first, each labelled with its day.
+function gpPlay(id){ const r = goalRow(id); if (!r) return; openFlip(r.shots.map(p => ({ url: p.url, label: day(p.date) })), `${r.ic} ${r.n}`); }
 function albumAll(){ showAll = !showAll; renderAlbum(); }
-expose({ goalOpen, gpGot, gpOn, gpCheckIn, albumAll });
+expose({ goalOpen, gpGot, gpOn, gpCheckIn, gpPlay, albumAll });

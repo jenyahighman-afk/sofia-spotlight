@@ -24,7 +24,7 @@ const page = (id) => { const a = html.indexOf(`<section class="page${id === "hom
 
 test("Today holds the one card, the folded finish lines and the cards that only come on their day; everything else moved one tap away", () => {
   const home = page("home"), me = page("me"), play = page("play"), practice = page("practice");
-  for (const id of ["todayCard", "seasonFold", "seasonSum", "seasonCard", "sundayCard", "compCard", "goalReminder", "glowNudge"]) assert.ok(home.includes(`id="${id}"`), "Today: " + id);
+  for (const id of ["todayCard", "seasonFold", "seasonSum", "seasonCard", "sundayCard", "compCard", "goalReminder"]) assert.ok(home.includes(`id="${id}"`), "Today: " + id);
   for (const id of ["petCard", "passCard", "newsCard", "homeWeek", "habitCard", "moreToday", "bitesCard", "mindCard", "weekFix", "adventCard", "dareCard", "extrasGate", "dayPlan"]) assert.ok(!home.includes(`id="${id}"`), "not on Today: " + id);
   const at = (id) => me.indexOf(`id="${id}"`); assert.ok(at("avWrap") < at("newsCard") && at("newsCard") < at("mePlay") && at("mePlay") < at("meMoments") && at("meMoments") < at("homeWeek") && at("homeWeek") < at("petCard") && at("petCard") < at("passCard") && at("passCard") < at("meStars") && at("meStars") < at("meSetup"), "Me (1.63.0): the dancer, What's new, Play and Moments, the week, the pet, the Pass, the stars, then ⚙️ My app");
   assert.ok(play.indexOf('id="playToday"') > play.indexOf('id="playExtras"') && play.indexOf('id="habitCard"') > play.indexOf('id="playToday"') && play.indexOf('id="bitesCard"') > play.indexOf('id="moreToday"') && play.indexOf('id="mindCard"') > play.indexOf('id="moreToday"'), "Play: the extras card and More for today under the games");

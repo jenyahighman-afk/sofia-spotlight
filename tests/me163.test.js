@@ -19,7 +19,7 @@ const clearS = () => { for (const k of Object.keys(S)) S[k] = {}; };
 
 test("Me's order: hers first, the set-once things under ⚙️ My app; three cards left", () => {
   const me = section("me"); const at = (id) => me.indexOf(`id="${id}"`);
-  const order = ["avWrap", "meStreak", "newsCard", "mePlay", "meMoments", "homeWeek", "petCard", "passCard", "meStars", "meCostumes", "badgeCase", "mePatterns", "meGlow", "meSetup", "meReminder", "paletteRow", "ritualCard", "meHide", "meGrownups"];
+  const order = ["avWrap", "meStreak", "newsCard", "mePlay", "meMoments", "homeWeek", "petCard", "passCard", "meStars", "meCostumes", "badgeCase", "mePatterns", "meSetup", "meReminder", "paletteRow", "ritualCard", "meHide", "meGrownups"];
   for (let i = 1; i < order.length; i++) assert.ok(at(order[i - 1]) >= 0 && at(order[i - 1]) < at(order[i]), `${order[i - 1]} before ${order[i]}`);
   assert.match(me, /<details class="more me-setup" id="meSetup"><summary>⚙️ My app<\/summary>/); assert.doesNotMatch(me, /id="meSetup" open/);
   assert.doesNotMatch(html, /id="meBests"|Personal bests<\/h3>/, "bests are on the game tiles"); assert.doesNotMatch(src("js/views/me.js"), /meBests/);

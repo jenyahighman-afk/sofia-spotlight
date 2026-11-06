@@ -38,7 +38,7 @@ export const TRY = {
   dares: { page: "play", scroll: "#playDare" },
   cards: { page: "skills", call: "openCards" },
   costume: { page: "me", call: "openCostumes" },
-  glow: { page: "me", scroll: "#meGlow" },
+  glow: { page: "skills", scroll: "#albumFold" }, // 1.66.2: the flipbook is every goal's photos now
   teach: { page: "play", game: "teach" },
   count: { page: "play", game: "count" },
 };

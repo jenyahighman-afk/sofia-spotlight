@@ -28,7 +28,7 @@ test("steps are factual: every quoted button label is a real label in that featu
   // Try it uses the features' own openers / game ids
   assert.match(src("js/cards.js"), /expose\(\{ openCards/); assert.match(src("js/costume.js"), /expose\(\{ openCostumes/);
   for (const g of ["teach", "count"]) assert.ok(src("js/views/play.js").includes(`id: "${g}"`) || src("js/views/play.js").includes(`id:"${g}"`), "Play has " + g);
-  for (const id of ["playDare", "meGlow", "newsCard", "newsArea"]) assert.ok(src("index.html").includes(`id="${id}"`), id);
+  for (const id of ["playDare", "albumFold", "newsCard", "newsArea"]) assert.ok(src("index.html").includes(`id="${id}"`), id);
 });
 
 test("the What's new row (on Me since 1.52.0, with a dot on Me's tab) until opened; opening marks it seen on this phone; Show me how steps through and back", () => {

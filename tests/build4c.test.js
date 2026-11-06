@@ -58,7 +58,7 @@ test("the Bunny and the pet in words a 9-year-old owns: no babyish openers, a da
   const b = json("buddy"), pet = json("pet");
   assert.ok(b.openers.length >= 12, "still plenty of openers"); assert.ok(!b.openers.some(o => /Guess what|Hop hop|awesome\. Also/i.test(o)), b.openers.join(" | "));
   const all = JSON.stringify(b); assert.ok(!/free skip/i.test(all)); assert.ok(!/Glow-up/i.test(all));
-  assert.ok(!b.facts.skips && !b.facts.streak, "1.60.0: no days-off or streak fact"); assert.ok(b.steps.glow.some(t => t.startsWith("Growing-up photo 🌱")));
+  assert.ok(!b.facts.skips && !b.facts.streak, "1.60.0: no days-off or streak fact"); assert.ok(!b.steps.glow, "1.66.2: the flipbook nudge is gone");
   assert.ok(pet.lines.nap.includes("Zzz… a bite of practice wakes me up 😴")); assert.ok(!JSON.stringify(pet).includes("one bite wakes me up"));
 });
 

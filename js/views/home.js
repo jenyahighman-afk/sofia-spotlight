@@ -26,7 +26,6 @@ import { renderMindCard } from "../mind.js";
 import { applyPalette } from "../palette.js";
 import { renderPet } from "../pet.js";
 import { renderNews } from "../news.js";
-import { renderGlowNudge } from "../glow.js";
 import { renderSundayCard } from "../sunday.js";
 
 const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
@@ -104,7 +103,7 @@ function renderHome(){
   const sc=$("#seasonCard"); $("#seasonSum").innerHTML=`<span class="fl-text">${finishLine(cp,today)}</span>`; $("#seasonFold").hidden=!cp&&!!(sc&&sc.hidden);
   renderHabit(today,{rec});
   // The other pages' cards drawn from here (1.52.0) each in their own guard, so one error leaves the rest drawn (the re-audit).
-  for(const f of [renderNews,renderPet,renderGlowNudge,()=>renderSundayCard(today),renderComp,renderBites,renderMindCard,renderPassCard,applyPalette]){ try{ f(); }catch(e){ console.error("renderHome", e); } }
+  for(const f of [renderNews,renderPet,()=>renderSundayCard(today),renderComp,renderBites,renderMindCard,renderPassCard,applyPalette]){ try{ f(); }catch(e){ console.error("renderHome", e); } }
   // this week's fix
   const fix=currentWeekFix(today); const open=Object.values(S.corrections).some(c=>!c.deleted&&c.status!=="done");
   if(fix) $("#weekFix").innerHTML=`<div class="row"><span class="chip violet">${TAG_EMOJI[fix.tag]||"✨"} This week's fix${fix.pinned?" · 📌 "+esc(fix.source||"teacher"):""}</span><span class="grow"></span><button class="btn sm ghost" onclick="showMe('${fix.id}')">Show me</button></div><div class="fix-text">${esc(fix.text)}</div>${videoRow(fix)}`;

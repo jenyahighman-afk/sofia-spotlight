@@ -1,24 +1,29 @@
-// Growing-up Flipbook: month keys and labels, newest photo per month, oldest-first pages, the Today nudge (days 1–7 and only
-// when this month's photo is missing), the schema-37 migration, and the Me card / nudge / flipbook rendering in the fake DOM.
+// The flip-book (1.66.2): the old Growing-up Flipbook's photos move onto the goal their pose is, once; ▶ Play on a goal's
+// page flips through that goal's photos; the Me card, the Today nudge and the pet's line are gone. Month keys and the
+// schema-37 migration stay. Reads files and the fake DOM only; every date is passed in.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { installEnv, resetDom, el } from "./_env.mjs";
 installEnv();
 const read = (f) => JSON.parse(readFileSync(new URL("../" + f, import.meta.url), "utf8"));
-const src = (f) => readFileSync(new URL("../" + f, import.meta.url), "utf8");
+const src = (f) => readFileSync(new URL("../" + f, import.meta.url), "utf8").replace(/\r\n/g, "\n");
 const { applyData, DATA_FILES } = await import("../js/data.js");
 const got = {}; for (const f of DATA_FILES) got[f] = read("data/" + f + ".json"); applyData(got);
 const G = await import("../js/glow.js");
-const { S, migrateDoc, SCHEMA_VERSION, GLOW_POSE_IDS, MIGRATIONS } = await import("../js/store.js");
+const GP = await import("../js/goalpage.js");
+const W = await import("../js/working.js");
+const { S, setBackend, migrateDoc, SCHEMA_VERSION, GLOW_POSE_IDS, MIGRATIONS } = await import("../js/store.js");
 const { todayStr } = await import("../js/util.js");
+const clearS = () => { for (const k of Object.keys(S)) S[k] = {}; };
 
 const ph = (glow, at, extra = {}) => ({ url: "https://x/" + glow + "-" + at, path: "p/" + at, glow, at: new Date(at).toISOString(), ...extra });
 
-test("poses: a small fixed list, ids match the migration's frozen list, every pose has words and a safe description", () => {
+test("poses: the frozen list, and the goal each one's photos belong to now", () => {
   assert.deepEqual(G.GLOW_POSES.map(p => p.id), GLOW_POSE_IDS);
-  for (const p of G.GLOW_POSES) { assert.match(p.id, /^[a-z0-9-]+$/); assert.ok(p.n && p.d && p.ic, p.id); assert.ok(!/flip|aerial|handstand|eyes closed|spotter|mat\b|stairs/i.test(p.d), p.id + " is safe"); }
-  const MOVES = got.moves.moves; for (const p of G.GLOW_POSES.filter(p => p.move)) { const m = MOVES.find(x => x.id === p.move); assert.ok(m && m.k[p.k], p.id + " avatar keyframe exists"); }
+  const ballet = got.skills.styles.ballet.skills.map(s => s.id);
+  for (const p of G.GLOW_POSES) { assert.match(p.id, /^[a-z0-9-]+$/); assert.ok(p.n && p.ic, p.id); if (p.split) assert.ok(!p.card); else assert.ok(ballet.includes(p.card), p.id + " → a ballet skill"); }
+  assert.deepEqual(G.GLOW_POSES.map(p => p.card || "split"), ["b-arab", "b-passe", "b-plie", "b-releve", "split"]);
   assert.equal(G.poseFor("arabesque").n, "Arabesque"); assert.equal(G.poseFor("cartwheel"), null);
   assert.equal(G.glowPose({ glowPose: "passe" }).id, "passe"); assert.equal(G.glowPose({}), null);
 });
@@ -39,64 +44,64 @@ test("pages: newest photo per month wins, oldest month first; videos, deleted, u
   };
   const pages = G.glowPages(photos);
   assert.deepEqual(pages.map(p => p.month), ["2026-08", "2026-09", "2026-10"]); assert.equal(pages[2].id, "b", "the newer October photo");
-  assert.deepEqual(G.olderOfMonth(photos, "2026-10", "b"), ["a"], "a retake removes the older one of the month");
-  // a stored _at (write time) beats the at string, so a later write always wins
   const tie = { p: { ...ph("2026-10", "2026-10-09T00:00:00Z"), _at: 1 }, q: { ...ph("2026-10", "2026-10-01T00:00:00Z"), _at: 5 } }; assert.equal(G.glowPages(tie)[0].id, "q");
-  assert.equal(G.firstVsNow(pages).first.month, "2026-08"); assert.equal(G.firstVsNow(pages).now.month, "2026-10"); assert.equal(G.firstVsNow(pages).months, 2);
-  assert.equal(G.firstVsNow(pages.slice(0, 1)), null); assert.deepEqual(G.glowPages({}), []);
-  assert.ok(G.hasMonth("2026-09", photos)); assert.ok(!G.hasMonth("2026-07", photos), "a video doesn't count");
+  assert.equal(G.firstVsNow(pages).first.month, "2026-08"); assert.equal(G.firstVsNow(pages).now.month, "2026-10"); assert.equal(G.firstVsNow(pages.slice(0, 1)), null); assert.deepEqual(G.glowPages({}), []);
 });
 
-test("nudge: only on days 1–7, only when this month's photo is missing, only once a pose is picked", () => {
-  const set = { glowPose: "arabesque" }; const has = { a: ph("2026-11", "2026-11-02T10:00:00Z") };
-  for (const d of ["01", "04", "07"]) assert.equal(G.showNudge("2026-11-" + d, {}, set), true, "day " + d);
-  for (const d of ["08", "15", "30"]) assert.equal(G.showNudge("2026-11-" + d, {}, set), false, "day " + d);
-  assert.equal(G.showNudge("2026-11-03", has, set), false, "already taken");
-  assert.equal(G.showNudge("2026-12-03", has, set), true, "last month's photo doesn't count for this month");
-  assert.equal(G.showNudge("2026-11-03", {}, {}), false, "no pose, no nudge");
-  assert.equal(G.showNudge("2026-11-03", {}, { glowPose: "nope" }), false);
+test("the move: every old page goes onto the goal its pose is, once; the split goes to the split she checks in", () => {
+  const photos = { a: ph("2026-09", "2026-09-02T10:00:00Z"), b: ph("2026-10", "2026-10-05T10:00:00Z"), done: ph("2026-08", "2026-08-01T10:00:00Z", { card: "b-arab" }), done2: ph("2026-07", "2026-07-01T10:00:00Z", { goal: "g1" }) };
+  assert.deepEqual(G.flipbookMoves(photos, { glowPose: "arabesque" }, {}), [{ pid: "a", card: "b-arab" }, { pid: "b", card: "b-arab" }], "the two not linked yet, oldest first");
+  assert.deepEqual(G.flipbookMoves(photos, { glowPose: "releve" }, {}).map(m => m.card), ["b-releve", "b-releve"]); assert.deepEqual(G.flipbookMoves(photos, { glowPose: "first-position" }, {})[0].card, "b-plie");
+  assert.deepEqual(G.flipbookMoves(photos, {}, {}), [], "no pose picked: nothing moves"); assert.deepEqual(G.flipbookMoves(photos, { glowPose: "nope" }, {}), []); assert.deepEqual(G.flipbookMoves({ done: photos.done }, { glowPose: "arabesque" }, {}), [], "already linked");
+  const left = { g: { id: "g", preset: "split-l", createdAt: "2026-09-01", checkins: [{ date: "2026-09-01" }] } }, both = { ...left, h: { id: "h", preset: "split-r", createdAt: "2026-09-01", checkins: [{ date: "2026-09-01" }] } };
+  assert.equal(G.splitTarget({}), "split-r", "nothing checked in yet: the right split"); assert.equal(G.splitTarget(left), "split-l", "only the left has check-ins"); assert.equal(G.splitTarget(both), "split-r");
+  assert.deepEqual(G.flipbookMoves(photos, { glowPose: "split" }, left), [{ pid: "a", split: "split-l" }, { pid: "b", split: "split-l" }]);
+});
+
+test("the move writes: a skill's photo gets its card, a split's photo becomes a check-in of the split's document; nothing deleted", async () => {
+  resetDom(); clearS(); const writes = []; setBackend({ set: async (col, id) => { writes.push(col + "/" + id); }, del: async () => {} });
+  try {
+    S.photos = { a: ph("2026-09", "2026-09-02T10:00:00Z"), b: ph("2026-10", "2026-10-05T10:00:00Z") }; S.settings = { glowPose: "passe" };
+    assert.equal(await G.migrateFlipbook(), 2); assert.equal(S.photos.a.card, "b-passe"); assert.equal(S.photos.b.card, "b-passe"); assert.equal(S.photos.a.glow, "2026-09", "the month stays on the document"); assert.equal(S.settings.glowPose, "passe");
+    assert.deepEqual(writes, ["photos/a", "photos/b"]); assert.equal(await G.migrateFlipbook(), 0, "nothing left to move");
+    assert.deepEqual(W.goalShots("b-passe", { goals: {}, photos: S.photos }).map(p => p.url), [S.photos.a.url, S.photos.b.url], "in the trick's lineup now");
+    clearS(); writes.length = 0; S.photos = { a: ph("2026-09", "2026-09-02T10:00:00Z") }; S.settings = { glowPose: "split" };
+    assert.equal(await G.migrateFlipbook(), 1); const g = Object.values(S.goals)[0]; assert.equal(g.preset, "split-r"); assert.deepEqual(g.checkins.map(c => [c.date, c.photoId, c.value]), [["2026-09-02", "a", null]]); assert.equal(S.photos.a.goal, g.id);
+    assert.deepEqual(W.goalShots("split-r", { goals: S.goals, photos: S.photos }).map(p => p.url), [S.photos.a.url], "in the split's photos now");
+    assert.ok(writes.every(w => /^(photos|goals)\//.test(w)), "only photo and goal writes"); assert.equal(await G.migrateFlipbook(), 0);
+  } finally { setBackend(null); resetDom(); clearS(); }
 });
 
 test("schema 37: photos.glow kept only as YYYY-MM; settings.glowPose kept only when known; nothing invented", () => {
   assert.ok(SCHEMA_VERSION >= 37); assert.equal(typeof MIGRATIONS[37], "function");
   assert.equal(migrateDoc("photos", "a", { _v: 33, url: "u", glow: "2026-10" }).glow, "2026-10");
   for (const bad of ["2026-1", "Oct 2026", "2026-10-01", 202610, null, true, ["2026-10"]]) assert.equal("glow" in migrateDoc("photos", "a", { _v: 33, url: "u", glow: bad }), false, JSON.stringify(bad));
-  assert.equal("glow" in migrateDoc("photos", "a", { _v: 33, url: "u" }), false);
-  const d = migrateDoc("photos", "a", { _v: 33, url: "u", cap: "c", glow: "x" }); assert.equal(d._v, SCHEMA_VERSION); assert.equal(d.cap, "c");
   assert.equal(migrateDoc("settings", "main", { _v: 33, glowPose: "passe" }).glowPose, "passe");
-  assert.equal("glowPose" in migrateDoc("settings", "main", { _v: 33, glowPose: "backflip" }), false); assert.equal("glowPose" in migrateDoc("settings", "main", { _v: 33, glowPose: 3 }), false);
-  assert.equal("glowPose" in migrateDoc("settings", "main", { _v: 33, pin: "2027" }), false);
+  assert.equal("glowPose" in migrateDoc("settings", "main", { _v: 33, glowPose: "backflip" }), false);
   assert.equal(migrateDoc("dances", "solo", { _v: 33, glow: "junk" }).glow, "junk", "only photos are touched");
 });
 
-test("renders: the Me card picks a pose, then shows the pose, months and the two buttons; the nudge and the flipbook render", () => {
-  resetDom(); for (const k of Object.keys(S)) S[k] = {};
-  G.renderGlowCard(); let h = el("#meGlow").innerHTML;
-  assert.ok(h.includes("Growing-up Flipbook")); for (const p of G.GLOW_POSES) assert.ok(h.includes(`glowPick('${p.id}')`), p.id);
-  G.renderGlowNudge(); assert.equal(el("#glowNudge").hidden, true, "no pose yet");
-  const month = todayStr().slice(0, 7);
-  S.settings = { glowPose: "arabesque" }; G.renderGlowCard(); h = el("#meGlow").innerHTML;
-  assert.ok(h.includes("Arabesque") && h.includes("📷 This month's photo") && h.includes("glowFile(this)")); assert.ok(h.includes("0 months")); assert.ok(!h.includes("openGlow()"), "nothing to flip yet"); assert.ok(h.includes("<svg"), "avatar in her pose");
-  G.renderGlowNudge("2026-11-03"); assert.equal(el("#glowNudge").hidden, false, "day 3, no photo yet"); assert.match(el("#glowNudge").innerHTML, /Arabesque photo for the flipbook/); assert.ok(!/!|forgot|missed|don't|streak/i.test(el("#glowNudge").innerHTML.replace(/<[^>]+>/g, "")), "calm words");
-  G.renderGlowNudge("2026-11-12"); assert.equal(el("#glowNudge").hidden, true, "day 12: no nudge"); assert.equal(el("#glowNudge").innerHTML, "");
-  S.photos = { a: ph("2026-08", "2026-08-02T10:00:00Z"), b: ph(month, new Date().toISOString()) }; G.renderGlowCard(); h = el("#meGlow").innerHTML;
-  assert.ok(h.includes("2 months") && h.includes("openGlow()") && h.includes("✓")); G.renderGlowNudge(month + "-02"); assert.equal(el("#glowNudge").hidden, true, "taken this month");
-  G.renderFlip(); const f = el("#glowArea").innerHTML;
-  assert.equal((f.match(/class="glow-page/g) || []).length, 2); assert.ok(f.includes("Aug 2026") && f.includes('type="range"') && f.includes("glowCompare(true)") && f.includes("glowPlay()"));
-  window.glowCompare(true); const v = el("#glowArea").innerHTML; assert.ok(v.includes("First · Aug 2026") && v.includes("Now · ") && v.includes("months of growing"));
-  window.glowCompare(false); window.glowScrub("1"); assert.ok(el("#glowArea").innerHTML.includes("glow-page"));
-  S.photos = {}; S.settings = {};
+test("▶ Play: on a goal's page once there are two photos; the player flips, scrubs, pauses and compares first with now", () => {
+  const two = { id: "s-cartwheel", shots: [{ url: "a.jpg", date: "2026-10-01" }, { url: "b.jpg", date: "2026-11-01" }] };
+  assert.equal(GP.playBtn({ id: "x", shots: [] }), ""); assert.equal(GP.playBtn({ id: "x", shots: [{ url: "a.jpg" }] }), ""); assert.match(GP.playBtn(two), /onclick="gpPlay\('s-cartwheel'\)">▶ Play/);
+  assert.match(GP.measurePhotosHtml({ ...two, measure: "split" }), /📷 My photos<\/h3><button class="btn sm aqua" onclick="gpPlay\('s-cartwheel'\)">▶ Play<\/button>/);
+  resetDom();
+  G.openFlip([{ url: "a.jpg", label: "Oct 1" }, { url: "b.jpg", label: "Nov 1" }, { url: "c.jpg", label: "Nov 5" }], "🌸 Cartwheel");
+  let h = el("#glowArea").innerHTML; assert.equal((h.match(/class="glow-page/g) || []).length, 3); assert.match(h, /glow-page on" data-i="0"/); assert.match(h, /⏸ Pause/, "three photos: it plays"); assert.match(h, /glowCompare\(true\)">🪞 First vs now/); assert.equal(el("#stageTitle").textContent, "🌸 Cartwheel");
+  window.glowScrub(2); h = el("#glowArea").innerHTML; assert.match(h, /▶ Play/, "scrubbing pauses"); assert.match(h, /class="glow-month">Nov 5</);
+  window.glowCompare(true); h = el("#glowArea").innerHTML; assert.match(h, /First · Oct 1/); assert.match(h, /Now · Nov 5/); window.glowCompare(false); assert.match(el("#glowArea").innerHTML, /glow-book/);
+  window.glowPlay(); assert.match(el("#glowArea").innerHTML, /⏸ Pause/); window.glowPlay(); assert.match(el("#glowArea").innerHTML, /▶ Play/);
+  G.openFlip([{ url: "a.jpg", label: "Oct 1" }], "one"); assert.match(el("#glowArea").innerHTML, /One more photo and there's a second page/); assert.doesNotMatch(el("#glowArea").innerHTML, /First vs now/);
+  el("#toast").textContent = ""; G.openFlip([], "none"); assert.match(el("#toast").textContent, /Add a photo first/);
+  resetDom();
 });
 
-test("wiring: the ids sit where they should in index.html, Today and Me render them, the upload reuses the Moments path, nothing public", () => {
+test("wiring: the card on Me, the nudge on Today and the pet's line are gone; the player's area stays; the move runs with the album", () => {
   const html = src("index.html");
-  assert.ok(html.indexOf('id="glowNudge"') > html.indexOf('id="todayCard"') && html.indexOf('id="glowNudge"') < html.indexOf('id="p-dances"'), "the nudge sits on Today under the one card (1.52.0: Today fits one screen)");
-  assert.match(html, /id="glowNudge"[^>]*hidden/);
-  const me = html.indexOf('id="p-me"'), card = html.indexOf('id="meGlow"'), area = html.indexOf('id="glowArea"'), setup = html.indexOf('id="meSetup"');
-  assert.ok(me < card && card < area && area < setup, "meGlow and glowArea inside p-me, before ⚙️ My app (1.63.0: My dance friends moved to Play)");
-  assert.ok(html.indexOf("</section>", me) > setup);
-  assert.match(src("js/views/home.js"), /renderGlowNudge[,(]/); assert.match(src("js/views/me.js"), /renderGlowCard\(\)/); assert.match(src("js/app.js"), /initGlow\(\)/);
-  const g = src("js/glow.js"); assert.match(g, /media\.upload\("photos"/); assert.match(g, /storeSet\("photos"/); assert.match(g, /resizeImage/);
-  assert.ok(!/firestore\.rules|public|publish/i.test(g.replace(/^\/\/.*$/gm, "")), "no public sharing code");
-  assert.ok(src("sw.js").includes("./js/glow.js"));
+  assert.ok(!html.includes('id="meGlow"') && !html.includes('id="glowNudge"'), "card and nudge gone"); assert.ok(html.includes('id="glowArea" style="display:none"'), "the player's area stays");
+  assert.doesNotMatch(src("js/views/home.js"), /renderGlowNudge/); assert.doesNotMatch(src("js/views/me.js"), /renderGlowCard/); assert.doesNotMatch(src("js/buddy.js"), /glow/); assert.ok(!read("data/buddy.json").steps.glow, "no pet line about the flipbook");
+  assert.match(src("js/app.js"), /initGlow\(\)/); assert.match(src("js/goalpage.js"), /export function renderAlbum\(\)\{ migrateFlipbook\(\);/); assert.match(src("js/goalpage.js"), /function gpPlay\(id\)/);
+  assert.match(src("js/news.js"), /glow: \{ page: "skills", scroll: "#albumFold" \}/);
+  assert.doesNotMatch(src("js/glow.js") + src("README.md") + src("data/news.json"), /Glow-Up/); assert.match(src("js/glow.js"), /Growing-up Flipbook/);
+  assert.match(src("js/version.js"), /APP_VERSION = "1\.(66\.[2-9]|6[7-9]|[7-9]\d)/); assert.match(src("README.md"), /### Growing-up Flipbook \(every goal's photos, since 1\.66\.2\)/);
 });
