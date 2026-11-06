@@ -160,7 +160,7 @@ export function renderLineup(c){
   const el = $("#tcLineup"); if (!el || !c) return; if (!L.card || L.card.id !== c.id) { L.sel = ""; L.vs = false; } L.card = c;
   const list = lineup(c.id); const fn = firstVsNow(list); const started = c.state !== "notyet"; if (L.sel && !list.some(p => p.id === L.sel)) L.sel = "";
   const add = started ? `<label class="btn sm aqua">📷 Add a photo<input type="file" accept="image/*" hidden onchange="lineupAdd('${c.id}', this)"></label>` : "";
-  if (!list.length) { el.innerHTML = `<div class="row lf-btns">${add}</div><p class="small muted" style="text-align:center">${started ? "Snap one now and one every few weeks. Your lineup shows how far you've come." : "Start learning it on the Skills tab. Then your progress photos line up here."}</p>`; return; }
+  if (!list.length) { el.innerHTML = `<div class="row lf-btns">${add}</div><p class="small muted" style="text-align:center">${started ? "Snap one now and one every few weeks. Your lineup shows how far you've come." : "Put it on your goals first. Then your progress photos line up here."}</p>`; return; }
   const sel = list.find(p => p.id === L.sel);
   el.innerHTML = `<h4 class="lf-head">📷 Progress lineup <span class="small muted">${list.length} photo${list.length === 1 ? "" : "s"} · oldest → newest</span></h4>
     <div class="lf-strip">${list.map(p => `<button class="lf-item ${sel && sel.id === p.id ? "on" : ""}" onclick="lineupPick(${esc(JSON.stringify(p.id))})" aria-label="${esc(p.date ? fmt(p.date) : "Photo")}, ${esc(frameOf(p.frame).n)} frame">${framedHTML(p, c.n, c.color)}</button>`).join("")}</div>

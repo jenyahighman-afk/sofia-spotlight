@@ -11,12 +11,11 @@ import { earned, AUTO_BADGES, checkBadges } from "../badges.js";
 import { styleProgress, skillState, kidCycle, STATE_EMOJI, STATE_LABEL, levelGroups, focusLabel } from "../skills.js";
 import { patterns, TAG_LABEL, TAG_EMOJI, closeCorrection, closedCount, isOpen } from "../corrections.js";
 import { openGrownups } from "../grownups.js";
-import { renderGoalsCard, splitRowsHtml } from "../goals.js";
+import { splitRowsHtml } from "../goals.js";
 import { totalStars, nextUnlock, unlockedList } from "../stars.js";
 import { momentCount } from "../moments.js";
 import { renderReminder } from "../remind.js";
 import { renderFriends } from "../who.js";
-import { renderCardsCard } from "../cards.js";
 import { lineupCounts } from "../lineup.js";
 import { renderCostumeCard } from "../costume.js";
 import { renderGlowCard } from "../glow.js";
@@ -31,8 +30,8 @@ export const ringGroups = (prog) => { const all = Object.entries(prog || {}); re
 const ring = (pct, ic) => { const r = 26, c = 2 * Math.PI * r; return `<svg viewBox="0 0 64 64" class="mini-ring"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" transform="rotate(-90 32 32)" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/><text x="32" y="32" class="ring-ic">${ic}</text></svg>`; };
 
 function renderMe(){
-  avRender(); renderGoalsCard(); renderPaletteRow(); applyPalette(); renderRitualCard(); renderSkillsName();
-  renderReminder(); renderFriends(); renderCardsCard(); renderCostumeCard(); renderGlowCard();
+  avRender(); renderPaletteRow(); applyPalette(); renderRitualCard(); renderSkillsName();
+  renderReminder(); renderFriends(); renderCostumeCard(); renderGlowCard();
   $("#meMoments").innerHTML = `<div class="row"><h3 class="grow">📸 Moments</h3><span class="chip violet">${momentCount()} kept</span></div><p class="small muted">Turn a photo into a card with a sticker, your dance days and your dancer. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
   const nu = nextUnlock(); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;
   $("#meStreak").innerHTML = `<div class="stat"><b>${danceDays(S.practice)}</b><span>dance days ⭐</span></div><div class="stat"><b>${danceCount(S.practice)}</b><span>dances 🎵</span></div><div class="stat"><b>${practicedDays(S.practice, PRACTICE_ITEMS.length)}</b><span>practice days</span></div><div class="stat"><b>${closedCount(S.corrections)}</b><span>fixes closed ✅</span></div>`;
@@ -53,7 +52,7 @@ function renderMe(){
   const st = styleOpen && SKILLS.styles[styleOpen];
   // A started skill's row gets a small 📷 (with its count) that opens the trick's progress lineup (js/lineup.js, in the binder).
   const shots = lineupCounts();
-  const row = (sk) => { const state = skillState(S.skills, sk.id); return `<div class="skill-row"><button class="skill ${state}" onclick="meSkill('${sk.id}')"><span class="st">${STATE_EMOJI[state]}</span><span class="grow">${esc(sk.n)}</span><small>${STATE_LABEL[state]}${state === "checked" && S.skills[sk.id] && S.skills[sk.id].teacher ? " · " + esc(S.skills[sk.id].teacher) : ""}</small></button>${state === "notyet" ? "" : `<button class="skill-cam" onclick="openCards('${sk.id}')" aria-label="Progress photos: ${esc(sk.n)}">📷${shots[sk.id] ? " " + shots[sk.id] : ""}</button>`}</div>`; };
+  const row = (sk) => { const state = skillState(S.skills, sk.id); return `<div class="skill-row"><button class="skill ${state}" onclick="meSkill('${sk.id}')"><span class="st">${STATE_EMOJI[state]}</span><span class="grow">${esc(sk.n)}</span><small>${STATE_LABEL[state]}${state === "checked" && S.skills[sk.id] && S.skills[sk.id].teacher ? " · " + esc(S.skills[sk.id].teacher) : ""}</small></button>${state === "notyet" ? "" : `<button class="skill-cam" onclick="goalOpen('${sk.id}')" aria-label="Progress photos: ${esc(sk.n)}">📷${shots[sk.id] ? " " + shots[sk.id] : ""}</button>`}</div>`; };
   const groups = st ? levelGroups(st) : null;
   const leveled = () => { const up = groups.filter(g => !g.bonus && g.req.length && g.lvl > Math.min(...(st.focus || [1]))); const reqLine = (g) => `<div class="lvl-up"><b>⭐ To level up · ${esc(g.label)}</b>${g.req.map(r => r.id ? `<span class="chip ${["clean", "checked"].includes(skillState(S.skills, r.id)) ? "mint" : ""}">${STATE_EMOJI[skillState(S.skills, r.id)]} ${esc(r.n)}</span>` : `<span class="chip">○ ${esc(r.n)}</span>`).join("")}</div>`;
     return `<div class="small muted" style="margin:6px 0">${esc(st.src || "")}${focusLabel(st) ? ` · her group: <b>${esc(focusLabel(st))}</b>` : ""}. Tap a skill: learning → clean. A grown-up marks ★ teacher-checked.</div>${up.map(reqLine).join("")}`

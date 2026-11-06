@@ -28,10 +28,10 @@ test("it names things where they live now: four tabs, the two big buttons, the w
   assert.match(part("crew").lines[1], /Four tabs at the bottom: Today, Dances, Skills and Me\./); assert.match(part("crew").lines[1], /▶ My solo and ▶ My trio open the practice player/);
   assert.match(part("crew").lines.at(-1), /go with the app/, "the paper was printed first");
   const grab = part("grab").lines.join(" ");
-  for (const s of ["▶ My solo on Today", "On Today tap 📋 The whole session, then ▶ Start practice", "📹 Videos on Today has Hannah's videos", "🪞 Mirror", "📝 Fix here in the practice player", "Tap Skills (the third tab at the bottom)", "⭐ I'm working on", "＋ Pick a skill", "📷 Add a photo"]) assert.ok(grab.includes(s), s);
+  for (const s of ["▶ My solo on Today", "On Today tap 📋 The whole session, then ▶ Start practice", "📹 Videos on Today has Hannah's videos", "🪞 Mirror", "📝 Fix here in the practice player", "Tap Skills (the third tab at the bottom)", "⭐ My goals", "＋ Pick a goal", "📷 Add a photo", "📸 My album", "🎬 Coach me"]) assert.ok(grab.includes(s), s);
   assert.doesNotMatch(kid, /in Me, Skills|\(on Practice\)/, "the old places are gone");
   const html = src("index.html"), home = src("js/views/home.js");
-  for (const [f, s] of [[html, "▶ Start practice</button>"], [html, "🎬 Coach corner</button>"], [html, 'id="plFixHere">📝 Fix here</button>'], [html, 'id="hvMirror"'], [home, "📹 Videos</button>"], [home, "📋 The whole session"], [src("js/working.js"), "⭐ I'm working on"], [src("js/working.js"), "＋ Pick a skill"], [src("js/working.js"), "📷 Add a photo"]]) assert.ok(f.includes(s), "the app has: " + s);
+  for (const [f, s] of [[html, "▶ Start practice</button>"], [html, "🎬 Coach corner</button>"], [html, 'id="plFixHere">📝 Fix here</button>'], [html, 'id="hvMirror"'], [home, "📹 Videos</button>"], [home, "📋 The whole session"], [src("js/working.js"), "⭐ My goals"], [src("js/working.js"), "＋ Pick a goal"], [src("js/lineup.js"), "📷 Add a photo"], [src("js/goalpage.js"), "📸 My album"], [src("js/goalpage.js"), "🎬 Coach me"]]) assert.ok(f.includes(s), "the app has: " + s);
   assert.match(src("js/version.js"), /APP_VERSION = "1\.(64\.[1-9]|6[5-9]|[7-9]\d)/); assert.match(src("README.md"), /\*\*1\.64\.1:\*\* the in-app Backstage Pass/);
 });
 

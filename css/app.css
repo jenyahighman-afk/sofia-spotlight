@@ -628,11 +628,18 @@ body.modal{overflow:hidden}
 .me-setup,.friends-fold,.habit-fold{margin:10px 0} .me-setup>summary,.friends-fold>summary,.habit-fold>summary{font-family:Fredoka;font-size:1.05rem;padding:10px 4px;cursor:pointer} .me-setup .card,.friends-fold .card,.habit-fold .card{margin-top:8px}
 /* 1.64.0: the four ideas */
 .ms-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px} .ms-pick .chip{cursor:pointer;border:0;font:inherit;font-weight:700}
-/* 1.65.0: ⭐ I'm working on, her own list on top of Skills */
-.work-card .wk-row{border-top:1px dashed var(--line);padding:10px 0 6px} .work-card h3+.wk-row{border-top:0;padding-top:4px} .wk-top{display:flex;align-items:center;gap:10px} .wk-st{font-size:1.3rem;width:1.7rem;text-align:center;flex:none}
-.wk-top b{display:block;font-family:Fredoka;font-size:1.08rem;font-weight:500;line-height:1.2} .wk-top small{display:block;color:var(--ink-2);font-weight:700;font-size:.78rem} .wk-x{background:none;border:0;color:var(--ink-2);font-size:1rem;padding:8px 6px;cursor:pointer;flex:none}
-.wk-top .btn.sm{flex:none;padding:7px 11px} .wk-tip{margin:2px 0 0 calc(1.7rem + 10px)} .wk-acts{margin-top:8px;gap:8px;flex-wrap:wrap} .wk-more{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
-.wk-vs{display:flex;gap:8px;margin:8px 0 0 calc(1.7rem + 10px)} .wk-shot{margin:0;width:84px;border-radius:12px;overflow:hidden;background:var(--blush);text-align:center} .wk-shot img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block} .wk-shot figcaption{font-weight:800;font-size:.7rem;padding:2px}
+/* 1.66.0: ⭐ My goals, one page per goal, 📸 My album */
+.g-lab{font-weight:800;font-size:.74rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);margin:12px 0 0} h3+.g-lab{margin-top:6px}
+.g-row{display:flex;align-items:center;gap:10px;width:100%;padding:9px 0;border:0;border-top:1px dashed var(--line);background:none;text-align:left;font:inherit;color:var(--ink);cursor:pointer} .g-lab+.g-row{border-top:0}
+.g-ph{width:54px;height:66px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:1.5rem;background:var(--blush);overflow:hidden} .g-ph img{width:100%;height:100%;object-fit:cover;display:block} .g-ph.none{background:none;border:2px dashed var(--line)}
+.g-row b{display:block;font-family:Fredoka;font-size:1.06rem;font-weight:500;line-height:1.2} .g-row small{display:block;color:var(--ink-2);font-weight:700;font-size:.78rem} .g-row .how{font-weight:800;color:var(--ink)} .g-row .g-sub{font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden} .g-go{color:var(--ink-2);font-size:1.3rem;flex:none}
+.wk-more{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)} .wk-own-lab{margin:10px 0 0} .wk-own{margin-top:6px;gap:6px} .wk-own input{flex:1;min-width:0} .wk-own select{max-width:86px}
+.alb{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px} .alb-tile{padding:0;border:2px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card);font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;text-align:center}
+.alb-ph{aspect-ratio:3/4;display:grid;place-items:center;font-size:1.8rem;background:var(--blush);width:100%} .alb-ph img{width:100%;height:100%;object-fit:cover;display:block} .alb-cap{font-weight:800;font-size:.72rem;line-height:1.15;padding:4px 3px 5px} .alb-cap small{display:block;color:var(--ink-2);font-weight:700}
+.alb-tile.shiny{border-color:var(--gold);box-shadow:0 0 0 2px rgba(244,200,106,.4)}
+.gp-how{font-family:Fredoka;font-size:1.15rem;margin:4px 0} .gp-bar{height:10px;border-radius:9px;background:var(--line);overflow:hidden;margin:6px 0 2px} .gp-bar i{display:block;height:100%;background:var(--coral)} .gp-next{background:var(--blush);border-radius:14px;padding:10px 12px;margin-top:8px} .gp-next b{font-family:Fredoka;font-weight:500;font-size:1.05rem}
+.gp-vs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px} .gp-shot{margin:0;text-align:center} .gp-shot img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:14px;display:block} .gp-shot figcaption{font-weight:800;font-size:.78rem;padding-top:3px}
+.gp-strip{display:flex;gap:6px;margin-top:8px;overflow-x:auto} .gp-strip img{width:46px;height:60px;object-fit:cover;border-radius:9px;flex:none}
 #stageBody details.card.acc{margin:8px 0}
 #hvVideo.hv-mirror{transform:scaleX(-1)} .hv-tools{margin-top:8px;flex-wrap:wrap}
 .fix-row{display:flex;gap:6px;align-items:stretch} .fix-row .fix-at{flex:none;white-space:nowrap;background:var(--card);border:2px solid var(--coral)}

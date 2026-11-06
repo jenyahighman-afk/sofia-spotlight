@@ -24,8 +24,8 @@ test("⭐ My skill this month: the pick is kept, one per month; since 1.65.0 it 
   assert.equal(MS.monthSkill({ monthSkills: { "2026-11": "s-cartwheel" } }, "2026-12-01"), null, "a new month starts with nothing picked: last month's stays in the record");
   assert.equal(MS.monthSkill({ monthSkills: { "2026-11": "nope" } }, "2026-11-05"), null);
   const sk2 = html.slice(html.indexOf('id="p-skills"')); assert.ok(!html.includes('id="monthSkill"'), "its card is gone"); assert.ok(sk2.indexOf('id="workingCard"') < sk2.indexOf('id="skillRings"'), "her list is on top of the Skills page");
-  assert.match(src("js/working.js"), /const m = monthSkill\(settings, date, ladder\); return m \? \[m\.id\] : \[\];/, "the month's pick starts the list");
-  assert.match(src("sw.js"), /"\.\/js\/monthskill\.js", "\.\/js\/working\.js"/);
+  assert.match(src("js/working.js"), /const m = monthSkill\(settings, date, ladder\);/, "the month's pick is in the starting list"); assert.match(src("js/working.js"), /\[\.\.\.\(m \? \[m\.id\] : \[\]\), AERIAL_ID, \.\.\.SPLIT_KEYS, \.\.\.mine\]/);
+  assert.match(src("sw.js"), /"\.\/js\/monthskill\.js", "\.\/js\/working\.js", "\.\/js\/goalpage\.js"/);
 });
 
 test("🪞 Mirror and an A–B loop on Hannah's videos", () => {

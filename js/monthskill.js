@@ -1,6 +1,6 @@
 // ⭐ My skill this month (1.64.0, one of the four ideas Jenya picked on Nov 5): one skill she picked herself for the month.
 // settings.monthSkills = { "YYYY-MM": skillId }: one per month; earlier months stay. Since 1.65.0 the card is gone: her own
-// list on top of Skills (js/working.js, ⭐ I'm working on) holds as many skills as she likes with the same Before and Now
+// list on top of Skills (js/working.js, ⭐ My goals since 1.66.0) holds as many skills as she likes with the same Before and Now
 // photos, and until she picks there it starts with this month's skill, so nothing she chose is lost. Pure.
 import { todayStr } from "./util.js";
 import { SKILLS } from "./data.js";

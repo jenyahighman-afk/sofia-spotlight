@@ -30,9 +30,11 @@ test("four tabs: Today · Dances · Skills · Me; Practice lights Today, Play an
   for (const p of ["practice", "play"]) assert.ok(!GROWNUP_PAGES.includes(p), p + " needs no PIN");
 });
 
-test("one Skills page: the skill lists, the trick cards, the goals, the aerial mission, the drill box, the safety rules — ids unchanged", () => {
+test("one Skills page: her goals, her album, the skill lists, the drill box, the safety rules; the aerial's checklist on its own page (1.66.0)", () => {
   const sk = section("skills");
-  for (const id of ["skillsTitle", "skillRings", "skillList", "meCards", "cardsArea", "goalRings", "aerialList", "aerialPct", "drillBox", "drillForm", "drillList", "drillCount"]) { assert.ok(sk.includes(`id="${id}"`), id + " is on Skills"); assert.equal((html.match(new RegExp(`id="${id}"`, "g")) || []).length, 1, id + " exists once"); }
+  for (const id of ["skillsTitle", "workingCard", "albumCard", "skillRings", "skillList", "cardsArea", "drillBox", "drillForm", "drillList", "drillCount"]) { assert.ok(sk.includes(`id="${id}"`), id + " is on Skills"); assert.equal((html.match(new RegExp(`id="${id}"`, "g")) || []).length, 1, id + " exists once"); }
+  for (const id of ["aerialList", "aerialPct", "aerialFold", "gpTitle", "gpNext", "gpPhotos", "gpCoach", "gpFoot"]) { assert.ok(section("goal").includes(`id="${id}"`), id + " is on a goal's page"); assert.equal((html.match(new RegExp(`id="${id}"`, "g")) || []).length, 1, id + " exists once"); }
+  assert.doesNotMatch(html, /id="meCards"|id="goalRings"|id="cardsFold"|id="goalsFold"/, "the trick cards fold and the Goals tiles left the page"); assert.equal(NAV.tabFor("goal"), "skills");
   assert.match(sk, /🛟 Safety rules/); assert.doesNotMatch(section("me"), /id="skillRings"|id="goalRings"|id="meCards"/); assert.doesNotMatch(section("practice"), /aerialList|drillBox|Safety rules/);
   assert.match(section("practice"), /🗺️ The 15-week plan/, "the plan stays on Practice");
   // her own name for the page

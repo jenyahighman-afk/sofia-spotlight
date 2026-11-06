@@ -5,9 +5,9 @@ import { $$, expose } from "./util.js";
 let guard = null;
 export function setGuard(fn){ guard = fn; }
 // The tab a page belongs to (1.61.0: Today · Dances · Skills · Me). Practice and the Coach corner open from Today, Play and the
-// Grown-ups pages from Me, so their tab stays lit. Pure.
+// Grown-ups pages from Me, so their tab stays lit. A goal's page (1.66.0) opens from Skills. Pure.
 export const TABS = ["home", "dances", "skills", "me"];
-export function tabFor(p){ if (TABS.includes(p)) return p; if (p === "practice" || p === "coach") return "home"; return "me"; }
+export function tabFor(p){ if (TABS.includes(p)) return p; if (p === "practice" || p === "coach") return "home"; if (p === "goal") return "skills"; return "me"; }
 export function showPage(p){
   if (guard) { const r = guard(p); if (typeof r === "string") p = r; }
   $$("section.page").forEach(s=>s.classList.toggle("on",s.id==="p-"+p));

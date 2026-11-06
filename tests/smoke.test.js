@@ -38,7 +38,7 @@ const playToday = () => { const today = M.util.todayStr(); const ev = M.advent.s
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["wkHint", "filmVideo", "dayPlan", "seasonDeco", "tcLineup", "lfStatus", "rmTime", "mmPair", "mmStatus", "mmCanvas", "mmPhoto", "mmThen", "mmNow", "rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "ckGrab", "coachTapSkip", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount", "drillUrl", "drillSkill", "drillNote", "rmTime2", "sdWent", "sdNote"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["wkHint", "wkOwnName", "wkOwnDance", "filmVideo", "dayPlan", "seasonDeco", "tcLineup", "lfStatus", "rmTime", "mmPair", "mmStatus", "mmCanvas", "mmPhoto", "mmThen", "mmNow", "rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "ckGrab", "coachTapSkip", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount", "drillUrl", "drillSkill", "drillNote", "rmTime2", "sdWent", "sdNote"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -46,7 +46,7 @@ test("every element id looked up in the code exists in index.html", () => {
 
 test("the five kid tabs and every Grown-ups page exist; nothing text-heavy was deleted, only moved", () => {
   for (const p of ["home","dances","skills","practice","play","me","pin","grownups","events","schedule","notes","lists","skillcheck","reviews","reports","settings"]) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
-  for (const id of ["coach","goal","mirror","goalRings","goalReminder","reviewList"]) assert.ok(html.includes(`id="${id}"`), id);
+  for (const id of ["coach","goal","mirror","workingCard","albumCard","p-goal","goalReminder","reviewList"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const p of []) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
   const tabs = [...html.matchAll(/<button data-p="([a-z]+)"/g)].map(m => m[1]);
   assert.deepEqual(tabs, ["home","dances","skills","me"], "1.61.0: Today · Dances · Skills · Me");
@@ -137,8 +137,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
   assert.ok(el("#quickRow").innerHTML.includes("openQuick('strength')") && el("#quickRow").innerHTML.includes("openQuick('flex')"), "Practice offers the two quick sessions");
   assert.ok(el("#workoutRow").innerHTML.includes("My workouts") && el("#workoutRow").innerHTML.includes("woAdd()"), "Practice has the My workouts row with an Add button"); assert.ok(el("#workoutRow").innerHTML.includes("woPreset(0)") && el("#workoutRow").innerHTML.includes("Core Control"), "the suggested Dance Masterclass programs are offered");
   assert.ok(el("#coachTricks").innerHTML.includes("Donut roll") && el("#coachTricks").innerHTML.includes("Scorpion → needle") && el("#coachTricks").innerHTML.includes("openCoach('solo','Calypso')"), "solo tricks are tracked and coachable in the Coach corner");
-  assert.ok(el("#goalRings").innerHTML.includes("Bridge") && el("#goalRings").innerHTML.includes("New goal"), "goal tiles on Skills");
-  assert.ok(!el("#goalRings").innerHTML.includes("Right split") && el("#skillList").innerHTML.includes("splitOpen('split-r')") && el("#skillList").innerHTML.includes("▲ 10° since your first one"), "1.64.2: a split is a row in the skill list, with her change since her first check-in");
+  assert.ok(el("#skillList").innerHTML.includes("goalOpen('split-r')") && el("#skillList").innerHTML.includes("▲ 10° since your first one"), "1.64.2: a split is a row in the skill list, with her change since her first check-in; 1.66.0: it opens the split's page");
   assert.ok(el("#goalReminder").innerHTML.includes("Check-in time: Bridge") && !el("#goalReminder").innerHTML.includes("split"), "goal due after 14 days shows on Today; a split is never due");
   M.goals.openGoal("g1"); assert.ok(el("#goalBody").innerHTML.includes("openCoach('','Right split')"), "a goal's sheet has a coach button for that goal");
   assert.ok(dancePages().includes("openCoach('solo')"), "Coach me on the dance cover");

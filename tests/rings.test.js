@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 const src = (f) => readFileSync(new URL("../" + f, import.meta.url), "utf8");
 
 test("every progress ring rotates only its arc, in SVG, around its own centre; no CSS rotation is left on a ring", () => {
-  for (const [f, c] of [["js/views/practice.js", 50], ["js/pmode.js", 50], ["js/views/me.js", 32], ["js/goals.js", 32]]) {
+  for (const [f, c] of [["js/views/practice.js", 50], ["js/pmode.js", 50], ["js/views/me.js", 32]]) {
     assert.ok(src(f).includes(`class="ring-fg" transform="rotate(-90 ${c} ${c})"`), f + " rotates the arc around (" + c + "," + c + ")");
   }
   const css = src("css/app.css");

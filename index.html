@@ -56,23 +56,16 @@
      cards, the goals) and from Practice (the aerial mission, the drill box, the safety rules); their modules draw them as before. -->
 <section class="page" id="p-skills">
   <div class="row"><h2 class="grow" id="skillsTitle" style="margin:0">Skills</h2><button class="lnk small" onclick="skillsRename()">✏️ Name this page</button></div>
-  <p class="small muted">Pick the skills you're working on. Say how each one is going, keep photos of your progress, and tap 🎬 Coach me for one thing to fix.</p>
+  <p class="small muted">Your goals are on top. Tap one to see what's next, your photos and the coach.</p>
   <div class="card sun work-card" id="workingCard"></div>
+  <div class="card violet album-card" id="albumCard"></div>
   <details class="card acc violet" id="allSkills"><summary>📚 All skills</summary>
     <p class="small muted">Every skill, list by list. Tap a skill to say how it's going. 📷 keeps your progress photos.</p>
     <div class="skill-rings" id="skillRings"></div>
     <details class="more class-fold" id="classFold"><summary>🩰 My classes <span class="small muted" id="classNames"></span></summary><div class="skill-rings" id="classRings"></div></details>
     <div id="skillList"></div>
   </details>
-  <details class="card acc coral" id="cardsFold"><summary>🃏 My trick cards <span class="chip violet" id="cardsCount"></span></summary><div id="meCards"></div></details>
   <div id="cardsArea" style="display:none"></div>
-  <details class="card acc sun" id="goalsFold"><summary>🎯 Goals</summary>
-    <div class="goal-grid" id="goalRings"></div>
-  </details>
-  <details class="card acc violet" id="aerialFold"><summary>🤸 Aerial mission <span class="chip violet" id="aerialPct">0%</span></summary>
-    <p class="small muted">Learned in Monday Acro with a spotter. Mat under you for every drill.</p>
-    <div id="aerialList"></div>
-  </details>
   <details class="card acc coral"><summary>📎 Drill box <span class="chip coral" id="drillCount"></span></summary>
     <div id="drillBox"><div id="drillForm"></div><div id="drillList"></div><div id="drillArea" style="display:none"></div></div>
   </details>
@@ -84,6 +77,19 @@
       <li>Stop anything that hurts. Sleep and water are part of training.</li>
     </ul>
   </details>
+</section>
+
+<!-- ONE GOAL (js/goalpage.js): a trick, a split or the aerial opens here from Skills; the Skills tab stays lit -->
+<section class="page" id="p-goal">
+  <div class="row noprint page-back"><button class="btn sm ghost" onclick="showPage('skills')">‹ My goals</button><h2 class="grow" style="margin:0" id="gpTitle"></h2></div>
+  <div class="card sun" id="gpNext"></div>
+  <details class="card acc violet" id="aerialFold" hidden><summary>🤸 All the steps <span class="chip violet" id="aerialPct">0%</span></summary>
+    <p class="small muted">Learned in Monday Acro with a spotter. Mat under you for every drill.</p>
+    <div id="aerialList"></div>
+  </details>
+  <div class="card violet" id="gpPhotos"></div>
+  <div class="card coral" id="gpCoach"></div>
+  <p class="small muted" id="gpFoot" style="text-align:center"></p>
 </section>
 
 <!-- PRACTICE -->
@@ -102,7 +108,7 @@
     <textarea id="practiceNote" placeholder="One line."></textarea>
     <div class="row" style="margin-top:8px"><button class="btn sm coral" id="saveNote">Save</button><span class="grow"></span><label class="small muted">Day <input type="date" id="practiceDate" style="max-width:150px;display:inline-block"></label></div>
   </details>
-  <button class="card violet me-tile" id="practiceAerial" onclick="aerialGo()"><span class="mt-ic">🤸</span><span class="grow"><b>Aerial mission</b><small>Your checklist is on Skills. Tap to go there.</small></span><span class="mt-go">›</span></button>
+  <button class="card violet me-tile" id="practiceAerial" onclick="aerialGo()"><span class="mt-ic">🤸</span><span class="grow"><b>Aerial mission</b><small>Your checklist is with your goals. Tap to go there.</small></span><span class="mt-go">›</span></button>
   <details class="card acc"><summary>🗺️ The 15-week plan</summary><div id="phases"></div></details>
   <details class="card acc"><summary>📅 History</summary><div id="practiceHistory" class="small"></div></details>
 </section>

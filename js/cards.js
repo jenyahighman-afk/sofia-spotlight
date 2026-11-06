@@ -55,17 +55,9 @@ export function cardHTML(c, { big = false, photo = null } = {}){
     : `<button class="${cls}" style="--c:${c.color}" onclick="cardOpen('${c.id}')" aria-label="${esc(c.n)}: ${locked ? "not earned yet" : c.tier === "shiny" ? "shiny card" : "card"}">${inner}</button>`;
 }
 
-// ---------- Me card ----------
-export function renderCardsCard(){
-  const el = $("#meCards"); if (!el) return; const cards = cardList(); const n = cardCounts(cards); const shots = Object.values(lineupCounts()).reduce((a, b) => a + b, 0);
-  const cc = $("#cardsCount"); if (cc) cc.textContent = `${n.earned} earned`; // 1.65.0: the title and the count sit on the fold
-  el.innerHTML = `<p class="small muted">Land a trick clean and its card is yours. Teacher-checked tricks turn shiny ✨${n.shiny ? ` · ${n.shiny} shiny` : ""}</p>
-    <p class="small muted">${shots ? `📷 ${shots} progress photo${shots === 1 ? "" : "s"} so far. Add more with the 📷 on a skill in ⭐ I'm working on.` : "📷 Learning a trick? Pick it in ⭐ I'm working on and tap its 📷. Your photos line up."}</p>
-    <div class="row"><button class="btn sm coral" onclick="openCards()">🃏 Open my binder</button></div>`;
-  const a = $("#cardsArea"); if (a && a.style.display === "block") renderBinder(); // the binder is open: keep it live
-}
-
 // ---------- the binder (stage sheet) ----------
+// 1.66.0: nothing on the page opens the binder any more. 📸 My album on Skills (js/goalpage.js) took the trick cards' place
+// and each skill's page has the lineup. The binder and openCards stay for the links that may still point at them.
 let view = "";
 function openCards(id){ view = typeof id === "string" ? id : ""; renderBinder(); openStage("🃏 My trick cards", [$("#cardsArea")], `<button class="btn ghost" onclick="closeStage()">Done</button>`); }
 export function renderBinder(){
@@ -88,8 +80,8 @@ export function renderBinder(){
     + binderGroups(cards).map(g => `<h4 class="tc-group" style="--c:${g.color}">${g.ic} ${esc(g.styleName)} <span class="small muted">${g.earned}/${g.cards.length}</span></h4><div class="tc-grid">${g.cards.map(x => cardHTML(x, { photo: photos[x.id] })).join("")}</div>`).join("");
 }
 function show(id){ view = id || ""; renderBinder(); const b = $("#stageBody"); if (b) b.scrollTop = 0; }
-// "New card!": a skill that newly reaches clean or teacher-checked pops a toast.
-function onState(id, prev, next){ const m = cardMoment(prev, next); if (!m) return; const s = findSkill(id); toast(m === "shiny" ? `✨ Shiny card! ${s ? s.n : ""}` : `🃏 New card! ${s ? s.n : ""}`, 2600); }
+// A skill that newly reaches clean or teacher-checked pops a toast (1.66.0: it names her album, not a card).
+function onState(id, prev, next){ const m = cardMoment(prev, next); if (!m) return; const s = findSkill(id); toast(m === "shiny" ? `✨ Teacher-checked! ${s ? s.n : ""} shines in your album` : `◉ Clean! ${s ? s.n : ""} is in your album 📸`, 2600); }
 export function initCards(){
   onSkillState(onState);
   document.addEventListener("stageclosed", () => { const a = $("#cardsArea"); if (a) a.style.display = "none"; view = ""; resetLineup(); });

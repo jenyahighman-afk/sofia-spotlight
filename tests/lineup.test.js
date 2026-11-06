@@ -159,7 +159,7 @@ test("the lineup under a big card: add from learning on, every photo framed and 
     window.cardOpen("b-plie"); assert.ok(!el("#tcLineup").innerHTML.includes("lineupAdd("), "a trick she hasn't started has no add button");
     assert.ok(writes.every(w => w.col === "photos"), "only photo writes");
   } finally { setBackend(null); resetDom(); for (const k of Object.keys(S)) S[k] = {}; }
-  const me = src("js/views/me.js"); assert.match(me, /skill-cam/); assert.match(me, /openCards\('\$\{sk\.id\}'\)/); assert.match(me, /lineupCounts/);
+  const me = src("js/views/me.js"); assert.match(me, /skill-cam/); assert.match(me, /goalOpen\('\$\{sk\.id\}'\)/, "1.66.0: the 📷 opens the skill's page, where its lineup is"); assert.match(me, /lineupCounts/);
   assert.match(src("sw.js"), /"\.\/js\/lineup\.js"/); assert.match(src("css/app.css"), /\.lf-strip\{/); for (const f of Lp.FRAMES) assert.match(src("css/app.css"), new RegExp("\\.lf-" + f.id + "\\b"), "css for " + f.id);
   assert.match(src("README.md"), /Schema 44/); assert.match(src("README.md"), /Progress lineup/);
 });

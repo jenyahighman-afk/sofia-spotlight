@@ -122,7 +122,7 @@ function tilesHtml(list){
     + (cls.length?`<details class="card acc class-fold"><summary>🎓 Class dances <span class="chip">${cls.length}</span></summary>${cls.map(d=>danceTile(d,{music:false,fixes:openFixes(d)})).join("")}</details>`:"");
 }
 // ⭐ The tricks in this dance: each opens its trick card (the binder's page for it, with her progress photos).
-function tricksRow(d){ const ts=danceTricks(d); if(!ts.length) return ""; return `<div class="dance-tricks"><div class="small muted">⭐ Tricks in this dance</div><div class="fixchips">${ts.map(t=>`<button class="fixchip" onclick="openCards('${t.id}')">${STATE_EMOJI[skillState(S.skills,t.id)]||"○"} ${esc(t.n)}</button>`).join("")}</div></div>`; }
+function tricksRow(d){ const ts=danceTricks(d); if(!ts.length) return ""; return `<div class="dance-tricks"><div class="small muted">⭐ Tricks in this dance</div><div class="fixchips">${ts.map(t=>`<button class="fixchip" onclick="goalOpen('${t.id}')">${STATE_EMOJI[skillState(S.skills,t.id)]||"○"} ${esc(t.n)}</button>`).join("")}</div></div>`; }
 function collectDance(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const d={...dances().find(x=>x.id===id)}; card.querySelectorAll(".dfield").forEach(el=>{ d[el.dataset.k]=el.dataset.cues?parseCueText(el.value):el.dataset.list?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value; }); if(d.bpm!==""&&d.bpm!==undefined){ const n=parseFloat(d.bpm); d.bpm=Number.isFinite(n)&&n>0?n:""; }
   // Data-owned fields stay out of the stored copy, so later data updates (Hannah's words, a new pin) still show through:
   // the pinned teacher notes, and a cue table the family hasn't overridden (nudges live in cueTimes).

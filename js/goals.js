@@ -52,7 +52,7 @@ export function splitNote(g){
   return d > 0 ? `▲ ${d}° since your first one` : `📷 ${cs.length} time${cs.length === 1 ? "" : "s"} so far`;
 }
 export function splitRowsHtml(goals){
-  return `<div class="lvl-sec">Bendy</div>` + SPLIT_KEYS.map(k => { const p = PRESETS.find(x => x.key === k); return `<div class="skill-row"><button class="skill" onclick="splitOpen('${k}')"><span class="st">${p.emoji}</span><span class="grow">${esc(p.name)}</span><small>${esc(splitNote(splitGoal(goals, k)))}</small></button></div>`; }).join("");
+  return `<div class="lvl-sec">Bendy</div>` + SPLIT_KEYS.map(k => { const p = PRESETS.find(x => x.key === k); return `<div class="skill-row"><button class="skill" onclick="goalOpen('${k}')"><span class="st">${p.emoji}</span><span class="grow">${esc(p.name)}</span><small>${esc(splitNote(splitGoal(goals, k)))}</small></button></div>`; }).join("");
 }
 // A split that has no goal document yet opens as a draft (id "new:<preset>"): nothing is stored until its first check-in.
 const DRAFT = "new:";
@@ -88,12 +88,7 @@ export async function measurePhoto(file, measure){
 }
 
 // ---- UI: Me card + goal modal + Today reminder ----
-const ring = (pct, emoji) => { const r = 26, c = 2 * Math.PI * r; return `<svg viewBox="0 0 64 64" class="mini-ring goal-ring"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" transform="rotate(-90 32 32)" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/><text x="32" y="32" class="ring-ic">${emoji}</text></svg>`; };
 const photoOf = (c) => c && c.photoId && S.photos[c.photoId] ? S.photos[c.photoId] : null;
-export function renderGoalsCard(){
-  const el = $("#goalRings"); if (!el) return; const list = Object.values(S.goals).filter(g => !g.deleted && !isSplit(g)).sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
-  el.innerHTML = list.map(g => { const l = latest(g); const ph = photoOf(l); return `<button class="goal-tile" onclick="openGoal('${g.id}')">${ring(progress(g), g.emoji || "⭐")}<small>${esc(g.name)}</small>${ph && ph.url && ph.kind !== "video" ? `<img src="${esc(ph.url)}" alt="">` : `<span class="goal-empty">${l ? "🎥" : "＋ check in"}</span>`}${l && typeof l.value === "number" ? `<small class="muted">${l.value}${g.unit === "sec" ? " s" : g.unit === "deg" ? "°" : ""}</small>` : ""}</button>`; }).join("") + `<button class="goal-tile add" onclick="goalPicker()"><span class="goal-plus">＋</span><small>New goal</small></button>`;
-}
 export function renderGoalReminder(){
   const el = $("#goalReminder"); if (!el) return; const due = dueGoals(S.goals, todayStr(), S.settings.goalSnooze || "");
   el.hidden = !due.length; if (due.length) el.innerHTML = `<div class="row"><span class="grow">📸 Check-in time: ${esc(due.map(g => g.name).slice(0, 2).join(", "))}${due.length > 2 ? " +" + (due.length - 2) : ""}</span><button class="btn sm coral" onclick="openGoal('${due[0].id}')">Go</button><button class="btn sm ghost" onclick="goalSnooze()">Later</button></div>`;

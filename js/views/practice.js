@@ -94,6 +94,7 @@ export function initPractice(){
 }
 export { renderPractice, toggleAerial };
 // The aerial mission's checklist moved to Skills in 1.61.0, and the printed Aerial Mission p.2 still says "Practice → Aerial
-// mission" (no reprints, Jenya). So Practice keeps one row that goes to Skills and opens the checklist (1.64.4).
-function aerialGo(){ showPage("skills"); const a = $("#aerialFold"); if (!a) return; a.open = true; if (a.scrollIntoView) a.scrollIntoView({ block: "start" }); }
+// mission" (no reprints, Jenya). So Practice keeps one row that opens the checklist (1.64.4). Since 1.66.0 the checklist is
+// on the aerial's own page (js/goalpage.js), under Skills.
+function aerialGo(){ if (typeof window.goalOpen === "function") window.goalOpen("a-aerial", { steps: true }); else showPage("skills"); }
 expose({ toggleAerial, swapOpen, swapPick, aerialGo });

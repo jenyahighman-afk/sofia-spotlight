@@ -33,13 +33,13 @@
     {
       "id": "skills",
       "e": "⭐",
-      "n": "A Skills tab with your own list",
+      "n": "A Skills tab with your goals and your album",
       "where": "Skills",
-      "pitch": "Pick the skills you're working on. Keep track of each one.",
+      "pitch": "Your goals are on top. Each one has its own page.",
       "steps": [
         "Tap Skills at the bottom.",
-        "In “⭐ I'm working on”, tap “＋ Pick a skill”.",
-        "“📷 Add a photo” keeps a Before and a Now picture.",
+        "In “⭐ My goals”, tap “＋ Pick a goal”.",
+        "Tap a goal: “📷 Add a photo” puts a picture in “📸 My album”.",
         "“🎬 Coach me” looks at a photo or a short video and gives you one fix.",
         "“✏️ Name this page” lets you call the tab what you like."
       ]

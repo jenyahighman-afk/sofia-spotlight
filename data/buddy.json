@@ -98,8 +98,8 @@
       "Nobody has opened the Backstage Pass for a couple of days. Next up: {part} 🎟"
     ],
     "cards": [
-      "You have {cards} trick cards! 🃏 Want to look at your binder?",
-      "Peek at your trick cards 🃏 Any new shiny ones coming?"
+      "{cards} skills clean! 📸 Want to look at your album?",
+      "Peek at your album 📸 Any new photos coming?"
     ],
     "costume": [
       "Design a show costume for fun? 👗 I'd wear sequins. Lots of sequins.",

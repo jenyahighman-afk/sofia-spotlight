@@ -10,22 +10,19 @@ const src = (f) => readFileSync(new URL("../" + f, import.meta.url), "utf8").rep
 const html = src("index.html"), section = (a, b) => html.slice(html.indexOf(`id="p-${a}"`), html.indexOf(`id="p-${b}"`));
 await import("../js/views/practice.js");
 
-test("Practice has an Aerial mission row; the checklist itself stays on Skills, once", () => {
-  const pr = section("practice", "play"), sk = section("skills", "practice");
-  assert.match(pr, /<button class="card violet me-tile" id="practiceAerial" onclick="aerialGo\(\)">.*<b>Aerial mission<\/b><small>Your checklist is on Skills\. Tap to go there\.<\/small>/);
+test("Practice has an Aerial mission row; the checklist itself is on the aerial's own page, once (1.66.0)", () => {
+  const pr = section("practice", "play"), gp = section("goal", "practice");
+  assert.match(pr, /<button class="card violet me-tile" id="practiceAerial" onclick="aerialGo\(\)">.*<b>Aerial mission<\/b><small>Your checklist is with your goals\. Tap to go there\.<\/small>/);
   assert.doesNotMatch(pr, /aerialList|aerialPct/, "no second checklist");
-  assert.match(sk, /<details class="card acc violet" id="aerialFold"><summary>🤸 Aerial mission/);
+  assert.match(gp, /<details class="card acc violet" id="aerialFold" hidden><summary>🤸 All the steps/);
   for (const id of ["practiceAerial", "aerialFold", "aerialList"]) assert.equal((html.match(new RegExp(`id="${id}"`, "g")) || []).length, 1, id + " exists once");
 });
 
-test("the row goes to Skills and opens the checklist", () => {
-  resetDom(); const fold = el("#aerialFold"); fold.open = false; let scrolled = 0; fold.scrollIntoView = () => { scrolled++; };
-  const pages = []; const on = (e) => pages.push(e.detail); document.addEventListener("page", on);
-  window.aerialGo();
-  assert.equal(fold.open, true); assert.equal(scrolled, 1);
-  if (pages.length) assert.equal(pages.at(-1), "skills");
-  document.removeEventListener && document.removeEventListener("page", on); resetDom();
-  assert.match(src("js/views/practice.js"), /function aerialGo\(\)\{ showPage\("skills"\); const a = \$\("#aerialFold"\);/);
+test("the row opens the aerial's page with all the steps unfolded", () => {
+  resetDom(); const calls = []; window.goalOpen = (id, o) => calls.push([id, o]);
+  window.aerialGo(); assert.deepEqual(calls, [["a-aerial", { steps: true }]]);
+  delete window.goalOpen; resetDom();
+  assert.match(src("js/views/practice.js"), /function aerialGo\(\)\{ if \(typeof window\.goalOpen === "function"\) window\.goalOpen\("a-aerial", \{ steps: true \}\); else showPage\("skills"\); \}/);
 });
 
 test("the release", () => {
