@@ -229,27 +229,19 @@
   <div class="card coral news-card" id="newsCard" hidden></div>
   <div id="newsArea" style="display:none"></div>
   <button class="card violet me-tile" id="mePlay" onclick="showPage('play')"><span class="mt-ic">🎮</span><span class="grow"><b>Play</b><small>games, dares, costumes</small></span><span class="mt-go">›</span></button>
-  <div class="card violet" id="meMoments"></div>
+  <!-- 1.66.3 (Jenya): every card below folds, closed to start; this phone remembers the ones she opens (goalpage.js initFolds). -->
+  <details class="card acc violet" id="momentsFold"><summary>📸 Moments <span class="chip violet" id="momentsCount"></span></summary><div id="meMoments"></div></details>
   <div id="momentsArea" style="display:none"></div>
-  <div class="card">
-    <h3>This week</h3>
-    <div class="week" id="homeWeek"></div>
-  </div>
-  <div class="card violet pet-card" id="petCard"></div>
+  <details class="card acc" id="weekFold"><summary>📅 This week</summary><div class="week" id="homeWeek"></div></details>
+  <details class="card acc violet" id="petFold"><summary>🐰 My pet</summary><div class="pet-card" id="petCard"></div></details>
   <div id="petArea" style="display:none"></div>
-  <div class="card aqua pass-card" id="passCard" hidden></div>
+  <details class="card acc aqua" id="passFold" hidden><summary>🎟 My Backstage Pass</summary><div id="passCard"></div></details>
   <div id="passArea" style="display:none"></div>
-  <div class="card sun stars-card" id="meStars"></div>
-  <div class="card violet cos-card" id="meCostumes"></div>
+  <details class="card acc sun" id="starsFold"><summary>⭐ My stars <span class="chip sun" id="starsCount"></span></summary><div class="stars-card" id="meStars"></div></details>
+  <details class="card acc violet" id="costumesFold"><summary>👗 Costume designer <span class="chip violet" id="costumesCount"></span></summary><div id="meCostumes"></div></details>
   <div id="costumeArea" style="display:none"></div>
-  <div class="card sun">
-    <div class="row"><h3 class="grow">🏅 Badges</h3><span class="chip sun" id="badgeCount">0 earned</span></div>
-    <div class="badges" id="badgeCase"></div>
-  </div>
-  <div class="card aqua">
-    <h3>🔁 Notes that keep coming back</h3>
-    <div id="mePatterns"></div>
-  </div>
+  <details class="card acc sun" id="badgesFold"><summary>🏅 Badges <span class="chip sun" id="badgeCount">0 earned</span></summary><div class="badges" id="badgeCase"></div></details>
+  <details class="card acc aqua" id="patternsFold"><summary>🔁 Notes that keep coming back</summary><div id="mePatterns"></div></details>
   <div id="glowArea" style="display:none"></div>
   <details class="more me-setup" id="meSetup"><summary>⚙️ My app</summary>
   <div class="card aqua" id="meReminder"></div>

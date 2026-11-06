@@ -66,8 +66,8 @@ export function passOutcome({ right, read = false, missed = false, check = {} })
 const tipLine = (tip) => tip ? `<div class="pass-tip small">🐰 <b>Tip of the day:</b> ${esc(tip.t)}</div>` : "";
 // The card on Today: the next part to read (part n of 10, its minutes), or "all read" with the day's tip.
 export function renderPassCard(){
-  const el = $("#passCard"); if (!el) return; const ps = parts(); if (!ps.length) { el.hidden = true; el.innerHTML = ""; return; }
-  const next = nextPart(); const n = readCount(); const tip = todayTip(todayStr(), clockHour()); el.hidden = false;
+  const el = $("#passCard"); if (!el) return; const ps = parts(); const fold = $("#passFold") || el; if (!ps.length) { fold.hidden = true; el.innerHTML = ""; return; }
+  const next = nextPart(); const n = readCount(); const tip = todayTip(todayStr(), clockHour()); fold.hidden = false;
   if (next) el.innerHTML = `<div class="row pass-head"><span class="pass-ic">🎟</span><div class="grow"><b>My Backstage Pass</b><div class="small muted">Part ${n + 1} of ${ps.length} · ${esc(next.e || "")} ${esc(next.n)} · ${next.mins || 1} min</div></div><button class="btn sm coral" onclick="openPass('${next.id}')">Read it ▶</button></div>${tipLine(tip)}`;
   else el.innerHTML = `<div class="row pass-head"><span class="pass-ic">🎟</span><div class="grow"><b>Backstage Pass: all ${ps.length} read ⭐</b></div><button class="btn sm ghost" onclick="openPass()">Read again</button></div>${tipLine(tip)}`;
 }

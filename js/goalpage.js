@@ -79,13 +79,16 @@ export function albumHtml(items, { all = false, cap = ALBUM_CAP } = {}){
 // ---- DOM ----
 let cur = "", showAll = false;
 export function renderAlbum(){ migrateFlipbook(); const el = $("#albumCard"); if (!el) return; const items = albumItems(); el.innerHTML = albumHtml(items, { all: showAll }); const n = $("#albumCount"); if (n) n.textContent = items.length ? String(items.length) : ""; }
-// The two cards on Skills fold (1.66.1, Jenya: "make the cards in skills collapsable"): open until she closes one, and this
-// phone remembers which she closed. Nothing is stored in the family space.
-const FOLDS = "spotlight:skillsFolds";
-export function initSkillsFolds(){
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem(FOLDS) || "{}") || {}; } catch (e) {}
-  for (const id of ["workingFold", "albumFold"]) { const d = $("#" + id); if (!d) continue; if (saved[id] === false) d.open = false; d.addEventListener("toggle", () => { try { const s = JSON.parse(localStorage.getItem(FOLDS) || "{}") || {}; s[id] = d.open; localStorage.setItem(FOLDS, JSON.stringify(s)); } catch (e) {} }); }
+// Cards that fold, and this phone remembers how she left each one (localStorage only; nothing in the family space).
+// Skills (1.66.1, Jenya: "make the cards in skills collapsable"): her goals and her album open to start. Me (1.66.3, Jenya:
+// "collapse all cards in me by default"): every card but her dancer, What's new and the Play tile, closed to start.
+export const SKILLS_FOLDS = ["workingFold", "albumFold"];
+export const ME_FOLDS = ["momentsFold", "weekFold", "petFold", "passFold", "starsFold", "costumesFold", "badgesFold", "patternsFold"];
+export function initFolds(key, ids){
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch (e) {}
+  for (const id of ids) { const d = $("#" + id); if (!d) continue; if (typeof saved[id] === "boolean") d.open = saved[id]; d.addEventListener("toggle", () => { try { const s = JSON.parse(localStorage.getItem(key) || "{}") || {}; s[id] = d.open; localStorage.setItem(key, JSON.stringify(s)); } catch (e) {} }); }
 }
+export function initSkillsFolds(){ initFolds("spotlight:skillsFolds", SKILLS_FOLDS); initFolds("spotlight:meFolds", ME_FOLDS); }
 export function renderGoalPage(){
   const title = $("#gpTitle"); if (!title || !cur) return; const r = goalRow(cur);
   if (!r) { cur = ""; if (currentPage() === "goal") showPage("skills"); return; }

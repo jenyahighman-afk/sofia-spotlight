@@ -31,8 +31,9 @@ const ring = (pct, ic) => { const r = 26, c = 2 * Math.PI * r; return `<svg view
 function renderMe(){
   avRender(); renderPaletteRow(); applyPalette(); renderRitualCard(); renderSkillsName();
   renderReminder(); renderFriends(); renderCostumeCard();
-  $("#meMoments").innerHTML = `<div class="row"><h3 class="grow">📸 Moments</h3><span class="chip violet">${momentCount()} kept</span></div><p class="small muted">Turn a photo into a card with a sticker, your dance days and your dancer. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
-  const nu = nextUnlock(); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;
+  const mc = $("#momentsCount"); if (mc) mc.textContent = `${momentCount()} kept`;
+  $("#meMoments").innerHTML = `<p class="small muted">Turn a photo into a card with a sticker, your dance days and your dancer. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
+  const nu = nextUnlock(); const sc = $("#starsCount"); if (sc) sc.textContent = String(totalStars()); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;
   $("#meStreak").innerHTML = `<div class="stat"><b>${danceDays(S.practice)}</b><span>dance days ⭐</span></div><div class="stat"><b>${danceCount(S.practice)}</b><span>dances 🎵</span></div><div class="stat"><b>${practicedDays(S.practice, PRACTICE_ITEMS.length)}</b><span>practice days</span></div><div class="stat"><b>${closedCount(S.corrections)}</b><span>fixes closed ✅</span></div>`;
   // badge case
   const got = earned(); const gotKeys = new Set(got.map(b => b.key));
@@ -67,7 +68,7 @@ function renderMe(){
 // brought back, by her. settings.hide = { avatar, pet }; nothing is deleted, and both show until she says otherwise. Pure.
 export const hidden = (settings) => { const h = (settings || {}).hide; const o = h && typeof h === "object" ? h : {}; return { avatar: !!o.avatar, pet: !!o.pet }; };
 function renderHide(){
-  const h = hidden(S.settings); const av = $("#avWrap"); if (av) av.hidden = h.avatar; const tip = $("#avTip"); if (tip) tip.hidden = h.avatar; const pc = $("#petCard"); if (pc) pc.hidden = h.pet;
+  const h = hidden(S.settings); const av = $("#avWrap"); if (av) av.hidden = h.avatar; const tip = $("#avTip"); if (tip) tip.hidden = h.avatar; const pc = $("#petFold") || $("#petCard"); if (pc) pc.hidden = h.pet;
   const el = $("#meHide"); if (!el) return; const row = (k, name, on) => `<div class="row" style="margin-top:6px"><span class="grow">${name}</span><button class="btn sm ${on ? "ghost" : "coral"}" onclick="meHide('${k}')">${on ? "Hidden · show" : "Showing · hide"}</button></div>`;
   el.innerHTML = `<h3>👀 What's showing</h3><p class="small muted">Don't like something? Put it away. You can bring it back here any time.</p>${row("avatar", "💃 My dancer", h.avatar)}${row("pet", "🐰 My pet", h.pet)}`;
 }

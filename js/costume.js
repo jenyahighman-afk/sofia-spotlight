@@ -106,8 +106,8 @@ async function picture(){
 // ---------- Me card ----------
 export function renderCostumeCard(){
   const el = $("#meCostumes"); if (!el) return; const list = costumeList(); const on = (wornCostume() || {}).id || "";
-  el.innerHTML = `<div class="row"><h3 class="grow">👗 Costume designer</h3><span class="chip violet">${list.length}/${COSTUMES_MAX}</span></div>
-    ${list.length ? `<div class="cos-saved">${list.map(c => `<button class="cos-thumb ${c.id === on ? "on" : ""}" onclick="openCostumes('${c.id}')" aria-label="${esc(c.name)}">${costumeSVG(c)}<small>${esc(c.name)}${c.id === on ? " 👗" : ""}</small></button>`).join("")}</div>`
+  const cc = $("#costumesCount"); if (cc) cc.textContent = `${list.length}/${COSTUMES_MAX}`; // 1.66.3: the title and the count sit on the fold
+  el.innerHTML = `${list.length ? `<div class="cos-saved">${list.map(c => `<button class="cos-thumb ${c.id === on ? "on" : ""}" onclick="openCostumes('${c.id}')" aria-label="${esc(c.name)}">${costumeSVG(c)}<small>${esc(c.name)}${c.id === on ? " 👗" : ""}</small></button>`).join("")}</div>`
       : `<p class="small muted">Design your dream show costume on your avatar, then wear it in every game.</p>`}
     <div class="row"><button class="btn sm coral" onclick="openCostumes()">✨ Design a costume</button>${on ? `<button class="btn sm ghost" onclick="cosTakeOff()">🙈 Usual leotard</button>` : ""}</div>`;
 }

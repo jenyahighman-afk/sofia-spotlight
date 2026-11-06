@@ -371,7 +371,7 @@ body.modal{overflow:hidden}
 .drill-card.book .drill-dd{font-size:1rem}
 
 /* Dance pet (js/pet.js): the bunny on Today, its moves (CSS animations) and its sheet */
-.pet-card{display:flex;gap:10px;align-items:center;padding:10px 12px}
+.pet-card{display:flex;gap:10px;align-items:center;padding:4px 0 0}
 .pet-stage{flex:none;width:96px;height:112px;border:0;background:none;padding:0;cursor:pointer}
 .pet-svg{width:100%;height:100%;display:block;overflow:visible}
 .pet-info{min-width:0;display:grid;gap:4px} .pet-name{font-family:Fredoka;font-size:1.15rem}

@@ -32,10 +32,10 @@ test("Me's order: hers first, the set-once things under ⚙️ My app; three car
 test("her dancer and her pet can each be put away and brought back; nothing is deleted", async () => {
   assert.deepEqual(ME.hidden({}), { avatar: false, pet: false }); assert.deepEqual(ME.hidden({ hide: { pet: true, other: 1 } }), { avatar: false, pet: true }); assert.deepEqual(ME.hidden({ hide: "x" }), { avatar: false, pet: false });
   assert.equal(B.petHidden({}), false); assert.equal(B.petHidden({ hide: { pet: true } }), true);
-  resetDom(); clearS(); ME.renderMe(); assert.equal(el("#avWrap").hidden, false); assert.equal(el("#petCard").hidden, false);
+  resetDom(); clearS(); ME.renderMe(); assert.equal(el("#avWrap").hidden, false); assert.equal(el("#petFold").hidden, false, "1.66.3: the pet's fold");
   assert.match(el("#meHide").innerHTML, /👀 What's showing/); assert.match(el("#meHide").innerHTML, /meHide\('avatar'\)">Showing · hide/); assert.match(el("#meHide").innerHTML, /meHide\('pet'\)">Showing · hide/);
   S.settings = { avatar: { name: "Sofia" }, hide: { avatar: true, pet: true } }; ME.renderMe();
-  assert.equal(el("#avWrap").hidden, true); assert.equal(el("#petCard").hidden, true); assert.match(el("#meHide").innerHTML, /meHide\('pet'\)">Hidden · show/);
+  assert.equal(el("#avWrap").hidden, true); assert.equal(el("#petFold").hidden, true, "putting the pet away hides its fold"); assert.match(el("#meHide").innerHTML, /meHide\('pet'\)">Hidden · show/);
   assert.deepEqual(S.settings.avatar, { name: "Sofia" }, "her dancer's look is kept");
   B.renderBuddy(); assert.equal(el("#buddy").hidden, true, "the corner helper goes with the pet"); assert.equal(B.showBuddy(), null, "and nothing pops up");
   S.settings = {}; B.renderBuddy(); assert.notEqual(B.showBuddy(), null); B.hideBuddy();
