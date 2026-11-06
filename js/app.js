@@ -54,7 +54,7 @@ import { initSeason } from "./season15.js";
 import { resyncReminder } from "./remind.js";
 import { renderKidEvents, initKidEvents } from "./kidevents.js";
 import { renderWorking } from "./working.js";
-import { renderAlbum, renderGoalPage } from "./goalpage.js";
+import { renderAlbum, renderGoalPage, initSkillsFolds } from "./goalpage.js";
 import { initSunday } from "./sunday.js";
 
 const VERSION_KEY = "spotlight:version";
@@ -67,7 +67,7 @@ const renders = [
 ];
 function renderAll(){ renders.forEach(r => r()); }
 renders.push(guard("kidevents", renderKidEvents)); renders.push(guard("working", renderWorking)); renders.push(guard("goalpage", () => { renderAlbum(); renderGoalPage(); }));
-function initViews(){ initNav(); initKidEvents(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initBuddy(); initCostume(); initGlow(); initCueCards(); initVideos(); initCueCheck(); initMemorize(); initHowto(); initStudio(); initFilm(); initReady(); initPass(); initSeason(); initSunday(); installReportLinks(); }
+function initViews(){ initNav(); initSkillsFolds(); initKidEvents(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initBuddy(); initCostume(); initGlow(); initCueCards(); initVideos(); initCueCheck(); initMemorize(); initHowto(); initStudio(); initFilm(); initReady(); initPass(); initSeason(); initSunday(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
 async function registerSW(){

@@ -57,8 +57,8 @@
 <section class="page" id="p-skills">
   <div class="row"><h2 class="grow" id="skillsTitle" style="margin:0">Skills</h2><button class="lnk small" onclick="skillsRename()">✏️ Name this page</button></div>
   <p class="small muted">Your goals are on top. Tap one to see what's next, your photos and the coach.</p>
-  <div class="card sun work-card" id="workingCard"></div>
-  <div class="card violet album-card" id="albumCard"></div>
+  <details class="card acc sun work-card" id="workingFold" open><summary>⭐ My goals <span class="chip sun" id="workingCount"></span></summary><div id="workingCard"></div></details>
+  <details class="card acc violet album-card" id="albumFold" open><summary>📸 My album <span class="chip violet" id="albumCount"></span></summary><div id="albumCard"></div></details>
   <details class="card acc violet" id="allSkills"><summary>📚 All skills</summary>
     <p class="small muted">Every skill, list by list. Tap a skill to say how it's going. 📷 keeps your progress photos.</p>
     <div class="skill-rings" id="skillRings"></div>

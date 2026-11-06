@@ -60,7 +60,7 @@ export function pickStep(ctx, rng = Math.random){
   if (c.passPart) tier1.push({ key: "pass", vars: { part: c.passPart }, go: "openPass()" });
   if (tier1.length) return pick(tier1, rng);
   const fun = [{ key: "all-done", go: "showPage('play')" }, { key: "teach", go: "showPage('play');playOpen('teach')" }, { key: "count", go: "showPage('play');playOpen('count')" }, { key: "costume", go: "showPage('me');openCostumes()" }];
-  if (c.cardsEarned > 0) fun.push({ key: "cards", vars: { cards: c.cardsEarned }, go: "showPage('skills');buddyScroll('#albumCard')" });
+  if (c.cardsEarned > 0) fun.push({ key: "cards", vars: { cards: c.cardsEarned }, go: "showPage('skills');buddyScroll('#albumFold')" });
   if (c.starsLeft > 0 && c.starsLeft <= 5 && c.unlock) fun.push({ key: "stars", vars: { starsLeft: c.starsLeft, unlock: c.unlock }, go: "showPage('play')" });
   return pick(fun, rng);
 }

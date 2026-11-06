@@ -68,7 +68,7 @@ test("a row says how it's going in the goal's own terms, with her newest photo; 
   const html = W.goalRowHtml(fix); assert.match(html, /^<button class="g-row" onclick="goalOpen\('s-cartwheel'\)"><span class="g-ph"><img src="c2\.jpg"/); assert.match(html, /<b>Cartwheel<\/b><small><span class="how">◔ Working on it<\/span> · Solo<\/small><small class="g-sub">🎬 Coach: Lock your knees &lt;now&gt;<\/small>/);
   assert.match(W.goalRowHtml(W.goalRow("split-l", ctx)), /<span class="g-ph none">🦵<\/span>/); assert.match(W.goalRowHtml(aer), /<small class="g-sub">Next: One-hand cartwheel on the FAR hand<\/small>/);
   const card = W.goalsCardHtml(ctx.working.map(id => W.goalRow(id, ctx)));
-  assert.match(card, /⭐ My goals/); assert.ok(card.indexOf("💃 In my dances") < card.indexOf("🤸 Acro") && card.indexOf("🤸 Acro") < card.indexOf("🦵 Bendy and strong") && card.indexOf("🦵 Bendy and strong") < card.indexOf("🩰 My classes")); assert.equal((card.match(/class="g-row"/g) || []).length, 5); assert.match(card, /wkPick\(\)">＋ Pick a goal/);
+  assert.doesNotMatch(card, /<h3>/, "the title is on the fold (1.66.1)"); assert.ok(card.indexOf("💃 In my dances") < card.indexOf("🤸 Acro") && card.indexOf("🤸 Acro") < card.indexOf("🦵 Bendy and strong") && card.indexOf("🦵 Bendy and strong") < card.indexOf("🩰 My classes")); assert.equal((card.match(/class="g-row"/g) || []).length, 5); assert.match(card, /wkPick\(\)">＋ Pick a goal/);
   const empty = W.goalsCardHtml([]); assert.match(empty, /a trick, a split, your aerial\. You choose, and you can change it any time\./); assert.match(W.goalsCardHtml(Array(8).fill(cart)), /That's a full list\. Take one off to pick another\./);
   assert.doesNotMatch(card + empty, /due|days left|streak|missed|180|%/i);
 });
@@ -117,7 +117,7 @@ test("📸 My album: her newest photo of every goal and of every skill she is le
   assert.deepEqual(items.map(i => i.id), ["a-aerial", "s-cartwheel", "split-r", "split-l", "s-leap", "s-donut"], "with a photo: her goals in her order, then the rest; then the ones with none yet");
   assert.ok(!items.some(i => i.id === "s-calypso"), "a skill she hasn't started is not in it");
   const by = Object.fromEntries(items.map(i => [i.id, i])); assert.deepEqual([by["s-cartwheel"].thumb, by["s-cartwheel"].count, by["s-cartwheel"].mark], ["c2.jpg", 2, "◔"]); assert.deepEqual([by["s-donut"].shiny, by["s-donut"].mark, by["s-leap"].mark, by["split-r"].mark], [true, "★", "◉", ""]);
-  const html = GP.albumHtml(items); assert.match(html, /📸 My album<\/h3><span class="chip violet">6<\/span>/); assert.equal((html.match(/class="alb-tile/g) || []).length, 6);
+  const html = GP.albumHtml(items); assert.doesNotMatch(html, /<h3>/, "the title and the count are on the fold (1.66.1)"); assert.equal((html.match(/class="alb-tile/g) || []).length, 6);
   assert.match(html, /<button class="alb-tile" onclick="goalOpen\('s-cartwheel'\)"><span class="alb-ph"><img src="c2\.jpg"[^>]*><\/span><span class="alb-cap">Cartwheel<small>◔ 2 photos<\/small>/); assert.match(html, /<button class="alb-tile shiny" onclick="goalOpen\('s-donut'\)"><span class="alb-ph">🌸<\/span><span class="alb-cap">Donut roll<small>★ no photo yet<\/small>/);
   const many = Array.from({ length: 12 }, (_, i) => ({ ...by["s-cartwheel"], id: "x" + i })); assert.equal((GP.albumHtml(many).match(/class="alb-tile/g) || []).length, GP.ALBUM_CAP); assert.match(GP.albumHtml(many), /albumAll\(\)">Show all 12/); assert.match(GP.albumHtml(many, { all: true }), /Show fewer/);
   assert.match(GP.albumHtml([]), /Your photos line up here\. Open a goal and add your first one\./);
@@ -141,21 +141,22 @@ test("in the page: picking, the aerial's step, got it, her own trick, off her go
     await window.gpOn("s-leap", true); assert.equal(S.settings.working.at(-1), "s-leap"); assert.equal(S.skills["s-leap"].state, "learning");
     for (const id of ["s-side-sit", "s-calypso", "split-r", "split-l", "bridge"]) await window.wkToggle(id, null);
     assert.equal(S.settings.working.length, 8); await window.wkToggle("s-floor-kick", null); assert.equal(S.settings.working.length, 8, "eight is the most"); assert.match(el("#toast").textContent, /Your list is full/);
-    GP.renderAlbum(); assert.match(el("#albumCard").innerHTML, /📸 My album/); assert.match(el("#albumCard").innerHTML, /goalOpen\('a-aerial'\)/);
+    GP.renderAlbum(); assert.match(el("#albumCard").innerHTML, /goalOpen\('a-aerial'\)/); assert.equal(el("#albumCount").textContent, "9", "her eight goals and the teacher-checked donut roll"); assert.equal(el("#workingCount").textContent, "8");
     assert.ok(writes.every(w => w.col === "settings" || w.col === "skills"), "nothing else is written");
   } finally { setBackend(null); resetDom(); clearS(); }
 });
 
 test("the pages, the ways in, the words and the release", () => {
   const html = src("index.html"), sk = html.slice(html.indexOf('id="p-skills"'), html.indexOf('id="p-goal"')), gp = html.slice(html.indexOf('id="p-goal"'), html.indexOf('id="p-practice"'));
-  assert.match(sk, /<div class="card sun work-card" id="workingCard"><\/div>\s*<div class="card violet album-card" id="albumCard"><\/div>\s*<details class="card acc violet" id="allSkills"><summary>📚 All skills<\/summary>/);
-  assert.deepEqual((sk.match(/<summary>[^<]+/g) || []).map(s => s.replace("<summary>", "").trim()), ["📚 All skills", "🩰 My classes", "📎 Drill box", "🛟 Safety rules"], "three folds under her goals and her album (and the classes inside All skills)");
+  assert.match(sk, /<details class="card acc sun work-card" id="workingFold" open><summary>⭐ My goals <span class="chip sun" id="workingCount"><\/span><\/summary><div id="workingCard"><\/div><\/details>\s*<details class="card acc violet album-card" id="albumFold" open><summary>📸 My album <span class="chip violet" id="albumCount"><\/span><\/summary><div id="albumCard"><\/div><\/details>\s*<details class="card acc violet" id="allSkills"><summary>📚 All skills<\/summary>/, "1.66.1: her goals and her album fold too, open to start");
+  assert.deepEqual((sk.match(/<summary>[^<]+/g) || []).map(s => s.replace("<summary>", "").trim()), ["⭐ My goals", "📸 My album", "📚 All skills", "🩰 My classes", "📎 Drill box", "🛟 Safety rules"], "every card on Skills folds (the classes inside All skills)");
+  assert.match(src("js/app.js"), /initNav\(\); initSkillsFolds\(\);/); assert.match(src("js/news.js"), /scroll: "#workingFold"/);
   assert.match(gp, /onclick="showPage\('skills'\)">‹ My goals<\/button><h2 class="grow" style="margin:0" id="gpTitle">/); const order = ["gpNext", "aerialFold", "gpPhotos", "gpCoach", "gpFoot"]; for (let i = 1; i < order.length; i++) assert.ok(gp.indexOf(`id="${order[i - 1]}"`) < gp.indexOf(`id="${order[i]}"`), order[i - 1] + " before " + order[i]);
   assert.match(src("js/nav.js"), /if \(p === "goal"\) return "skills";/); assert.match(src("js/app.js"), /renders\.push\(guard\("goalpage", \(\) => \{ renderAlbum\(\); renderGoalPage\(\); \}\)\)/); assert.match(src("sw.js"), /"\.\/js\/working\.js", "\.\/js\/goalpage\.js"/);
-  for (const [f, re] of [["js/views/me.js", /class="skill-cam" onclick="goalOpen\('\$\{sk\.id\}'\)"/], ["js/views/dances.js", /class="fixchip" onclick="goalOpen\('\$\{t\.id\}'\)"/], ["js/goals.js", /class="skill" onclick="goalOpen\('\$\{k\}'\)"/], ["js/buddy.js", /showPage\('skills'\);buddyScroll\('#albumCard'\)/]]) assert.match(src(f), re, f + " lands on the goal's page or the album");
+  for (const [f, re] of [["js/views/me.js", /class="skill-cam" onclick="goalOpen\('\$\{sk\.id\}'\)"/], ["js/views/dances.js", /class="fixchip" onclick="goalOpen\('\$\{t\.id\}'\)"/], ["js/goals.js", /class="skill" onclick="goalOpen\('\$\{k\}'\)"/], ["js/buddy.js", /showPage\('skills'\);buddyScroll\('#albumFold'\)/]]) assert.match(src(f), re, f + " lands on the goal's page or the album");
   assert.doesNotMatch(src("js/views/me.js") + src("js/views/dances.js") + src("js/buddy.js") + html, /openCards\(/, "nothing on a page opens the old binder");
   const pass = json("pass"), grab = pass.parts.find(p => p.id === "grab").lines.join(" ");
   assert.match(grab, /⭐ My goals is on top\. Tap ＋ Pick a goal to choose\./); assert.match(grab, /📷 Add a photo puts a picture in 📸 My album\./); assert.match(grab, /On a goal's page tap 🎬 Coach me/); assert.ok(pass.tips.some(t => t.t === "⭐ My goals is on the Skills tab. You pick them."));
   assert.doesNotMatch(JSON.stringify(pass) + JSON.stringify(json("news")) + JSON.stringify(json("buddy")), /My skill this month|I'm working on|trick cards|Pick a skill/);
-  assert.match(src("js/version.js"), /APP_VERSION = "1\.(6[6-9]|[7-9]\d)\./); assert.match(src("README.md"), /\*\*1\.66\.0: ⭐ My goals, one page for every goal, 📸 My album\*\*/);
+  assert.match(src("js/version.js"), /APP_VERSION = "1\.(66\.[1-9]|6[7-9]|[7-9]\d)/); assert.match(src("README.md"), /\*\*1\.66\.0: ⭐ My goals, one page for every goal, 📸 My album\*\*/);
 });

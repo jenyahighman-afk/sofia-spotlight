@@ -66,16 +66,22 @@ export function albumItems(ctx = {}){
 }
 export const ALBUM_CAP = 9;
 export function albumHtml(items, { all = false, cap = ALBUM_CAP } = {}){
-  const head = `<div class="row"><h3 class="grow">📸 My album</h3>${items.length ? `<span class="chip violet">${items.length}</span>` : ""}</div>`;
-  if (!items.length) return `${head}<p class="small muted">Your photos line up here. Open a goal and add your first one.</p>`;
+  if (!items.length) return `<p class="small muted">Your photos line up here. Open a goal and add your first one.</p>`;
   const tile = (i) => `<button class="alb-tile${i.shiny ? " shiny" : ""}" onclick="goalOpen('${i.id}')"><span class="alb-ph">${i.thumb ? `<img src="${esc(i.thumb)}" alt="" loading="lazy">` : i.ic}</span><span class="alb-cap">${esc(i.n)}<small>${i.mark ? i.mark + " " : ""}${i.count ? `${i.count} photo${i.count === 1 ? "" : "s"}` : "no photo yet"}</small></span></button>`;
   const show = all ? items : items.slice(0, cap);
-  return `${head}<p class="small muted">Your newest photo of everything you're working on or have got clean. Tap one to open it.</p><div class="alb">${show.map(tile).join("")}</div>${items.length > cap ? `<div class="row" style="margin-top:8px"><button class="lnk small" onclick="albumAll()">${all ? "Show fewer" : `Show all ${items.length}`}</button></div>` : ""}`;
+  return `<p class="small muted">Your newest photo of everything you're working on or have got clean. Tap one to open it.</p><div class="alb">${show.map(tile).join("")}</div>${items.length > cap ? `<div class="row" style="margin-top:8px"><button class="lnk small" onclick="albumAll()">${all ? "Show fewer" : `Show all ${items.length}`}</button></div>` : ""}`;
 }
 
 // ---- DOM ----
 let cur = "", showAll = false;
-export function renderAlbum(){ const el = $("#albumCard"); if (el) el.innerHTML = albumHtml(albumItems(), { all: showAll }); }
+export function renderAlbum(){ const el = $("#albumCard"); if (!el) return; const items = albumItems(); el.innerHTML = albumHtml(items, { all: showAll }); const n = $("#albumCount"); if (n) n.textContent = items.length ? String(items.length) : ""; }
+// The two cards on Skills fold (1.66.1, Jenya: "make the cards in skills collapsable"): open until she closes one, and this
+// phone remembers which she closed. Nothing is stored in the family space.
+const FOLDS = "spotlight:skillsFolds";
+export function initSkillsFolds(){
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem(FOLDS) || "{}") || {}; } catch (e) {}
+  for (const id of ["workingFold", "albumFold"]) { const d = $("#" + id); if (!d) continue; if (saved[id] === false) d.open = false; d.addEventListener("toggle", () => { try { const s = JSON.parse(localStorage.getItem(FOLDS) || "{}") || {}; s[id] = d.open; localStorage.setItem(FOLDS, JSON.stringify(s)); } catch (e) {} }); }
+}
 export function renderGoalPage(){
   const title = $("#gpTitle"); if (!title || !cur) return; const r = goalRow(cur);
   if (!r) { cur = ""; if (currentPage() === "goal") showPage("skills"); return; }

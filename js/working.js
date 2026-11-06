@@ -93,10 +93,9 @@ export function goalRowHtml(r){
   return `<button class="g-row" onclick="goalOpen('${r.id}')">${ph}<span class="grow"><b>${esc(r.n)}</b><small><span class="how">${esc(r.how)}</span>${r.where ? " · " + esc(r.where) : ""}</small>${sub ? `<small class="g-sub">${sub}</small>` : ""}</span><span class="g-go">›</span></button>`;
 }
 export function goalsCardHtml(rows, max = WORK_MAX){
-  const head = `<h3>⭐ My goals</h3>`;
-  if (!rows.length) return `${head}<p class="small muted">Pick what you want to get better at: a trick, a split, your aerial. You choose, and you can change it any time.</p><div class="row"><button class="btn coral" onclick="wkPick()">＋ Pick a goal</button></div>`;
+  if (!rows.length) return `<p class="small muted">Pick what you want to get better at: a trick, a split, your aerial. You choose, and you can change it any time.</p><div class="row"><button class="btn coral" onclick="wkPick()">＋ Pick a goal</button></div>`;
   const groups = GROUPS.map(([k, label]) => { const part = rows.filter(r => r.group === k); return part.length ? `<div class="g-lab">${label}</div>${part.map(goalRowHtml).join("")}` : ""; }).join("");
-  return `${head}${groups}<div class="row wk-more">${rows.length >= max ? `<span class="small muted">That's a full list. Take one off to pick another.</span>` : `<button class="btn sm coral" onclick="wkPick()">＋ Pick a goal</button>`}</div>`;
+  return `${groups}<div class="row wk-more">${rows.length >= max ? `<span class="small muted">That's a full list. Take one off to pick another.</span>` : `<button class="btn sm coral" onclick="wkPick()">＋ Pick a goal</button>`}</div>`;
 }
 // What she can pick from, in the list's own groups: the tricks in her dances (the solo's, and her own), the acro chart by
 // level with the aerial on top and her group's levels first, the splits and the holds, the four class lists. Pure.
@@ -133,6 +132,7 @@ export function ownSkillDoc(name, dance, id = "own-" + uid().replace(/[^a-z0-9]/
 export function renderWorking(){
   const el = $("#workingCard"); if (!el) return; const working = workingIds(S.settings);
   el.innerHTML = goalsCardHtml(working.map(id => goalRow(id, { working })).filter(Boolean));
+  const n = $("#workingCount"); if (n) n.textContent = working.length ? String(working.length) : "";
 }
 async function save(ids){ await setSettings({ working: ids }); renderWorking(); }
 // On her goals, or off them. A skill she hasn't started becomes "learning" when it goes on. Returns the list, or null when
