@@ -3,7 +3,7 @@
 // kept in the Photos tab. Stickers suggest themselves from the day (a gem, a badge, a streak milestone). Pure parts up
 // top (tested in Node); canvas drawing and the stage UI below.
 import { $, esc, toast, todayStr, uid, expose, saveBlob, daysUntil, fmt } from "./util.js";
-import { S, storeSet, setSettings, nextEvent } from "./store.js";
+import { S, storeSet, setSettings, nextEvent } from "./store.js";
 import { PRACTICE_ITEMS, P } from "./data.js";
 import { danceDays, dayCounts } from "./streak.js";
 import { checkins } from "./goals.js";
@@ -147,4 +147,29 @@ async function keep(){
 }
 async function later(){ const n = nudgeFor(todayStickers()); if (n) await setSettings({ momentNudge: todayStr() + "|" + n.key }); }
 export const momentCount = () => Object.values(S.photos || {}).filter(p => p && p.moment && !p.deleted).length;
-expose({ openMoments, mmSticker: setSticker, mmOwn: own, mmMode: setMode, mmWho: setWho, mmSize: setSize, mmSave: save, mmKeep: keep, mmLater: later });
+
+// Her kept moments (1.66.4, Jenya Nov 9: "where can she see those kept ones?" They were only in Grown-ups → Notes). Newest
+// first: [{ id, url, cap, date }]. Pure.
+export function keptMoments(photos = S.photos){
+  return Object.entries(photos || {}).filter(([, p]) => p && p.moment && !p.deleted && p.url).map(([id, p]) => ({ id, url: p.url, cap: String(p.cap || ""), date: String(p.at || "").slice(0, 10) })).sort((a, b) => String(b.date).localeCompare(String(a.date)) || a.id.localeCompare(b.id));
+}
+// The grid on Me: her newest moments, a tap opens one big. Pure.
+export function keptGridHtml(list, cap = 6){
+  if (!list.length) return "";
+  return `<div class="mm-kept">${list.slice(0, cap).map(m => `<button class="mm-thumb" onclick="momentOpen('${m.id}')" aria-label="${esc(m.cap || "A moment")}${m.date ? ", " + esc(fmt(m.date)) : ""}"><img src="${esc(m.url)}" alt="" loading="lazy"></button>`).join("")}${list.length > cap ? `<button class="mm-thumb mm-more" onclick="momentOpen('${list[cap].id}')">+${list.length - cap}</button>` : ""}</div>`;
+}
+// One kept moment, big, with the ones before and after it a tap away, and 💾 Save it to the phone again.
+let openId = "";
+function momentOpen(id){
+  const list = keptMoments(); const i = list.findIndex(m => m.id === id); if (i < 0) return; openId = id; const m = list[i];
+  const el = $("#momentsArea"); el.innerHTML = `<figure class="mm-big"><img src="${esc(m.url)}" alt="${esc(m.cap || "A moment")}"><figcaption>${esc(m.cap || "")}${m.date ? ` <span class="small muted">· ${esc(fmt(m.date))}</span>` : ""}</figcaption></figure>
+    <div class="row" style="justify-content:center"><button class="btn sm ghost" ${i + 1 < list.length ? `onclick="momentOpen('${list[i + 1].id}')"` : "disabled"}>‹ Older</button><button class="btn sm coral" onclick="momentSave()">💾 Save it</button><button class="btn sm ghost" ${i > 0 ? `onclick="momentOpen('${list[i - 1].id}')"` : "disabled"}>Newer ›</button></div>
+    <p class="small muted mm-status" style="text-align:center">${i + 1} of ${list.length}</p>`;
+  if ($("#stage").hidden) openStage("📸 My moments", [el], `<button class="btn ghost" onclick="closeStage()">Done</button>`);
+}
+async function momentSave(){
+  const m = keptMoments().find(x => x.id === openId); if (!m) return; const p = S.photos[m.id]; const st = $("#momentsArea .mm-status");
+  try { if (st) st.textContent = "Saving…"; const b = await media.download(p.path, p.url); await saveBlob(b, `sofia-moment-${m.date || todayStr()}.jpg`); if (st) st.textContent = "Saved. Look in Photos (or Files)."; }
+  catch (e) { console.warn(e); if (st) st.textContent = ""; toast(navigator.onLine === false ? "Connect to the internet, then save it again." : "Couldn't save: " + (e.message || e), 4000); }
+}
+expose({ momentOpen, momentSave, openMoments, mmSticker: setSticker, mmOwn: own, mmMode: setMode, mmWho: setWho, mmSize: setSize, mmSave: save, mmKeep: keep, mmLater: later });

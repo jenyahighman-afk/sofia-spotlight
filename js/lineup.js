@@ -150,7 +150,7 @@ export function framedHTML(p, name, color){
 const editHTML = (p, c) => `<div class="lf-edit"><div class="lf-big">${framedHTML(p, c.n, c.color)}</div>
   <div class="lf-frames">${FRAMES.map(f => `<button class="btn sm ${p.frame === f.id ? "coral" : "ghost"}" onclick="lineupFrame(${esc(JSON.stringify(p.id))}, '${f.id}')">${f.ic} ${esc(f.n)}</button>`).join("")}</div>
   <div class="row" style="justify-content:center;margin-top:8px"><label class="small">📅 Taken <input type="date" value="${esc(p.date)}" max="${todayStr()}" onchange="lineupDate(${esc(JSON.stringify(p.id))}, this.value)"></label></div>
-  <div class="row" style="justify-content:center;margin-top:8px"><button class="btn sm coral" onclick="lineupSave('one')">💾 Save this picture</button><button class="btn sm ghost" onclick="lineupOff(${esc(JSON.stringify(p.id))})">Take it off</button><button class="btn sm ghost" onclick="lineupPick('')">Done</button></div></div>`;
+  <div class="row" style="justify-content:center;margin-top:8px"><button class="btn sm coral" onclick="lineupSave('one')">💾 Save this picture</button><button class="btn sm ghost" onclick="lineupOff(${esc(JSON.stringify(p.id))})">🗑 Take it off</button><button class="btn sm ghost" onclick="lineupPick('')">Done</button></div></div>`;
 const grownLine = (fn) => fn.days ? `${fn.days} day${fn.days === 1 ? "" : "s"} of practice 💪` : "Same day, two tries 💪";
 const vsHTML = (fn, c) => `<div class="lf-vs"><div class="lf-vs-col"><span class="lf-tag">First</span>${framedHTML(fn.first, c.n, c.color)}</div><div class="lf-vs-col"><span class="lf-tag now">Now</span>${framedHTML(fn.now, c.n, c.color)}</div></div>
   <p class="lf-grown">${grownLine(fn)}</p>
@@ -165,7 +165,7 @@ export function renderLineup(c){
   el.innerHTML = `<h4 class="lf-head">📷 Progress lineup <span class="small muted">${list.length} photo${list.length === 1 ? "" : "s"} · oldest → newest</span></h4>
     <div class="lf-strip">${list.map(p => `<button class="lf-item ${sel && sel.id === p.id ? "on" : ""}" onclick="lineupPick(${esc(JSON.stringify(p.id))})" aria-label="${esc(p.date ? fmt(p.date) : "Photo")}, ${esc(frameOf(p.frame).n)} frame">${framedHTML(p, c.n, c.color)}</button>`).join("")}</div>
     <div class="row lf-btns">${add}${fn ? `<button class="btn sm ${L.vs ? "coral" : "ghost"}" onclick="lineupVs()">🪞 First vs now</button>` : ""}<button class="btn sm ghost" onclick="lineupSave('all')">🖼️ Save the lineup</button></div>
-    <p class="small muted lf-status" id="lfStatus">${sel || L.vs ? "" : "Tap a photo to pick its frame or change the day."}</p>
+    <p class="small muted lf-status" id="lfStatus">${sel || L.vs ? "" : "Tap a photo to pick its frame, change the day, or take it off."}</p>
     ${L.vs && fn ? vsHTML(fn, c) : sel ? editHTML(sel, c) : ""}`;
 }
 function pick(id){ L.sel = id || ""; L.vs = false; renderLineup(L.card); }
@@ -186,7 +186,7 @@ async function setFrame(pid, frame){ const p = S.photos[pid]; if (!p || !isFrame
 async function setDate(pid, v){ const p = S.photos[pid]; if (!p || !DATE_RE.test(String(v || ""))) return; try { await storeSet("photos", pid, { ...p, taken: v }); } catch (e) { console.warn(e); toast("Couldn't save: " + friendlyError(e), 3000); } renderLineup(L.card); }
 // Off the lineup: the link and its stamp fields go; the photo itself stays in Photos.
 async function takeOff(pid){
-  const p = S.photos[pid]; if (!p || !confirm("Take this photo off the lineup? It stays in Photos.")) return;
+  const p = S.photos[pid]; if (!p || !confirm("Take this photo off? It leaves your lineup and your album. A grown-up still has it under Photos.")) return;
   const { card, frame, taken, stage, ...rest } = p;
   try { await storeSet("photos", pid, rest); L.sel = ""; toast("Off the lineup"); } catch (e) { console.warn(e); toast("Couldn't save: " + friendlyError(e), 3000); }
   renderLineup(L.card);

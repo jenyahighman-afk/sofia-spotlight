@@ -13,7 +13,7 @@ import { patterns, TAG_LABEL, TAG_EMOJI, closeCorrection, closedCount, isOpen } 
 import { openGrownups } from "../grownups.js";
 import { splitRowsHtml } from "../goals.js";
 import { totalStars, nextUnlock, unlockedList } from "../stars.js";
-import { momentCount } from "../moments.js";
+import { momentCount, keptMoments, keptGridHtml } from "../moments.js";
 import { renderReminder } from "../remind.js";
 import { renderFriends } from "../who.js";
 import { lineupCounts } from "../lineup.js";
@@ -32,7 +32,8 @@ function renderMe(){
   avRender(); renderPaletteRow(); applyPalette(); renderRitualCard(); renderSkillsName();
   renderReminder(); renderFriends(); renderCostumeCard();
   const mc = $("#momentsCount"); if (mc) mc.textContent = `${momentCount()} kept`;
-  $("#meMoments").innerHTML = `<p class="small muted">Turn a photo into a card with a sticker, your dance days and your dancer. Save it to your phone for CapCut, or keep it here.</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
+  const kept = keptMoments(); // 1.66.4: the ones she kept are here, newest first; a tap opens one big
+  $("#meMoments").innerHTML = `${keptGridHtml(kept)}<p class="small muted">${kept.length ? "Tap one to see it big or save it to your phone again." : "Turn a photo into a card with a sticker, your dance days and your dancer. Save it to your phone for CapCut, or keep it here."}</p><div class="row"><button class="btn sm coral" onclick="openMoments()">📸 Make a moment</button></div>`;
   const nu = nextUnlock(); const sc = $("#starsCount"); if (sc) sc.textContent = String(totalStars()); $("#meStars").innerHTML = `<div class="stars-big">⭐ ${totalStars()}</div><div class="small">${nu ? `${nu[2] - totalStars()} more to unlock <b>${esc(nu[3])}</b>` : "Everything unlocked!"}${unlockedList().length ? ` · ${unlockedList().length} look${unlockedList().length === 1 ? "" : "s"} unlocked` : ""}</div><div class="small muted">Every game pays 1–3 stars. First play of the day: +1.</div>`;
   $("#meStreak").innerHTML = `<div class="stat"><b>${danceDays(S.practice)}</b><span>dance days ⭐</span></div><div class="stat"><b>${danceCount(S.practice)}</b><span>dances 🎵</span></div><div class="stat"><b>${practicedDays(S.practice, PRACTICE_ITEMS.length)}</b><span>practice days</span></div><div class="stat"><b>${closedCount(S.corrections)}</b><span>fixes closed ✅</span></div>`;
   // badge case

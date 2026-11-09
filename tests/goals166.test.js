@@ -146,6 +146,21 @@ test("in the page: picking, the aerial's step, got it, her own trick, off her go
   } finally { setBackend(null); resetDom(); clearS(); }
 });
 
+test("a photo she doesn't want: 🗑 Take it off in the lineup and on a check-in; kept moments show on Me (1.66.4)", async () => {
+  const { withoutCheckin } = await import("../js/goals.js"); const MM = await import("../js/moments.js");
+  const g = { id: "g1", preset: "split-r", checkins: [{ id: "c1", date: "2026-09-01", photoId: "p1", value: 150 }, { id: "c2", date: "2026-09-15", photoId: "p2", value: 162 }] };
+  assert.deepEqual(withoutCheckin(g, "c1").checkins.map(c => c.id), ["c2"]); assert.deepEqual(withoutCheckin(g, "nope").checkins.map(c => c.id), ["c1", "c2"]); assert.equal(withoutCheckin(g, "c1").id, "g1");
+  assert.match(src("js/goals.js"), /goalUncheck\('\$\{g\.id\}','\$\{esc\(c\.id\)\}'\)" aria-label="Take this one off">🗑 Take it off/, "every check-in in the timeline");
+  assert.match(src("js/lineup.js"), /Tap a photo to pick its frame, change the day, or take it off\./); assert.match(src("js/lineup.js"), /lineupOff\(.*?\)">🗑 Take it off/);
+  const photos = { m1: { url: "m1.jpg", moment: true, cap: "⭐ 5 dance days", at: "2026-10-01T10:00:00Z" }, m2: { url: "m2.jpg", moment: true, cap: "Go Sofia!", at: "2026-11-02T10:00:00Z" }, x: { url: "x.jpg", at: "2026-11-03T10:00:00Z" }, d: { url: "d.jpg", moment: true, deleted: true } };
+  const kept = MM.keptMoments(photos); assert.deepEqual(kept.map(m => m.id), ["m2", "m1"], "newest first; only kept moments"); assert.equal(kept[0].date, "2026-11-02");
+  const grid = MM.keptGridHtml(kept); assert.equal((grid.match(/class="mm-thumb"/g) || []).length, 2); assert.match(grid, /momentOpen\('m2'\)"[^>]*><img src="m2\.jpg"/); assert.equal(MM.keptGridHtml([]), "");
+  const many = Array.from({ length: 9 }, (_, i) => ({ id: "k" + i, url: "k.jpg", cap: "", date: "" })); const g9 = MM.keptGridHtml(many); assert.equal((g9.match(/class="mm-thumb"/g) || []).length, 6); assert.match(g9, /mm-more" onclick="momentOpen\('k6'\)">\+3</);
+  resetDom(); clearS(); S.photos = photos; const ME = await import("../js/views/me.js"); ME.renderMe(); assert.match(el("#meMoments").innerHTML, /mm-kept/); assert.match(el("#meMoments").innerHTML, /Tap one to see it big/); assert.equal(el("#momentsCount").textContent, "2 kept");
+  window.momentOpen("m1"); assert.match(el("#momentsArea").innerHTML, /<img src="m1\.jpg"/); assert.match(el("#momentsArea").innerHTML, /2 of 2/); assert.match(el("#momentsArea").innerHTML, /momentOpen\('m2'\)">Newer ›/); assert.match(el("#momentsArea").innerHTML, /disabled>‹ Older/); assert.match(el("#momentsArea").innerHTML, /momentSave\(\)">💾 Save it/);
+  resetDom(); clearS();
+});
+
 test("the pages, the ways in, the words and the release", () => {
   const html = src("index.html"), sk = html.slice(html.indexOf('id="p-skills"'), html.indexOf('id="p-goal"')), gp = html.slice(html.indexOf('id="p-goal"'), html.indexOf('id="p-practice"'));
   assert.match(sk, /<details class="card acc sun work-card" id="workingFold" open><summary>⭐ My goals <span class="chip sun" id="workingCount"><\/span><\/summary><div id="workingCard"><\/div><\/details>\s*<details class="card acc violet album-card" id="albumFold" open><summary>📸 My album <span class="chip violet" id="albumCount"><\/span><\/summary><div id="albumCard"><\/div><\/details>\s*<details class="card acc violet" id="allSkills"><summary>📚 All skills<\/summary>/, "1.66.1: her goals and her album fold too, open to start");
@@ -165,5 +180,5 @@ test("the pages, the ways in, the words and the release", () => {
   const pass = json("pass"), grab = pass.parts.find(p => p.id === "grab").lines.join(" ");
   assert.match(grab, /⭐ My goals is on top\. Tap ＋ Pick a goal to choose\./); assert.match(grab, /📷 Add a photo puts a picture in 📸 My album\./); assert.match(grab, /On a goal's page tap 🎬 Coach me/); assert.ok(pass.tips.some(t => t.t === "⭐ My goals is on the Skills tab. You pick them."));
   assert.doesNotMatch(JSON.stringify(pass) + JSON.stringify(json("news")) + JSON.stringify(json("buddy")), /My skill this month|I'm working on|trick cards|Pick a skill/);
-  assert.match(src("js/version.js"), /APP_VERSION = "1\.(66\.[1-9]|6[7-9]|[7-9]\d)/); assert.match(src("README.md"), /\*\*1\.66\.0: ⭐ My goals, one page for every goal, 📸 My album\*\*/);
+  assert.match(src("js/version.js"), /APP_VERSION = "1\.(66\.[4-9]|6[7-9]|[7-9]\d)/); assert.match(src("README.md"), /\*\*1\.66\.0: ⭐ My goals, one page for every goal, 📸 My album\*\*/);
 });
