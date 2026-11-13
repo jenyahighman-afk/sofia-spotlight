@@ -103,3 +103,16 @@ test("📝 From my teachers on Today: 💪 worked on it today, ✅ got it, and a
   const html = src("index.html"); assert.ok(html.indexOf('id="studioNudge"') < html.indexOf('id="teacherNotes"') && html.indexOf('id="teacherNotes"') < html.indexOf('id="goalReminder"'));
   assert.match(src("js/studiolog.js"), /storeSet\("practice", today, \{ \.\.\.rec, notes: on \? \[\.\.\.have, id\] : have\.filter\(x => x !== id\) \}\)/);
 });
+
+// ---- 1.72.0 (Jenya, Nov 13: she liked the aerial drill videos; they were hidden in the Drill box) ----
+test("🎬 a goal's drill videos sit on its page, the aerial's next step first", async () => {
+  const DR = await import("../js/drills.js");
+  const drills = { d1: { url: "https://www.youtube.com/watch?v=aaaaaaaaaaa", host: "youtube", vid: "aaaaaaaaaaa", skill: "a-aerial", note: "Kick the back leg", at: "2026-10-01" }, d2: { url: "https://www.youtube.com/watch?v=bbbbbbbbbbb", host: "youtube", vid: "bbbbbbbbbbb", skill: "one-hand-far", note: "", at: "2026-10-05" }, d3: { url: "https://x.test/p", host: "other", skill: "s-cartwheel", at: "2026-10-02" }, d4: { url: "", skill: "a-aerial" }, d5: { url: "https://y.test", host: "other", skill: "a-aerial", deleted: true } };
+  const aerial = W.goalRow("a-aerial", { goals: {}, photos: {}, skills: {}, reviews: {}, settings: { working: ["a-aerial"], aerial: ["cartwheel-clean"] } });
+  const ids = W.drillIds(aerial); assert.equal(ids[0], aerial.aerial.next.id, "the next step's videos first"); assert.equal(ids[1], "a-aerial"); assert.equal(new Set(ids).size, ids.length);
+  assert.deepEqual(DR.drillsForGoal(ids, drills).map(p => p.id), aerial.aerial.next.id === "one-hand-far" ? ["d2", "d1"] : ["d1", "d2"]);
+  assert.deepEqual(DR.drillsForGoal(W.drillIds(W.goalRow("s-cartwheel", { goals: {}, photos: {}, skills: {}, reviews: {}, settings: { working: ["s-cartwheel"] } })), drills).map(p => p.id), ["d3"]); assert.deepEqual(W.drillIds(null), []);
+  const h = DR.goalVideosHtml(DR.drillsForGoal(ids, drills)); assert.match(h, /🎬 Watch a drill first/); assert.match(h, /2 saved/); assert.match(h, /drillOpen\('d1'\)/); assert.match(h, /<small>Kick the back leg<\/small>/); assert.equal(DR.goalVideosHtml([]), "");
+  assert.match(W.workHtml(aerial, { dates: [], today: D, videos: h }), /gw-vids/); assert.match(W.todaySkillHtml(aerial, { dates: [], today: D, videos: 2 }), /🎬 2 videos/); assert.doesNotMatch(W.todaySkillHtml(aerial, { dates: [], today: D }), /🎬/);
+  assert.match(src("js/goalpage.js"), /videos: goalVideosHtml\(drillsForGoal\(drillIds\(r\), S\.drills\)\)/);
+});

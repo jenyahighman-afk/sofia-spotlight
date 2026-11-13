@@ -188,21 +188,21 @@ export function goalHow(r, { soloDance = null, ladder = SKILLS } = {}){
 }
 // The work card on a goal's page: how to work on it, ✓ I worked on it today, and its stepping stones (how many days, the
 // last one, the last two weeks as dots, her pictures). Pure.
-export function workHtml(r, { dates = [], today = todayStr(), steps = [], notes = [] } = {}){
+export function workHtml(r, { dates = [], today = todayStr(), steps = [], notes = [], videos = "" } = {}){
   const done = dates.includes(today), last = dates.length ? dates[dates.length - 1] : "";
   const dots = Array.from({ length: 14 }, (_, i) => shiftDate(today, i - 13)).map(d => `<i class="${dates.includes(d) ? "on" : ""}${d === today ? " now" : ""}"></i>`).join("");
   const how = steps.length ? `<h3>🪜 How to work on it today</h3><ol class="gw-steps">${steps.map(t => `<li>${esc(t)}</li>`).join("")}</ol>` : `<h3>🪜 My stepping stones</h3>`;
   const count = dates.length ? `<b>${plural(dates.length, "stepping stone", "stepping stones")}</b> · ${done ? "one today ⭐" : "last one " + agoWords(daysBetween(last, today))}` : `<b>No stepping stones yet.</b> Today can be the first.`;
   const said = notes.length ? `<div class="gw-said"><b>📝 My teacher said</b>${notes.map(c => `<p>${esc(c.text)}</p>`).join("")}</div>` : "";
-  return `${how}${said}<div class="row"><button class="btn ${done ? "ghost" : "coral"}" onclick="gpWorked('${r.id}')">${done ? "✅ Worked on it today" : "✓ I worked on it today"}</button></div>
+  return `${how}${videos}${said}<div class="row"><button class="btn ${done ? "ghost" : "coral"}" onclick="gpWorked('${r.id}')">${done ? "✅ Worked on it today" : "✓ I worked on it today"}</button></div>
     <p class="gw-count">${count}${r.shots.length ? ` · 📸 ${plural(r.shots.length, "picture", "pictures")}` : ""}</p><div class="gw-dots" aria-label="The last two weeks">${dots}</div><p class="small muted">Each dot is a day in the last two weeks. A filled one is a day you worked on it.</p>`;
 }
 // Today's second choice: the goal's own button (it opens the goal's page: what's next, her photos, the coach) and the way
 // to the whole list; with an empty list, the way to pick one. Pure.
-export function todaySkillHtml(r, { dates = [], today = todayStr(), how = "" } = {}){
+export function todaySkillHtml(r, { dates = [], today = todayStr(), how = "", videos = 0 } = {}){
   if (!r) return `<div class="today-pick-lab small">⭐ Or work on a skill</div><button class="today-skill" onclick="showPage('skills');wkPick()"><span class="ts-ic">⭐</span><span class="grow"><b>Pick a skill to work on</b><small>a trick, a split, your aerial</small></span><span class="g-go">›</span></button>`;
   const done = dates.includes(today), sub = r.sub || how || (r.fix ? "🎬 Coach: " + r.fix.text : r.how);
-  const track = `🪜 ${dates.length ? plural(dates.length, "time", "times") + " so far" : "your first time"}${r.shots.length ? ` · 📸 ${plural(r.shots.length, "picture", "pictures")}` : ""}`;
+  const track = `🪜 ${dates.length ? plural(dates.length, "time", "times") + " so far" : "your first time"}${r.shots.length ? ` · 📸 ${plural(r.shots.length, "picture", "pictures")}` : ""}${videos ? ` · 🎬 ${plural(videos, "video", "videos")}` : ""}`;
   return `<div class="today-pick-lab small">⭐ Or work on a skill <button class="lnk" onclick="showPage('skills')">all my goals ›</button></div><button class="today-skill${done ? " done" : ""}" onclick="goalOpen('${r.id}')"><span class="ts-ic">${done ? "✅" : r.ic}</span><span class="grow"><b>${esc(r.n)}</b><small>${esc(sub)}</small><small class="ts-track">${track} · tap to see how ›</small></span><span class="g-go">›</span></button>`;
 }
 // "2 weeks ago", "20 days ago". Pure.
@@ -277,6 +277,8 @@ export async function toggleWorked(id, today = todayStr()){
   await storeSet("practice", today, { ...rec, skills: on ? [...have, id] : have.filter(x => x !== id) }); return on;
 }
 export function renderStones(){ const el = $("#stonesCard"); if (el) el.innerHTML = stonesHtml(stones()); const dp = $("#danceProgress"); if (dp) { const h = danceProgressHtml(danceProgress(dances())); dp.hidden = !h; dp.innerHTML = h; } }
+// The ids a goal's drill videos are saved under (js/drills.js): its own, and for the aerial its steps, the next one first. Pure.
+export const drillIds = (r) => !r ? [] : r.kind === "aerial" ? [...new Set([...(r.aerial && r.aerial.next ? [r.aerial.next.id] : []), r.id, ...AERIAL.map(a => a.id)])] : [r.id];
 export const soloDanceNow = () => dances().find(d => d.id === "solo") || null;
 async function photoLater(id){ const cur = (S.settings && typeof S.settings.photoSnooze === "object" && S.settings.photoSnooze) || {}; await setSettings({ photoSnooze: { ...cur, [id]: shiftDate(todayStr(), PHOTO_LATER_DAYS) } }); renderWorking(); toast("Okay. I'll ask again in a few days"); }
 async function save(ids){ await setSettings({ working: ids }); renderWorking(); }

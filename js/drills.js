@@ -127,6 +127,15 @@ export function drillStrip(skill){
   const list = drillsFor(skill, drills()); if (!list.length) return "";
   return `<div class="drill-strip"><div class="small"><b>📎 From the drill box:</b> ${list.length} saved</div><div class="drill-thumbs">${list.slice(0, 6).map(p => `<button class="drill-open" aria-label="${thumbLabel(p)}" onclick="event.preventDefault();drillOpen('${p.id}')" title="${esc(p.note || hostInfo(p).n)}">${thumbHtml(p)}</button>`).join("")}</div></div>`;
 }
+// 🎬 A goal's drill videos (1.72.0, Jenya Nov 13: "she really like a few videos that I added to practice specific arial
+// drills"; they sat in the Drill box at the bottom of Skills). The saved posts for a goal, in the order of `ids`, each once:
+// a skill's own id; for the aerial its next step first, then the aerial itself, then its other steps. Pure.
+export function drillsForGoal(ids, drills){ const all = allDrills(drills), out = []; for (const id of ids || []) for (const p of all) if (p.skill === id && !out.includes(p)) out.push(p); return out; }
+// The strip on the goal's work card: big thumbnails, her note under each; a tap opens the post where it always opened. "" when none.
+export function goalVideosHtml(list){
+  if (!list.length) return "";
+  return `<div class="gw-vids"><b>🎬 Watch a drill first</b> <span class="small muted">${list.length} saved</span><div class="drill-thumbs">${list.slice(0, 8).map(p => `<button class="drill-open gw-vid" aria-label="${thumbLabel(p)}" onclick="drillOpen('${p.id}')">${thumbHtml(p)}${p.note ? `<small>${esc(p.note)}</small>` : ""}</button>`).join("")}</div></div>`;
+}
 // ---------- My technique book ----------
 function openTechniqueBook(){
   const cards = techniqueCards(drills());
