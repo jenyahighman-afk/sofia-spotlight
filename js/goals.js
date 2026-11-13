@@ -66,7 +66,6 @@ export async function addGoal(preset, custom = {}){
 }
 export async function removeGoal(id){ const g = S.goals[id]; if (!g) return; await storeSet("goals", id, { ...g, deleted: true }); }
 export async function setTarget(id, target){ const g = S.goals[id]; if (!g) return; await storeSet("goals", id, { ...g, target: +target || 0 }); }
-async function snooze(){ await setSettings({ goalSnooze: shiftDate(todayStr(), 3) }); toast("Okay — I'll ask again in a few days"); }
 
 // A check-in: a photo (shrunk, uploaded to the family space under photos/ with kind "goal") or a short clip, plus an optional number.
 export async function checkIn(goalId, file, value){
@@ -89,10 +88,6 @@ export async function measurePhoto(file, measure){
 
 // ---- UI: Me card + goal modal + Today reminder ----
 const photoOf = (c) => c && c.photoId && S.photos[c.photoId] ? S.photos[c.photoId] : null;
-export function renderGoalReminder(){
-  const el = $("#goalReminder"); if (!el) return; const due = dueGoals(S.goals, todayStr(), S.settings.goalSnooze || "");
-  el.hidden = !due.length; if (due.length) el.innerHTML = `<div class="row"><span class="grow">📸 Check-in time: ${esc(due.map(g => g.name).slice(0, 2).join(", "))}${due.length > 2 ? " +" + (due.length - 2) : ""}</span><button class="btn sm coral" onclick="openGoal('${due[0].id}')">Go</button><button class="btn sm ghost" onclick="goalSnooze()">Later</button></div>`;
-}
 function picker(){
   const have = new Set(Object.values(S.goals).filter(g => !g.deleted).map(g => g.preset));
   body(`<h3>New goal</h3><div class="preset-grid">${PRESETS.filter(p => !SPLIT_KEYS.includes(p.key)).map(p => `<button class="btn ${have.has(p.key) ? "ghost" : "sun"}" onclick="goalAdd('${p.key}')" ${have.has(p.key) ? "disabled" : ""}>${p.emoji} ${esc(p.name)}</button>`).join("")}</div>
@@ -103,7 +98,7 @@ const body = (html) => { $("#goalBody").innerHTML = html; };
 let open = null;
 export function openGoal(id){
   const g = S.goals[id] || draftGoal(id); if (!g) return; open = id; $("#goal").hidden = false; document.body.classList.add("modal");
-  const split = isSplit(g); const cs = checkins(g); const f = first(g), l = latest(g); const fp = photoOf(f), lp = photoOf(l);
+  const split = isSplit(g); const cs = checkins(g); const pics = cs.filter(c => { const ph = photoOf(c); return ph && !ph.deleted && ph.kind !== "video"; }); const f = pics[0] || null, l = pics[pics.length - 1] || null; const fp = photoOf(f), lp = photoOf(l); // the slider compares her first and newest picture, whatever came between
   const unit = g.unit === "sec" ? " s" : g.unit === "deg" ? "°" : "";
   const timeline = cs.length ? [...cs].reverse().map(c => { const ph = photoOf(c); return `<div class="tl"><div class="tl-media">${ph ? (ph.kind === "video" ? `<video src="${esc(ph.url)}" playsinline controls preload="metadata"></video>` : `<img src="${esc(ph.url)}" alt="">`) : `<span class="goal-empty">no photo</span>`}</div><div class="tl-meta"><b>${esc(c.date)}</b>${typeof c.value === "number" ? `<br>${c.value}${unit}` : ""}<br><button class="lnk small" onclick="goalUncheck('${g.id}','${esc(c.id)}')" aria-label="Take this one off">🗑 Take it off</button></div></div>`; }).join("") : `<p class="small muted">No check-ins yet.</p>`;
   const pts = chartPoints(g);
@@ -112,18 +107,18 @@ export function openGoal(id){
     ${pts ? `<svg viewBox="-4 -4 108 108" class="goal-chart" preserveAspectRatio="none">${split ? "" : `<line x1="0" y1="${g.target ? 0 : 100}" x2="100" y2="${g.target ? 0 : 100}" class="chart-target"/>`}<polyline points="${pts}" class="chart-line"/>${pts.split(" ").map(p => `<circle cx="${p.split(",")[0]}" cy="${p.split(",")[1]}" r="2.5" class="chart-dot"/>`).join("")}</svg>` : ""}
     ${fp && lp && fp !== lp && fp.kind !== "video" && lp.kind !== "video" ? `<div class="field-lab">First vs latest — slide</div><div class="compare" id="goalCompare"><img src="${esc(fp.url)}" alt=""><img src="${esc(lp.url)}" alt="" id="goalCompareTop" style="clip-path:inset(0 0 0 50%)"><div class="compare-lab"><span>${esc(f.date)}</span><span>${esc(l.date)}</span></div></div><input type="range" id="goalSlider" min="0" max="100" value="50" oninput="document.getElementById('goalCompareTop').style.clipPath='inset(0 0 0 '+this.value+'%)'">` : ""}
     <div class="field-lab">Check in</div>
-    <div class="row"><label class="btn coral" for="goalPhoto">📷 Photo / clip</label><input type="file" id="goalPhoto" accept="image/*,video/*" capture="environment" hidden>${g.unit ? `<input type="number" id="goalValue" placeholder="${esc(UNIT_LABEL[g.unit])}" style="max-width:150px" inputmode="decimal">` : ""}<button class="btn sm ghost" onclick="goalCheckIn('${g.id}')">Save</button></div>
+    <div class="row"><label class="btn coral" for="goalPhoto">📷 Photo / clip</label><input type="file" id="goalPhoto" accept="image/*,video/*" hidden>${g.unit ? `<input type="number" id="goalValue" placeholder="${esc(UNIT_LABEL[g.unit])}" style="max-width:150px" inputmode="decimal">` : ""}<button class="btn sm ghost" data-save onclick="goalCheckIn('${g.id}')">Save</button></div>
     <div class="row" style="margin-top:8px">${lastFile && lastFileGoal === g.id ? `<button class="btn sm coral" onclick="goalCoachLast('${g.id}')">🎬 Coach this ${lastFile.type.startsWith("video/") ? "clip" : "photo"}</button><span class="small muted">The one you just saved.</span>` : `<button class="btn sm coral" onclick="closeGoal();openCoach('','${esc(g.name).replace(/'/g, "&#39;")}')">🎬 Coach me on this</button><span class="small muted">Pick the same clip.</span>`}</div>
     ${g.measure ? `<p class="small muted">Pick a photo and the pose tool fills in the ${g.measure === "knee" ? "knee angle" : "split angle"} for you (you can change it).</p>` : ""}
     <div class="field-lab">Timeline</div><div class="timeline-goal">${timeline}</div>
     <div class="row" style="margin-top:10px"><button class="btn ghost" onclick="closeGoal()">Close</button><span class="grow"></span>${split ? "" : `<button class="btn sm ghost" onclick="goalRemove('${g.id}')">Remove goal</button>`}</div>
     <p class="small muted">Photos stay in the family space and are only shown here. Only flexibility, strength and balance are measured.</p>`);
-  $("#goalPhoto").onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; pendingFile = f; toast("Photo picked — tap Save"); if (g.measure && f.type.startsWith("image/")) { try { toast("Measuring…", 3000); const v = await measurePhoto(f, g.measure); const inp = $("#goalValue"); if (v !== null && inp) { inp.value = v; toast(`Measured ${v}° — check it, then Save`, 3000); } else toast("Couldn't find the pose — type the number if you know it", 3000); } catch (err) { console.warn(err); toast("Pose tool needs a connection the first time", 3000); } } };
+  $("#goalPhoto").onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; pendingFile = f; const lab = document.querySelector('label[for="goalPhoto"]'), sv = document.querySelector("#goalBody [data-save]"); if (lab) lab.textContent = f.type.startsWith("video/") ? "✓ Clip picked" : "✓ Photo picked"; if (sv && sv.classList) { sv.classList.remove("ghost"); sv.classList.add("coral"); sv.textContent = "Save ✓"; } if (!g.unit) return doCheckIn(g.id); toast("Picked. Tap Save"); if (g.measure && f.type.startsWith("image/")) { try { toast("Measuring…", 3000); const v = await measurePhoto(f, g.measure); const inp = $("#goalValue"); if (v !== null && inp) { inp.value = v; toast(`Measured ${v}° — check it, then Save`, 3000); } else toast("Couldn't find the pose — type the number if you know it", 3000); } catch (err) { console.warn(err); toast("Pose tool needs a connection the first time", 3000); } } };
 }
 let pendingFile = null;
 export function closeGoal(){ $("#goal").hidden = true; document.body.classList.remove("modal"); open = null; pendingFile = null; }
 let lastFile = null, lastFileGoal = ""; // the clip just checked in, so the coach can use it without a second pick
-async function doCheckIn(id){ const v = ($("#goalValue") || {}).value; if (!pendingFile && (v === undefined || v === "")) return toast("Add a photo or a number first"); try { toast("Saving…", 4000); if (draftGoal(id)) id = (await addGoal(String(id).slice(DRAFT.length))).id; await checkIn(id, pendingFile, v); if (pendingFile) { lastFile = pendingFile; lastFileGoal = id; } pendingFile = null; toast("Checked in ✓"); openGoal(id); } catch (e) { console.warn(e); toast("Couldn't save: " + friendlyError(e), 3500); } }
+async function doCheckIn(id){ const v = ($("#goalValue") || {}).value; if (!pendingFile && (v === undefined || v === "")) return toast("Add a photo or a number first"); try { toast("Saving…", 4000); if (draftGoal(id)) { const key = String(id).slice(DRAFT.length), have = splitGoal(S.goals, key); id = (have || await addGoal(key)).id; open = id; } await checkIn(id, pendingFile, v); if (pendingFile) { lastFile = pendingFile; lastFileGoal = id; } pendingFile = null; toast("Checked in ✓"); openGoal(id); } catch (e) { console.warn(e); toast("Couldn't save: " + friendlyError(e), 3500); } }
 async function add(key){ const g = await addGoal(key); openGoal(g.id); }
 async function addCustom(){ const name = ($("#goalCustomName").value || "").trim(); if (!name) return toast("Name the goal"); const unit = $("#goalCustomUnit").value; const t = unit ? prompt(unit === "sec" ? "Target seconds" : "Target degrees", unit === "sec" ? "10" : "180") : "0"; if (t === null) return; const g = await addGoal("custom", { name, unit, target: +t || 0 }); openGoal(g.id); }
 async function target(id){ const g = S.goals[id]; const t = prompt("Target" + (g.unit === "sec" ? " (seconds)" : g.unit === "deg" ? " (degrees)" : ""), String(g.target || "")); if (t === null) return; await setTarget(id, t); openGoal(id); }
@@ -135,4 +130,4 @@ export function initGoals(){ $("#goalClose").onclick = closeGoal; $("#goal").add
 // A split's row: its goal when it has one, else the draft.
 function splitOpen(key){ if (!SPLIT_KEYS.includes(key)) return; const g = splitGoal(S.goals, key); openGoal(g ? g.id : DRAFT + key); }
 function coachLast(id){ const g = S.goals[id]; if (!g || !lastFile || lastFileGoal !== id) return; closeGoal(); openCoachFile("", g.name, lastFile); }
-expose({ splitOpen, goalUncheck: uncheck, goalCoachLast: coachLast, openGoal, closeGoal, goalPicker: picker, goalAdd: add, goalAddCustom: addCustom, goalCheckIn: doCheckIn, goalTarget: target, goalRemove: remove, goalSnooze: snooze });
+expose({ splitOpen, goalUncheck: uncheck, goalCoachLast: coachLast, openGoal, closeGoal, goalPicker: picker, goalAdd: add, goalAddCustom: addCustom, goalCheckIn: doCheckIn, goalTarget: target, goalRemove: remove });

@@ -3,7 +3,8 @@
 // kept in the Photos tab. Stickers suggest themselves from the day (a gem, a badge, a streak milestone). Pure parts up
 // top (tested in Node); canvas drawing and the stage UI below.
 import { $, esc, toast, todayStr, uid, expose, saveBlob, daysUntil, fmt } from "./util.js";
-import { S, storeSet, setSettings, nextEvent } from "./store.js";
+import { S, storeSet, setSettings, nextEvent } from "./store.js";
+
 import { PRACTICE_ITEMS, P } from "./data.js";
 import { danceDays, dayCounts } from "./streak.js";
 import { checkins } from "./goals.js";
@@ -128,7 +129,7 @@ function render(){
     <div class="row" style="margin-top:8px"><button class="btn coral" onclick="mmSave()">💾 Save to Photos</button><button class="btn ghost" onclick="mmKeep()">✨ Keep in the app</button></div><p class="small muted" id="mmStatus"></p>`;
   const onFile = (id, slot) => { const el = $("#" + id); if (!el) return; el.onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { const im = await fileImage(f); if (M.mode === "one") M.imgs = [im]; else { M.imgs[slot] = im; M.labels = M.labels || ["THEN", "NOW"]; } preview(); } catch (err) { toast(err.message, 3000); } }; };
   onFile("mmPhoto", 0); onFile("mmThen", 0); onFile("mmNow", 1);
-  const sel = $("#mmPair"); if (sel) sel.onchange = async () => { const p = pairs[+sel.value]; if (!p) return; status("Loading the check-ins…"); try { M.imgs = await Promise.all([cloudImage(p.then.url), cloudImage(p.now.url)]); M.labels = [`THEN · ${fmt(p.then.date)}`, `NOW · ${fmt(p.now.date)}`]; M.sub = `${esc(p.label)} · ${p.days} days apart`; status(""); preview(); } catch (e) { status(""); toast("The app can't read those from the cloud on this phone. Pick the two photos from Photos instead.", 4000); } };
+  const sel = $("#mmPair"); if (sel) sel.onchange = async () => { const p = pairs[+sel.value]; if (!p) return; status("Loading the check-ins…"); try { M.imgs = await Promise.all([cloudImage(p.then.url), cloudImage(p.now.url)]); M.labels = [`THEN · ${fmt(p.then.date)}`, `NOW · ${fmt(p.now.date)}`]; M.sub = `${p.label} · ${p.days} days apart`; status(""); preview(); } catch (e) { status(""); toast("The app can't read those from the cloud on this phone. Pick the two photos from Photos instead.", 4000); } };
   preview();
 }
 const status = (t) => { const el = $("#mmStatus"); if (el) el.textContent = t; };

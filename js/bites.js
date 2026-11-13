@@ -16,7 +16,7 @@ export function levelFor(feel){ if (!feel || !feel.e || !feel.m) return null; co
 export const LEVEL_LABEL = { easy: "Easy day", normal: "Normal day", big: "Big day" };
 // Bites for a level: [{id, text, go}] — text is one short line; go is the onclick. `st` says what's already done today.
 export function bitesFor(level, st = {}){
-  const run = { id: "run", text: st.hasMusic ? "Run the solo once with the music" : "Mark the solo once, eyes up", go: "showPage('dances')", done: st.runs > 0 };
+  const run = { id: "run", text: st.hasMusic ? "Run the solo once with the music" : "Mark the solo once, eyes up", go: st.hasMusic ? "openPlayer('solo',{once:true})" : "showPage('dances')", done: st.runs > 0 };
   const stretch = { id: "flex", text: "5-min stretch", go: "openQuick('flex')", done: st.flex > 0 };
   const strength = { id: "strength", text: "5-min strength", go: "openQuick('strength')", done: st.strength > 0 };
   const practice = { id: "practice", text: "Start practice (tap Done after each one)", go: "showPage('practice');openPracticeMode()", done: !!st.practiced };

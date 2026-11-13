@@ -49,7 +49,7 @@ test("a split made as a goal before is the same row, with everything it had; not
   const d = draftGoal("new:split-m"); assert.equal(d.name, "Middle split"); assert.equal(d.measure, "split"); assert.equal(d.draft, true); assert.deepEqual(d.checkins, []); assert.equal(draftGoal("g1"), null); assert.equal(draftGoal("new:nope"), null);
   assert.deepEqual(dueGoals(goals, "2026-12-01").map(g => g.id), ["b"], "a split never asks for a check-in on Today; other goals do");
   const g = src("js/goals.js"), me = src("js/views/me.js");
-  assert.match(g, /if \(draftGoal\(id\)\) id = \(await addGoal\(String\(id\)\.slice\(DRAFT\.length\)\)\)\.id; await checkIn\(id, pendingFile, v\)/, "the goal document is written at the first check-in");
+  assert.match(g, /if \(draftGoal\(id\)\) \{ const key = String\(id\)\.slice\(DRAFT\.length\), have = splitGoal\(S\.goals, key\); id = \(have \|\| await addGoal\(key\)\)\.id; open = id; \} await checkIn\(id, pendingFile, v\)/, "the goal document is written at the first check-in (1.67.0: and a retry after a failed save reuses it)");
   assert.doesNotMatch(g, /renderGoalsCard|goalRings/, "1.66.0: the Goals tiles left the page: a goal is a row in ⭐ My goals"); assert.match(g, /PRESETS\.filter\(p => !SPLIT_KEYS\.includes\(p\.key\)\)\.map/, "and New goal doesn't offer them twice");
   assert.match(g, /\$\{split \? "" : `<button class="btn sm ghost" onclick="goalRemove/, "a split row is always there: no Remove"); assert.match(me, /\$\("#skillList"\)\.innerHTML = splitRowsHtml\(S\.goals\) \+/);
   assert.match(src("js/version.js"), /APP_VERSION = "1\.(64\.[2-9]|6[5-9]|[7-9]\d)/); assert.match(src("README.md"), /\*\*1\.64\.2:\*\* the three splits are rows/);

@@ -1,11 +1,11 @@
 :root{
   --paper:#FFF7FA; --ink:#4A2340; --ink-2:#8A6A80; --line:#F6DDE7;
-  --coral:#FF5C93; --sun:#F4C86A; --aqua:#F7A8C6; --violet:#C9A7F5; --mint:#FBD7E4; --blush:#FFE6EF; --gold:#D9B26F;
+  --link:#7E4FD1; --coral-ink:#C2185B; --coral:#FF5C93; --sun:#F4C86A; --aqua:#F7A8C6; --violet:#C9A7F5; --mint:#FBD7E4; --blush:#FFE6EF; --gold:#D9B26F;
   --card:#FFFFFF; --shadow:0 6px 0 rgba(74,35,64,.07);
   box-sizing:border-box;
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#2B1A26; --ink:#FFF0F5; --ink-2:#E2BFD0; --line:#5A3A4E; --card:#3A2434; --blush:#5A2E45; --shadow:0 6px 0 rgba(0,0,0,.25);} }
-:root[data-theme="dark"]{ --paper:#2B1A26; --ink:#FFF0F5; --ink-2:#E2BFD0; --line:#5A3A4E; --card:#3A2434; --blush:#5A2E45; --shadow:0 6px 0 rgba(0,0,0,.25);}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ color-scheme:dark; --link:#C9A7F5; --coral-ink:#FF8FB5; --paper:#2B1A26; --ink:#FFF0F5; --ink-2:#E2BFD0; --line:#5A3A4E; --card:#3A2434; --blush:#5A2E45; --shadow:0 6px 0 rgba(0,0,0,.25);} }
+:root[data-theme="dark"]{ color-scheme:dark; --link:#C9A7F5; --coral-ink:#FF8FB5; --paper:#2B1A26; --ink:#FFF0F5; --ink-2:#E2BFD0; --line:#5A3A4E; --card:#3A2434; --blush:#5A2E45; --shadow:0 6px 0 rgba(0,0,0,.25);}
 *{box-sizing:border-box}
 /* App shell: the page itself never scrolls. body is a fixed-height column (content scroller + tab bar), so the tab bar
    is an ordinary last row, not a position:fixed element — iOS moves fixed elements while rubber-banding and after the
@@ -15,7 +15,7 @@ body{margin:0;height:100dvh;display:flex;flex-direction:column;overflow:hidden;p
 h1,h2,h3,.disp{font-family:Fredoka,Nunito,system-ui,sans-serif;font-weight:600;letter-spacing:.01em;margin:0}
 h1{font-size:2rem;line-height:1.05} h2{font-size:1.5rem;margin-bottom:.5rem} h3{font-size:1.15rem}
 p{margin:.35rem 0}
-a{color:var(--violet)}
+a{color:var(--link)}
 button,input,select,textarea{font:inherit;color:inherit}
 img{max-width:100%}
 .wrap{flex:1 1 auto;min-height:0;width:100%;max-width:720px;margin:0 auto;padding:14px 14px 84px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
@@ -36,8 +36,8 @@ header.hero .sub{color:#fff;font-weight:700;opacity:.95;padding-right:84px}
 .btn{border:0;border-radius:14px;padding:10px 14px;font-weight:800;background:#B98BEF;color:#fff;cursor:pointer;box-shadow:0 4px 0 rgba(74,35,64,.18)}
 .btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(34,25,74,.2)}
 .btn.coral{background:var(--coral)} .btn.aqua{background:#F7A8C6;color:#4A2340} .btn.sun{background:var(--gold);color:#4A2340} .btn.ghost{background:transparent;color:var(--ink);box-shadow:none;border:2px solid var(--line)}
-.btn.sm{padding:6px 10px;font-size:.85rem;border-radius:10px}
-input[type=text],input[type=date],input[type=number],input[type=time],select,textarea{width:100%;border:2px solid var(--line);border-radius:12px;padding:9px 11px;background:var(--card)}
+.btn.sm{padding:6px 10px;font-size:.85rem;border-radius:10px;min-height:40px;min-width:40px}
+input[type=text],input[type=url],input[type=date],input[type=number],input[type=time],select,textarea{width:100%;border:2px solid var(--line);border-radius:12px;padding:9px 11px;background:var(--card)}
 textarea{min-height:44px;resize:none;overflow:hidden;line-height:1.4}
 .ro{white-space:pre-wrap;overflow-wrap:anywhere;padding:6px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
 .ro:empty:before{content:"—";color:var(--ink-2)}
@@ -49,12 +49,12 @@ ul.clean{list-style:none;padding:0;margin:0} ul.clean li{padding:6px 0;border-bo
 .check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line)}
 .check input{width:22px;height:22px;accent-color:#FF5C93;margin-top:2px;flex:none}
 .check.done span{text-decoration:line-through;color:var(--ink-2)}
-.del{background:none;border:0;color:var(--ink-2);font-size:1.1rem;cursor:pointer;padding:0 4px}
+.del{background:none;border:0;color:var(--ink-2);font-size:1.1rem;cursor:pointer;padding:0 4px;min-width:40px;min-height:40px}
 .update-bar{flex:none;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 84px 8px 14px;background:var(--blush);border-top:2px solid var(--line);font-weight:800;font-family:Fredoka} .update-bar .btn.sm{padding:6px 14px} /* the right padding is the Bunny's corner (.buddy: 12px in, 60px wide), so Reload is never under her */
 nav.tabs{flex:none;background:var(--card);border-top:2px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
-nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.66rem;font-weight:800;color:var(--ink-2);padding:4px 5px 5px;border-radius:14px;min-width:52px;-webkit-tap-highlight-color:transparent}
+nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.75rem;font-weight:800;color:var(--ink-2);padding:4px 5px 5px;border-radius:14px;min-width:60px;-webkit-tap-highlight-color:transparent}
 nav.tabs button span.ic{font-size:1.25rem}
-nav.tabs button.on{color:#FF5C93;background:var(--blush)}
+nav.tabs button.on{color:var(--coral-ink);background:var(--blush)}
 /* Puffy icons: gradient fills live in the hidden <defs> svg before the nav; the shadow and the lift come from here. */
 nav.tabs svg{width:36px;height:36px;overflow:visible;filter:drop-shadow(0 2.5px 0 rgba(74,35,64,.16)) drop-shadow(0 5px 7px rgba(255,92,147,.22));transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
 nav.tabs button.on svg{transform:translateY(-3px) scale(1.12)}
@@ -90,7 +90,7 @@ details summary{cursor:pointer;font-weight:800;font-family:Fredoka;font-size:1.0
 table{width:100%;border-collapse:collapse;font-size:.85rem} th,td{text-align:left;padding:6px 4px;border-bottom:1px dashed var(--line);vertical-align:top} th{color:var(--ink-2);font-size:.75rem}
 .tot{font-family:Fredoka;font-size:1.3rem}
 .big{font-family:Fredoka;font-size:2.6rem;line-height:1;color:#FF5C93}
-.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:999px;font-weight:800;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
+.toast{position:fixed;left:14px;right:14px;bottom:calc(90px + env(safe-area-inset-bottom,0px));margin:0 auto;width:fit-content;max-width:calc(100% - 28px);text-align:center;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:18px;font-weight:800;opacity:0;transition:opacity .2s;pointer-events:none;z-index:80} /* above every sheet, stage and the gate: a toast fired inside one used to be hidden behind it */
 .toast.on{opacity:1}
 .overflow{overflow-x:auto}
 .lock{text-align:center;padding:30px 10px}
@@ -113,10 +113,10 @@ canvas#gameCv{flex:1;width:100%;display:block;background:linear-gradient(#FFF7FA
   .wrap{padding:0;max-width:none;overflow:visible} section.page{display:none} section.page.print-target{display:block!important}
   .card{box-shadow:none;border:1px solid #999;break-inside:avoid} .cal .d{min-height:90px}
 }
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important} .confetti{display:none}}
 
 /* ---------- Added for the installable version: settings gear, family gate, week view, sync dot, media tiles ---------- */
-header.hero .gear{position:absolute;right:12px;bottom:10px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.6);cursor:pointer;font-size:1rem;display:grid;place-items:center;box-shadow:0 3px 0 rgba(74,35,64,.12);z-index:2}
+header.hero .gear{position:absolute;right:12px;bottom:10px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.6);cursor:pointer;font-size:1rem;display:grid;place-items:center;box-shadow:0 3px 0 rgba(74,35,64,.12);z-index:2}
 .code{font-family:Fredoka;font-size:1.2rem;letter-spacing:.1em;background:var(--blush);border-radius:12px;padding:10px;text-align:center;overflow-wrap:anywhere;margin:8px 0;user-select:all;-webkit-user-select:all;color:#4A2340}
 .qr{max-width:200px;margin:8px auto;background:#fff;border-radius:12px;padding:6px} .qr svg{width:100%;height:auto;display:block}
 .code-in{width:100%;border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--card);font-family:Fredoka;font-size:1.05rem;letter-spacing:.08em;text-align:center;text-transform:uppercase}
@@ -182,7 +182,7 @@ details.more>summary{font-size:.9rem;color:var(--ink-2)} details.more[open]>summ
 .note-form{background:var(--blush);border-radius:14px;padding:10px;margin:0 0 10px}
 .tagpick{display:flex;flex-wrap:wrap;gap:5px} .tagpick .chip{border:0;cursor:pointer}
 .corr-list{margin:0;padding-left:0;list-style:none} .corr-list li{padding:5px 0;border-bottom:1px dashed var(--line)} .corr-list li.done{opacity:.6}
-.lnk{background:none;border:0;color:var(--violet);font-weight:800;font-size:.8rem;cursor:pointer;padding:0 4px;text-decoration:underline}
+.lnk{background:none;border:0;color:var(--link);font-weight:800;font-size:.9rem;cursor:pointer;padding:10px 6px;margin:-10px 0;text-decoration:underline}
 .practice-head{gap:14px;flex-wrap:nowrap}
 .ring{width:96px;height:96px;flex:none}
 .ring-bg{fill:none;stroke:var(--line);stroke-width:9}
@@ -203,7 +203,7 @@ body:not(.pg-home) header.hero .gear{top:50%;bottom:auto;transform:translateY(-5
 .pitem input{width:26px;height:26px;accent-color:#FF5C93;flex:none}
 .pitem .pk{font-size:1.2rem;flex:none} .pitem.done{color:var(--ink-2);text-decoration:line-through;background:var(--blush)}
 .ahow{border-top:0;margin:0 0 4px 44px;padding:2px 0 6px} .ahow p{margin:4px 0;line-height:1.4}
-details.acc{padding:10px 14px} details.acc>summary{list-style:none;display:flex;align-items:center;gap:8px;font-family:Fredoka;font-size:1.1rem;cursor:pointer}
+details.acc{padding:10px 14px} details.acc>summary{list-style:none;display:flex;align-items:center;gap:8px;font-family:Fredoka;font-size:1.1rem;cursor:pointer;padding:10px 14px;margin:-10px -14px;min-height:46px} /* the whole bar is the tap target, not just its line of text */
 details.acc>summary::-webkit-details-marker{display:none} details.acc>summary:after{content:"\25B8";margin-left:auto;color:var(--ink-2);transition:transform .15s} details.acc[open]>summary:after{transform:rotate(90deg)}
 details.acc[open]>summary{margin-bottom:8px}
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden}
@@ -607,12 +607,14 @@ body.modal{overflow:hidden}
 .today .today-meta{margin-top:8px} .today .today-streak{color:#E0246F;font-weight:800}
 .today .today-fun{display:block;margin-top:10px;font-weight:800;font-size:.95rem}
 /* 1.60.0: Dance it once — ▶ My solo and ▶ My trio side by side, the same on every day */
-.today .today-once-lab{margin-top:12px;font-weight:800;color:#E0246F}
+.today .today-once-lab,.today .today-pick-lab{margin-top:12px;font-weight:800;color:var(--coral-ink);font-size:.95rem} .today .today-once-how{display:block;font-weight:700;color:var(--ink-2);font-size:.8rem} .today .today-pick-lab .lnk{float:right;font-size:.8rem}
+.today-skill{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0 4px;padding:10px 12px;min-height:56px;border:2px solid var(--sun);border-radius:16px;background:var(--card);box-shadow:0 4px 0 rgba(74,35,64,.1);text-align:left;font:inherit;color:var(--ink);cursor:pointer} .today-skill:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(74,35,64,.1)} .today-skill .ts-ic{font-size:1.6rem;flex:none} .today-skill b{display:block;font-family:Fredoka;font-weight:600;font-size:1.08rem;line-height:1.2} .today-skill small{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;color:var(--ink-2);font-weight:700;font-size:.8rem}
+.today .today-media .btn.sm small{font-size:.72rem;font-weight:700;opacity:.9}
 .today .today-once{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 8px} .today .today-once .big-btn{width:100%;text-align:center;padding:14px 6px}
 .today .today-media.three{grid-template-columns:repeat(3,1fr)}
 .today .today-done{font-weight:800;color:#2E8B6A}
 /* 1.61.0: the Events card on Today, the Play tile on Me, the way back on a page that isn't a tab */
-.events-fold>summary{display:flex;align-items:center;gap:8px;cursor:pointer;font-family:Fredoka;font-size:1.05rem;list-style:none} .events-fold>summary::-webkit-details-marker{display:none}
+.events-fold>summary{display:flex;align-items:center;gap:8px;cursor:pointer;font-family:Fredoka;font-size:1.05rem;list-style:none;min-height:44px} .events-fold>summary::-webkit-details-marker{display:none}
 .kev{border-top:1px dashed var(--line);padding:8px 0} .kev>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none} .kev>summary::-webkit-details-marker{display:none}
 .kev .kev-when{display:block;font-weight:600} .kev .kev-f{margin-top:8px;font-size:.92rem} .kev .kev-f b{display:block;font-size:.8rem;color:var(--ink-2)} .kev .kev-f div{white-space:pre-wrap}
 .kev-done{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
@@ -648,7 +650,7 @@ body.modal{overflow:hidden}
 .kev-wear{margin-top:8px} .kev-wear>summary{cursor:pointer;font-weight:800}
 .dance-tricks{margin:8px 0 4px} .dance-tricks .fixchips{flex-direction:row;flex-wrap:wrap} .dance-tricks .fixchip{padding:6px 10px;font-size:.82rem;box-shadow:none}
 .today .today-media{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px} .today .today-media .btn.sm{padding:7px 2px;font-size:.78rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.15}
-.season-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.95rem;line-height:1.35} .season-fold>summary .fl-text{flex:1;min-width:0}
+.season-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.95rem;line-height:1.35;min-height:44px} .season-fold>summary .fl-text{flex:1;min-width:0}
 html[data-season="halloween"] #seasonFold:before{right:0;left:auto;transform:none;width:46px;height:46px}
 .season-fold>summary::-webkit-details-marker{display:none}
 .season-fold>summary:after{content:"›";margin-left:auto;padding-left:6px;font-size:1.35rem;font-weight:800;color:var(--ink-2);transition:transform .2s}
@@ -844,3 +846,11 @@ html[data-season="christmas"] .gate:after{right:auto;left:30px}
 .film video{display:block;width:100%;max-height:60vh;margin:8px 0 6px;border-radius:12px;background:#000}
 .film .film-cam{display:block;width:100%;text-align:center;margin:10px 0} .film-btns{gap:8px;margin-top:6px;flex-wrap:nowrap} .film-btns .film-cam{flex:1 1 auto;width:auto;margin:0} .film-btns .btn{white-space:nowrap}
 .qs-spot{text-align:center}
+
+/* 📸 Picture time (1.67.0): the starting picture and the every-two-weeks one, on Today and on Skills. */
+.photo-prompt{padding:12px 14px} .pp-head{font-family:Fredoka;font-weight:600;font-size:1.02rem;margin-bottom:2px}
+.pp-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;border-top:1px dashed var(--line)} .pp-head+.pp-row{border-top:0}
+.pp-txt{display:flex;align-items:center;gap:10px;flex:1 1 130px;min-width:0;min-height:44px;border:0;background:none;padding:0;text-align:left;font:inherit;color:var(--ink);cursor:pointer}
+.pp-txt b{display:block;font-weight:800;font-size:.95rem;line-height:1.2} .pp-txt small{display:block;color:var(--ink-2);font-weight:700;font-size:.78rem} .pp-ic{font-size:1.5rem;flex:none}
+.pp-btns{display:flex;gap:6px;flex:none;margin-left:auto} .pp-btns .btn{min-height:40px} .pp-more{display:block;margin:4px 0 0}
+.g-row .g-due{color:var(--coral-ink);font-weight:800}

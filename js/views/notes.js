@@ -9,12 +9,12 @@ export const mediaSrc = (p) => p.url || "";
 export const photoTile = (p) => p.kind === "video" ? `<video src="${esc(mediaSrc(p))}" playsinline controls preload="metadata"></video>` : `<img src="${esc(mediaSrc(p))}" alt="${esc(p.cap)}" loading="lazy">`;
 
 function renderNotes(){ const list=Object.entries(S.notes).sort((a,b)=>(b[1].at||"").localeCompare(a[1].at||""));
-  $("#noteList").innerHTML=list.map(([id,n])=>`<div class="card"><div class="row"><span class="chip violet">${esc(n.tag)}</span><span class="small muted grow">${esc(n.at?n.at.slice(0,10):"")}</span><button class="del" onclick="delNote('${id}')">✕</button></div><h3>${esc(n.title)}</h3><p class="small" style="white-space:pre-wrap">${esc(n.body)}</p></div>`).join("")||`<p class="muted small">No notes yet.</p>`; }
+  $("#noteList").innerHTML=list.map(([id,n])=>`<div class="card"><div class="row"><span class="chip violet">${esc(n.tag)}</span><span class="small muted grow">${esc(n.at?n.at.slice(0,10):"")}</span><button class="del" onclick="delNote('${id}')" aria-label="Delete">✕</button></div><h3>${esc(n.title)}</h3><p class="small" style="white-space:pre-wrap">${esc(n.body)}</p></div>`).join("")||`<p class="muted small">No notes yet.</p>`; }
 async function addNote(){ const title=$("#noteTitle").value.trim(); const body=$("#noteBody").value.trim(); if(!title&&!body) return; await storeSet("notes",uid(),{title:title||"Note",body,tag:$("#noteTag").value,at:new Date().toISOString()}); $("#noteTitle").value="";$("#noteBody").value=""; toast("Saved"); }
 async function delNote(id){ if(confirm("Delete this note?")) await storeDel("notes",id); }
 
 function renderFiles(){ const list=Object.entries(S.files||{}).sort((a,b)=>(b[1].at||"").localeCompare(a[1].at||""));
-  $("#fileList").innerHTML=list.map(([id,f])=>`<div class="check"><span class="chip sun">📄</span><a class="grow" href="${esc(mediaSrc(f))}" target="_blank" rel="noopener">${esc(f.name)}</a><button class="del" onclick="delFile('${id}')">✕</button></div>`).join("")||`<p class="muted small">No files yet.</p>`; }
+  $("#fileList").innerHTML=list.map(([id,f])=>`<div class="check"><span class="chip sun">📄</span><a class="grow" href="${esc(mediaSrc(f))}" target="_blank" rel="noopener">${esc(f.name)}</a><button class="del" onclick="delFile('${id}')" aria-label="Delete">✕</button></div>`).join("")||`<p class="muted small">No files yet.</p>`; }
 async function addFiles(fileList){
   for(const f of [...fileList]){
     if(f.size>FILE_MAX_BYTES){ toast("Too big — files up to 60 MB",2500); continue; }
@@ -26,7 +26,7 @@ async function addFiles(fileList){
 async function delFile(id){ if(!confirm("Delete this file?")) return; const f=S.files[id]; await storeDel("files",id); if(f&&f.path){ try{ await media.remove(f.path); }catch(e){ console.warn(e); } } }
 
 function renderPhotos(){ const list=Object.entries(S.photos).filter(([,p])=>!p.goal&&!p.demo).sort((a,b)=>(b[1].at||"").localeCompare(a[1].at||""));
-  $("#photoGrid").innerHTML=list.map(([id,p])=>`<div class="ph">${photoTile(p)}${p.moment?`<span class="mm-star" title="A moment">✨</span>`:""}${p.cap?`<div class="cap">${esc(p.cap)}</div>`:""}<button class="del" onclick="delPhoto('${id}')">✕</button></div>`).join("");
+  $("#photoGrid").innerHTML=list.map(([id,p])=>`<div class="ph">${photoTile(p)}${p.moment?`<span class="mm-star" title="A moment">✨</span>`:""}${p.cap?`<div class="cap">${esc(p.cap)}</div>`:""}<button class="del" onclick="delPhoto('${id}')" aria-label="Delete">✕</button></div>`).join("");
   $("#photoHint").textContent=sync.online?"":"Offline — new photos and videos upload once you're back online."; }
 // Photos are shrunk to 1600px before upload; short videos (up to 50 MB) go up as they are.
 async function addPhotos(fileList,dance){ const files=[...fileList]; const cap=dance?"":$("#photoCap").value.trim(); let added=0;

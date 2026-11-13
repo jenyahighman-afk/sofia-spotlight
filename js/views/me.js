@@ -89,7 +89,7 @@ export function initMe(){
   const up = () => { clearTimeout(t); if (!long) avToggle(); };
   av.addEventListener("pointerdown", down); av.addEventListener("pointerup", up); av.addEventListener("pointerleave", () => clearTimeout(t)); av.addEventListener("pointercancel", () => clearTimeout(t));
   av.addEventListener("contextmenu", e => e.preventDefault());
-  $("#meGrownups").onclick = () => openGrownups();
+  $("#meGrownups").onclick = (e) => { if (e && e.preventDefault) e.preventDefault(); openGrownups(); };
 }
 export { renderMe };
 expose({ meStyle, meSkill, meGotIt, skillsRename, meHide });

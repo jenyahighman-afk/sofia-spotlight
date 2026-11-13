@@ -1,5 +1,5 @@
 // Boot: load content, wire the views, connect to Firebase, gate on a family space, then stream everything live.
-import { $, toast } from "./util.js";
+import { $, toast, todayStr } from "./util.js";
 import { loadData } from "./data.js";
 import { onChange, saveSoloFix, saveDrillsMove, saveWorkoutsMove } from "./store.js";
 import { initNav, setGuard } from "./nav.js";
@@ -63,10 +63,10 @@ const VERSION_KEY = "spotlight:version";
 const renders = [
   guard("home", renderHome), guard("dances", renderDances), guard("practice", renderPractice), guard("play", renderPlay), guard("me", renderMe),
   guard("events", renderEvents), guard("schedule", () => { renderClasses(); renderCalendar(); }), guard("notes", () => { renderNotes(); renderPhotos(); renderFiles(); }),
-  guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("coach", renderCoachHub), guard("grownups", renderGrownups), guard("settings", renderSettings), guard("buddy", renderBuddy), guard("cuecheck", renderCueCheck),
+  guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("coach", renderCoachHub), guard("grownups", renderGrownups), guard("settings", renderSettings), guard("home", renderBuddy, "buddy"), guard("cuecheck", renderCueCheck),
 ];
 function renderAll(){ renders.forEach(r => r()); }
-renders.push(guard("kidevents", renderKidEvents)); renders.push(guard("working", renderWorking)); renders.push(guard("goalpage", () => { renderAlbum(); renderGoalPage(); }));
+renders.push(guard("home", renderKidEvents, "kidevents")); renders.push(guard("skills", renderWorking, "working")); renders.push(guard("goal", () => { renderAlbum(); renderGoalPage(); }, "goalpage"));
 function initViews(){ initNav(); initSkillsFolds(); initKidEvents(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initBuddy(); initCostume(); initGlow(); initCueCards(); initVideos(); initCueCheck(); initMemorize(); initHowto(); initStudio(); initFilm(); initReady(); initPass(); initSeason(); initSunday(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
@@ -101,6 +101,8 @@ function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.class
     let restored = false;
     onChange(() => { renderAll(); if (settled("settings")) try { resyncReminder(); } catch (e) { console.warn(e); } buddyAuto(settled("practice") && settled("settings")); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); saveDrillsMove().then(n => { if (n) toast("Your drill box moved to its own shelf ✓"); }).catch(console.warn); saveWorkoutsMove().then(n => { if (n) toast("Your workouts moved to their own shelf ✓"); }).catch(console.warn); refreshSeedFiles().then(names => { if (names.length) toast("New version in My files: " + names.join(", "), 3500); }).catch(console.warn); checkBadges().catch(console.warn); });
     renderAll();
+    // The app left open overnight: redraw when it comes back on a new day (Today kept yesterday's date and ticks until a sync).
+    let day = todayStr(); document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && todayStr() !== day) { day = todayStr(); renderAll(); } });
   } catch (e) { console.error(e); return fatal("The app couldn't load its content: " + (e.message || e)); }
 
   try { await initFirebase(); }

@@ -59,7 +59,7 @@ export function playSections(date, { home = false, knees = false, done = false, 
   return { gate, sections };
 }
 let openGame = "";
-export function playOpen(id){ openGame = id; renderPlay(); if (id) { const c = document.querySelector(`.game-card[data-game="${id}"]`); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: "smooth", block: "start" }); } else window.scrollTo({ top: 0 }); }
+export function playOpen(id){ openGame = id; renderPlay(); if (id) { const c = document.querySelector(`.game-card[data-game="${id}"]`); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: "smooth", block: "start" }); } else { const w = document.querySelector(".wrap"); if (w) w.scrollTop = 0; } }
 export function initPlay(){ initChoreo(); initTeach(); initCount(); }
 export function renderPlay(){
   const s = S.settings; renderWho(); const today = todayStr();

@@ -61,7 +61,7 @@ test("🎀 Events on Today: the season without the PIN; never a cost, a charge d
   assert.match(section("home"), /<details class="card sun events-fold" id="eventsFold"><summary>/); assert.doesNotMatch(section("home"), /events-fold" id="eventsFold" open/);
   resetDom(); clearS(); KE.renderKidEvents(); const k = el("#kidEvents").innerHTML; assert.match(k, /Winter Showcase/); assert.doesNotMatch(k, /School break|Auto-charge|Hotel &amp; room block/);
   assert.ok(GROWNUP_PAGES.includes("events") && GROWNUP_PAGES.includes("lists"), "editing events and lists still needs the PIN");
-  assert.match(src("sw.js"), /"\.\/js\/kidevents\.js"/); assert.match(src("js/app.js"), /guard\("kidevents", renderKidEvents\)/);
+  assert.match(src("sw.js"), /"\.\/js\/kidevents\.js"/); assert.match(src("js/app.js"), /guard\("home", renderKidEvents, "kidevents"\)/);
   resetDom(); clearS();
 });
 

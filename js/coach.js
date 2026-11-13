@@ -179,7 +179,7 @@ export function reviewCard(r, opts = {}){
   const v = r.review || {}; const check = (k) => `<div class="chk-row"><span>${TAG_EMOJI[k]} ${TAG_LABEL[k]}</span><b>${esc(v[k] || "✓")}</b></div>`;
   const d = dances().find(x => x.id === r.danceId);
   return `<div class="card review" data-review="${r.id}">
-    <div class="row"><span class="chip violet">🎬 ${esc(r.kind === "photo" ? "Photo review" : "Video review")}</span><span class="small muted grow">${esc(r.date || "")}${d ? " · " + esc(d.name) : ""}${r.trick ? " · " + esc(r.trick) : ""}</span>${opts.del ? `<button class="del" onclick="delReview('${r.id}')">✕</button>` : ""}</div>
+    <div class="row"><span class="chip violet">🎬 ${esc(r.kind === "photo" ? "Photo review" : "Video review")}</span><span class="small muted grow">${esc(r.date || "")}${d ? " · " + esc(d.name) : ""}${r.trick ? " · " + esc(r.trick) : ""}</span>${opts.del ? `<button class="del" onclick="delReview('${r.id}')" aria-label="Delete">✕</button>` : ""}</div>
     ${(r.thumbs || []).length ? `<div class="thumbs small-thumbs">${r.thumbs.map(t => `<img src="${t}" alt="">`).join("")}</div>` : ""}
     <div class="rv-loved"><div class="field-lab">One thing you did really well</div><p>${esc(v.loved)}</p></div>
     <div class="rv-fix"><div class="field-lab">One fix for this week${v.askTeacher ? ` <span class="chip sun rv-ask">ask Ms. Brittany</span>` : ""}</div><p>${esc(v.fix)}</p>${opts.addFix !== false ? `<button class="btn sm coral" onclick="coachAddFix('${r.id}')">＋ Make it a note (${esc(TAG_LABEL[v.tag] || "Other")})</button>` : ""}</div>
