@@ -35,7 +35,7 @@
   <details class="card violet season-fold" id="seasonFold" hidden><summary id="seasonSum"></summary><div class="season" id="seasonCard" hidden></div></details>
   <div class="card violet sunday-card" id="sundayCard" hidden></div>
   <div class="card coral" id="compCard" hidden></div>
-  <div class="card aqua" id="goalReminder" hidden></div>
+  <div class="card aqua photo-prompt" id="goalReminder" hidden></div>
   <details class="card sun events-fold" id="eventsFold"><summary><span class="grow">🎀 Events</span><span class="chip sun" id="eventsCount"></span></summary><div id="kidEvents"></div></details>
   <div id="kidPackArea" style="display:none"></div>
   <div id="adventArea" style="display:none"></div>
@@ -56,6 +56,7 @@
 <section class="page" id="p-skills">
   <div class="row"><h2 class="grow" id="skillsTitle" style="margin:0">Skills</h2><button class="lnk small" onclick="skillsRename()">✏️ Name this page</button></div>
   <p class="small muted">Your goals are on top. Tap one to see what's next, your photos and the coach.</p>
+  <div class="card aqua photo-prompt" id="photoPrompt" hidden></div>
   <details class="card acc sun work-card" id="workingFold" open><summary>⭐ My goals <span class="chip sun" id="workingCount"></span></summary><div id="workingCard"></div></details>
   <details class="card acc violet album-card" id="albumFold" open><summary>📸 My album <span class="chip violet" id="albumCount"></span></summary><div id="albumCard"></div></details>
   <details class="card acc violet" id="allSkills"><summary>📚 All skills</summary>
@@ -449,7 +450,7 @@
 
 <!-- SETTINGS (opened from the ⚙️ in the header; no tab) -->
 <section class="page" id="p-settings">
-  <div class="row"><button class="btn sm ghost" id="settingsBack">‹ Back</button><h2 class="grow" style="margin:0">Settings</h2></div>
+  <div class="row"><button class="btn sm ghost" id="settingsBack">‹ Grown-ups</button><h2 class="grow" style="margin:0">Settings</h2></div>
   <div class="card coral">
     <h3>Family space</h3>
     <p class="small muted">Both phones share one family space. To add a phone: open the app there, tap <b>Join with code</b>, then scan this QR or type the code.</p>
@@ -483,7 +484,7 @@
 
 <!-- PRACTICE MODE: one item at a time, saved as you go -->
 <div class="stage pmode" id="pmode" hidden>
-  <div class="stage-top"><span class="grow" id="pmTitle">Practice</span><span class="chip sun" id="pmCount"></span><button class="btn sm ghost" id="pmClose">✕</button></div>
+  <div class="stage-top"><span class="grow" id="pmTitle">Practice</span><span class="chip sun" id="pmCount"></span><button class="btn sm ghost" id="pmClose" aria-label="Close">✕</button></div>
   <div class="stage-body pm-body">
     <div class="pm-top"><svg id="pmDancer" viewBox="70 30 160 230" class="pm-dancer"></svg><div id="pmDemo" class="pm-demo" hidden></div><div id="pmRing"></div></div>
     <div class="small" id="pmPic" hidden></div>
@@ -497,7 +498,7 @@
 
 <!-- GAME STAGE: full-screen animation with the buttons right under it -->
 <div class="stage" id="stage" hidden>
-  <div class="stage-top"><span class="grow" id="stageTitle"></span><button class="btn sm ghost" id="stageClose">✕</button></div>
+  <div class="stage-top"><span class="grow" id="stageTitle"></span><button class="btn sm ghost" id="stageClose" aria-label="Close">✕</button></div>
   <div class="stage-body" id="stageBody"></div>
   <div class="stage-actions row" id="stageActions"></div>
 </div>
@@ -505,7 +506,7 @@
 <!-- DEMO PICTURE FOR A MOVE -->
 <div class="modal" id="demo" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow" id="demoTitle">Picture</h3><button class="btn sm ghost" id="demoClose">✕</button></div>
+    <div class="row"><h3 class="grow" id="demoTitle">Picture</h3><button class="btn sm ghost" id="demoClose" aria-label="Close">✕</button></div>
     <div id="demoBody"></div>
   </div>
 </div>
@@ -513,7 +514,7 @@
 <!-- A DRILL-BOX POST: YouTube plays here; Instagram / Pinterest open in their app -->
 <div class="modal" id="drill" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow" id="drillTitle">Post</h3><button class="btn sm ghost" id="drillClose">✕</button></div>
+    <div class="row"><h3 class="grow" id="drillTitle">Post</h3><button class="btn sm ghost" id="drillClose" aria-label="Close">✕</button></div>
     <div id="drillBody"></div>
   </div>
 </div>
@@ -521,14 +522,14 @@
 <!-- SWAP A MOVE -->
 <div class="modal" id="swap" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow" id="swapTitle">Swap</h3><button class="btn sm ghost" id="swapClose">✕</button></div>
+    <div class="row"><h3 class="grow" id="swapTitle">Swap</h3><button class="btn sm ghost" id="swapClose" aria-label="Close">✕</button></div>
     <div id="swapList"></div>
   </div>
 </div>
 
 <!-- COACH ME -->
 <div class="stage" id="runcheck" hidden>
-  <div class="stage-top"><span class="grow" id="rcTitle">🎥 Run check</span><span class="chip sun" id="rcCount"></span><button class="btn sm ghost" id="rcClose">✕</button></div>
+  <div class="stage-top"><span class="grow" id="rcTitle">🎥 Run check</span><span class="chip sun" id="rcCount"></span><button class="btn sm ghost" id="rcClose" aria-label="Close">✕</button></div>
   <div class="stage-body rc-body">
     <div class="rc-cam"><video id="rcCam" playsinline muted autoplay></video><div id="rcFlash" class="rc-flash"></div><div id="rcBig" class="rc-big" hidden></div></div>
     <div class="row" style="margin:6px 0"><span class="chip" id="rcSeen"></span></div>
@@ -540,7 +541,7 @@
 </div>
 <div class="modal" id="coach" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow" id="coachTitle">Coach me</h3><button class="btn sm ghost" id="coachClose">✕</button></div>
+    <div class="row"><h3 class="grow" id="coachTitle">Coach me</h3><button class="btn sm ghost" id="coachClose" aria-label="Close">✕</button></div>
     <div id="coachBody"></div>
   </div>
 </div>
@@ -548,14 +549,14 @@
 <!-- GOAL -->
 <div class="modal" id="goal" hidden>
   <div class="modal-card">
-    <div class="row" style="justify-content:flex-end"><button class="btn sm ghost" id="goalClose">✕</button></div>
+    <div class="row" style="justify-content:flex-end"><button class="btn sm ghost" id="goalClose" aria-label="Close">✕</button></div>
     <div id="goalBody"></div>
   </div>
 </div>
 
 <!-- MIRROR GAME -->
 <div class="stage" id="mirror" hidden>
-  <div class="stage-top"><span class="grow">🪞 Mirror</span><button class="btn sm ghost" id="mgVoice" title="Voice">🔊</button><span class="chip sun" id="mgScore">0</span><button class="btn sm ghost" id="mgClose">✕</button></div>
+  <div class="stage-top"><span class="grow">🪞 Mirror</span><button class="btn sm ghost" id="mgVoice" title="Voice">🔊</button><span class="chip sun" id="mgScore">0</span><button class="btn sm ghost" id="mgClose" aria-label="Close">✕</button></div>
   <div class="stage-body mg-body">
     <div class="mg-say" id="mgSay"></div>
     <div class="mg-pair">
@@ -571,7 +572,7 @@
 
 <!-- DANCE ALONG -->
 <div class="stage" id="along" hidden>
-  <div class="stage-top"><span class="grow" id="alTitle">Dance Along</span><button class="btn sm ghost" id="alVoice" title="Voice">🔊</button><span class="chip sun" id="alScore">0</span><button class="btn sm ghost" id="alClose">✕</button></div>
+  <div class="stage-top"><span class="grow" id="alTitle">Dance Along</span><button class="btn sm ghost" id="alVoice" title="Voice">🔊</button><span class="chip sun" id="alScore">0</span><button class="btn sm ghost" id="alClose" aria-label="Close">✕</button></div>
   <div class="stage-body mg-body">
     <div class="mg-say" id="alSay"></div>
     <div class="mg-pair">
@@ -586,7 +587,7 @@
 <!-- SHOW ME: wrong vs fixed, side by side -->
 <div class="modal" id="showme" hidden>
   <div class="modal-card">
-    <div class="row"><span class="chip violet" id="showmeTag">Fix</span><span class="grow"></span><button class="btn sm ghost" id="showmeClose">✕</button></div>
+    <div class="row"><span class="chip violet" id="showmeTag">Fix</span><span class="grow"></span><button class="btn sm ghost" id="showmeClose" aria-label="Close">✕</button></div>
     <div class="showme-stage" id="showmeStage"></div>
     <p class="fix-text" id="showmeText"></p>
     <button class="btn coral big-btn" id="showmeGot" style="width:100%">Got it! ✅</button>
@@ -596,7 +597,7 @@
 <!-- PRACTICE PLAYER -->
 <div class="modal player" id="player" hidden>
   <div class="modal-card">
-    <div class="row"><div class="grow"><h3 id="plTitle">…</h3><div class="small muted" id="plSong"></div></div><button class="btn sm ghost" id="plClose">✕</button></div>
+    <div class="row"><div class="grow"><h3 id="plTitle">…</h3><div class="small muted" id="plSong"></div></div><button class="btn sm ghost" id="plClose" aria-label="Close">✕</button></div>
     <div class="small" id="plStatus"></div>
     <div class="kara-box" id="plKaraBox" hidden><div id="plKara"></div><span class="kcount" id="plKCount" hidden>…</span></div>
     <div class="cue" id="plCue" hidden></div>
@@ -622,7 +623,7 @@
 <!-- CUE CARDS (photo deck) -->
 <div class="modal" id="cuecards" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow" id="ccTitle">🃏 Cue cards</h3><button class="btn sm ghost" id="ccClose">✕</button></div>
+    <div class="row"><h3 class="grow" id="ccTitle">🃏 Cue cards</h3><button class="btn sm ghost" id="ccClose" aria-label="Close">✕</button></div>
     <div class="row"><button class="chip coral" id="ccAll">All cues</button><button class="chip" id="ccTricks">★ Key tricks</button><span class="grow"></span><span class="small muted" id="ccSource"></span></div>
     <div class="cc-track" id="ccTrack"></div>
     <div class="row cc-nav"><button class="btn ghost" id="ccPrev">‹</button><span class="grow small muted" id="ccCount"></span><button class="btn ghost" id="ccNext">›</button></div>
@@ -631,7 +632,7 @@
 <!-- MEMORIZE (chunk player + Pause & Predict) -->
 <div class="modal" id="memorize" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow" id="mzTitle">🧠 Memorize</h3><button class="btn sm ghost" id="mzClose">✕</button></div>
+    <div class="row"><h3 class="grow" id="mzTitle">🧠 Memorize</h3><button class="btn sm ghost" id="mzClose" aria-label="Close">✕</button></div>
     <div class="row mz-tabs"><button class="btn sm coral" id="mzTabChunks">🧩 Chunks</button><button class="btn sm" id="mzTabPredict">⏸ Pause &amp; Predict</button></div>
     <video id="mzVideo" playsinline hidden></video>
     <div id="mzBody"></div>
@@ -640,7 +641,7 @@
 <!-- HANNAH'S VIDEO -->
 <div class="modal" id="hvideo" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow" id="hvTitle">📹 Hannah's video</h3><button class="btn sm ghost" id="hvClose">✕</button></div>
+    <div class="row"><h3 class="grow" id="hvTitle">📹 Hannah's video</h3><button class="btn sm ghost" id="hvClose" aria-label="Close">✕</button></div>
     <video id="hvVideo" playsinline controls></video>
     <div class="row hv-tools"><button class="btn sm" id="hvMirror">🪞 Mirror</button><button class="btn sm" id="hvA">A</button><button class="btn sm" id="hvB">B</button><span class="small muted grow" id="hvLoopLab"></span><button class="btn sm ghost" id="hvClear" hidden>Clear</button></div>
     <div class="row hv-tools" id="hvOwn" hidden><button class="btn sm coral" id="hvPlay">▶</button><button class="btn sm" id="hvBack">−5 s</button><button class="btn sm" id="hvFwd">+5 s</button><span class="small muted grow">Mirror is on: use these buttons.</span></div>
@@ -649,7 +650,7 @@
 <!-- 🎬 Film it (js/film.js): film a chunk, watch it back, film again. The clip stays on this phone. -->
 <div class="modal film" id="film" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow">🎬 Film a chunk</h3><button class="btn sm ghost" id="filmClose">✕</button></div>
+    <div class="row"><h3 class="grow">🎬 Film a chunk</h3><button class="btn sm ghost" id="filmClose" aria-label="Close">✕</button></div>
     <input type="file" id="filmIn" accept="video/*" capture="environment" hidden>
     <div id="filmBody"></div>
   </div>
@@ -657,7 +658,7 @@
 <!-- HOW TO PRACTICE MY SOLO -->
 <div class="modal" id="howto" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow" id="htTitle">📖 How to practice my solo</h3><button class="btn sm ghost" id="htClose">✕</button></div>
+    <div class="row"><h3 class="grow" id="htTitle">📖 How to practice my solo</h3><button class="btn sm ghost" id="htClose" aria-label="Close">✕</button></div>
     <div id="htBody"></div>
     <button class="btn sm ghost" id="htGrown" style="margin-top:8px">👩 Grown-up details + sources</button>
   </div>
@@ -665,7 +666,7 @@
 <!-- ADD SOLO REHEARSAL -->
 <div class="modal" id="rehearsal" hidden>
   <div class="modal-card">
-    <div class="row"><h3 class="grow">📅 Book a private</h3><button class="btn sm ghost" id="rhClose">✕</button></div>
+    <div class="row"><h3 class="grow">📅 Book a private</h3><button class="btn sm ghost" id="rhClose" aria-label="Close">✕</button></div>
     <label class="f" for="rhFor">For</label><select id="rhFor"><option value="solo">Solo private</option><option value="trio">Trio private</option><option value="other">Make-up class / other</option></select>
     <label class="f" for="rhDate">Date</label><input type="date" id="rhDate">
     <label class="f" for="rhTime">Start time (30 minutes)</label><input type="time" id="rhTime" step="900">
@@ -677,7 +678,7 @@
 </div>
 
 <div class="game-wrap" id="gameWrap">
-  <div class="game-top"><button class="btn sm ghost" onclick="stopGame()">✕</button><span class="grow small muted" id="gameTitle"></span><span class="sc" id="gameScore">0</span></div>
+  <div class="game-top"><button class="btn sm ghost" onclick="stopGame()" aria-label="Close">✕</button><span class="grow small muted" id="gameTitle"></span><span class="sc" id="gameScore">0</span></div>
   <div style="position:relative;flex:1;display:flex"><canvas id="gameCv"></canvas><div class="game-msg" id="gameMsg"></div></div>
   <div class="lanes" id="gameLanes"></div>
 </div>
@@ -696,7 +697,7 @@
   <button data-p="me"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.4" fill="url(#tg-pink)" stroke="#FF5C93" stroke-width="1.2"/><path d="M5 20.4q7-7.6 14 0A10.4 10.4 0 0 1 5 20.4z" fill="url(#tg-rose)"/><circle cx="12" cy="10.6" r="4.6" fill="url(#tg-skin)"/><path d="M7.3 10q4.7-6.1 9.4 0-.4-4-4.7-4.2-4.3.2-4.7 4.2z" fill="#F2C86B"/><path d="M15.6 7.4l1.3-1.5" stroke="#FF3D8A" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="7.4" cy="7.6" rx="1.8" ry="0.9" transform="rotate(-30 7.4 7.6)" fill="#fff" opacity="0.5"/><circle cx="10.4" cy="10.8" r="0.85" fill="#4A2340"/><circle cx="13.6" cy="10.8" r="0.85" fill="#4A2340"/><circle cx="10.85" cy="10.350000000000001" r=".42" fill="#fff"/><circle cx="14.049999999999999" cy="10.350000000000001" r=".42" fill="#fff"/><path d="M10.4 12.9q1.6 1.4 3.2 0" stroke="#4A2340" stroke-width="1.05" fill="none" stroke-linecap="round"/><circle cx="8.6" cy="12.1" r="0.9" fill="#FF8FB4" opacity=".75"/><circle cx="15.4" cy="12.1" r="0.9" fill="#FF8FB4" opacity=".75"/></svg>Me</button>
 </nav>
 <div class="buddy" id="buddy"><div class="buddy-bubble" id="buddyBubble" hidden></div><button class="buddy-pet" id="buddyPet" onclick="buddyTap()" aria-label="Ask my dance pet what to do next"></button></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- FAMILY SPACE GATE (first launch) -->
 <div class="gate" id="gate" hidden>

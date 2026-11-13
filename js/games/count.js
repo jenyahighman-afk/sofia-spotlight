@@ -182,7 +182,7 @@ export function stopCount(keep){
 export const countRunning = () => C.on || !!C.kind;
 export function initCount(){
   const pad = $("#ctPad"); if (pad) { pad.onpointerdown = (e) => { if (e && e.preventDefault) e.preventDefault(); tapCount(); }; pad.onkeydown = (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); tapCount(); } }; }
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && countRunning()) stopCount(); });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && countRunning()) stopCount(); }); document.addEventListener("page", (e) => { if (e.detail !== "play" && countRunning()) stopCount(); }); // another tab mid-round: the music stops with it
 }
 expose({ countMode: (m) => { C.mode = m === "metro" ? "metro" : "song"; renderCount(); }, countTempo: (t) => { if (TEMPOS.includes(+t)) C.tempo = +t; renderCount(); }, countDance: (id) => { C.danceId = String(id); renderCount(); },
   countStart: () => startCount(), countSet: () => startCount("set"), countAgain: (k) => startCount(k), countStop: () => stopCount(), countFinish: finishCount, countTap: tapCount, countSaveBeat: saveBeat });

@@ -4,7 +4,7 @@ import { S, pin, pinOn, setSettings } from "./store.js";
 import { studioDates } from "./store.js";
 import { privatesStatus } from "./studio.js";
 import { todayStr } from "./util.js";
-import { showPage } from "./nav.js";
+import { showPage, lastTab } from "./nav.js";
 import { renderMomWeek } from "./momweek.js";
 
 const UNLOCK_KEY = "spotlight:grownups";
@@ -43,7 +43,7 @@ export function renderGrownups(){
 }
 export function initGrownups(){
   $("#pinGo").onclick = tryPin; $("#pinIn").addEventListener("keydown", e => { if (e.key === "Enter") tryPin(); });
-  $("#pinBack").onclick = () => showPage("me");
+  $("#pinBack").onclick = () => showPage(lastTab());
   $("#pinChange").onclick = changePin; $("#pinToggle").onclick = togglePin;
   $("#grownupsLock").onclick = () => { lockGrownups(); showPage("me"); toast("Locked"); };
 }

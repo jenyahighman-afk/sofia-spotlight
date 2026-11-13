@@ -122,7 +122,8 @@ function pause(){ PM.paused = !PM.paused; render(); }
 export function openPracticeMode(items, opts = {}){
   try { PM.timed = localStorage.getItem("spotlight:pmode") !== "manual"; PM.voice = localStorage.getItem("spotlight:pmvoice") !== "off"; } catch (e) { PM.timed = true; PM.voice = true; }
   MODE.quick = opts.quick || ""; MODE.bite = opts.bite || ""; MODE.drill = opts.drill || ""; MODE.guest = !sofiaDancing(); localDone.clear(); if (MODE.quick || MODE.bite) PM.timed = true; $("#pmTitle").textContent = (opts.title || "Practice") + whoSuffix();
-  ITEMS = Array.isArray(items) && items.length ? items : planFor(todayStr()); PM.i = nextIndex(ITEMS, doneIds(), 0); if (PM.i < 0) PM.i = 0;
+  ITEMS = Array.isArray(items) && items.length ? items : planFor(todayStr()); if (!ITEMS.length) return toast("Nothing to practise today ⭐"); // a show day has no plan: say so, don't open an empty sheet
+  PM.i = nextIndex(ITEMS, doneIds(), 0); if (PM.i < 0) PM.i = 0;
   $("#pmode").hidden = false; document.body.classList.add("modal"); render(); startTimer(); sayItem();
 }
 export function closePracticeMode(){ clearInterval(PM.timer); cancelAnimationFrame(animRaf); stopSpeaking(); $("#pmode").hidden = true; document.body.classList.remove("modal"); }

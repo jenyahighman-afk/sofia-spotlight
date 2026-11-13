@@ -54,7 +54,7 @@ export async function openRunCheck(danceId){
   if (!src) return toast("Add the music to this dance first (More ▸ Add music file).", 3000);
   RC.dance = d; RC.canvases = []; RC.labels = []; RC.audio = null; RC.on = true; RC.check++;
   $("#runcheck").hidden = false; document.body.classList.add("modal"); $("#rcTitle").textContent = `🎥 Run check · ${d.name.split(" · ")[0]}`; $("#rcStrip").innerHTML = ""; $("#rcCount").textContent = ""; $("#rcPrompt").hidden = true; $("#rcPrompt").innerHTML = ""; big(""); $("#rcSeen").textContent = ""; $("#rcSeen").className = "chip";
-  $("#rcActions").innerHTML = `<button class="btn ghost" onclick="closeRunCheck()">✕</button><button class="btn sm ghost" onclick="rcFlip()">🔄 Flip</button><button class="btn sm ${S.settings.prompter ? "coral" : "ghost"}" id="rcLines" onclick="rcLines()">📜 Lines</button><button class="btn coral big-btn grow" id="rcStart" onclick="rcStart()" disabled>▶ Start</button>`;
+  $("#rcActions").innerHTML = `<button class="btn ghost" onclick="closeRunCheck()" aria-label="Close">✕</button><button class="btn sm ghost" onclick="rcFlip()">🔄 Flip</button><button class="btn sm ${S.settings.prompter ? "coral" : "ghost"}" id="rcLines" onclick="rcLines()">📜 Lines</button><button class="btn coral big-btn grow" id="rcStart" onclick="rcStart()" disabled>▶ Start</button>`;
   status("Prop the phone up so the whole stage is in the picture. Tap ▶ Start: 5 count-in, then the music.");
   try { await startCamera(); } catch (e) { status(`<span class="bad">Camera didn't open: ${esc(e.message || e)}. Allow the camera for this app and try again.</span>`); return; }
   const a = new Audio(); a.preload = "auto"; a.src = src.url; RC.pending = a;

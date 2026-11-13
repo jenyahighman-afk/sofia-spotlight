@@ -57,7 +57,7 @@ export function privatesHtml(month = todayStr().slice(0, 7), list = studioDates(
 }
 export function upcomingHtml(from = todayStr()){
   const list = studioDates().filter(e => e.start >= from); if (!list.length) return `<p class="small muted">No one-off dates booked.</p>`;
-  return list.map(e => `<div class="check"><span class="chip ${isRehearsal(e) ? "coral" : "violet"}">${esc(fmt(e.start))}</span><span class="grow"><b>${esc(e.time || "")}</b> ${esc(e.name)}${e.room ? ` <span class="muted">· ${esc(e.room)}</span>` : ""}</span>${e.pick ? `<button class="del" onclick="studioUnpick('${esc(e.id)}')" title="Not this one after all">↺</button>` : `<button class="del" onclick="studioDel('${esc(e.id)}')" title="Cancel this date">✕</button>`}</div>`).join("");
+  return list.map(e => `<div class="check"><span class="chip ${isRehearsal(e) ? "coral" : "violet"}">${esc(fmt(e.start))}</span><span class="grow"><b>${esc(e.time || "")}</b> ${esc(e.name)}${e.room ? ` <span class="muted">· ${esc(e.room)}</span>` : ""}</span>${e.pick ? `<button class="del" onclick="studioUnpick('${esc(e.id)}')" title="Not this one after all">↺</button>` : `<button class="del" onclick="studioDel('${esc(e.id)}')" title="Cancel this date" aria-label="Delete">✕</button>`}</div>`).join("");
 }
 // The calendar-only dates from `from` on (store.calendarOnly): a "sign up for one" pair with ✓ This one, a hold weekend, a deadline.
 export function calendarHtml(from = todayStr(), list = calendarOnly()){

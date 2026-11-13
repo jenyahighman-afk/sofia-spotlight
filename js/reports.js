@@ -12,13 +12,13 @@ export function installErrorCapture(){
 }
 
 // Wrap a render so one broken screen never takes the others down: the section shows what to do instead of staying blank.
-export function guard(sectionId, fn){
+export function guard(sectionId, fn, key = sectionId){
   return () => {
-    const sec = $("#p-" + sectionId); const box = sec && sec.querySelector(".err-state");
+    const sec = $("#p-" + sectionId); const box = sec && sec.querySelector(`.err-state[data-k="${key}"]`);
     try { fn(); if (box) box.hidden = true; }
     catch (e) {
       console.error("render failed:", sectionId, e); noteError(e, sectionId);
-      if (sec) { let b = box; if (!b) { b = document.createElement("div"); b.className = "card err-state"; sec.prepend(b); }
+      if (sec) { let b = box; if (!b) { b = document.createElement("div"); b.className = "card err-state"; b.setAttribute("data-k", key); sec.prepend(b); }
         b.hidden = false; b.innerHTML = `<h3>This screen hit a snag</h3><p class="small">Close the app and open it again. If it keeps happening, tap below so Mom gets the details.</p><button class="btn sm coral" onclick="sendReport('${sectionId}')">Send a report</button>`; }
     }
   };
@@ -40,7 +40,7 @@ export async function sendReport(page){
 export function renderReports(){
   const el = $("#reportList"); if (!el) return;
   const list = Object.entries(S.reports).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || ""));
-  el.innerHTML = list.length ? list.map(([id, r]) => `<div class="card"><div class="row"><span class="chip violet">${esc(r.page || "?")}</span><span class="small muted grow">${esc((r.at || "").replace("T", " ").slice(0, 16))} · v${esc(r.version || "?")}${r.online === false ? " · offline" : ""}</span><button class="del" onclick="delReport('${id}')">✕</button></div>${r.note ? `<p class="small">${esc(r.note)}</p>` : ""}${r.error ? `<pre class="small err-pre">${esc(r.error)}</pre>` : `<p class="small muted">No error was captured on that phone.</p>`}</div>`).join("") : `<p class="muted small">No reports. Good sign.</p>`;
+  el.innerHTML = list.length ? list.map(([id, r]) => `<div class="card"><div class="row"><span class="chip violet">${esc(r.page || "?")}</span><span class="small muted grow">${esc((r.at || "").replace("T", " ").slice(0, 16))} · v${esc(r.version || "?")}${r.online === false ? " · offline" : ""}</span><button class="del" onclick="delReport('${id}')" aria-label="Delete">✕</button></div>${r.note ? `<p class="small">${esc(r.note)}</p>` : ""}${r.error ? `<pre class="small err-pre">${esc(r.error)}</pre>` : `<p class="small muted">No error was captured on that phone.</p>`}</div>`).join("") : `<p class="muted small">No reports. Good sign.</p>`;
 }
 async function delReport(id){ await storeDel("reports", id); }
 expose({ sendReport, delReport });

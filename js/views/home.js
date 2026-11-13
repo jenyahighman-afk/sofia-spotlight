@@ -19,7 +19,6 @@ import { isCueTable } from "../cues.js";
 import { renderPassCard } from "../pass.js";
 import { currentWeekFix, pickWeekFix, TAG_EMOJI, seenCount, fixOnVideo, FIX_SEEN_TO_MOVE } from "../corrections.js";
 import { checkBadges } from "../badges.js";
-import { renderGoalReminder } from "../goals.js";
 import { renderComp, todayMode } from "../mode.js";
 import { renderBites } from "../bites.js";
 import { renderMindCard } from "../mind.js";
@@ -27,6 +26,7 @@ import { applyPalette } from "../palette.js";
 import { renderPet } from "../pet.js";
 import { renderNews } from "../news.js";
 import { renderSundayCard } from "../sunday.js";
+import { todayGoal, todaySkillHtml } from "../working.js";
 
 const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
 // The one line under the big buttons (1.60.0, Jenya Nov 5): counts that only go up — the days she danced her solo or her trio
@@ -53,10 +53,11 @@ export const BEST_TIME = "🍌 Snack first, dance 45 min later, dinner after";
 export function danceButtons({ kind = "", solo = false, trio = false } = {}){
   if (kind === "show") return `<button class="btn coral big-btn today-start" onclick="buddyScroll('#compCard')">🎒 Show day checklist</button>`;
   const b = (id, name, done) => `<button class="btn ${done ? "ghost" : "coral"} big-btn" onclick="openPlayer('${id}',{once:true})">${done ? "✅" : "▶"} ${name}</button>`;
-  return `<div class="today-once-lab small">Dance it once ✨ about 2 minutes</div><div class="today-once">${b("solo", "My solo", solo)}${b("trio", "My trio", trio)}</div>`;
+  return `<div class="today-once-lab small">💃 Practice a dance <span class="today-once-how">Dance it once ✨ about 2 minutes</span></div><div class="today-once">${b("solo", "My solo", solo)}${b("trio", "My trio", trio)}</div>`;
 }
 // The Pass and Toolkit p.2 say "When the app says ⭐ Plan done, put a sticker on": the app says it once her solo is danced today.
 export const PLAN_DONE = "⭐ Plan done: you danced your solo today";
+export const PLAN_DONE_QUIET = "⭐ Plan done for today";
 // What a day asks at home (1.60.0, Jenya Nov 5: class days are free; on a home day one thing she picks, about 10 minutes, with
 // the whole session offered and not expected). Pure: the words under the day's name.
 export const DAY_ASK = { home: "Pick one thing, about 10 minutes. That's all.", homeDone: "That's your one thing for today ⭐", studio: "No home practice on class days.", rest: "Nothing planned. Dance if you feel like it." };
@@ -78,8 +79,8 @@ function renderHome(){
   // 1.60.0 (Jenya, Nov 5): a class day asks nothing at home; a home day asks one thing she picks, with the whole session
   // one link away; every day offers ▶ My solo and ▶ My trio.
   let what, sub;
-  if(cls.length){ what="🏫 Studio day"; sub=`<div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div><div class="today-sub">${DAY_ASK.studio}</div>`; }
-  else if(kind==="show"){ const ev=nextEvent(); what="🌟 Show day"; sub=`<div class="today-sub">${esc(ev?shortEventName(ev.name):"The show")} ★ No practice today: dance your best on stage!</div>`; }
+  if(kind==="show"){ const ev=nextEvent(); what="🌟 Show day"; sub=`<div class="today-sub">${esc(ev?shortEventName(ev.name):"The show")} ★ No practice today: dance your best on stage!</div>`; }
+  else if(cls.length){ what="🏫 Studio day"; sub=`<div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div><div class="today-sub">${DAY_ASK.studio}</div>`; }
   else if(home){ what="🏠 Home day"; sub=`<div class="today-sub">${pd||td?DAY_ASK.homeDone:DAY_ASK.home}</div>${pd||td?"":`<div class="today-sub today-when">${BEST_TIME}</div>`}`; }
   else { what="🌙 Rest day"; sub=`<div class="today-sub">${DAY_ASK.rest}</div>`; }
   const dayKind=kind==="show"?"🌟 Show day":cls.length?"🏫 Studio day":home?"🏠 Home day":"🌙 Rest day";
@@ -87,12 +88,15 @@ function renderHome(){
   // dance with a cue table, its Five steps on Dances otherwise (the trio; habit.js's own rule), the solo when nothing is picked.
   const mp=todayPick(dances(),S.settings,today); const memoGo=!mp?"openMemorize('solo','chunks')":isCueTable(mp.dance.cues)?`openMemorize('${mp.dance.id}','chunks')`:`showPage('dances');memoFocus('${mp.dance.id}')`;
   // The things she can pick (the row under the buttons): Hannah's videos, Memorize, the week's trick.
-  const tc=trickCard(today,{skills:S.skills,focus:trickFocus(today)}); const trickLab=tc.title==="Learn a trick"?"A trick":tc.title;
+  const tc=trickCard(today,{skills:S.skills,focus:trickFocus(today)}); const trickLab=tc.title==="Learn a trick"?"A trick":tc.go==="habitPicture()"?"Picture it":tc.go==="habitKnees()"?"Knees":tc.title; // the button says what it does, not what kind of week it is
+  // "You danced your solo" only when she ran it; a watched video or a memory step finishes the plan in its own words.
+  const ran=((rec&&rec.runs)||[]).some(r=>r&&(!r.danceId||r.danceId==="solo")); const skillPick=kind==="show"?"":todaySkillHtml(todayGoal(S.settings,today));
   $("#todayCard").innerHTML=`<div class="today-date small">${esc(fmt(today))} · ${dayKind}</div><div class="today-what">${what}</div>${sub}
     <div class="today-line small dp-line" id="dayPlan" hidden></div>
-    ${danceButtons({kind,solo:pd,trio:td})}${pd?`<div class="today-line small today-done">${PLAN_DONE}</div>`:""}
+    ${danceButtons({kind,solo:pd,trio:td})}${pd?`<div class="today-line small today-done">${ran?PLAN_DONE:PLAN_DONE_QUIET}</div>`:""}
+    ${skillPick}
     ${metaLine({days:danceDays(S.practice),dances:danceCount(S.practice)})}
-    <div class="today-media three"><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="${memoGo}">🧠 Memorize</button><button class="btn sm violet" onclick="${tc.go}">${tc.ic} ${esc(trickLab)}</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
+    <div class="today-media three"><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="${memoGo}">🧠 Memorize<small>${mp?esc(shortName(mp.dance)):""}</small></button><button class="btn sm violet" onclick="${tc.go}">${tc.ic} ${esc(trickLab)}</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
   // The dated line from plan10 (its headline and note) is off Today since 1.60.0: "That's all." is not followed by a to-do.
   // The line's place stays in the card, hidden; dayplan.js and its ticks are unchanged.
   { const dp=$("#dayPlan"); if(dp){ dp.hidden=true; dp.innerHTML=""; } }
@@ -109,7 +113,6 @@ function renderHome(){
   if(fix) $("#weekFix").innerHTML=`<div class="row"><span class="chip violet">${TAG_EMOJI[fix.tag]||"✨"} This week's fix${fix.pinned?" · 📌 "+esc(fix.source||"teacher"):""}</span><span class="grow"></span><button class="btn sm ghost" onclick="showMe('${fix.id}')">Show me</button></div><div class="fix-text">${esc(fix.text)}</div>${videoRow(fix)}`;
   else if(open) $("#weekFix").innerHTML=`<div class="row"><span class="grow">${dow===0?"🎬 Film review day. Pick this week's fix.":"No fix picked this week yet."}</span><button class="btn sm coral" onclick="pickFix()">Pick one</button></div>`;
   else $("#weekFix").innerHTML=`<span class="small muted">No open notes. Add one from a dance.</span>`;
-  renderGoalReminder();
   // week strip (from today's date string, Monday first); a class on a home weekday makes its home line the memory run (daykind)
   const now=new Date(today+"T00:00:00"); const monday=new Date(now); monday.setDate(now.getDate()-((dow+6)%7));
   const names=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]; let h="";

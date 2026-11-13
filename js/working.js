@@ -9,15 +9,18 @@
 // Every row opens the same page (js/goalpage.js): what's next, her photos, the coach, done. settings.working = [id, …] in
 // her order, up to WORK_MAX (1.65.0 introduced it as "⭐ I'm working on"; the stored field is the same). Until she picks,
 // the list starts with what she is working on already: this month's ⭐ skill, the aerial, the three splits and any goal she
-// has. Picking a skill she hasn't started marks it "learning", the record a tap in a list writes. Nothing is counted or due.
+// has. Picking a skill she hasn't started marks it "learning", the record a tap in a list writes. Nothing is counted; since
+// 1.67.0 the one thing that comes due is a picture (photoPrompts below).
 // Pure parts up top (tested in Node).
 import { $, esc, todayStr, expose, toast, uid } from "./util.js";
 import { S, setSettings } from "./store.js";
 import { SKILLS, AERIAL } from "./data.js";
 import { findSkill, ownSkills, skillState, kidCycle, levelGroups, STATE_EMOJI, OWN_RE } from "./skills.js";
-import { SPLIT_KEYS, PRESETS, splitGoal, checkins } from "./goals.js";
+import { SPLIT_KEYS, PRESETS, splitGoal, checkins, CADENCE_DAYS } from "./goals.js";
 import { monthSkill } from "./monthskill.js";
 import { lineup } from "./lineup.js";
+import { daysBetween } from "./moments.js";
+import { shiftDate } from "./corrections.js";
 import { openStage } from "./stage.js";
 import { CLASS_STYLES } from "./views/me.js";
 import { lastTrickReview } from "./coachhub.js";
@@ -87,14 +90,64 @@ export function goalRow(id, ctx = {}){
   if (kind === "aerial") { const a = aerialStep(settings); return { ...base, aerial: a, how: a.next ? `Step ${a.n + 1} of ${a.total}` : `All ${a.total} steps done 🎉`, sub: a.next ? "Next: " + shortStep(a.next) : "" }; }
   return { ...base, how: state === "checked" ? "★ Teacher-checked" : state === "clean" ? "◉ Clean" : state === "learning" || on ? `${STATE_EMOJI.learning} Working on it` : "○ Not started" };
 }
-export function goalRowHtml(r){
+// 📸 Picture time (1.67.0, Jenya Nov 13: "regular reminders to take beginning pictures for skills and regular progress
+// pictures to be able to see progress over time"). Every goal on her list asks for a starting picture until it has one, and
+// for a new one PHOTO_EVERY_DAYS after its newest (the cadence the measured goals' check-ins always had). Later puts one
+// goal off for PHOTO_LATER_DAYS (settings.photoSnooze = { id: "YYYY-MM-DD" }). A teacher-checked skill is finished and
+// asks for nothing; a goal she took off her list asks for nothing either. [{ id, n, ic, kind, why: "first" | "again",
+// last, days }]: the starting pictures first, in her order, then the longest wait first. Pure.
+export const PHOTO_EVERY_DAYS = CADENCE_DAYS, PHOTO_LATER_DAYS = 3;
+export function photoPrompts(settings, today = todayStr(), ctx = {}){
+  const goals = ctx.goals ?? S.goals, ladder = ctx.ladder ?? SKILLS, working = workingIds(settings, today, { goals, ladder });
+  const later = (settings && typeof settings.photoSnooze === "object" && settings.photoSnooze) || {}, first = [], again = [];
+  for (const id of working) {
+    const r = goalRow(id, { ...ctx, goals, ladder, settings, working, date: today }); if (!r || r.state === "checked") continue;
+    if (typeof later[id] === "string" && later[id] > today) continue;
+    const base = { id, n: r.n, ic: r.ic, kind: r.kind };
+    if (!r.shots.length) { first.push({ ...base, why: "first", last: "", days: 0 }); continue; }
+    const last = String(r.shots[r.shots.length - 1].date || ""); if (!/^\d{4}-\d{2}-\d{2}$/.test(last)) continue;
+    const days = daysBetween(last, today); if (days >= PHOTO_EVERY_DAYS) again.push({ ...base, why: "again", last, days });
+  }
+  return [...first, ...again.sort((a, b) => b.days - a.days)];
+}
+// ⭐ Work on a skill, on Today (1.67.0, Jenya Nov 13: Today should say what to do next "to either practice one of the
+// competitive dances or to work on a specific dance skill"). One goal from her own list a day, taking turns in her order;
+// a teacher-checked one is finished and sits out. null when her list is empty. Nothing is due and nothing is counted. Pure.
+const dayNo = (date) => Math.round(new Date(date + "T00:00:00").getTime() / 86400000);
+export function todayGoal(settings, today = todayStr(), ctx = {}){
+  const goals = ctx.goals ?? S.goals, ladder = ctx.ladder ?? SKILLS, working = workingIds(settings, today, { goals, ladder });
+  const rows = working.map(id => goalRow(id, { ...ctx, goals, ladder, settings, working, date: today })).filter(r => r && r.state !== "checked");
+  return rows.length ? rows[((dayNo(today) % rows.length) + rows.length) % rows.length] : null;
+}
+// Today's second choice: the goal's own button (it opens the goal's page: what's next, her photos, the coach) and the way
+// to the whole list; with an empty list, the way to pick one. Pure.
+export function todaySkillHtml(r){
+  if (!r) return `<div class="today-pick-lab small">⭐ Or work on a skill</div><button class="today-skill" onclick="showPage('skills');wkPick()"><span class="ts-ic">⭐</span><span class="grow"><b>Pick a skill to work on</b><small>a trick, a split, your aerial</small></span><span class="g-go">›</span></button>`;
+  const sub = r.sub || (r.fix ? "🎬 Coach: " + r.fix.text : r.how);
+  return `<div class="today-pick-lab small">⭐ Or work on a skill <button class="lnk" onclick="showPage('skills')">all my goals ›</button></div><button class="today-skill" onclick="goalOpen('${r.id}')"><span class="ts-ic">${r.ic}</span><span class="grow"><b>${esc(r.n)}</b><small>${esc(sub)}</small></span><span class="g-go">›</span></button>`;
+}
+// "2 weeks ago", "20 days ago". Pure.
+export const agoWords = (days) => days >= 28 ? `${Math.round(days / 7)} weeks ago` : days === 14 ? "2 weeks ago" : `${days} days ago`;
+// One prompt: its name opens the goal, 📷 goes straight to the camera or her photos (a skill's lineup takes the picture as
+// it is; a measured goal opens its check-in sheet, where the number goes too), Later puts it off. Pure.
+export function photoPromptHtml(p){
+  const words = p.why === "first" ? `<b>Take your starting picture</b><small>${esc(p.n)} · to see how far you come</small>` : `<b>Time for a progress picture</b><small>${esc(p.n)} · your last one was ${agoWords(p.days)}</small>`;
+  const go = p.kind === "measure" ? `<button class="btn sm coral" onclick="gpCheckIn('${p.id}')">📷 Take it</button>` : `<label class="btn sm coral">📷 Take it<input type="file" accept="image/*" hidden onchange="lineupAdd('${p.id}', this)"></label>`;
+  return `<div class="pp-row"><button class="pp-txt" onclick="goalOpen('${p.id}')"><span class="pp-ic">${p.ic}</span><span class="grow">${words}</span></button><div class="pp-btns">${go}<button class="btn sm ghost" onclick="photoLater('${p.id}')">Later</button></div></div>`;
+}
+// The card: Today shows one (cap 1) and says how many more wait on Skills; Skills shows a few. "" when nothing is due. Pure.
+export function photoPromptsHtml(list, { cap = 3, more = false } = {}){
+  if (!list.length) return ""; const rest = list.length - Math.min(cap, list.length);
+  return `<div class="pp-head">📸 Picture time</div>${list.slice(0, cap).map(photoPromptHtml).join("")}${rest ? (more ? `<button class="lnk small pp-more" onclick="showPage('skills')">＋ ${rest} more on Skills ›</button>` : `<p class="small muted pp-more">＋ ${rest} more: look for 📸 in your goals.</p>`) : ""}`;
+}
+export function goalRowHtml(r, due = ""){
   const ph = r.thumb ? `<span class="g-ph"><img src="${esc(r.thumb)}" alt="" loading="lazy"></span>` : `<span class="g-ph none">${r.ic}</span>`;
   const sub = r.fix ? "🎬 Coach: " + esc(r.fix.text) : esc(r.sub || "");
-  return `<button class="g-row" onclick="goalOpen('${r.id}')">${ph}<span class="grow"><b>${esc(r.n)}</b><small><span class="how">${esc(r.how)}</span>${r.where ? " · " + esc(r.where) : ""}</small>${sub ? `<small class="g-sub">${sub}</small>` : ""}</span><span class="g-go">›</span></button>`;
+  return `<button class="g-row" onclick="goalOpen('${r.id}')">${ph}<span class="grow"><b>${esc(r.n)}</b><small><span class="how">${esc(r.how)}</span>${r.where ? " · " + esc(r.where) : ""}</small>${due ? `<small class="g-due">📸 ${due === "first" ? "Starting picture needed" : "Time for a new picture"}</small>` : ""}${sub ? `<small class="g-sub">${sub}</small>` : ""}</span><span class="g-go">›</span></button>`;
 }
-export function goalsCardHtml(rows, max = WORK_MAX){
+export function goalsCardHtml(rows, max = WORK_MAX, due = {}){
   if (!rows.length) return `<p class="small muted">Pick what you want to get better at: a trick, a split, your aerial. You choose, and you can change it any time.</p><div class="row"><button class="btn coral" onclick="wkPick()">＋ Pick a goal</button></div>`;
-  const groups = GROUPS.map(([k, label]) => { const part = rows.filter(r => r.group === k); return part.length ? `<div class="g-lab">${label}</div>${part.map(goalRowHtml).join("")}` : ""; }).join("");
+  const groups = GROUPS.map(([k, label]) => { const part = rows.filter(r => r.group === k); return part.length ? `<div class="g-lab">${label}</div>${part.map(r => goalRowHtml(r, due[r.id] || "")).join("")}` : ""; }).join("");
   return `${groups}<div class="row wk-more">${rows.length >= max ? `<span class="small muted">That's a full list. Take one off to pick another.</span>` : `<button class="btn sm coral" onclick="wkPick()">＋ Pick a goal</button>`}</div>`;
 }
 // What she can pick from, in the list's own groups: the tricks in her dances (the solo's, and her own), the acro chart by
@@ -131,9 +184,14 @@ export function ownSkillDoc(name, dance, id = "own-" + uid().replace(/[^a-z0-9]/
 // ---- DOM ----
 export function renderWorking(){
   const el = $("#workingCard"); if (!el) return; const working = workingIds(S.settings);
-  el.innerHTML = goalsCardHtml(working.map(id => goalRow(id, { working })).filter(Boolean));
+  const prompts = photoPrompts(S.settings), due = Object.fromEntries(prompts.map(p => [p.id, p.why]));
+  el.innerHTML = goalsCardHtml(working.map(id => goalRow(id, { working })).filter(Boolean), WORK_MAX, due);
   const n = $("#workingCount"); if (n) n.textContent = working.length ? String(working.length) : "";
+  // The same prompts on Skills (a few) and on Today (the first one). Both go away by themselves once the picture is saved.
+  const sk = $("#photoPrompt"); if (sk) { sk.hidden = !prompts.length; sk.innerHTML = photoPromptsHtml(prompts, { cap: 3 }); }
+  const td = $("#goalReminder"); if (td) { td.hidden = !prompts.length; td.innerHTML = photoPromptsHtml(prompts, { cap: 1, more: true }); }
 }
+async function photoLater(id){ const cur = (S.settings && typeof S.settings.photoSnooze === "object" && S.settings.photoSnooze) || {}; await setSettings({ photoSnooze: { ...cur, [id]: shiftDate(todayStr(), PHOTO_LATER_DAYS) } }); renderWorking(); toast("Okay. I'll ask again in a few days"); }
 async function save(ids){ await setSettings({ working: ids }); renderWorking(); }
 // On her goals, or off them. A skill she hasn't started becomes "learning" when it goes on. Returns the list, or null when
 // nothing changed (a full list, an id nothing answers to).
@@ -149,7 +207,7 @@ async function wkToggle(id, btn){
   const was = workingIds(S.settings).includes(id); const next = await setOnGoals(id, !was); if (!next) return;
   if (btn && btn.classList) { btn.classList.toggle("sun", !was); const r = goalRow(id, { working: next }); const label = id === AERIAL_ID ? "🦋 Aerial, step by step" : r.n; btn.textContent = chipText({ n: label, on: !was, state: r.state }); }
   const h = $("#wkHint"); if (h) h.textContent = pickHint(next.length);
-  toast(was ? "Off your goals" : "It's one of your goals ⭐");
+  toast(was ? "Off your goals" : "It's one of your goals ⭐ Take its starting picture 📸", was ? 1600 : 2600);
 }
 // "I've got it clean" and back. Teacher-checked stays.
 export async function gotIt(id){ const cur = skillState(S.skills, id); if (cur === "checked" || goalKind(id) === "measure" || !goalKind(id)) return; if (cur === "notyet") await kidCycle(id); await kidCycle(id); renderWorking(); }
@@ -165,4 +223,4 @@ async function wkOwnAdd(){
   if (have.some(o => o && String(o.n).toLowerCase() === doc.n.toLowerCase())) return toast("That one is already there");
   await setSettings({ ownSkills: [...have, doc] }); await setOnGoals(doc.id, true); wkPick(); toast(`${doc.n} is one of your goals ⭐`);
 }
-expose({ wkToggle, wkPick, wkOwnAdd });
+expose({ wkToggle, wkPick, wkOwnAdd, photoLater });

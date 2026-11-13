@@ -46,14 +46,14 @@ async function toggle(id){ const cur = Array.isArray(S.settings.ritual) ? S.sett
 export function ritualRun(){
   const steps = ritualSteps(Array.isArray(S.settings.ritual) ? S.settings.ritual : DEFAULT_RITUAL); if (!steps.length) return;
   stopTimer(); M.kind = "ritual"; M.steps = steps; M.i = 0;
-  openStage("✨ Pre-stage routine", [$("#mindArea")], `<button class="btn ghost" onclick="closeStage()">✕</button>`); ritualStep();
+  openStage("✨ Pre-stage routine", [$("#mindArea")], `<button class="btn ghost" onclick="closeStage()" aria-label="Close">✕</button>`); ritualStep();
 }
 function ritualStep(){
   stopTimer(); const s = M.steps[M.i];
   if (!s) { $("#mindArea").innerHTML = `<div class="pm-item"><div class="pm-kind">🌟</div><div class="pm-text">Ready. Go shine.</div></div>`; stageActions(`<button class="btn coral big-btn grow" onclick="closeStage()">Go</button>`); chime(1760); awardStars("mind", 1, "Pre-stage routine"); return; }
   M.left = +s.secs || 10;
   $("#mindArea").innerHTML = `<div class="row"><span class="chip sun">Step ${M.i + 1}/${M.steps.length}</span></div><div class="pm-item"><div class="pm-kind">${s.ic}</div><div class="pm-text">${esc(s.n)}</div><div class="small" style="margin-top:6px">${esc(s.say)}</div></div><div class="pm-timer"><div class="pm-clock" id="mindClock">${fmt(M.left)}</div></div>`;
-  stageActions(`<button class="btn ghost" onclick="closeStage()">✕</button><button class="btn coral big-btn grow" onclick="ritualNext()">Next</button>`);
+  stageActions(`<button class="btn ghost" onclick="closeStage()" aria-label="Close">✕</button><button class="btn coral big-btn grow" onclick="ritualNext()">Next</button>`);
   M.timer = setInterval(() => { M.left--; const c = $("#mindClock"); if (c) c.textContent = fmt(M.left); if (M.left <= 0) { chime(); M.i++; ritualStep(); } }, 1000);
 }
 function next(){ M.i++; ritualStep(); }

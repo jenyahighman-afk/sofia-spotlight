@@ -38,7 +38,7 @@ test("a tile opens that dance's page: music, videos, Memorize and the tricks on 
   resetDom(); clearS(); D.initDances(); D.danceOpen("solo"); const h = el("#danceList").innerHTML;
   assert.equal(D.openDanceId(), "solo"); assert.match(h, /danceOpen\(null\)">‹ All dances<\/button>/); assert.equal((h.match(/class="card cover/g) || []).length, 1, "one dance, not the list");
   const at = (s) => h.indexOf(s); assert.ok(at("🎵 Play music") > 0 && at("🎵 Play music") < at("🧠 Memorize") && at("🧠 Memorize") < at("⭐ Tricks in this dance") && at("⭐ Tricks in this dance") < at("More ▸"), "what she uses most is on top");
-  assert.match(h, /openPlayer\('solo'\)">🎵 Play music/); assert.match(h, /noteOpen\('solo'\)">＋ Note/);
+  assert.match(h, /openPlayer\('solo',\{once:true\}\)">🎵 Play music/); // 1.67.0: a full play-through from the dance's page counts, like Today's button assert.match(h, /noteOpen\('solo'\)">＋ Note/);
   assert.equal((h.match(/onclick="goalOpen\('s-/g) || []).length, got.skills.styles.solo.skills.length, "each trick opens its own page (1.66.0)"); assert.match(h, /goalOpen\('s-cartwheel'\)">[^<]* Cartwheel</);
   assert.equal(el("#addDanceRow").hidden, true);
   // the trio has no trick list; the Dances tab comes back to the tiles
