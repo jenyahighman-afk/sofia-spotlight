@@ -139,3 +139,20 @@ test("a note starts from the class: one tap gives the class and its teacher; the
   const plan = json("plan15"); assert.ok(plan.checkpoints.some(c => /DRESS REHEARSAL at the studio, in full costume/.test(c.t))); assert.ok(plan.checkpoints.some(c => c.show && /PITCH groups on stage/.test(c.t)));
   assert.doesNotMatch(src("data/classes.json") + src("data/events.json") + src("README.md") + src("js/studiolog.js"), /beclassmanager\.com\/api\/public\/calendars/, "the portal's private feed link is not in the repository");
 });
+
+// ---- 1.75.0 (Jenya, Nov 13: every card starts folded, with its name and maybe one line under it) ----
+test("Today's and Skills' cards start folded, each with a count and one line", () => {
+  const html = src("index.html");
+  for (const [fold, inner] of [["teacherFold", "teacherNotes"], ["photoFold", "goalReminder"], ["danceFold", "danceProgress"], ["stonesFold", "stonesCard"], ["photoFoldSk", "photoPrompt"]]) {
+    const m = new RegExp(`<details class="card acc [a-z]+ tfold" id="${fold}"( hidden)?><summary>.*?</summary><div class="[a-z-]+" id="${inner}"></div></details>`).exec(html); assert.ok(m, fold + " wraps " + inner); assert.doesNotMatch(m[0], / open/, fold + " is closed to start");
+  }
+  assert.doesNotMatch(html, /id="(workingFold|albumFold)" open/, "My goals and My album start closed too"); for (const id of ["teacherSub", "photoSub", "danceSub", "stonesSub", "workingSub", "albumSub", "photoSubSk"]) assert.ok(html.includes(`id="${id}"`), id);
+  assert.ok(html.indexOf('id="todayCard"') < html.indexOf('id="teacherFold"') && !/<details[^>]*id="todayCard"/.test(html), "the one card on top stays open");
+  assert.equal(W.photoSub([{ why: "first", n: "Aerial" }, { why: "again", n: "Right split" }]), "Starting picture: Aerial ＋1"); assert.equal(W.photoSub([{ why: "again", n: "Right split" }]), "New picture: Right split"); assert.equal(W.photoSub([]), "");
+  assert.equal(W.stonesSub({ week: { n: 8 }, all: { n: 13 } }), "This week: 8 stones"); assert.equal(W.stonesSub({ week: { n: 1 }, all: { n: 1 } }), "This week: 1 stone"); assert.equal(W.stonesSub({ week: { n: 0 }, all: { n: 5 } }), "Your next one is waiting"); assert.equal(W.stonesSub({ week: { n: 0 }, all: { n: 0 } }), "Your first one is one tap away");
+  assert.equal(W.danceSub([{ n: "Solo", runs: 4, studio: 0 }, { n: "Trio", runs: 0, studio: 2 }, { n: "PITCH · Jazz group", runs: 0, studio: 0 }, { n: "PITCH · Contemporary group", runs: 1, studio: 0 }]), "Solo 4× · Trio 2× · Jazz 0×");
+  assert.equal(W.goalsSub([{ n: "Cartwheel" }, { n: "Aerial" }, { n: "Right split" }]), "Cartwheel · Aerial · Right split"); assert.ok(W.goalsSub(Array.from({ length: 8 }, () => ({ n: "Handstand hold" }))).length <= 46);
+  assert.equal(W.albumSub([{ count: 2 }, { count: 0 }, { count: 1 }]), "2 of 3 with a picture"); assert.equal(W.albumSub([]), "");
+  assert.equal(L.notesSub([{ text: "Push through the shoulders in the handstand, every single time" }]), "Push through the shoulders in the handstand…"); assert.equal(L.notesSub([{ text: "x" }], true), "🏫 Class today: show them!"); assert.equal(L.notesSub([]), "");
+  assert.match(src("js/goalpage.js"), /TODAY_FOLDS = \["teacherFold", "photoFold", "danceFold", "stonesFold"\]/); assert.match(src("js/goalpage.js"), /initFolds\("spotlight:todayFolds", TODAY_FOLDS\)/);
+});

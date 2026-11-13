@@ -36,10 +36,10 @@
   <div class="card violet sunday-card" id="sundayCard" hidden></div>
   <div class="card coral" id="compCard" hidden></div>
   <div class="card violet studio-nudge" id="studioNudge" hidden></div>
-  <div class="card coral teacher-notes" id="teacherNotes" hidden></div>
-  <div class="card aqua photo-prompt" id="goalReminder" hidden></div>
-  <div class="card coral dance-progress" id="danceProgress" hidden></div>
-  <div class="card sun stones-card" id="stonesCard"></div>
+  <details class="card acc coral tfold" id="teacherFold" hidden><summary><span class="grow"><span class="fold-t">📝 From my teachers</span><small class="fold-sub" id="teacherSub"></small></span><span class="chip violet" id="teacherCount"></span></summary><div class="teacher-notes" id="teacherNotes"></div></details>
+  <details class="card acc aqua tfold" id="photoFold" hidden><summary><span class="grow"><span class="fold-t">📸 Picture time</span><small class="fold-sub" id="photoSub"></small></span><span class="chip aqua" id="photoCount"></span></summary><div class="photo-prompt" id="goalReminder"></div></details>
+  <details class="card acc coral tfold" id="danceFold" hidden><summary><span class="grow"><span class="fold-t">💃 My dances are growing</span><small class="fold-sub" id="danceSub"></small></span></summary><div class="dance-progress" id="danceProgress"></div></details>
+  <details class="card acc sun tfold" id="stonesFold"><summary><span class="grow"><span class="fold-t">🪜 My stepping stones</span><small class="fold-sub" id="stonesSub"></small></span><span class="chip sun" id="stonesCount"></span></summary><div class="stones-card" id="stonesCard"></div></details>
   <details class="card sun events-fold" id="eventsFold"><summary><span class="grow">🎀 Events</span><span class="chip sun" id="eventsCount"></span></summary><div id="kidEvents"></div></details>
   <div id="kidPackArea" style="display:none"></div>
   <div id="adventArea" style="display:none"></div>
@@ -60,9 +60,9 @@
 <section class="page" id="p-skills">
   <div class="row"><h2 class="grow" id="skillsTitle" style="margin:0">Skills</h2><button class="lnk small" onclick="skillsRename()">✏️ Name this page</button></div>
   <p class="small muted">Your goals are on top. Tap one to see what's next, your photos and the coach.</p>
-  <div class="card aqua photo-prompt" id="photoPrompt" hidden></div>
-  <details class="card acc sun work-card" id="workingFold" open><summary>⭐ My goals <span class="chip sun" id="workingCount"></span></summary><div id="workingCard"></div></details>
-  <details class="card acc violet album-card" id="albumFold" open><summary>📸 My album <span class="chip violet" id="albumCount"></span></summary><div id="albumCard"></div></details>
+  <details class="card acc aqua tfold" id="photoFoldSk" hidden><summary><span class="grow"><span class="fold-t">📸 Picture time</span><small class="fold-sub" id="photoSubSk"></small></span><span class="chip aqua" id="photoCountSk"></span></summary><div class="photo-prompt" id="photoPrompt"></div></details>
+  <details class="card acc sun work-card" id="workingFold"><summary><span class="grow"><span class="fold-t">⭐ My goals</span><small class="fold-sub" id="workingSub"></small></span><span class="chip sun" id="workingCount"></span></summary><div id="workingCard"></div></details>
+  <details class="card acc violet album-card" id="albumFold"><summary><span class="grow"><span class="fold-t">📸 My album</span><small class="fold-sub" id="albumSub"></small></span><span class="chip violet" id="albumCount"></span></summary><div id="albumCard"></div></details>
   <details class="card acc violet" id="allSkills"><summary>📚 All skills</summary>
     <p class="small muted">Every skill, list by list. Tap a skill to say how it's going. 📷 keeps your progress photos.</p>
     <div class="skill-rings" id="skillRings"></div>
