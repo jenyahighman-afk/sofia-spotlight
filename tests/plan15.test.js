@@ -40,7 +40,7 @@ test("checkpoints: Oct 31 trio, Nov 1 solo, the next booked solo rehearsal after
   const moved = checkpoints("2026-10-26", { ...plan, showDay: "2027-01-09" }, []); assert.equal(moved.find(c => /Showcase/.test(c.t)).d, "2027-01-09"); assert.equal(moved.find(c => /mini show/.test(c.t)).d, "2027-01-07", "move showDay and both follow");
   const booked = [bookingRecord("2026-11-04", "3:30–4:00 PM", "Solo rehearsal with Ms. Brittany", "GHD", "r1"), bookingRecord("2026-10-28", "3:30", "Solo rehearsal with Ms. Brittany", "", "r0")];
   const c2 = checkpoints("2026-10-26", plan, booked); assert.deepEqual(c2.find(c => c.rehearsal).d, "2026-11-04", "the first rehearsal after Nov 1, not the Oct 28 one");
-  assert.deepEqual(checkpoints("2027-01-08", plan, []).map(c => c.t), ["Winter Showcase ★", "Next solo rehearsal: show Ms. Brittany with no missed steps"]);
+  assert.deepEqual(checkpoints("2027-01-08", plan, []).map(c => c.t), ["Winter Showcase ★ PITCH groups on stage", "Next solo rehearsal: show Ms. Brittany with no missed steps"]);
 });
 test("no weekly Wednesday solo rehearsal; the Thu Oct 29 Acro make-up is a one-off studio date, never a show", () => {
   assert.ok(!classes.some(c => /solo rehearsal/i.test(c.name)), "the recurring Wed 3:30 rehearsal is gone");

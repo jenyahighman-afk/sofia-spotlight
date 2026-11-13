@@ -3,42 +3,49 @@
   "day": 1,
   "t": "4:30–5:30",
   "name": "Mini Ballet III",
-  "room": "Studio 3"
+  "room": "Studio 3",
+  "teacher": "Thyra Demetrick"
  },
  {
   "day": 1,
   "t": "5:30–6:30",
   "name": "Mini/Jr Acro II/III",
-  "room": "Studio 5"
+  "room": "Studio 5",
+  "teacher": "Ava Wine"
  },
  {
   "day": 1,
   "t": "6:30–7:30",
   "name": "Mini Jazz Technique III",
-  "room": "Studio 5"
+  "room": "Studio 5",
+  "teacher": "Ava Wine"
  },
  {
   "day": 2,
   "t": "6:30–7:30",
   "name": "Mini/Jr Ballroom",
-  "room": "Studio 5"
+  "room": "Studio 5",
+  "teacher": "Megan LaFleur"
  },
  {
   "day": 3,
   "t": "6:30–7:30",
   "name": "Mini Contemporary III",
-  "room": "Studio 5"
+  "room": "Studio 5",
+  "teacher": "Brittany Mains"
  },
  {
   "day": 6,
   "t": "10:00–11:00",
   "name": "Foundational Co Tech",
-  "room": "Studio 6"
+  "room": "Studio 6",
+  "teacher": "Alexandra Roumanis, Ava Wine"
  },
  {
   "day": 6,
   "t": "11:00–12:15",
   "name": "PITCH rehearsal",
-  "room": "Studio 5"
+  "room": "Studio 5",
+  "teacher": "Larisa Eronemo"
  }
 ]
