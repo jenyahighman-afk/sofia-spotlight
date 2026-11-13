@@ -83,7 +83,7 @@ test("the audit's fixes stay fixed", () => {
 // said how to work on a thing or showed that every little effort counts) ----
 test("Today's row no longer sends her into Trick Quest; the two helpers belong to the dance, with one thing to think about", () => {
   const home = src("js/views/home.js"); const card = home.slice(home.indexOf('$("#todayCard").innerHTML='), home.indexOf("renderSeasonCard(today);"));
-  assert.doesNotMatch(card, /tc\.go|qsStart|playOpen/, "no button on Today opens a game"); assert.match(card, /Not sure of the steps\?/); assert.match(card, /📹 Videos<\/button>/); assert.match(card, /🧠 Memorize<small>/);
+  assert.doesNotMatch(card, /tc\.go|qsStart|playOpen/, "no button on Today opens a game"); assert.match(card, /Not sure of the steps\?/); assert.match(card, /📹 Videos<\/button>/); assert.match(card, /\$\{memoBtns\|\|memoBtn\(mp\?mp\.dance:null\)\}/); assert.match(home, /🧠 Memorize<small>/);
   const f = H.focusLine({ id: "c1", tag: "feet", text: "Point your foot" }, "Solo"); assert.match(f, /One thing to think about in your solo/); assert.match(f, /🦶 Point your foot/); assert.match(f, /showMe\('c1'\)">Show me ›/); assert.equal(H.focusLine(null), "");
 });
 
@@ -119,8 +119,8 @@ test("per-dance progress: dances to the end, fixes done and parts by heart, for 
   const corrections = { a: { danceId: "solo", status: "done" }, b: { danceId: "solo", status: "working" }, c: { danceId: "solo", status: "new" }, d: { danceId: "solo", status: "done", deleted: true }, e: { danceId: "trio", status: "working" } };
   const rows = W.danceProgress(list, { practice, corrections, settings: { memo: { solo: { known: ["Soft half", "Gone part"] } } } }, D);
   assert.deepEqual(rows.map(r => r.id), ["solo", "trio"], "class dances are left out");
-  assert.deepEqual(rows[0], { id: "solo", n: "Solo", runs: 3, week: 2, last: "2026-11-11", fixesDone: 1, fixesAll: 3, known: 1, parts: 2 }, "a run with no dance named is the solo's");
-  assert.deepEqual(rows[1], { id: "trio", n: "Trio", runs: 2, week: 2, last: "2026-11-13", fixesDone: 0, fixesAll: 1, known: 0, parts: 0 });
+  assert.deepEqual(rows[0], { id: "solo", n: "Solo", runs: 3, studio: 0, week: 2, last: "2026-11-11", fixesDone: 1, fixesAll: 3, known: 1, parts: 2 }, "a run with no dance named is the solo's");
+  assert.deepEqual(rows[1], { id: "trio", n: "Trio", runs: 2, studio: 0, week: 2, last: "2026-11-13", fixesDone: 0, fixesAll: 1, known: 0, parts: 0 });
   const h = W.danceProgressHtml(rows, D); assert.match(h, /💃 My dances are growing/); assert.match(h, /showPage\('dances'\);danceOpen\('solo'\)/);
   assert.match(h, /🎵 Danced 3 times · 2 this week · last 2 days ago/); assert.match(h, /✅ 1 of 3 fixes done · 🧠 1 of 2 parts by heart/); assert.match(h, /width:33%/); assert.match(h, /last today ⭐/); assert.match(h, /✅ 0 of 1 fix done</);
   assert.match(W.danceProgressHtml(W.danceProgress([{ id: "pitch-jazz", name: "PITCH · Jazz group · Groove Is in the Heart" }], { practice: {}, corrections: {}, settings: {} }, D), D), /PITCH · Jazz group<\/b><small>🎵 Not danced here yet · tap to open it/, "two group dances share the team's name, so the group is named"); assert.equal(W.danceProgressHtml([], D), ""); assert.equal(W.danceLabel({ name: "Solo · Stay a Little Longer" }), "Solo");

@@ -6,7 +6,7 @@
 import { $, esc, fmt, todayStr, daysUntil, expose, toast } from "../util.js";
 import { CLASSES } from "../data.js";
 import { S, events, nextEvent, storeSet, dances, studioDates, calendarOnly } from "../store.js";
-import { todayPick, chunkLabel, shortName } from "../memo.js";
+import { todayPick, chunkLabel, shortName, memoDances } from "../memo.js";
 import { planDone, trioDone, danced, danceDays, danceCount } from "../streak.js";
 import { cardsFor, trickCard, moveOfDay, TIRED, KNEES } from "../habit.js";
 import { renderSeasonCard, trickFocus, checkpointsToShow, checkpointTicks, activePlan } from "../season15.js";
@@ -93,6 +93,11 @@ function renderHome(){
   // 🧠 Memorize opens the dance whose turn it is today (memo.todayPick: the solo and the trio take turns): the Memorize sheet for a
   // dance with a cue table, its Five steps on Dances otherwise (the trio; habit.js's own rule), the solo when nothing is picked.
   const mp=todayPick(dances(),S.settings,today); const memoGo=!mp?"openMemorize('solo','chunks')":isCueTable(mp.dance.cues)?`openMemorize('${mp.dance.id}','chunks')`:`showPage('dances');memoFocus('${mp.dance.id}')`;
+  // 1.70.0 (Jenya: "why Memorize button is only for solo"): it was the dance whose turn it is (the two take turns by day), which
+  // read as solo only. Now one 🧠 Memorize for each of her solo and trio that has a memorize plan; the old single button stays
+  // as the fallback when neither has one.
+  const memoBtn=(d)=>{ const memoGo=!d?"openMemorize('solo','chunks')":isCueTable(d.cues)?`openMemorize('${d.id}','chunks')`:`showPage('dances');memoFocus('${d.id}')`; return `<button class="btn sm violet" onclick="${memoGo}">🧠 Memorize<small>${d?esc(shortName(d)):""}</small></button>`; };
+  const memoBtns=memoDances(dances()).filter(d=>d.id==="solo"||d.id==="trio").map(memoBtn).join("");
   // 1.68.0: the week's trick left Today (its button opened a timed Trick Quest station for a trick she had not picked);
   // Play still has it. The two helpers under the dance buttons are Hannah's videos and Memorize.
   // "You danced your solo" only when she ran it; a watched video or a memory step finishes the plan in its own words.
@@ -102,7 +107,8 @@ function renderHome(){
     <div class="today-line small dp-line" id="dayPlan" hidden></div>
     ${danceButtons({kind,solo:pd,trio:td})}${pd?`<div class="today-line small today-done">${ran?PLAN_DONE:PLAN_DONE_QUIET}</div>`:""}
     ${focus}
-    <div class="today-help"><span class="small muted">Not sure of the steps?</span><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="${memoGo}">🧠 Memorize<small>${mp?esc(shortName(mp.dance)):""}</small></button></div>
+    <div class="today-help"><span class="small muted">Not sure of the steps?</span><button class="btn sm violet" onclick="openVideos()">📹 Videos</button>${memoBtns||memoBtn(mp?mp.dance:null)}</div>
+    <button class="btn sm ghost today-log" onclick="openStudioLog()">🏫 ✏️ Log studio work</button>
     ${skillPick}
     ${metaLine({days:danceDays(S.practice),dances:danceCount(S.practice)})}${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
   // The dated line from plan10 (its headline and note) is off Today since 1.60.0: "That's all." is not followed by a to-do.

@@ -56,6 +56,7 @@ import { renderKidEvents, initKidEvents } from "./kidevents.js";
 import { renderWorking } from "./working.js";
 import { renderAlbum, renderGoalPage, initSkillsFolds } from "./goalpage.js";
 import { initSunday } from "./sunday.js";
+import { renderStudioNudge } from "./studiolog.js";
 
 const VERSION_KEY = "spotlight:version";
 
@@ -66,7 +67,7 @@ const renders = [
   guard("lists", () => { renderTodos(); renderPack(); }), guard("skillcheck", renderSkillCheck), guard("reports", renderReports), guard("reviews", renderReviews), guard("coach", renderCoachHub), guard("grownups", renderGrownups), guard("settings", renderSettings), guard("home", renderBuddy, "buddy"), guard("cuecheck", renderCueCheck),
 ];
 function renderAll(){ renders.forEach(r => r()); }
-renders.push(guard("home", renderKidEvents, "kidevents")); renders.push(guard("skills", renderWorking, "working")); renders.push(guard("goal", () => { renderAlbum(); renderGoalPage(); }, "goalpage"));
+renders.push(guard("home", renderKidEvents, "kidevents")); renders.push(guard("skills", renderWorking, "working")); renders.push(guard("home", renderStudioNudge, "studiolog")); renders.push(guard("goal", () => { renderAlbum(); renderGoalPage(); }, "goalpage"));
 function initViews(){ initNav(); initSkillsFolds(); initKidEvents(); initDances(); initEvents(); initSchedule(); initPractice(); initNotes(); initLists(); initPlay(); initMe(); initSkillCheck(); initSettings(); initGrownups(); initShowMe(); initPlayer(); initStage(); initPracticeMode(); initCoach(); initGoals(); initMirror(); initAlong(); initRunCheck(); initDemos(); initDrills(); initPet(); initAdvent(); initCards(); initNews(); initBuddy(); initCostume(); initGlow(); initCueCards(); initVideos(); initCueCheck(); initMemorize(); initHowto(); initStudio(); initFilm(); initReady(); initPass(); initSeason(); initSunday(); installReportLinks(); }
 
 // Cache-first app shell: a new version installs in the background and is used on the next open.
