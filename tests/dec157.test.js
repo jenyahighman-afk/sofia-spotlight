@@ -54,7 +54,7 @@ test("Mom's card names the studio's dates in the next 7 days; the week strip and
 });
 
 test("the showing finish lines: Dec 5 group; the solo + trio one dated by the family's pick, Dec 6 with 'sign up' until then", () => {
-  const cps = allCheckpoints(plan15, [], "2026-11-01"); const g = cps.find(c => /Group showing/.test(c.t)); const s = cps.find(c => /Solo \+ trio showing/.test(c.t));
+  const cps = allCheckpoints(plan15, [], "2026-11-01"); const g = cps.find(c => /Group showing/.test(c.t)); const s = cps.find(c => /Solo \+ trio DRESS REHEARSAL/.test(c.t));
   assert.equal(g.d, "2026-12-05"); assert.equal(s.d, "2026-12-06"); assert.match(s.t, /\(sign up: Dec 6 or Dec 12\)$/);
   const picked = allCheckpoints(plan15, [{ id: "sdt-showing-1212", pick: "sdt-showing", chosen: true, start: "2026-12-12" }], "2026-11-01").find(c => c.id === s.id);
   assert.equal(picked.d, "2026-12-12"); assert.doesNotMatch(picked.t, /sign up/); assert.equal(picked.id, s.id, "the same id, so a tick stays");

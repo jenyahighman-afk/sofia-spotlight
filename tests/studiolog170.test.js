@@ -14,13 +14,13 @@ const W = await import("../js/working.js");
 const D = "2026-11-13"; // a Friday
 
 test("a day's studio log: always the same fields, saved inside that day's practice record", () => {
-  assert.deepEqual(L.studioRec({}, D), { dances: [], skills: [], feel: "", note: "", skip: false });
-  assert.deepEqual(L.studioRec({ [D]: { studio: { dances: ["solo", "solo", 3], skills: "x", feel: "nope", note: 7 } } }, D), { dances: ["solo"], skills: [], feel: "", note: "7", skip: false }, "whatever is stored reads safely");
+  assert.deepEqual(L.studioRec({}, D), { classes: [], dances: [], skills: [], feel: "", note: "", skip: false });
+  assert.deepEqual(L.studioRec({ [D]: { studio: { dances: ["solo", "solo", 3], skills: "x", feel: "nope", note: 7 } } }, D), { classes: [], dances: ["solo"], skills: [], feel: "", note: "7", skip: false }, "whatever is stored reads safely");
   const home = { done: ["a"], note: "home note", runs: [{ danceId: "solo" }], skills: ["split-r"] };
-  const one = L.withStudio(home, { dances: ["trio"] }); assert.deepEqual(one.studio, { dances: ["trio"], skills: [], feel: "", note: "" });
+  const one = L.withStudio(home, { dances: ["trio"] }); assert.deepEqual(one.studio, { classes: [], dances: ["trio"], skills: [], feel: "", note: "" });
   assert.deepEqual([one.done, one.note, one.runs, one.skills], [home.done, home.note, home.runs, home.skills], "the day's home practice is untouched");
   const two = L.withStudio(one, { feel: "great", note: "  x".repeat(100) }); assert.deepEqual(two.studio.dances, ["trio"], "a patch keeps the rest"); assert.equal(two.studio.feel, "great"); assert.equal(two.studio.note.length, L.NOTE_MAX);
-  assert.deepEqual(L.withStudio(undefined, { skills: ["a-aerial"] }), { done: [], note: "", runs: [], studio: { dances: [], skills: ["a-aerial"], feel: "", note: "" } }, "a day with no record yet gets one");
+  assert.deepEqual(L.withStudio(undefined, { skills: ["a-aerial"] }), { done: [], note: "", runs: [], studio: { classes: [], dances: [], skills: ["a-aerial"], feel: "", note: "" } }, "a day with no record yet gets one");
   assert.equal(L.withStudio(undefined, { skip: true }).studio.skip, true); assert.equal(L.withStudio(L.withStudio(undefined, { skip: true }), { dances: ["solo"] }).studio.skip, undefined, "logging something lifts the skip");
   assert.deepEqual(L.toggleIn(["a"], "b"), ["a", "b"]); assert.deepEqual(L.toggleIn(["a", "b"], "a"), ["b"]);
   assert.equal(L.hasLog(L.studioRec({ [D]: { studio: { skip: true } } }, D)), false); assert.equal(L.hasLog(L.studioRec({ [D]: { studio: { feel: "ok" } } }, D)), true);
@@ -115,4 +115,27 @@ test("🎬 a goal's drill videos sit on its page, the aerial's next step first",
   const h = DR.goalVideosHtml(DR.drillsForGoal(ids, drills)); assert.match(h, /🎬 Watch a drill first/); assert.match(h, /2 saved/); assert.match(h, /drillOpen\('d1'\)/); assert.match(h, /<small>Kick the back leg<\/small>/); assert.equal(DR.goalVideosHtml([]), "");
   assert.match(W.workHtml(aerial, { dates: [], today: D, videos: h }), /gw-vids/); assert.match(W.todaySkillHtml(aerial, { dates: [], today: D, videos: 2 }), /🎬 2 videos/); assert.doesNotMatch(W.todaySkillHtml(aerial, { dates: [], today: D }), /🎬/);
   assert.match(src("js/goalpage.js"), /videos: goalVideosHtml\(drillsForGoal\(drillIds\(r\), S\.drills\)\)/);
+});
+
+// ---- 1.74.0 (Jenya, Nov 13: a note is tied to the class, its teacher, and optionally the dance or skill) ----
+test("a note starts from the class: one tap gives the class and its teacher; the dance or skill is optional", () => {
+  const classes = json("classes"); for (const c of classes) assert.ok(c.teacher && c.teacher.length > 3, c.name + " has its teacher (from the portal's feed)");
+  assert.ok(!classes.some(c => /hip hop/i.test(c.name)), "hip hop is off the weekly schedule");
+  const weekly = [{ day: 1, t: "4:30–5:30", name: "Mini Ballet III", teacher: "Thyra Demetrick" }, { day: 1, t: "5:30–6:30", name: "Mini/Jr Acro II/III", teacher: "Ava Wine" }, { day: 3, t: "6:30–7:30", name: "Mini Contemporary III", teacher: "Brittany Mains" }];
+  const oneOffs = [{ id: "x", kind: "class", name: "Solo rehearsal with Angie", start: "2026-11-21", time: "9:30–10:00", teacher: "Angie" }];
+  assert.deepEqual(L.classesOn("2026-11-16", { weekly, oneOffs }), [{ name: "Mini Ballet III", label: "Ballet III", t: "4:30–5:30", teacher: "Thyra Demetrick" }, { name: "Mini/Jr Acro II/III", label: "Acro II/III", t: "5:30–6:30", teacher: "Ava Wine" }], "Monday's classes, with times and teachers");
+  assert.deepEqual(L.classesOn("2026-11-21", { weekly, oneOffs }).map(c => [c.name, c.teacher]), [["Solo rehearsal with Angie", "Angie"]], "a booked private carries its own teacher");
+  assert.deepEqual(L.classesOn("2026-11-19", { weekly, oneOffs }).map(c => c.t), ["", "", ""], "a day with nothing booked (a make-up): every weekly class, no time");
+  const n = L.noteRec({ cls: "Mini/Jr Acro II/III", teacher: "Ava Wine", text: "Push through the shoulders", date: D, id: "c1" });
+  assert.deepEqual(n, { id: "c1", danceId: "class:Mini/Jr Acro II/III", text: "Push through the shoulders", tag: n.tag, source: "Ava Wine", date: D, status: "working", studio: true, cls: "Mini/Jr Acro II/III" }, "class, teacher and day with no extra tap");
+  const withSkill = L.noteRec({ about: "skill:a-aerial", cls: "Mini/Jr Acro II/III", teacher: "Ava Wine", text: "Kick harder", date: D, id: "c2" }); assert.equal(withSkill.danceId, "skill:a-aerial"); assert.equal(withSkill.cls, "Mini/Jr Acro II/III"); assert.equal(withSkill.source, "Ava Wine");
+  assert.equal(L.noteRec({ text: "hi", date: D, id: "c3" }), null, "no class and nothing it is about: no note"); assert.equal(L.aboutClass("class:Mini Ballet III"), "Mini Ballet III"); assert.equal(L.shortClass("Mini/Jr Acro II/III"), "Acro II/III");
+  const cs = L.classesOn("2026-11-16", { weekly, oneOffs }), practice = { "2026-11-16": { studio: { classes: ["Mini Ballet III"] } } };
+  const h = L.sheetHtml({ date: "2026-11-16", today: D, practice, list: [{ id: "solo", n: "Solo" }], goals: [], classes: cs, cls: "Mini/Jr Acro II/III" });
+  assert.match(h, /onclick="slCls\(0\)" aria-pressed="false">✅ 🏫 Ballet III<small>4:30–5:30<\/small>/, "✅ = she was there"); assert.match(h, /sl-chip on" onclick="slCls\(1\)" aria-pressed="true">🏫 Acro II\/III/); assert.match(h, /👩‍🏫 Ava Wine/);
+  assert.match(h, /data-about="" data-cls="Mini\/Jr Acro II\/III" onclick="slSaidAdd\(\)"/, "the dance or skill is not pre-picked"); assert.match(h, /aria-pressed="false">Solo/);
+  const card = L.notesCardHtml([n], { today: D, practice: {}, label: () => "🏫 Acro II/III" }); assert.match(card, /🏫 Acro II\/III · 👩‍🏫 Ava Wine · 🏫 Today/);
+  assert.equal(L.hasLog(L.studioRec(practice, "2026-11-16")), true, "being at a class is a log");
+  const plan = json("plan15"); assert.ok(plan.checkpoints.some(c => /DRESS REHEARSAL at the studio, in full costume/.test(c.t))); assert.ok(plan.checkpoints.some(c => c.show && /PITCH groups on stage/.test(c.t)));
+  assert.doesNotMatch(src("data/classes.json") + src("data/events.json") + src("README.md") + src("js/studiolog.js"), /beclassmanager\.com\/api\/public\/calendars/, "the portal's private feed link is not in the repository");
 });

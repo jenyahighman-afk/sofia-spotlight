@@ -25,14 +25,14 @@ const strs = (a) => Array.isArray(a) ? [...new Set(a.filter(x => typeof x === "s
 // A day's studio log, whatever is stored: always the same five fields. Pure.
 export function studioRec(practice, date){
   const s = ((practice || {})[date] || {}).studio || {};
-  return { dances: strs(s.dances), skills: strs(s.skills), feel: FEELS.some(f => f[0] === s.feel) ? s.feel : "", note: String(s.note || "").slice(0, NOTE_MAX), skip: !!s.skip };
+  return { classes: strs(s.classes), dances: strs(s.dances), skills: strs(s.skills), feel: FEELS.some(f => f[0] === s.feel) ? s.feel : "", note: String(s.note || "").slice(0, NOTE_MAX), skip: !!s.skip };
 }
 // Is there anything in it? (skip alone is "she said there was nothing".) Pure.
-export const hasLog = (r) => !!r && (r.dances.length > 0 || r.skills.length > 0 || !!r.feel || !!r.note);
+export const hasLog = (r) => !!r && ((r.classes || []).length > 0 || r.dances.length > 0 || r.skills.length > 0 || !!r.feel || !!r.note);
 // The day's practice record with its studio log changed; everything else in the record stays. Logging something lifts a skip. Pure.
 export function withStudio(rec, patch){
   const base = rec && typeof rec === "object" ? rec : { done: [], note: "", runs: [] }; const cur = studioRec({ d: base }, "d"); const next = { ...cur, ...patch };
-  const out = { dances: strs(next.dances), skills: strs(next.skills), feel: next.feel || "", note: String(next.note || "").slice(0, NOTE_MAX) };
+  const out = { classes: strs(next.classes), dances: strs(next.dances), skills: strs(next.skills), feel: next.feel || "", note: String(next.note || "").slice(0, NOTE_MAX) };
   if (next.skip && !hasLog({ ...out })) out.skip = true;
   return { ...base, studio: out };
 }
@@ -56,9 +56,17 @@ export const dayWords = (date, today) => date === today ? "Today" : date === shi
 export const SAID_MAX = 160;
 export const aboutSkill = (about) => String(about || "").startsWith("skill:") ? String(about).slice(6) : "";
 // The note's record. null without words. Pure.
-export function noteRec({ about = "", text = "", tag = "", date = "", id = "" } = {}){
+// 1.74.0 (Jenya, Nov 13: "each note should be tied to what we already have in our app - Dance class (type), skill,
+// competitive dance that it applies to, teacher's or choreographer's name" without making it a task in itself): a note
+// starts from the CLASS she was in. One tap on the class gives its name (`cls`) and its teacher (`source`, from
+// data/classes.json or the booked private); the dance or skill stays optional (`danceId` = the dance, "skill:<goal id>",
+// or "class:<name>" when it is about the class as a whole); the day is the strip's.
+export const aboutClass = (about) => String(about || "").startsWith("class:") ? String(about).slice(6) : "";
+export const shortClass = (n) => String(n || "").replace(/^Mini\/Jr |^Mini |^Jr /, "");
+export function noteRec({ about = "", text = "", tag = "", date = "", id = "", cls = "", teacher = "" } = {}){
+  if (!about && cls) about = "class:" + cls;
   const t = String(text || "").replace(/\s+/g, " ").trim().slice(0, SAID_MAX); if (!t || !about || !DATE.test(String(date)) || !id) return null;
-  return { id, danceId: String(about), text: t, tag: TAGS.includes(tag) ? tag : inferTag(t), source: "class", date, status: "working", studio: true };
+  return { id, danceId: String(about), text: t, tag: TAGS.includes(tag) ? tag : inferTag(t), source: String(teacher || "").trim() || "class", date, status: "working", studio: true, ...(cls ? { cls: String(cls) } : {}) };
 }
 // Her class notes, newest first; `open` keeps the ones not done yet. Pure.
 export function classNotes(corrections, { open = false, date = "" } = {}){
@@ -70,11 +78,11 @@ export const noteDays = (practice, id) => Object.entries(practice || {}).filter(
 export function notesCardHtml(notes, { today, practice = {}, classToday = false, label = () => "", cap = 4 } = {}){
   if (!notes.length) return "";
   const row = (c) => { const days = noteDays(practice, c.id), on = days.includes(today), about = label(c.danceId);
-    return `<div class="tn-row"><div class="tn-text"><b>${TAG_EMOJI[c.tag] || "✨"} ${esc(c.text)}</b><small>${about ? esc(about) + " · " : ""}🏫 ${esc(dayWords(c.date, today))}${days.length ? ` · 💪 ×${days.length}` : ""}</small></div><div class="tn-btns"><button class="tn-btn${on ? " on" : ""}" onclick="tnWorked('${c.id}')" aria-pressed="${on}" aria-label="I worked on it today">💪</button><button class="tn-btn" onclick="tnGot('${c.id}')" aria-label="Got it">✅</button></div></div>`; };
+    return `<div class="tn-row"><div class="tn-text"><b>${TAG_EMOJI[c.tag] || "✨"} ${esc(c.text)}</b><small>${about ? esc(about) + " · " : ""}${c.source && c.source !== "class" ? "👩‍🏫 " + esc(c.source) + " · " : ""}🏫 ${esc(dayWords(c.date, today))}${days.length ? ` · 💪 ×${days.length}` : ""}</small></div><div class="tn-btns"><button class="tn-btn${on ? " on" : ""}" onclick="tnWorked('${c.id}')" aria-pressed="${on}" aria-label="I worked on it today">💪</button><button class="tn-btn" onclick="tnGot('${c.id}')" aria-label="Got it">✅</button></div></div>`; };
   return `<div class="row"><span class="st-head grow">📝 From my teachers</span><span class="chip violet">${notes.length}</span></div><p class="small muted">${classToday ? "🏫 Class today: show them you worked on these!" : "💪 = I worked on it today · ✅ = got it"}</p>${notes.slice(0, cap).map(row).join("")}${notes.length > cap ? `<p class="small muted">＋ ${notes.length - cap} more on your dances</p>` : ""}`;
 }
 // The sheet. `list` = her competition dances [{ id, n }], `goals` = her goals [{ id, n, ic }]. Pure.
-export function sheetHtml({ date, today, practice = {}, list = [], goals = [], isClassDay = () => false, more = [], said = [], about = "", tag = "", label = () => "" } = {}){
+export function sheetHtml({ date, today, practice = {}, list = [], goals = [], isClassDay = () => false, more = [], said = [], about = "", tag = "", label = () => "", classes = [], cls = "" } = {}){
   const r = studioRec(practice, date);
   const strip = logDays(today).map(d => { const p = dayParts(d), has = hasLog(studioRec(practice, d)); return `<button class="sl-day${d === date ? " on" : ""}${has ? " has" : ""}" onclick="slDay('${d}')" aria-label="${esc(dayWords(d, today))}${has ? ", logged" : ""}"><small>${p.wd}</small><b>${p.n}</b><span>${isClassDay(d) ? "🏫" : "·"}</span></button>`; }).join("");
   const chip = (fn, id, label, on) => `<button class="sl-chip${on ? " on" : ""}" onclick="${fn}('${id}')" aria-pressed="${on}">${on ? "✅ " : ""}${label}</button>`;
@@ -85,12 +93,15 @@ export function sheetHtml({ date, today, practice = {}, list = [], goals = [], i
   // 📝 Teacher said: what it is about (what she logged for this day; every dance when nothing is logged yet), the body part
   // or idea as one emoji, the words, ＋.
   const opts = [...list.filter(d => r.dances.includes(d.id)).map(d => ({ id: d.id, n: d.n })), ...goals.filter(g => r.skills.includes(g.id)).map(g => ({ id: "skill:" + g.id, n: `${g.ic} ${g.n}` }))]; const abouts = opts.length ? opts : list.map(d => ({ id: d.id, n: d.n }));
-  const cur = abouts.some(a => a.id === about) ? about : (abouts[0] || {}).id || "";
+  // With classes to pick from, the class is what a note needs; the dance or skill is an optional second tap.
+  const curCls = classes.some(c => c.name === cls) ? cls : "", klass = classes.find(c => c.name === curCls) || null;
+  const cur = abouts.some(a => a.id === about) ? about : classes.length ? "" : (abouts[0] || {}).id || "";
+  const clsHtml = classes.length ? `<div class="sl-chips sl-cls">${classes.map((c, i) => { const was = r.classes.includes(c.name), on = c.name === curCls; return `<button class="sl-chip${on ? " on" : ""}" onclick="slCls(${i})" aria-pressed="${on}">${was ? "✅ " : ""}🏫 ${esc(c.label || c.name)}${c.t ? `<small>${esc(c.t)}</small>` : ""}</button>`; }).join("")}</div>${klass && klass.teacher ? `<div class="sl-teacher">👩‍🏫 ${esc(klass.teacher)}</div>` : ""}<div class="sl-mlab">💃 ⭐ ?</div>` : "";
   const aboutHtml = abouts.map(a => `<button class="sl-chip sm${a.id === cur ? " on" : ""}" onclick="slAbout('${a.id}')" aria-pressed="${a.id === cur}">${esc(a.n)}</button>`).join("");
   const tags = TAGS.map(t => `<button class="sl-tag${t === tag ? " on" : ""}" onclick="slTag('${t}')" aria-label="${TAG_LABEL[t]}" aria-pressed="${t === tag}">${TAG_EMOJI[t]}</button>`).join("");
-  const saidHtml = said.map(c => `<div class="sl-said"><span class="grow">${TAG_EMOJI[c.tag] || "✨"} ${esc(c.text)}<small>${esc(label(c.danceId))}</small></span><button class="del" onclick="slSaidDel('${c.id}')" aria-label="Delete">✕</button></div>`).join("");
-  const teacher = `<div class="sl-lab">📝 <span class="sl-labw">Teacher said</span></div>${saidHtml}<div class="sl-chips">${aboutHtml}</div><div class="sl-tags">${tags}</div>
-    <div class="sl-add"><input type="text" class="sl-note" id="slSaid" maxlength="${SAID_MAX}" placeholder="📝 …" aria-label="What the teacher said" onkeydown="if(event.key==='Enter')slSaidAdd()"><button class="btn coral" onclick="slSaidAdd()" aria-label="Add">＋</button></div>`;
+  const saidHtml = said.map(c => `<div class="sl-said"><span class="grow">${TAG_EMOJI[c.tag] || "✨"} ${esc(c.text)}<small>${esc([label(c.danceId), c.source && c.source !== "class" ? "👩‍🏫 " + c.source : ""].filter(Boolean).join(" · "))}</small></span><button class="del" onclick="slSaidDel('${c.id}')" aria-label="Delete">✕</button></div>`).join("");
+  const teacher = `<div class="sl-lab">📝 <span class="sl-labw">Teacher said</span></div>${saidHtml}${clsHtml}<div class="sl-chips">${aboutHtml}</div><div class="sl-tags">${tags}</div>
+    <div class="sl-add"><input type="text" class="sl-note" id="slSaid" maxlength="${SAID_MAX}" placeholder="📝 …" aria-label="What the teacher said" onkeydown="if(event.key==='Enter')slSaidAdd()"><button class="btn coral" data-about="${esc(cur)}" data-cls="${esc(curCls)}" onclick="slSaidAdd()" aria-label="Add">＋</button></div>`;
   const feel = FEELS.map(([k, e]) => `<button class="sl-feel${r.feel === k ? " on" : ""}" onclick="slFeel('${k}')" aria-label="${k}" aria-pressed="${r.feel === k}">${e}</button>`).join("");
   return `<div class="sl-strip" id="slStrip">${strip}</div>
     <div class="sl-date">🏫 ${esc(dayWords(date, today))}${hasLog(r) ? " ✅" : ""}</div>
@@ -113,14 +124,22 @@ const classDay = (d) => studioOn(d, CLASSES, studioDates()).length > 0;
 const compDances = () => dances().filter(d => !isClassDance(d)).map(d => ({ id: d.id, n: danceLabel(d) }));
 const myGoals = () => { const working = workingIds(S.settings); return working.map(id => goalRow(id, { working })).filter(Boolean).map(r => ({ id: r.id, n: r.n, ic: r.ic })); };
 // What a note is about, in words: the dance, or the skill.
-export const aboutLabel = (about) => { const sk = aboutSkill(about); if (sk) { const r = goalRow(sk); return r ? `${r.ic} ${r.n}` : ""; } const d = dances().find(x => x.id === about); return d ? danceLabel(d) : ""; };
+export const aboutLabel = (about) => { const k = aboutClass(about); if (k) return "🏫 " + shortClass(k); const sk = aboutSkill(about); if (sk) { const r = goalRow(sk); return r ? `${r.ic} ${r.n}` : ""; } const d = dances().find(x => x.id === about); return d ? danceLabel(d) : ""; };
 // Her goals, plus any other skill logged for the day (so its chip stays to be tapped off).
 const dayGoals = () => { const mine = myGoals(), have = new Set(mine.map(g => g.id)); for (const id of studioRec(S.practice, cur).skills) { if (have.has(id)) continue; const r = goalRow(id); if (r) mine.push({ id: r.id, n: r.n, ic: r.ic }); } return mine; };
 const moreGroups = () => { const shown = new Set(dayGoals().map(g => g.id)); return pickGroups({ working: workingIds(S.settings) }).map(g => ({ label: g.label, items: g.parts.flatMap(p => p.items).filter(i => !shown.has(i.id)).map(i => ({ id: i.id, n: String(i.n).replace(/^🦋 /, "") })) })).filter(g => g.items.length); };
+// The classes to offer for a day: that day's (weekly classes and booked dates: a private, a make-up), each with its time and
+// teacher; on a day with none (a make-up nobody booked in the app), every weekly class.
+export function classesOn(date, { weekly = CLASSES, oneOffs = studioDates() } = {}){
+  const on = studioOn(date, weekly, oneOffs), src = on.length ? on : weekly.map(c => ({ t: "", name: c.name })), seen = new Set(), out = [];
+  for (const c of src) { if (!c || !c.name || seen.has(c.name)) continue; seen.add(c.name); const w = weekly.find(x => x.name === c.name), o = oneOffs.find(e => e && e.start === date && e.name === c.name); out.push({ name: c.name, label: shortClass(c.short || c.name), t: on.length ? String(c.t || "") : "", teacher: String((o && o.teacher) || (w && w.teacher) || "") }); }
+  return out;
+}
+let clsSel = "";
 let about = "", tag = "", keepMore = true; // the ＋ ⭐ list folds again once she has picked from it, so 📝 Teacher said is back in reach
 function draw(){
   if (!box) return; const keep = (document.querySelector(".sl-add input") || {}).value || "", open = keepMore && !!(box.querySelector && box.querySelector(".sl-more[open]"));
-  box.innerHTML = sheetHtml({ date: cur, today: todayStr(), practice: S.practice, list: compDances(), goals: dayGoals(), isClassDay: classDay, more: moreGroups(), said: classNotes(S.corrections, { date: cur }), about, tag, label: aboutLabel });
+  box.innerHTML = sheetHtml({ date: cur, today: todayStr(), practice: S.practice, list: compDances(), goals: dayGoals(), isClassDay: classDay, more: moreGroups(), said: classNotes(S.corrections, { date: cur }), about, tag, label: aboutLabel, classes: classesOn(cur), cls: clsSel });
   const inp = document.querySelector(".sl-add input"); if (inp && keep) inp.value = keep; const m = box.querySelector && box.querySelector(".sl-more"); if (m && open) m.open = true;
   const on = box.querySelector && box.querySelector(".sl-day.on"); if (on && on.scrollIntoView) on.scrollIntoView({ inline: "center", block: "nearest" });
 }
@@ -131,17 +150,20 @@ export function openStudioLog(date){
 }
 async function save(date, patch){ await storeSet("practice", date, withStudio(S.practice[date], patch)); draw(); renderStudioNudge(); renderStones(); }
 const now = () => studioRec(S.practice, cur);
-function slDay(d){ if (!logDays(todayStr()).includes(d)) return; cur = d; draw(); }
+function slDay(d){ if (!logDays(todayStr()).includes(d)) return; cur = d; clsSel = ""; about = ""; draw(); }
+// A class chip: she was there (the day's log) and the next note is from it; a second tap takes both back.
+async function slCls(i){ const c = classesOn(cur)[i]; if (!c) return; const have = now().classes, was = have.includes(c.name) && clsSel === c.name; clsSel = was ? "" : c.name; await save(cur, { classes: was ? have.filter(x => x !== c.name) : [...new Set([...have, c.name])] }); }
 async function slDance(id){ await save(cur, { dances: toggleIn(now().dances, id) }); }
 async function slSkill(id){ keepMore = false; try { await save(cur, { skills: toggleIn(now().skills, id) }); } finally { keepMore = true; } }
 async function slFeel(k){ await save(cur, { feel: now().feel === k ? "" : k }); }
 async function slNote(v){ await save(cur, { note: String(v || "").trim() }); toast("✓"); }
 async function slSkip(d){ if (!DATE.test(String(d))) return; await storeSet("practice", d, withStudio(S.practice[d], { skip: true })); renderStudioNudge(); toast("👌"); }
-function slAbout(id){ about = id; draw(); }
+function slAbout(id){ about = about === id ? "" : id; draw(); }
 function slTag(t){ tag = tag === t ? "" : t; draw(); }
 async function slSaidAdd(){
-  const inp = document.querySelector(".sl-add input"), on = box && box.querySelector ? box.querySelector(".sl-chip.sm.on") : null; const to = on ? (on.getAttribute("onclick") || "").replace(/^slAbout\('|'\)$/g, "") : about;
-  const rec = noteRec({ about: to, text: (inp || {}).value, tag, date: cur, id: "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) }); if (!rec) return toast("📝 ?");
+  const inp = document.querySelector(".sl-add input"), btn = document.querySelector(".sl-add .btn"), to = btn ? btn.getAttribute("data-about") || "" : about, k = btn ? btn.getAttribute("data-cls") || "" : clsSel;
+  if (!to && !k) return toast("🏫 ?"); const kc = classesOn(cur).find(c => c.name === k);
+  const rec = noteRec({ about: to, cls: k, teacher: kc ? kc.teacher : "", text: (inp || {}).value, tag, date: cur, id: "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) }); if (!rec) return toast("📝 ?");
   if (inp) inp.value = ""; tag = ""; await storeSet("corrections", rec.id, rec); draw(); renderTeacherNotes(); renderStones(); toast("📝 ✓");
 }
 async function slSaidDel(id){ const c = S.corrections[id]; if (!c || !c.studio) return; await storeSet("corrections", id, { ...c, deleted: true }); draw(); renderTeacherNotes(); }
@@ -151,4 +173,4 @@ export function renderTeacherNotes(){
 }
 async function tnWorked(id){ const today = todayStr(), rec = S.practice[today] || { done: [], note: "", runs: [] }, have = Array.isArray(rec.notes) ? rec.notes : [], on = !have.includes(id); await storeSet("practice", today, { ...rec, notes: on ? [...have, id] : have.filter(x => x !== id) }); renderTeacherNotes(); renderStones(); toast(on ? "💪 That's a stepping stone 🪜" : "↩"); }
 async function tnGot(id){ const c = await closeCorrection(id); renderTeacherNotes(); renderStones(); if (c) toast("Got it! ✅ Show your teacher 🌟", 2400); }
-expose({ openStudioLog, slDay, slDance, slSkill, slFeel, slNote, slSkip, slAbout, slTag, slSaidAdd, slSaidDel, tnWorked, tnGot });
+expose({ openStudioLog, slCls, slDay, slDance, slSkill, slFeel, slNote, slSkip, slAbout, slTag, slSaidAdd, slSaidDel, tnWorked, tnGot });

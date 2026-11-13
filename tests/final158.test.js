@@ -72,7 +72,7 @@ test("the studio's closures (its important dates): no classes, her class days ar
 });
 
 test("finish lines: today's first even when an older one waits for a tick; the unpicked showing follows its dates", () => {
-  const cps = allCheckpoints(plan15, [], "2026-12-08"); const s = cps.find(c => /Solo \+ trio showing/.test(c.t)); assert.equal(s.d, "2026-12-12", "after Dec 6 it moves to Dec 12");
+  const cps = allCheckpoints(plan15, [], "2026-12-08"); const s = cps.find(c => /Solo \+ trio DRESS REHEARSAL/.test(c.t)); assert.equal(s.d, "2026-12-12", "after Dec 6 it moves to Dec 12");
   assert.equal(allCheckpoints(plan15, [], "2026-11-01").find(c => c.id === s.id).d, "2026-12-06");
   const cp = nextCheckpoint("2027-01-08", plan15, [], {}); assert.equal(cp.state, "today"); assert.match(cp.t, /Winter Showcase/);
 });
