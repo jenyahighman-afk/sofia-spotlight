@@ -29,7 +29,7 @@ export function initNav(){
   $$("nav.tabs button").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.p)));
   if (!canPush()) return; try { history.replaceState({ p: "home" }, ""); } catch (e) {}
   window.addEventListener("popstate", (e) => {
-    const over = [...document.querySelectorAll(".modal, .stage")].filter(m => !m.hidden).pop();
+    const over = [...document.querySelectorAll("div.modal, div.stage")].filter(m => !m.hidden).pop();
     if (over) { const x = over.querySelector('button[id$="Close"]'); if (x) { x.click(); try { history.pushState({ p: currentPage() }, ""); } catch (err) {} return; } }
     showPage((e.state && e.state.p) || "home", true);
   });

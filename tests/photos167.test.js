@@ -60,7 +60,7 @@ test("Today's second choice: one of her own goals a day, taking turns", () => {
   assert.equal(W.todayGoal({ working: ["s-cartwheel"] }, D, ctx({ skills: { "s-cartwheel": { id: "s-cartwheel", state: "checked" } } })), null, "a finished one sits out");
   const h = W.todaySkillHtml(W.todayGoal({ working: ["a-aerial"] }, D, ctx({ settings: { working: ["a-aerial"] } }))); assert.match(h, /⭐ Or work on a skill/); assert.match(h, /onclick="goalOpen\('a-aerial'\)"/); assert.match(h, /Aerial/); assert.match(h, /all my goals ›/);
   assert.match(W.todaySkillHtml(null), /showPage\('skills'\);wkPick\(\)/, "an empty list offers to pick one");
-  const home = src("js/views/home.js"); assert.match(home, /const skillPick=kind==="show"\?"":todaySkillHtml\(todayGoal\(S\.settings,today\)\)/, "not on a show day");
+  const home = src("js/views/home.js"); assert.match(home, /const tg=kind==="show"\?null:todayGoal\(S\.settings,today\); const skillPick=kind==="show"\?"":todaySkillHtml\(/, "not on a show day");
   assert.match(H.danceButtons({ kind: "home" }), /💃 Practice a dance/); assert.equal(H.DAY_ASK.studio, "No home practice on class days.", "the printed Pass quotes these words");
 });
 
@@ -77,4 +77,37 @@ test("the audit's fixes stay fixed", () => {
   assert.doesNotMatch(html + src("js/views/dances.js") + src("js/stage.js"), /<button(?:(?!aria-label)[^>])*>✕<\/button>/, "every ✕ has a name");
   for (const id of ["photoPrompt", "goalReminder"]) assert.ok(html.includes(`id="${id}"`), id);
   assert.ok(html.indexOf('id="photoPrompt"') < html.indexOf('id="workingFold"'), "Picture time sits above My goals");
+});
+
+// ---- 1.68.0 (Jenya, Nov 13, after trying it: the purple row was confusing, "A trick" opened a hidden game, and nothing
+// said how to work on a thing or showed that every little effort counts) ----
+test("Today's row no longer sends her into Trick Quest; the two helpers belong to the dance, with one thing to think about", () => {
+  const home = src("js/views/home.js"); const card = home.slice(home.indexOf('$("#todayCard").innerHTML='), home.indexOf("renderSeasonCard(today);"));
+  assert.doesNotMatch(card, /tc\.go|qsStart|playOpen/, "no button on Today opens a game"); assert.match(card, /Not sure of the steps\?/); assert.match(card, /📹 Videos<\/button>/); assert.match(card, /🧠 Memorize<small>/);
+  const f = H.focusLine({ id: "c1", tag: "feet", text: "Point your foot" }, "Solo"); assert.match(f, /One thing to think about in your solo/); assert.match(f, /🦶 Point your foot/); assert.match(f, /showMe\('c1'\)">Show me ›/); assert.equal(H.focusLine(null), "");
+});
+
+test("stepping stones: every dance, skill practice, picture and closed fix adds up, this week and ever", () => {
+  const practice = { "2026-11-02": { runs: [{}], skills: ["split-r"] }, "2026-11-09": { runs: [{}], skills: ["split-r"] }, "2026-11-11": { runs: [{}, {}], skills: ["a-aerial", "split-r", "split-r"] }, junk: { runs: [{}] } };
+  const corrections = { a: { status: "done", doneAt: "2026-11-11" }, b: { status: "working" }, c: { status: "done", doneAt: "2026-10-01" }, d: { status: "done", deleted: true, doneAt: "2026-11-11" } };
+  const st = W.stones({ practice, photos, corrections }, D); // Nov 13 2026 is a Friday: the week began Mon Nov 9
+  assert.deepEqual(st.week, { dances: 3, skills: 3, photos: 0, fixes: 1, n: 7 }); assert.deepEqual(st.all, { dances: 4, skills: 4, photos: 4, fixes: 2, n: 14 }, "a clip is not a picture; a removed fix is not a stone");
+  assert.equal(W.stoneWords(st.week), "💃 3 dances · ⭐ 3 skill practices · ✅ 1 fix done"); assert.equal(W.stoneWords({ dances: 1, skills: 1, photos: 1, fixes: 0 }), "💃 1 dance · ⭐ 1 skill practice · 📸 1 picture");
+  const h = W.stonesHtml(st); assert.match(h, /14 so far/); assert.match(h, /This week: 7 stones/); assert.equal((h.match(/<i><\/i>/g) || []).length, 7, "one stone on the path for each"); assert.match(h, /This is how a dance gets to look easy/);
+  assert.match(W.stonesHtml(W.stones({ practice: {}, photos: {}, corrections: {} }, D)), /Your first one is one tap away/); assert.match(W.stonesHtml({ week: { n: 0 }, all: { n: 3 } }), /your next one is waiting/);
+  assert.deepEqual(W.workedDates(practice, "split-r"), ["2026-11-02", "2026-11-09", "2026-11-11"]); assert.deepEqual(W.workedDates(practice, "nope"), []);
+});
+
+test("a goal says how to work on it today, takes ✓ I worked on it, and shows its stones", () => {
+  const solo = json("dances").find ? json("dances").find(d => d.id === "solo") : null;
+  const cart = W.goalRow("s-cartwheel", ctx({ settings: { working: ["s-cartwheel"] } })), how = W.goalHow(cart, { soloDance: solo });
+  assert.equal(how.length, 3); assert.equal(how[0], cart.tip, "its tip first"); assert.match(how[2], /once with the music/);
+  assert.match(W.goalHow(W.goalRow("split-l", ctx({ settings: { working: ["split-l"] } })))[0], /Warm up first/); assert.match(W.goalHow(W.goalRow("hollow", ctx({ settings: { working: ["hollow"] } })))[1], /Count your seconds/);
+  assert.deepEqual(W.goalHow(W.goalRow("a-aerial", ctx({ settings: { working: ["a-aerial"] } }))), [], "the aerial's next step is its how");
+  const w = W.workHtml(cart, { dates: ["2026-11-02", "2026-11-11"], today: D, steps: how }); assert.match(w, /🪜 How to work on it today/); assert.match(w, /gpWorked\('s-cartwheel'\)">✓ I worked on it today/); assert.match(w, /2 stepping stones<\/b> · last one 2 days ago/); assert.match(w, /📸 2 pictures/);
+  assert.equal((w.match(/<i class="/g) || []).length, 14); assert.equal((w.match(/<i class="on/g) || []).length, 2, "two filled days in the last two weeks");
+  const done = W.workHtml(cart, { dates: [D], today: D, steps: how }); assert.match(done, /✅ Worked on it today/); assert.match(done, /one today ⭐/); assert.match(W.workHtml(cart, { dates: [], today: D }), /No stepping stones yet/);
+  const t = W.todaySkillHtml(cart, { dates: [D], today: D, how: how[0] }); assert.match(t, /today-skill done/); assert.match(t, /🪜 1 time so far · 📸 2 pictures · tap to see how ›/); assert.match(W.todaySkillHtml(cart, { dates: [], today: D }), /your first time/);
+  assert.match(src("js/working.js"), /storeSet\("practice", today, \{ \.\.\.rec, skills: on \? \[\.\.\.have, id\] : have\.filter\(x => x !== id\) \}\)/);
+  const html = src("index.html"); for (const id of ["gpWork", "stonesCard"]) assert.ok(html.includes(`id="${id}"`), id); assert.ok(html.indexOf('id="gpNext"') < html.indexOf('id="gpWork"') && html.indexOf('id="gpWork"') < html.indexOf('id="gpPhotos"'));
 });
