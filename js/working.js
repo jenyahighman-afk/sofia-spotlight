@@ -128,12 +128,13 @@ export function todayGoal(settings, today = todayStr(), ctx = {}){
 // progress picture, a fix closed. They only ever add up: nothing is due, nothing is lost by a day off.
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 // The days she worked on one goal, oldest first. Pure.
-export const workedDates = (practice, id) => Object.entries(practice || {}).filter(([d, r]) => DATE.test(d) && r && Array.isArray(r.skills) && r.skills.includes(id)).map(([d]) => d).sort();
+const studioOf = (r) => { const s = (r && r.studio) || {}; return { dances: Array.isArray(s.dances) ? [...new Set(s.dances)] : [], skills: Array.isArray(s.skills) ? [...new Set(s.skills)] : [] }; }; // the day's studio log (js/studiolog.js)
+export const workedDates = (practice, id) => Object.entries(practice || {}).filter(([d, r]) => DATE.test(d) && r && ((Array.isArray(r.skills) && r.skills.includes(id)) || studioOf(r).skills.includes(id))).map(([d]) => d).sort();
 // Everything she has done, this week (Monday first) and ever: { week: { dances, skills, photos, fixes, n }, all: { … } }. Pure.
 export function stones({ practice = S.practice, photos = S.photos, corrections = S.corrections } = {}, today = todayStr()){
   const from = mondayKey(today), zero = () => ({ dances: 0, skills: 0, photos: 0, fixes: 0, n: 0 }), week = zero(), all = zero();
   const add = (k, date, n = 1) => { if (!n) return; all[k] += n; all.n += n; if (DATE.test(String(date)) && date >= from && date <= today) { week[k] += n; week.n += n; } };
-  for (const [d, r] of Object.entries(practice || {})) { if (!DATE.test(d) || !r) continue; add("dances", d, Array.isArray(r.runs) ? r.runs.length : 0); add("skills", d, Array.isArray(r.skills) ? new Set(r.skills).size : 0); }
+  for (const [d, r] of Object.entries(practice || {})) { if (!DATE.test(d) || !r) continue; add("dances", d, Array.isArray(r.runs) ? r.runs.length : 0); const so = studioOf(r); add("dances", d, so.dances.length); add("skills", d, new Set([...(Array.isArray(r.skills) ? r.skills : []), ...so.skills]).size); }
   for (const p of Object.values(photos || {})) { if (!p || p.deleted || p.kind === "video" || !(p.card || p.goal)) continue; const d = DATE.test(String(p.taken || "")) ? p.taken : String(p.at || "").slice(0, 10); add("photos", d); }
   for (const c of Object.values(corrections || {})) if (isDone(c)) add("fixes", String(c.doneAt || ""));
   return { week, all };
@@ -159,10 +160,10 @@ export const danceLabel = (d) => { const parts = String((d && d.name) || "").spl
 export function danceProgress(list, { practice = S.practice, corrections = S.corrections, settings = S.settings } = {}, today = todayStr()){
   const from = mondayKey(today);
   return (list || []).filter(d => d && !isClassDance(d)).map(d => {
-    let runs = 0, week = 0, last = "";
-    for (const [date, r] of Object.entries(practice || {})) { if (!DATE.test(date) || !r || !Array.isArray(r.runs)) continue; const n = r.runs.filter(x => x && (x.danceId || "solo") === d.id).length; if (!n) continue; runs += n; if (date >= from && date <= today) week += n; if (date > last) last = date; }
+    let runs = 0, week = 0, last = "", studio = 0;
+    for (const [date, r] of Object.entries(practice || {})) { if (!DATE.test(date) || !r) continue; const n = Array.isArray(r.runs) ? r.runs.filter(x => x && (x.danceId || "solo") === d.id).length : 0, at = studioOf(r).dances.includes(d.id) ? 1 : 0; if (!n && !at) continue; runs += n; studio += at; if (date >= from && date <= today) week += n + at; if (date > last) last = date; }
     const fixes = Object.values(corrections || {}).filter(c => c && !c.deleted && c.danceId === d.id), parts = chunks(d).map(c => c.n), known = memoFor(settings, d.id).known.filter(k => parts.includes(k)).length;
-    return { id: d.id, n: danceLabel(d), runs, week, last, fixesDone: fixes.filter(isDone).length, fixesAll: fixes.length, known, parts: parts.length };
+    return { id: d.id, n: danceLabel(d), runs, studio, week, last, fixesDone: fixes.filter(isDone).length, fixesAll: fixes.length, known, parts: parts.length };
   });
 }
 // One dance's row: its name, what she has done, and a bar for the fixes. A tap opens the dance. Pure.
@@ -170,7 +171,8 @@ export function danceProgressHtml(rows, today = todayStr()){
   if (!rows.length) return "";
   const row = (r) => {
     const ago = r.last ? (r.last === today ? "today ⭐" : agoWords(daysBetween(r.last, today))) : "";
-    const danced = r.runs ? `🎵 Danced ${plural(r.runs, "time", "times")}${r.week ? ` · ${r.week} this week` : ""}${ago ? ` · last ${ago}` : ""}` : "🎵 Not danced here yet · tap to open it";
+    const parts = [r.runs ? `🎵 Danced ${plural(r.runs, "time", "times")}` : "", r.studio ? `🏫 ${plural(r.studio, "time", "times")} at the studio` : ""].filter(Boolean);
+    const danced = parts.length ? `${parts.join(" · ")}${r.week ? ` · ${r.week} this week` : ""}${ago ? ` · last ${ago}` : ""}` : "🎵 Not danced here yet · tap to open it";
     const fix = r.fixesAll ? `<span class="dp-bar" aria-hidden="true">${r.fixesDone ? `<i style="width:${Math.round(100 * r.fixesDone / r.fixesAll)}%"></i>` : ""}</span><small>✅ ${r.fixesDone} of ${plural(r.fixesAll, "fix", "fixes")} done${r.parts ? ` · 🧠 ${r.known} of ${plural(r.parts, "part", "parts")} by heart` : ""}</small>` : r.parts ? `<small>🧠 ${r.known} of ${plural(r.parts, "part", "parts")} by heart</small>` : "";
     return `<button class="dp-row" onclick="showPage('dances');danceOpen('${r.id}')"><span class="grow"><b>${esc(r.n)}</b><small>${danced}</small>${fix}</span><span class="g-go">›</span></button>`;
   };
