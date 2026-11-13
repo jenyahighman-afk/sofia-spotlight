@@ -17,7 +17,7 @@ test("the parts in session order, each once: strength, flex and technique as one
   assert.equal(planSummary(planFor("2026-11-05")), "Strength, flex, technique · knees · solo + trio · film", "Thursday during Memory + knees");
   assert.equal(planSummary(planFor("2026-11-06")), "Strength, flex, technique · knees · solo + trio · film", "Friday: the same session, no longer 'Technique + run'");
   assert.equal(planSummary(planFor("2026-11-01")), "Strength, flex, technique · knees · solo + trio · film · Sunday review", "Sunday adds the film review");
-  assert.equal(planSummary(planFor("2026-11-12")), "Strength, flex, technique · trick · aerial · solo + trio · film · picture it", "after Nov 9: the week's trick, the aerial steps, the show in her head");
+  assert.equal(planSummary(planFor("2026-11-19")), "Strength, flex, technique · trick · aerial · solo + trio · film · picture it", "after Nov 9: the week's trick, the aerial steps, the show in her head");
   assert.equal(planSummary(planFor("2027-01-28")), "🎧 judges · strength, flex, technique · trick · aerial · solo + trio · picture it", "a judges' week opens with the recordings");
   assert.match(planSummary(planFor("2027-05-27")), /pick-up drill · improv/, "the audition weeks name the pick-up drill and improv");
 });

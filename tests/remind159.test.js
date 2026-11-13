@@ -24,7 +24,8 @@ const dates = () => RM.planDates(WEEK, "2026-11-01", 150);
 
 test("the dates that differ from the weekday: closures, the light week, the night before, show day; an ordinary week has none", () => {
   S.events = {}; S.practice = {}; const d = dates();
-  for (const x of ["2026-11-26", "2026-11-27", "2026-11-29", "2027-01-07"]) assert.equal(x in d, false, x + ": a home weekday stays a home day, light week or not (one line for every home day)");
+  for (const x of ["2026-11-26", "2026-11-27", "2027-01-07"]) // Nov 29 left this list in 1.73.0: the trio private booked that Sunday makes it a studio day
+  for (const x of ["2026-11-26", "2026-11-27", "2027-01-07"]) assert.equal(x in d, false, x + ": a home weekday stays a home day, light week or not (one line for every home day)");
   for (const x of ["2026-11-25", "2026-11-28", "2026-12-21", "2026-12-22", "2026-12-23", "2026-12-26", "2026-12-28"]) assert.equal(d[x], "home", x + ": a closure's class days are home days");
   assert.equal(d["2027-01-08"], "off", "show day: no practice nudge");
   for (const x of ["2026-11-02", "2026-11-03", "2026-11-05", "2026-11-07", "2026-12-15"]) assert.equal(x in d, false, x + " is its weekday's usual kind");

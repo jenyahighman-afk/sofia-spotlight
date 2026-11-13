@@ -1,5 +1,15 @@
 [
  {
+  "id": "acro-makeup-1022",
+  "kind": "class",
+  "name": "Acro make-up class",
+  "start": "2026-10-22",
+  "end": "2026-10-22",
+  "time": "5:30 PM",
+  "room": "",
+  "dances": "Acro"
+ },
+ {
   "id": "acro-makeup-1029",
   "kind": "class",
   "name": "Acro make-up class",
@@ -31,6 +41,61 @@
   "notes": "An extra team rehearsal on the studio's Nov/Dec schedule."
  },
  {
+  "id": "acro-makeup-1112",
+  "kind": "class",
+  "name": "Acro make-up class",
+  "start": "2026-11-12",
+  "end": "2026-11-12",
+  "time": "5:30 PM",
+  "room": "",
+  "dances": "Acro",
+  "notes": "Mini/Jr Acro 2/3 (make-up from the old system, confirmed by the desk Nov 11)."
+ },
+ {
+  "id": "acro-makeup-1113",
+  "kind": "class",
+  "name": "Acro make-up class",
+  "start": "2026-11-13",
+  "end": "2026-11-13",
+  "time": "6:30 PM",
+  "room": "",
+  "dances": "Acro",
+  "notes": "Mini/Jr Acro 1/2 (make-up from the old system, confirmed by the desk Nov 11)."
+ },
+ {
+  "id": "trio-private-1115",
+  "kind": "class",
+  "name": "Trio private",
+  "start": "2026-11-15",
+  "end": "2026-11-15",
+  "time": "12:30–1:30",
+  "room": "",
+  "dances": "Trio",
+  "notes": "With La (Larisa). Booked Nov 1."
+ },
+ {
+  "id": "solo-rehearsal-1118",
+  "kind": "class",
+  "name": "Solo rehearsal with Ms. Brittany",
+  "start": "2026-11-18",
+  "end": "2026-11-18",
+  "time": "3:30–4:00",
+  "room": "",
+  "dances": "Solo",
+  "notes": "Booked Nov 1."
+ },
+ {
+  "id": "solo-rehearsal-1121",
+  "kind": "class",
+  "name": "Solo rehearsal with Angie",
+  "start": "2026-11-21",
+  "end": "2026-11-21",
+  "time": "9:30–10:00",
+  "room": "",
+  "dances": "Solo",
+  "notes": "Moved from 8:30 to 9:30 (La, Nov 5)."
+ },
+ {
   "id": "closed-thanksgiving",
   "kind": "closed",
   "short": "Studio closed",
@@ -38,6 +103,17 @@
   "start": "2026-11-25",
   "end": "2026-11-29",
   "notes": "No classes (the studio's important dates). Her usual class days are home days. Privates can still run: La has a block on Sun Nov 29."
+ },
+ {
+  "id": "trio-private-1129",
+  "kind": "class",
+  "name": "Trio private",
+  "start": "2026-11-29",
+  "end": "2026-11-29",
+  "time": "2:00–2:30",
+  "room": "",
+  "dances": "Trio",
+  "notes": "With La (Larisa). Booked Nov 1. The studio's sheet lists this inside the Thanksgiving closure (Nov 25–29): confirm it with La."
  },
  {
   "id": "grp-showing-1205",
@@ -50,7 +126,7 @@
   "time": "3:30–7:00",
   "room": "Studio 6",
   "dances": "PITCH groups",
-  "notes": "In-studio run-through of the group routines (3:30–7:00): every dancer must be there. The holiday party potluck is after it, 7:00–8:30. The regular Saturday morning stays on the schedule."
+  "notes": "In-studio run-through of the group routines (3:30–7:00), closed, on a pre-set schedule: every dancer must be there. SOLID BLACK, no costumes. Arrive 30 minutes before her time: about 3:40. Her routines (approximate, from the studio's run-order tab read Nov 13): PITCH jazz 4:12 PM, PITCH contemporary (Listening Chair) 4:33 PM. The holiday party potluck is after it, 7:00–8:30 (pyjamas, board games; sign up for a dish). The regular Saturday morning stays on the schedule."
  },
  {
   "id": "sdt-showing-1206",
@@ -64,7 +140,7 @@
   "time": "10:15–12:15",
   "room": "Studio 6",
   "dances": "Solo, trio",
-  "notes": "Required for every dancer with a solo, duo or trio: pick Sun Dec 6 OR Sat Dec 12, in costume. The studio says more info is coming."
+  "notes": "Required for every dancer with a solo, duo or trio: pick Sun Dec 6 OR Sat Dec 12, one date and one hour block per routine, in FULL COSTUME. This is the solo's and the trio's dress rehearsal: they do not go on stage at the January showcase (La, Nov 12). To sign up, email La (info@glasshousedance.com) with the date and hour block; no changes once signed up."
  },
  {
   "id": "sdt-showing-1212",
@@ -78,7 +154,7 @@
   "time": "3:30–6:30",
   "room": "Studio 6",
   "dances": "Solo, trio",
-  "notes": "Required for every dancer with a solo, duo or trio: pick Sun Dec 6 OR Sat Dec 12, in costume. The studio says more info is coming."
+  "notes": "Required for every dancer with a solo, duo or trio: pick Sun Dec 6 OR Sat Dec 12, one date and one hour block per routine, in FULL COSTUME. This is the solo's and the trio's dress rehearsal: they do not go on stage at the January showcase (La, Nov 12). To sign up, email La (info@glasshousedance.com) with the date and hour block; no changes once signed up."
  },
  {
   "id": "hold-1212",
@@ -96,7 +172,19 @@
   "name": "Studio closed: Winter Break",
   "start": "2026-12-19",
   "end": "2027-01-01",
-  "notes": "No classes (the studio's important dates). Her usual class days are full home days. Back Sat Jan 2 for the mandatory rehearsal. From the studio's Nov 1 email, not settled yet: Sat Dec 19 may have a rehearsal (tell the studio if she won't be there), and the return may move to Sun Jan 3."
+  "notes": "No classes (the studio's important dates). Her usual class days are full home days. Settled by La's Nov 4 email: no team rehearsal or team technique on Sat Dec 19 (privates may be offered Dec 19–20); the studio re-opens Sat Jan 2 (team technique likely runs); the mandatory team rehearsal is SUN JAN 3, the only one before the showcase."
+ },
+ {
+  "id": "team-reconvene-0103",
+  "kind": "class",
+  "short": "PITCH rehearsal",
+  "name": "Mandatory team reconvene rehearsal (PITCH)",
+  "start": "2027-01-03",
+  "end": "2027-01-03",
+  "time": "",
+  "room": "",
+  "dances": "PITCH groups",
+  "notes": "Mandatory, the only team rehearsal before the showcase (La, Nov 4). Time not announced: see the December tab of the studio's schedule."
  },
  {
   "id": "wf",
@@ -105,7 +193,7 @@
   "end": "2027-01-10",
   "type": "Competitive Showcase Jan 7–8 (solo, trio, PITCH) + Informal Performance Showcase Jan 9–10 (her classes)",
   "dances": "Solo, trio, PITCH groups, class dances",
-  "notes": "Competitive Showcase Thu–Fri Jan 7–8 (Sofia most likely Fri Jan 8); Informal Performance Showcase Sat–Sun Jan 9–10 (her classes). The Informal is opt-out only: she performs unless you email your location's front desk by Sat Nov 7). Shows run all day by age division; each class does a 1–1.5 min mini routine, all classes or none. Tee shirt size by Nov 7 on the studio website's home page. What to wear for the classes: the winter performance tee + solid black bottoms; ballet: pink tights, pink ballet shoes and a solid black leotard. Several classes: layer (black leggings over pink convertible tights) and change shoes only: no changing rooms, no time for full changes. Must be back for rehearsals Sat Jan 2. Treat it as the dress rehearsal for the January comps.",
+  "notes": "Competitive Showcase Thu–Fri Jan 7–8 (Sofia most likely Fri Jan 8); Informal Performance Showcase Sat–Sun Jan 9–10 (her classes). The Informal is opt-out only: she performs unless you email your location's front desk by Sat Nov 7). Shows run all day by age division; each class does a 1–1.5 min mini routine, all classes or none. Tee shirt size by Nov 7 on the studio website's home page. What to wear for the classes: the winter performance tee + solid black bottoms; ballet: pink tights, pink ballet shoes and a solid black leotard. Several classes: layer (black leggings over pink convertible tights) and change shoes only: no changing rooms, no time for full changes. Must be back for rehearsals Sat Jan 2. Treat it as the dress rehearsal for the January comps. UPDATE from La's Nov 12 email: the Competitive Showcase is now an on-stage dress rehearsal for the GROUP routines only (about 15 minutes each, full costume, hair and makeup), open to immediate family only. Solos, duos and trios do NOT take the stage before competition season; their in-studio run on Dec 6 or Dec 12 is their dress rehearsal. The studio's emails and sheets give Jan 8–10 only; days and call times are not announced.",
   "cost": "$60 participation fee (winter performance tee + the performance video); tickets $10 each",
   "charge": "Auto-charge Nov 8, 2026 (no refunds once charged)",
   "fun": "Season kickoff! Everyone at Glass House performs, and it's the first time the solo, trio and PITCH dances are seen by an audience. Rehearsal Sat Jan 2 is a must.",
@@ -122,7 +210,7 @@
   "dances": "Convention classes only — using the $200 voucher",
   "notes": "No Pitch competing. Tiring weekend between two performances: hydrate, eat, sleep, no solo practice. Priority is studio rehearsals for Hollywood Connection the next week.",
   "cost": "Convention $420 (mini–senior)",
-  "charge": "Auto-charge Oct 1, 2026",
+  "charge": "Auto-charge Nov 1, 2026 (competition entry fees; moved from Oct 1 by the studio's Oct 20 email)",
   "link": "https://pressplay.com/tour-dates/2/bellevue",
   "fun": "Press Play was started in 2025 by famous convention directors, and the teachers are big names — Mandy Moore choreographed Taylor Swift's Eras Tour and La La Land, Ricky Ubeda won So You Think You Can Dance. There's a dance-off called The Pop-Off at lunch and a closing show called The Rewind. Family at home can watch the competition on a free livestream.",
   "pack": "convention"
@@ -137,7 +225,7 @@
   "venue": "Hyatt Regency Lake Washington, 1053 Lake Washington Blvd N, Renton (venue = hotel)",
   "notes": "First real competition. After the Showcase, fix at most two things. No new corrections after Jan 19.",
   "cost": "Convention $384 (7+) · Comp: solo $180, trio $110 pp, groups $96 pp",
-  "charge": "Auto-charge Oct 1, 2026",
+  "charge": "Auto-charge Nov 1, 2026 (competition entry fees; moved from Oct 1 by the studio's Oct 20 email)",
   "hotel": "Hyatt room block: hyatt.com/events/en-US/group-booking/SEARL/G-HC27",
   "link": "https://www.hyatt.com/events/en-US/group-booking/SEARL/G-HC27",
   "fun": "The venue IS the hotel, right on Lake Washington in Renton. Founded by a real Hollywood talent agent, so scholarships can include agency exposure. Sunday ends with a Wrap Party where awards and scholarships are announced. Ballrooms are cold — bring the team jacket. Free class recaps show up on Vimeo afterward.",
@@ -171,7 +259,7 @@
   "dances": "Solo, trio, PITCH groups",
   "notes": "Must be available for rehearsals Thursday Feb 18.",
   "cost": "Convention $420 (mini–senior) · Comp: solo $245, trio $125 pp, groups $98 pp",
-  "charge": "Auto-charge Nov 1, 2026",
+  "charge": "Auto-charge Dec 1, 2026 (competition entry fees; moved from Nov 1 by the studio's Oct 20 email)",
   "link": "https://ryzedance.com/tour-dates/1/seattle",
   "fun": "Brand new this year — Seattle is only about its 10th event ever! Started by Randi and Hef, a hip-hop duo who danced for Beyoncé, Janet Jackson and J.Lo. There's a surprise class every Friday night called the SurpRYZE class, a RYZE & Shine warm-up on Saturday, and a Pop-Off jam. Fewer dancers in year one means better scholarship odds.",
   "pack": "comp"
@@ -187,7 +275,7 @@
   "hotel": "Marriott Tacoma Downtown is across the street",
   "notes": "Back-to-back weekend after Ryze. Watch her energy.",
   "cost": "Comp: solo $215, trio $108 pp · $20 media fee per dancer",
-  "charge": "Auto-charge Nov 1, 2026",
+  "charge": "Auto-charge Dec 1, 2026 (competition entry fees; moved from Nov 1 by the studio's Oct 20 email)",
   "fun": "iD's first-ever stop in Washington. It's a concert-style show: LED backdrop, an MC who talks to the crowd, and a buzzer moment called the ICON Award. It's loud — little siblings may want ear protection. All photos and videos of every routine are included, so no extra media to buy. Free livestream for family.",
   "pack": "comp"
  },
