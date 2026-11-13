@@ -26,7 +26,8 @@ import { applyPalette } from "../palette.js";
 import { renderPet } from "../pet.js";
 import { renderNews } from "../news.js";
 import { renderSundayCard } from "../sunday.js";
-import { todayGoal, todaySkillHtml } from "../working.js";
+import { todayGoal, todaySkillHtml, workedDates, goalHow, soloDanceNow } from "../working.js";
+import { topFixes } from "../corrections.js";
 
 const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
 // The one line under the big buttons (1.60.0, Jenya Nov 5): counts that only go up — the days she danced her solo or her trio
@@ -67,6 +68,11 @@ export function sessionLink({ kind = "", mins = 0, nDone = 0, total = 0 } = {}){
   const words = nDone >= total ? `✅ The whole session is done` : nDone ? `📋 Keep going with the session · ${nDone} of ${total} ›` : `📋 The whole session · ${mins} min ›`;
   return `<button class="lnk today-fun" onclick="showPage('practice');openPracticeMode()">${words}</button>`;
 }
+// One thing to think about while she dances (1.68.0): this week's fix, or the newest open one of the solo, with its dance's
+// name and Show me. "" when there is none. Pure.
+export function focusLine(fix, danceName = ""){
+  if (!fix) return ""; return `<div class="today-focus"><span class="tf-lab">🎯 One thing to think about${danceName ? ` in your ${esc(danceName.toLowerCase())}` : ""}</span><span class="tf-text">${TAG_EMOJI[fix.tag] || "✨"} ${esc(fix.text)}</span><button class="lnk" onclick="showMe('${fix.id}')">Show me ›</button></div>`;
+}
 function renderHome(){
   const ne=nextEvent(); const today=todayStr();
   if(ne){ const d=daysUntil(ne.start); $("#stickerDays").textContent=d<=0?"0":d; $("#stickerWhat").textContent=shortEventName(ne.name); } // "Winter Showcase", not "(Winter Formal)" too
@@ -87,16 +93,18 @@ function renderHome(){
   // 🧠 Memorize opens the dance whose turn it is today (memo.todayPick: the solo and the trio take turns): the Memorize sheet for a
   // dance with a cue table, its Five steps on Dances otherwise (the trio; habit.js's own rule), the solo when nothing is picked.
   const mp=todayPick(dances(),S.settings,today); const memoGo=!mp?"openMemorize('solo','chunks')":isCueTable(mp.dance.cues)?`openMemorize('${mp.dance.id}','chunks')`:`showPage('dances');memoFocus('${mp.dance.id}')`;
-  // The things she can pick (the row under the buttons): Hannah's videos, Memorize, the week's trick.
-  const tc=trickCard(today,{skills:S.skills,focus:trickFocus(today)}); const trickLab=tc.title==="Learn a trick"?"A trick":tc.go==="habitPicture()"?"Picture it":tc.go==="habitKnees()"?"Knees":tc.title; // the button says what it does, not what kind of week it is
+  // 1.68.0: the week's trick left Today (its button opened a timed Trick Quest station for a trick she had not picked);
+  // Play still has it. The two helpers under the dance buttons are Hannah's videos and Memorize.
   // "You danced your solo" only when she ran it; a watched video or a memory step finishes the plan in its own words.
-  const ran=((rec&&rec.runs)||[]).some(r=>r&&(!r.danceId||r.danceId==="solo")); const skillPick=kind==="show"?"":todaySkillHtml(todayGoal(S.settings,today));
+  const ran=((rec&&rec.runs)||[]).some(r=>r&&(!r.danceId||r.danceId==="solo")); const tg=kind==="show"?null:todayGoal(S.settings,today); const skillPick=kind==="show"?"":todaySkillHtml(tg,tg?{dates:workedDates(S.practice,tg.id),today,how:goalHow(tg,{soloDance:soloDanceNow()})[0]||""}:{});
+  const ff=kind==="show"?null:(currentWeekFix(today)||topFixes(S.corrections,"solo",1)[0]||null); const fd=ff?dances().find(d=>d.id===ff.danceId):null; const focus=focusLine(ff,fd?shortName(fd):"");
   $("#todayCard").innerHTML=`<div class="today-date small">${esc(fmt(today))} · ${dayKind}</div><div class="today-what">${what}</div>${sub}
     <div class="today-line small dp-line" id="dayPlan" hidden></div>
     ${danceButtons({kind,solo:pd,trio:td})}${pd?`<div class="today-line small today-done">${ran?PLAN_DONE:PLAN_DONE_QUIET}</div>`:""}
+    ${focus}
+    <div class="today-help"><span class="small muted">Not sure of the steps?</span><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="${memoGo}">🧠 Memorize<small>${mp?esc(shortName(mp.dance)):""}</small></button></div>
     ${skillPick}
-    ${metaLine({days:danceDays(S.practice),dances:danceCount(S.practice)})}
-    <div class="today-media three"><button class="btn sm violet" onclick="openVideos()">📹 Videos</button><button class="btn sm violet" onclick="${memoGo}">🧠 Memorize<small>${mp?esc(shortName(mp.dance)):""}</small></button><button class="btn sm violet" onclick="${tc.go}">${tc.ic} ${esc(trickLab)}</button></div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
+    ${metaLine({days:danceDays(S.practice),dances:danceCount(S.practice)})}${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
   // The dated line from plan10 (its headline and note) is off Today since 1.60.0: "That's all." is not followed by a to-do.
   // The line's place stays in the card, hidden; dayplan.js and its ticks are unchanged.
   { const dp=$("#dayPlan"); if(dp){ dp.hidden=true; dp.innerHTML=""; } }

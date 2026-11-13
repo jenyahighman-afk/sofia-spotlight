@@ -14,7 +14,7 @@
 import { $, esc, fmt, toast, expose } from "./util.js";
 import { S } from "./store.js";
 import { showPage, currentPage } from "./nav.js";
-import { goalRow, goalKind, goalDoc, workingIds, setOnGoals, gotIt, AERIAL_ID } from "./working.js";
+import { goalRow, goalKind, goalDoc, workingIds, setOnGoals, gotIt, AERIAL_ID, goalHow, workHtml, workedDates, toggleWorked, soloDanceNow } from "./working.js";
 import { renderLineup, firstVsNow, lineupCounts } from "./lineup.js";
 import { CARD_COLORS } from "./cards.js";
 import { aerialHow } from "./views/practice.js";
@@ -94,6 +94,7 @@ export function renderGoalPage(){
   if (!r) { cur = ""; if (currentPage() === "goal") showPage("skills"); return; }
   title.textContent = `${r.ic} ${r.n}`; $("#gpNext").innerHTML = nextHtml(r);
   const steps = $("#aerialFold"); if (steps) steps.hidden = r.kind !== "aerial";
+  const work = $("#gpWork"); if (work) work.innerHTML = workHtml(r, { dates: workedDates(S.practice, r.id), steps: goalHow(r, { soloDance: soloDanceNow() }) });
   const ph = $("#gpPhotos");
   if (r.kind === "measure") ph.innerHTML = measurePhotosHtml(r);
   else {
@@ -108,6 +109,7 @@ export function goalOpen(id, opts = {}){
   if (!goalKind(id)) return; cur = id; showPage("goal"); renderGoalPage();
   if (opts.steps) { const f = $("#aerialFold"); if (f && !f.hidden) { f.open = true; if (f.scrollIntoView) f.scrollIntoView({ block: "start" }); } }
 }
+async function gpWorked(id){ const on = await toggleWorked(id); renderGoalPage(); toast(on ? "That's a stepping stone 🪜" : "Taken back"); }
 async function gpGot(id){ await gotIt(id); renderGoalPage(); }
 async function gpOn(id, want){ const next = await setOnGoals(id, want); if (!next) return; toast(want ? "It's one of your goals ⭐" : "Off your goals. You can pick it again any time."); if (want) renderGoalPage(); else showPage("skills"); }
 // A measure's check-in sheet: its document when it has one, else the draft (written at her first check-in).
@@ -115,4 +117,4 @@ function gpCheckIn(id){ const g = goalDoc(S.goals, id); openGoal(g ? g.id : "new
 // Flip through a goal's photos, oldest first, each labelled with its day.
 function gpPlay(id){ const r = goalRow(id); if (!r) return; openFlip(r.shots.map(p => ({ url: p.url, label: day(p.date) })), `${r.ic} ${r.n}`); }
 function albumAll(){ showAll = !showAll; renderAlbum(); }
-expose({ goalOpen, gpGot, gpOn, gpCheckIn, gpPlay, albumAll });
+expose({ goalOpen, gpWorked, gpGot, gpOn, gpCheckIn, gpPlay, albumAll });

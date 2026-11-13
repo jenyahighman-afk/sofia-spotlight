@@ -13,14 +13,15 @@
 // 1.67.0 the one thing that comes due is a picture (photoPrompts below).
 // Pure parts up top (tested in Node).
 import { $, esc, todayStr, expose, toast, uid } from "./util.js";
-import { S, setSettings } from "./store.js";
+import { S, setSettings, storeSet, dances } from "./store.js";
 import { SKILLS, AERIAL } from "./data.js";
 import { findSkill, ownSkills, skillState, kidCycle, levelGroups, STATE_EMOJI, OWN_RE } from "./skills.js";
 import { SPLIT_KEYS, PRESETS, splitGoal, checkins, CADENCE_DAYS } from "./goals.js";
 import { monthSkill } from "./monthskill.js";
 import { lineup } from "./lineup.js";
 import { daysBetween } from "./moments.js";
-import { shiftDate } from "./corrections.js";
+import { shiftDate, mondayKey, isDone } from "./corrections.js";
+import { drillFor } from "./trickdrill.js";
 import { openStage } from "./stage.js";
 import { CLASS_STYLES } from "./views/me.js";
 import { lastTrickReview } from "./coachhub.js";
@@ -119,12 +120,58 @@ export function todayGoal(settings, today = todayStr(), ctx = {}){
   const rows = working.map(id => goalRow(id, { ...ctx, goals, ladder, settings, working, date: today })).filter(r => r && r.state !== "checked");
   return rows.length ? rows[((dayNo(today) % rows.length) + rows.length) % rows.length] : null;
 }
+// 🪜 Stepping stones (1.68.0, Jenya Nov 13: she should see "how she can work on it and how she can track improvements …
+// that every little effort is a stepping stone towards her goals and towards making each dance look effortless while it
+// was actually a lot of work"). A stepping stone is one piece of work she did: a dance danced to the end (a run in the
+// day's practice record), a skill she worked on (practice[date].skills = [goal id, …], written by ✓ I worked on it), a
+// progress picture, a fix closed. They only ever add up: nothing is due, nothing is lost by a day off.
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+// The days she worked on one goal, oldest first. Pure.
+export const workedDates = (practice, id) => Object.entries(practice || {}).filter(([d, r]) => DATE.test(d) && r && Array.isArray(r.skills) && r.skills.includes(id)).map(([d]) => d).sort();
+// Everything she has done, this week (Monday first) and ever: { week: { dances, skills, photos, fixes, n }, all: { … } }. Pure.
+export function stones({ practice = S.practice, photos = S.photos, corrections = S.corrections } = {}, today = todayStr()){
+  const from = mondayKey(today), zero = () => ({ dances: 0, skills: 0, photos: 0, fixes: 0, n: 0 }), week = zero(), all = zero();
+  const add = (k, date, n = 1) => { if (!n) return; all[k] += n; all.n += n; if (DATE.test(String(date)) && date >= from && date <= today) { week[k] += n; week.n += n; } };
+  for (const [d, r] of Object.entries(practice || {})) { if (!DATE.test(d) || !r) continue; add("dances", d, Array.isArray(r.runs) ? r.runs.length : 0); add("skills", d, Array.isArray(r.skills) ? new Set(r.skills).size : 0); }
+  for (const p of Object.values(photos || {})) { if (!p || p.deleted || p.kind === "video" || !(p.card || p.goal)) continue; const d = DATE.test(String(p.taken || "")) ? p.taken : String(p.at || "").slice(0, 10); add("photos", d); }
+  for (const c of Object.values(corrections || {})) if (isDone(c)) add("fixes", String(c.doneAt || ""));
+  return { week, all };
+}
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+export const stoneWords = (c) => [c.dances && `💃 ${plural(c.dances, "dance", "dances")}`, c.skills && `⭐ ${plural(c.skills, "skill practice", "skill practices")}`, c.photos && `📸 ${plural(c.photos, "picture", "pictures")}`, c.fixes && `✅ ${plural(c.fixes, "fix done", "fixes done")}`].filter(Boolean).join(" · ");
+// Today's card: the number, this week's in words, and the path of stones (one per piece of work this week, up to 14). Pure.
+export function stonesHtml(st){
+  const { week, all } = st; if (!all.n) return `<div class="st-head">🪜 My stepping stones</div><p class="small">Every dance you finish, every time you work on a skill, every picture: each one is a stepping stone. Your first one is one tap away.</p>`;
+  const path = week.n ? `<div class="st-path" aria-hidden="true">${"<i></i>".repeat(Math.min(14, week.n))}${week.n > 14 ? `<b>+${week.n - 14}</b>` : ""}</div>` : "";
+  return `<div class="row"><span class="st-head grow">🪜 My stepping stones</span><span class="chip sun">${all.n} so far</span></div>
+    <p class="st-week"><b>This week: ${week.n ? plural(week.n, "stone", "stones") : "your next one is waiting"}</b>${week.n ? `<br><span class="small">${stoneWords(week)}</span>` : ""}</p>${path}
+    <p class="small muted">Every little bit counts. This is how a dance gets to look easy.</p>`;
+}
+// How to work on a goal today, in three short steps (the aerial has its own: its next step, in nextHtml). A solo trick's
+// are its tip, its line on the dance card and Trick Quest's own stations in words (slow five, then to the music). Pure.
+export function goalHow(r, { soloDance = null, ladder = SKILLS } = {}){
+  if (!r || r.kind === "aerial") return [];
+  if (r.kind === "measure") return r.measure || /split/i.test(r.n) ? ["Warm up first: never stretch cold.", "Go only as far as feels okay. Breathe, and stay there a little.", "Every two weeks take a picture, so you can see it change."] : ["Warm up first.", "Hold it only while it still looks good. Count your seconds.", "Write your seconds in a check-in, so you can watch them grow."];
+  const s = findSkill(r.id, ladder), drill = s && soloDance && r.style === "solo" ? drillFor(s, soloDance) : "";
+  return [r.tip || "Warm up, then picture it once in your head before you start.", drill || "Slow five: do it 5 times slowly. Slow is how it gets clean.", r.dance ? "Then once with the music, in its place in the dance." : "Film one and tap 🎬 Coach me: one thing you did well, one thing to fix."];
+}
+// The work card on a goal's page: how to work on it, ✓ I worked on it today, and its stepping stones (how many days, the
+// last one, the last two weeks as dots, her pictures). Pure.
+export function workHtml(r, { dates = [], today = todayStr(), steps = [] } = {}){
+  const done = dates.includes(today), last = dates.length ? dates[dates.length - 1] : "";
+  const dots = Array.from({ length: 14 }, (_, i) => shiftDate(today, i - 13)).map(d => `<i class="${dates.includes(d) ? "on" : ""}${d === today ? " now" : ""}"></i>`).join("");
+  const how = steps.length ? `<h3>🪜 How to work on it today</h3><ol class="gw-steps">${steps.map(t => `<li>${esc(t)}</li>`).join("")}</ol>` : `<h3>🪜 My stepping stones</h3>`;
+  const count = dates.length ? `<b>${plural(dates.length, "stepping stone", "stepping stones")}</b> · ${done ? "one today ⭐" : "last one " + agoWords(daysBetween(last, today))}` : `<b>No stepping stones yet.</b> Today can be the first.`;
+  return `${how}<div class="row"><button class="btn ${done ? "ghost" : "coral"}" onclick="gpWorked('${r.id}')">${done ? "✅ Worked on it today" : "✓ I worked on it today"}</button></div>
+    <p class="gw-count">${count}${r.shots.length ? ` · 📸 ${plural(r.shots.length, "picture", "pictures")}` : ""}</p><div class="gw-dots" aria-label="The last two weeks">${dots}</div><p class="small muted">Each dot is a day in the last two weeks. A filled one is a day you worked on it.</p>`;
+}
 // Today's second choice: the goal's own button (it opens the goal's page: what's next, her photos, the coach) and the way
 // to the whole list; with an empty list, the way to pick one. Pure.
-export function todaySkillHtml(r){
+export function todaySkillHtml(r, { dates = [], today = todayStr(), how = "" } = {}){
   if (!r) return `<div class="today-pick-lab small">⭐ Or work on a skill</div><button class="today-skill" onclick="showPage('skills');wkPick()"><span class="ts-ic">⭐</span><span class="grow"><b>Pick a skill to work on</b><small>a trick, a split, your aerial</small></span><span class="g-go">›</span></button>`;
-  const sub = r.sub || (r.fix ? "🎬 Coach: " + r.fix.text : r.how);
-  return `<div class="today-pick-lab small">⭐ Or work on a skill <button class="lnk" onclick="showPage('skills')">all my goals ›</button></div><button class="today-skill" onclick="goalOpen('${r.id}')"><span class="ts-ic">${r.ic}</span><span class="grow"><b>${esc(r.n)}</b><small>${esc(sub)}</small></span><span class="g-go">›</span></button>`;
+  const done = dates.includes(today), sub = r.sub || how || (r.fix ? "🎬 Coach: " + r.fix.text : r.how);
+  const track = `🪜 ${dates.length ? plural(dates.length, "time", "times") + " so far" : "your first time"}${r.shots.length ? ` · 📸 ${plural(r.shots.length, "picture", "pictures")}` : ""}`;
+  return `<div class="today-pick-lab small">⭐ Or work on a skill <button class="lnk" onclick="showPage('skills')">all my goals ›</button></div><button class="today-skill${done ? " done" : ""}" onclick="goalOpen('${r.id}')"><span class="ts-ic">${done ? "✅" : r.ic}</span><span class="grow"><b>${esc(r.n)}</b><small>${esc(sub)}</small><small class="ts-track">${track} · tap to see how ›</small></span><span class="g-go">›</span></button>`;
 }
 // "2 weeks ago", "20 days ago". Pure.
 export const agoWords = (days) => days >= 28 ? `${Math.round(days / 7)} weeks ago` : days === 14 ? "2 weeks ago" : `${days} days ago`;
@@ -189,8 +236,16 @@ export function renderWorking(){
   const n = $("#workingCount"); if (n) n.textContent = working.length ? String(working.length) : "";
   // The same prompts on Skills (a few) and on Today (the first one). Both go away by themselves once the picture is saved.
   const sk = $("#photoPrompt"); if (sk) { sk.hidden = !prompts.length; sk.innerHTML = photoPromptsHtml(prompts, { cap: 3 }); }
+  renderStones();
   const td = $("#goalReminder"); if (td) { td.hidden = !prompts.length; td.innerHTML = photoPromptsHtml(prompts, { cap: 1, more: true }); }
 }
+// ✓ I worked on it today (and back): the goal's id in today's practice record. Returns true when it is now on.
+export async function toggleWorked(id, today = todayStr()){
+  if (!goalKind(id)) return false; const rec = S.practice[today] || { done: [], note: "", runs: [] }; const have = Array.isArray(rec.skills) ? rec.skills : [], on = !have.includes(id);
+  await storeSet("practice", today, { ...rec, skills: on ? [...have, id] : have.filter(x => x !== id) }); return on;
+}
+export function renderStones(){ const el = $("#stonesCard"); if (el) el.innerHTML = stonesHtml(stones()); }
+export const soloDanceNow = () => dances().find(d => d.id === "solo") || null;
 async function photoLater(id){ const cur = (S.settings && typeof S.settings.photoSnooze === "object" && S.settings.photoSnooze) || {}; await setSettings({ photoSnooze: { ...cur, [id]: shiftDate(todayStr(), PHOTO_LATER_DAYS) } }); renderWorking(); toast("Okay. I'll ask again in a few days"); }
 async function save(ids){ await setSettings({ working: ids }); renderWorking(); }
 // On her goals, or off them. A skill she hasn't started becomes "learning" when it goes on. Returns the list, or null when
