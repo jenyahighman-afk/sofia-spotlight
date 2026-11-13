@@ -14,7 +14,8 @@
 import { $, esc, fmt, toast, expose } from "./util.js";
 import { S } from "./store.js";
 import { showPage, currentPage } from "./nav.js";
-import { goalRow, goalKind, goalDoc, workingIds, setOnGoals, gotIt, AERIAL_ID, goalHow, workHtml, workedDates, toggleWorked, soloDanceNow } from "./working.js";
+import { goalRow, goalKind, goalDoc, workingIds, setOnGoals, gotIt, AERIAL_ID, goalHow, workHtml, workedDates, toggleWorked, soloDanceNow, drillIds } from "./working.js";
+import { drillsForGoal, goalVideosHtml } from "./drills.js";
 import { renderLineup, firstVsNow, lineupCounts } from "./lineup.js";
 import { CARD_COLORS } from "./cards.js";
 import { aerialHow } from "./views/practice.js";
@@ -94,7 +95,7 @@ export function renderGoalPage(){
   if (!r) { cur = ""; if (currentPage() === "goal") showPage("skills"); return; }
   title.textContent = `${r.ic} ${r.n}`; $("#gpNext").innerHTML = nextHtml(r);
   const steps = $("#aerialFold"); if (steps) steps.hidden = r.kind !== "aerial";
-  const work = $("#gpWork"); if (work) work.innerHTML = workHtml(r, { dates: workedDates(S.practice, r.id), steps: goalHow(r, { soloDance: soloDanceNow() }), notes: Object.values(S.corrections || {}).filter(c => c && c.studio && !c.deleted && c.status !== "done" && c.danceId === "skill:" + r.id) });
+  const work = $("#gpWork"); if (work) work.innerHTML = workHtml(r, { dates: workedDates(S.practice, r.id), steps: goalHow(r, { soloDance: soloDanceNow() }), videos: goalVideosHtml(drillsForGoal(drillIds(r), S.drills)), notes: Object.values(S.corrections || {}).filter(c => c && c.studio && !c.deleted && c.status !== "done" && c.danceId === "skill:" + r.id) });
   const ph = $("#gpPhotos");
   if (r.kind === "measure") ph.innerHTML = measurePhotosHtml(r);
   else {

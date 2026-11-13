@@ -26,7 +26,8 @@ import { applyPalette } from "../palette.js";
 import { renderPet } from "../pet.js";
 import { renderNews } from "../news.js";
 import { renderSundayCard } from "../sunday.js";
-import { todayGoal, todaySkillHtml, workedDates, goalHow, soloDanceNow } from "../working.js";
+import { todayGoal, todaySkillHtml, workedDates, goalHow, soloDanceNow, drillIds } from "../working.js";
+import { drillsForGoal } from "../drills.js";
 import { topFixes } from "../corrections.js";
 
 const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
@@ -101,7 +102,7 @@ function renderHome(){
   // 1.68.0: the week's trick left Today (its button opened a timed Trick Quest station for a trick she had not picked);
   // Play still has it. The two helpers under the dance buttons are Hannah's videos and Memorize.
   // "You danced your solo" only when she ran it; a watched video or a memory step finishes the plan in its own words.
-  const ran=((rec&&rec.runs)||[]).some(r=>r&&(!r.danceId||r.danceId==="solo")); const tg=kind==="show"?null:todayGoal(S.settings,today); const skillPick=kind==="show"?"":todaySkillHtml(tg,tg?{dates:workedDates(S.practice,tg.id),today,how:goalHow(tg,{soloDance:soloDanceNow()})[0]||""}:{});
+  const ran=((rec&&rec.runs)||[]).some(r=>r&&(!r.danceId||r.danceId==="solo")); const tg=kind==="show"?null:todayGoal(S.settings,today); const skillPick=kind==="show"?"":todaySkillHtml(tg,tg?{dates:workedDates(S.practice,tg.id),today,how:goalHow(tg,{soloDance:soloDanceNow()})[0]||"",videos:drillsForGoal(drillIds(tg),S.drills).length}:{});
   const ff=kind==="show"?null:(currentWeekFix(today)||topFixes(S.corrections,"solo",1)[0]||null); const fd=ff?dances().find(d=>d.id===ff.danceId):null; const focus=focusLine(ff,fd?shortName(fd):"");
   $("#todayCard").innerHTML=`<div class="today-date small">${esc(fmt(today))} · ${dayKind}</div><div class="today-what">${what}</div>${sub}
     <div class="today-line small dp-line" id="dayPlan" hidden></div>
