@@ -20,6 +20,7 @@ import { SPLIT_KEYS, PRESETS, splitGoal, checkins, CADENCE_DAYS } from "./goals.
 import { monthSkill } from "./monthskill.js";
 import { lineup } from "./lineup.js";
 import { daysBetween } from "./moments.js";
+import { chunks, memoFor } from "./memo.js";
 import { shiftDate, mondayKey, isDone } from "./corrections.js";
 import { drillFor } from "./trickdrill.js";
 import { openStage } from "./stage.js";
@@ -147,6 +148,34 @@ export function stonesHtml(st){
     <p class="st-week"><b>This week: ${week.n ? plural(week.n, "stone", "stones") : "your next one is waiting"}</b>${week.n ? `<br><span class="small">${stoneWords(week)}</span>` : ""}</p>${path}
     <p class="small muted">Every little bit counts. This is how a dance gets to look easy.</p>`;
 }
+// 💃 My dances are growing (1.69.0, Jenya Nov 13: "add per-dance progress to Today"). One row for each competition dance
+// (not the class dances), from what the app already keeps: how many times she danced it to the end (the runs in her
+// practice records; a run with no dance named is the solo's, as Today's tick reads it), this week's among them, the day of
+// the last one, her teachers' fixes done out of all of them, and the parts she knows by heart out of the dance's parts.
+// [{ id, n, runs, week, last, fixesDone, fixesAll, known, parts }] in the Dances tab's order. Pure.
+const isClassDance = (d) => /class dance/i.test((d && d.name) || "") || /^wf-/.test((d && d.id) || "");
+// "Solo", "Trio", and for a group dance its group too ("PITCH · Jazz group": two dances share the team's name). Pure.
+export const danceLabel = (d) => { const parts = String((d && d.name) || "").split("·").map(x => x.trim()).filter(Boolean); return /^(solo|trio|duo|duet)$/i.test(parts[0] || "") ? parts[0] : parts.slice(0, 2).join(" · "); };
+export function danceProgress(list, { practice = S.practice, corrections = S.corrections, settings = S.settings } = {}, today = todayStr()){
+  const from = mondayKey(today);
+  return (list || []).filter(d => d && !isClassDance(d)).map(d => {
+    let runs = 0, week = 0, last = "";
+    for (const [date, r] of Object.entries(practice || {})) { if (!DATE.test(date) || !r || !Array.isArray(r.runs)) continue; const n = r.runs.filter(x => x && (x.danceId || "solo") === d.id).length; if (!n) continue; runs += n; if (date >= from && date <= today) week += n; if (date > last) last = date; }
+    const fixes = Object.values(corrections || {}).filter(c => c && !c.deleted && c.danceId === d.id), parts = chunks(d).map(c => c.n), known = memoFor(settings, d.id).known.filter(k => parts.includes(k)).length;
+    return { id: d.id, n: danceLabel(d), runs, week, last, fixesDone: fixes.filter(isDone).length, fixesAll: fixes.length, known, parts: parts.length };
+  });
+}
+// One dance's row: its name, what she has done, and a bar for the fixes. A tap opens the dance. Pure.
+export function danceProgressHtml(rows, today = todayStr()){
+  if (!rows.length) return "";
+  const row = (r) => {
+    const ago = r.last ? (r.last === today ? "today ⭐" : agoWords(daysBetween(r.last, today))) : "";
+    const danced = r.runs ? `🎵 Danced ${plural(r.runs, "time", "times")}${r.week ? ` · ${r.week} this week` : ""}${ago ? ` · last ${ago}` : ""}` : "🎵 Not danced here yet · tap to open it";
+    const fix = r.fixesAll ? `<span class="dp-bar" aria-hidden="true">${r.fixesDone ? `<i style="width:${Math.round(100 * r.fixesDone / r.fixesAll)}%"></i>` : ""}</span><small>✅ ${r.fixesDone} of ${plural(r.fixesAll, "fix", "fixes")} done${r.parts ? ` · 🧠 ${r.known} of ${plural(r.parts, "part", "parts")} by heart` : ""}</small>` : r.parts ? `<small>🧠 ${r.known} of ${plural(r.parts, "part", "parts")} by heart</small>` : "";
+    return `<button class="dp-row" onclick="showPage('dances');danceOpen('${r.id}')"><span class="grow"><b>${esc(r.n)}</b><small>${danced}</small>${fix}</span><span class="g-go">›</span></button>`;
+  };
+  return `<div class="st-head">💃 My dances are growing</div><p class="small muted">Every time you dance one to the end and every fix you finish shows here.</p>${rows.map(row).join("")}`;
+}
 // How to work on a goal today, in three short steps (the aerial has its own: its next step, in nextHtml). A solo trick's
 // are its tip, its line on the dance card and Trick Quest's own stations in words (slow five, then to the music). Pure.
 export function goalHow(r, { soloDance = null, ladder = SKILLS } = {}){
@@ -244,7 +273,7 @@ export async function toggleWorked(id, today = todayStr()){
   if (!goalKind(id)) return false; const rec = S.practice[today] || { done: [], note: "", runs: [] }; const have = Array.isArray(rec.skills) ? rec.skills : [], on = !have.includes(id);
   await storeSet("practice", today, { ...rec, skills: on ? [...have, id] : have.filter(x => x !== id) }); return on;
 }
-export function renderStones(){ const el = $("#stonesCard"); if (el) el.innerHTML = stonesHtml(stones()); }
+export function renderStones(){ const el = $("#stonesCard"); if (el) el.innerHTML = stonesHtml(stones()); const dp = $("#danceProgress"); if (dp) { const h = danceProgressHtml(danceProgress(dances())); dp.hidden = !h; dp.innerHTML = h; } }
 export const soloDanceNow = () => dances().find(d => d.id === "solo") || null;
 async function photoLater(id){ const cur = (S.settings && typeof S.settings.photoSnooze === "object" && S.settings.photoSnooze) || {}; await setSettings({ photoSnooze: { ...cur, [id]: shiftDate(todayStr(), PHOTO_LATER_DAYS) } }); renderWorking(); toast("Okay. I'll ask again in a few days"); }
 async function save(ids){ await setSettings({ working: ids }); renderWorking(); }
