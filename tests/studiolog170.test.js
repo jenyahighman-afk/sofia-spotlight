@@ -52,7 +52,7 @@ test("the sheet: a strip of 14 days, chips for dances and goals, four faces, a n
 test("studio work counts: stepping stones, a skill's days, a dance's row", () => {
   const practice = { "2026-11-09": { runs: [{ danceId: "solo" }], skills: ["split-r"], studio: { dances: ["solo", "pitch-jazz"], skills: ["split-r", "a-aerial"] } }, "2026-11-02": { studio: { dances: ["pitch-jazz"], skills: [] } } };
   const st = W.stones({ practice, photos: {}, corrections: {} }, D);
-  assert.deepEqual(st.week, { dances: 3, skills: 2, photos: 0, fixes: 0, n: 5 }, "a skill worked on at home and at the studio the same day is one stone"); assert.equal(st.all.dances, 4);
+  assert.deepEqual(st.week, { dances: 3, skills: 2, notes: 0, photos: 0, fixes: 0, n: 5 }, "a skill worked on at home and at the studio the same day is one stone"); assert.equal(st.all.dances, 4);
   assert.deepEqual(W.workedDates(practice, "a-aerial"), ["2026-11-09"]); assert.deepEqual(W.workedDates(practice, "split-r"), ["2026-11-09"]);
   const rows = W.danceProgress([{ id: "solo", name: "Solo · X" }, { id: "pitch-jazz", name: "PITCH · Jazz group · Groove" }], { practice, corrections: {}, settings: {} }, D);
   assert.deepEqual([rows[0].runs, rows[0].studio, rows[0].week], [1, 1, 2]); assert.deepEqual([rows[1].runs, rows[1].studio, rows[1].week, rows[1].last], [0, 2, 1, "2026-11-09"]);
@@ -65,4 +65,41 @@ test("the ways in, the wiring, and 🧠 Memorize for each dance", () => {
   assert.match(src("sw.js"), /"\.\/js\/studiolog\.js"/); assert.match(src("js/app.js"), /guard\("home", renderStudioNudge, "studiolog"\)/);
   assert.match(home, /memoDances\(dances\(\)\)\.filter\(d=>d\.id==="solo"\|\|d\.id==="trio"\)\.map\(memoBtn\)/, "one Memorize for the solo and one for the trio, not the day's turn only");
   assert.match(src("js/version.js"), /APP_VERSION = "1\.(7\d|[89]\d)/); assert.match(src("README.md"), /\*\*1\.70\.0: 🏫 Studio log/);
+});
+
+// ---- 1.71.0 (Jenya, Nov 13: the log is for writing down what the teacher said, working on it at home, and showing it) ----
+test("📝 Teacher said: a note from class is a correction with its class day, what it is about and one emoji", () => {
+  const n = L.noteRec({ about: "trio", text: "  Point   your foot on the lift ", tag: "", date: "2026-11-11", id: "c1" });
+  assert.deepEqual(n, { id: "c1", danceId: "trio", text: "Point your foot on the lift", tag: "feet", source: "class", date: "2026-11-11", status: "working", studio: true }, "no emoji picked: worked out from the words");
+  assert.equal(L.noteRec({ about: "skill:a-aerial", text: "Kick harder", tag: "energy", date: D, id: "c2" }).tag, "energy"); assert.equal(L.aboutSkill("skill:a-aerial"), "a-aerial"); assert.equal(L.aboutSkill("trio"), "");
+  for (const bad of [{ about: "trio", text: "  ", date: D, id: "x" }, { about: "", text: "hi", date: D, id: "x" }, { about: "trio", text: "hi", date: "soon", id: "x" }]) assert.equal(L.noteRec(bad), null);
+  assert.equal(L.noteRec({ about: "solo", text: "x".repeat(400), date: D, id: "c3" }).text.length, L.SAID_MAX);
+  const all = { a: { id: "a", studio: true, date: "2026-11-09", status: "working" }, b: { id: "b", studio: true, date: "2026-11-11", status: "done" }, c: { id: "c", studio: true, date: "2026-11-11", status: "working", deleted: true }, d: { id: "d", date: "2026-11-12", status: "working" }, e: { id: "e", studio: true, date: "2026-11-11", status: "working" } };
+  assert.deepEqual(L.classNotes(all).map(c => c.id), ["e", "b", "a"], "class notes only, newest first"); assert.deepEqual(L.classNotes(all, { open: true }).map(c => c.id), ["e", "a"]); assert.deepEqual(L.classNotes(all, { date: "2026-11-09" }).map(c => c.id), ["a"]);
+});
+
+test("the sheet takes a teacher's note in a few taps and offers any other skill", () => {
+  const practice = { "2026-11-11": { studio: { dances: ["trio"], skills: ["a-aerial"] } } }, list = [{ id: "solo", n: "Solo" }, { id: "trio", n: "Trio" }], goals = [{ id: "a-aerial", n: "Aerial", ic: "🦋" }];
+  const said = [{ id: "c1", danceId: "trio", text: "Point your foot", tag: "feet" }];
+  const h = L.sheetHtml({ date: "2026-11-11", today: D, practice, list, goals, said, about: "skill:a-aerial", tag: "eyes", label: (a) => a === "trio" ? "Trio" : "", more: [{ label: "🤸 Acro", items: [{ id: "a-cartwheel", n: "Cartwheel" }] }] });
+  assert.match(h, /📝 <span class="sl-labw">Teacher said<\/span>/); assert.match(h, /🦶 Point your foot<small>Trio<\/small>/); assert.match(h, /slSaidDel\('c1'\)/);
+  assert.equal((h.match(/onclick="slAbout\('/g) || []).length, 2, "about: what she logged for that day"); assert.match(h, /sl-chip sm on" onclick="slAbout\('skill:a-aerial'\)"/); assert.match(h, /onclick="slAbout\('trio'\)" aria-pressed="false">Trio/);
+  assert.equal((h.match(/class="sl-tag/g) || []).length - 1, 9, "nine emoji, one tap"); assert.match(h, /sl-tag on" onclick="slTag\('eyes'\)" aria-label="Eyes"/); assert.match(h, /onclick="slSaidAdd\(\)" aria-label="Add">＋/);
+  assert.match(h, /<details class="sl-more"><summary>＋ ⭐<\/summary><div class="sl-mlab">🤸 Acro<\/div>.*slSkill\('a-cartwheel'\)/s, "＋ any other skill");
+  const empty = L.sheetHtml({ date: D, today: D, practice: {}, list, goals }); assert.equal((empty.match(/onclick="slAbout\('/g) || []).length, 2, "nothing logged yet: every dance"); assert.match(empty, /sl-chip sm on" onclick="slAbout\('solo'\)"/);
+});
+
+test("📝 From my teachers on Today: 💪 worked on it today, ✅ got it, and a class-day reminder to show it", () => {
+  const notes = [{ id: "c1", danceId: "trio", text: "Point your foot", tag: "feet", date: "2026-11-11" }, { id: "c2", danceId: "skill:a-aerial", text: "Kick harder", tag: "energy", date: "2026-11-09" }];
+  const practice = { "2026-11-12": { notes: ["c1"] }, [D]: { notes: ["c1", "c1"] }, junk: { notes: ["c1"] } };
+  assert.deepEqual(L.noteDays(practice, "c1"), ["2026-11-12", D]); assert.deepEqual(L.noteDays(practice, "c2"), []);
+  const h = L.notesCardHtml(notes, { today: D, practice, label: (a) => a === "trio" ? "Trio" : "🦋 Aerial" });
+  assert.match(h, /📝 From my teachers/); assert.match(h, /🦶 Point your foot<\/b><small>Trio · 🏫 Wed, Nov 11 · 💪 ×2/); assert.match(h, /tn-btn on" onclick="tnWorked\('c1'\)" aria-pressed="true"/); assert.match(h, /onclick="tnWorked\('c2'\)" aria-pressed="false"/); assert.match(h, /onclick="tnGot\('c2'\)" aria-label="Got it">✅/);
+  assert.match(h, /💪 = I worked on it today · ✅ = got it/); assert.match(L.notesCardHtml(notes, { today: D, practice, classToday: true }), /🏫 Class today: show them you worked on these!/);
+  assert.equal(L.notesCardHtml([], { today: D }), ""); assert.match(L.notesCardHtml(Array.from({ length: 6 }, (_, i) => ({ id: "n" + i, text: "t", date: D })), { today: D }), /＋ 2 more on your dances/);
+  const st = W.stones({ practice, photos: {}, corrections: {} }, D); assert.equal(st.week.notes, 2, "a note worked on is one stone a day"); assert.match(W.stoneWords(st.week), /💪 2 teacher notes worked on/);
+  const cart = W.goalRow("s-cartwheel", { goals: {}, photos: {}, skills: {}, reviews: {}, settings: { working: ["s-cartwheel"] } });
+  assert.match(W.workHtml(cart, { dates: [], today: D, notes: [{ text: "Head up" }] }), /📝 My teacher said<\/b><p>Head up<\/p>/);
+  const html = src("index.html"); assert.ok(html.indexOf('id="studioNudge"') < html.indexOf('id="teacherNotes"') && html.indexOf('id="teacherNotes"') < html.indexOf('id="goalReminder"'));
+  assert.match(src("js/studiolog.js"), /storeSet\("practice", today, \{ \.\.\.rec, notes: on \? \[\.\.\.have, id\] : have\.filter\(x => x !== id\) \}\)/);
 });

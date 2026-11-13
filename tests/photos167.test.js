@@ -91,7 +91,7 @@ test("stepping stones: every dance, skill practice, picture and closed fix adds 
   const practice = { "2026-11-02": { runs: [{}], skills: ["split-r"] }, "2026-11-09": { runs: [{}], skills: ["split-r"] }, "2026-11-11": { runs: [{}, {}], skills: ["a-aerial", "split-r", "split-r"] }, junk: { runs: [{}] } };
   const corrections = { a: { status: "done", doneAt: "2026-11-11" }, b: { status: "working" }, c: { status: "done", doneAt: "2026-10-01" }, d: { status: "done", deleted: true, doneAt: "2026-11-11" } };
   const st = W.stones({ practice, photos, corrections }, D); // Nov 13 2026 is a Friday: the week began Mon Nov 9
-  assert.deepEqual(st.week, { dances: 3, skills: 3, photos: 0, fixes: 1, n: 7 }); assert.deepEqual(st.all, { dances: 4, skills: 4, photos: 4, fixes: 2, n: 14 }, "a clip is not a picture; a removed fix is not a stone");
+  assert.deepEqual(st.week, { dances: 3, skills: 3, notes: 0, photos: 0, fixes: 1, n: 7 }); assert.deepEqual(st.all, { dances: 4, skills: 4, notes: 0, photos: 4, fixes: 2, n: 14 }, "a clip is not a picture; a removed fix is not a stone");
   assert.equal(W.stoneWords(st.week), "💃 3 dances · ⭐ 3 skill practices · ✅ 1 fix done"); assert.equal(W.stoneWords({ dances: 1, skills: 1, photos: 1, fixes: 0 }), "💃 1 dance · ⭐ 1 skill practice · 📸 1 picture");
   const h = W.stonesHtml(st); assert.match(h, /14 so far/); assert.match(h, /This week: 7 stones/); assert.equal((h.match(/<i><\/i>/g) || []).length, 7, "one stone on the path for each"); assert.match(h, /This is how a dance gets to look easy/);
   assert.match(W.stonesHtml(W.stones({ practice: {}, photos: {}, corrections: {} }, D)), /Your first one is one tap away/); assert.match(W.stonesHtml({ week: { n: 0 }, all: { n: 3 } }), /your next one is waiting/);

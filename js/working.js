@@ -132,15 +132,15 @@ const studioOf = (r) => { const s = (r && r.studio) || {}; return { dances: Arra
 export const workedDates = (practice, id) => Object.entries(practice || {}).filter(([d, r]) => DATE.test(d) && r && ((Array.isArray(r.skills) && r.skills.includes(id)) || studioOf(r).skills.includes(id))).map(([d]) => d).sort();
 // Everything she has done, this week (Monday first) and ever: { week: { dances, skills, photos, fixes, n }, all: { … } }. Pure.
 export function stones({ practice = S.practice, photos = S.photos, corrections = S.corrections } = {}, today = todayStr()){
-  const from = mondayKey(today), zero = () => ({ dances: 0, skills: 0, photos: 0, fixes: 0, n: 0 }), week = zero(), all = zero();
+  const from = mondayKey(today), zero = () => ({ dances: 0, skills: 0, notes: 0, photos: 0, fixes: 0, n: 0 }), week = zero(), all = zero();
   const add = (k, date, n = 1) => { if (!n) return; all[k] += n; all.n += n; if (DATE.test(String(date)) && date >= from && date <= today) { week[k] += n; week.n += n; } };
-  for (const [d, r] of Object.entries(practice || {})) { if (!DATE.test(d) || !r) continue; add("dances", d, Array.isArray(r.runs) ? r.runs.length : 0); const so = studioOf(r); add("dances", d, so.dances.length); add("skills", d, new Set([...(Array.isArray(r.skills) ? r.skills : []), ...so.skills]).size); }
+  for (const [d, r] of Object.entries(practice || {})) { if (!DATE.test(d) || !r) continue; add("dances", d, Array.isArray(r.runs) ? r.runs.length : 0); const so = studioOf(r); add("dances", d, so.dances.length); add("skills", d, new Set([...(Array.isArray(r.skills) ? r.skills : []), ...so.skills]).size); add("notes", d, Array.isArray(r.notes) ? new Set(r.notes).size : 0); }
   for (const p of Object.values(photos || {})) { if (!p || p.deleted || p.kind === "video" || !(p.card || p.goal)) continue; const d = DATE.test(String(p.taken || "")) ? p.taken : String(p.at || "").slice(0, 10); add("photos", d); }
   for (const c of Object.values(corrections || {})) if (isDone(c)) add("fixes", String(c.doneAt || ""));
   return { week, all };
 }
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-export const stoneWords = (c) => [c.dances && `💃 ${plural(c.dances, "dance", "dances")}`, c.skills && `⭐ ${plural(c.skills, "skill practice", "skill practices")}`, c.photos && `📸 ${plural(c.photos, "picture", "pictures")}`, c.fixes && `✅ ${plural(c.fixes, "fix done", "fixes done")}`].filter(Boolean).join(" · ");
+export const stoneWords = (c) => [c.dances && `💃 ${plural(c.dances, "dance", "dances")}`, c.skills && `⭐ ${plural(c.skills, "skill practice", "skill practices")}`, c.notes && `💪 ${plural(c.notes, "teacher note worked on", "teacher notes worked on")}`, c.photos && `📸 ${plural(c.photos, "picture", "pictures")}`, c.fixes && `✅ ${plural(c.fixes, "fix done", "fixes done")}`].filter(Boolean).join(" · ");
 // Today's card: the number, this week's in words, and the path of stones (one per piece of work this week, up to 14). Pure.
 export function stonesHtml(st){
   const { week, all } = st; if (!all.n) return `<div class="st-head">🪜 My stepping stones</div><p class="small">Every dance you finish, every time you work on a skill, every picture: each one is a stepping stone. Your first one is one tap away.</p>`;
@@ -188,12 +188,13 @@ export function goalHow(r, { soloDance = null, ladder = SKILLS } = {}){
 }
 // The work card on a goal's page: how to work on it, ✓ I worked on it today, and its stepping stones (how many days, the
 // last one, the last two weeks as dots, her pictures). Pure.
-export function workHtml(r, { dates = [], today = todayStr(), steps = [] } = {}){
+export function workHtml(r, { dates = [], today = todayStr(), steps = [], notes = [] } = {}){
   const done = dates.includes(today), last = dates.length ? dates[dates.length - 1] : "";
   const dots = Array.from({ length: 14 }, (_, i) => shiftDate(today, i - 13)).map(d => `<i class="${dates.includes(d) ? "on" : ""}${d === today ? " now" : ""}"></i>`).join("");
   const how = steps.length ? `<h3>🪜 How to work on it today</h3><ol class="gw-steps">${steps.map(t => `<li>${esc(t)}</li>`).join("")}</ol>` : `<h3>🪜 My stepping stones</h3>`;
   const count = dates.length ? `<b>${plural(dates.length, "stepping stone", "stepping stones")}</b> · ${done ? "one today ⭐" : "last one " + agoWords(daysBetween(last, today))}` : `<b>No stepping stones yet.</b> Today can be the first.`;
-  return `${how}<div class="row"><button class="btn ${done ? "ghost" : "coral"}" onclick="gpWorked('${r.id}')">${done ? "✅ Worked on it today" : "✓ I worked on it today"}</button></div>
+  const said = notes.length ? `<div class="gw-said"><b>📝 My teacher said</b>${notes.map(c => `<p>${esc(c.text)}</p>`).join("")}</div>` : "";
+  return `${how}${said}<div class="row"><button class="btn ${done ? "ghost" : "coral"}" onclick="gpWorked('${r.id}')">${done ? "✅ Worked on it today" : "✓ I worked on it today"}</button></div>
     <p class="gw-count">${count}${r.shots.length ? ` · 📸 ${plural(r.shots.length, "picture", "pictures")}` : ""}</p><div class="gw-dots" aria-label="The last two weeks">${dots}</div><p class="small muted">Each dot is a day in the last two weeks. A filled one is a day you worked on it.</p>`;
 }
 // Today's second choice: the goal's own button (it opens the goal's page: what's next, her photos, the coach) and the way
@@ -205,7 +206,7 @@ export function todaySkillHtml(r, { dates = [], today = todayStr(), how = "" } =
   return `<div class="today-pick-lab small">⭐ Or work on a skill <button class="lnk" onclick="showPage('skills')">all my goals ›</button></div><button class="today-skill${done ? " done" : ""}" onclick="goalOpen('${r.id}')"><span class="ts-ic">${done ? "✅" : r.ic}</span><span class="grow"><b>${esc(r.n)}</b><small>${esc(sub)}</small><small class="ts-track">${track} · tap to see how ›</small></span><span class="g-go">›</span></button>`;
 }
 // "2 weeks ago", "20 days ago". Pure.
-export const agoWords = (days) => days >= 28 ? `${Math.round(days / 7)} weeks ago` : days === 14 ? "2 weeks ago" : `${days} days ago`;
+export const agoWords = (days) => days <= 0 ? "today" : days === 1 ? "yesterday" : days >= 28 ? `${Math.round(days / 7)} weeks ago` : days === 14 ? "2 weeks ago" : `${days} days ago`;
 // One prompt: its name opens the goal, 📷 goes straight to the camera or her photos (a skill's lineup takes the picture as
 // it is; a measured goal opens its check-in sheet, where the number goes too), Later puts it off. Pure.
 export function photoPromptHtml(p){

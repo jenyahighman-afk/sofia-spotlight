@@ -94,7 +94,7 @@ export function renderGoalPage(){
   if (!r) { cur = ""; if (currentPage() === "goal") showPage("skills"); return; }
   title.textContent = `${r.ic} ${r.n}`; $("#gpNext").innerHTML = nextHtml(r);
   const steps = $("#aerialFold"); if (steps) steps.hidden = r.kind !== "aerial";
-  const work = $("#gpWork"); if (work) work.innerHTML = workHtml(r, { dates: workedDates(S.practice, r.id), steps: goalHow(r, { soloDance: soloDanceNow() }) });
+  const work = $("#gpWork"); if (work) work.innerHTML = workHtml(r, { dates: workedDates(S.practice, r.id), steps: goalHow(r, { soloDance: soloDanceNow() }), notes: Object.values(S.corrections || {}).filter(c => c && c.studio && !c.deleted && c.status !== "done" && c.danceId === "skill:" + r.id) });
   const ph = $("#gpPhotos");
   if (r.kind === "measure") ph.innerHTML = measurePhotosHtml(r);
   else {
