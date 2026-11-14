@@ -92,7 +92,7 @@ export function sheetHtml({ date, today, practice = {}, list = [], goals = [], i
   const dn = list.length ? list.map(d => chip("slDance", d.id, esc(d.n), r.dances.includes(d.id))).join("") : `<span class="small muted">—</span>`;
   const sk = goals.length ? goals.map(g => chip("slSkill", g.id, `${g.ic} ${esc(g.n)}`, r.skills.includes(g.id))).join("") : `<button class="lnk" onclick="closeStage();showPage('skills');wkPick()">＋ ⭐</button>`;
   // ＋ any other skill (1.71.0): the picker's own groups, folded; a tap logs it for this day like one of her goals.
-  const moreHtml = more.length ? `<details class="sl-more"><summary>＋ ⭐</summary>${more.map(g => `<div class="sl-mlab">${esc(g.label)}</div><div class="sl-chips">${g.items.map(i => chip("slSkill", i.id, esc(i.n), r.skills.includes(i.id))).join("")}</div>`).join("")}</details>` : "";
+  const moreHtml = more.length ? `<details class="sl-more"><summary>＋ ⭐</summary>${more.map(g => `<details class="sl-grp"><summary>${esc(g.label)} · ${g.items.length}</summary><div class="sl-chips">${g.items.map(i => chip("slSkill", i.id, esc(i.n), r.skills.includes(i.id))).join("")}</div></details>`).join("")}</details>` : "";
   // 📝 Teacher said: what it is about (what she logged for this day; every dance when nothing is logged yet), the body part
   // or idea as one emoji, the words, ＋.
   const opts = [...list.filter(d => r.dances.includes(d.id)).map(d => ({ id: d.id, n: d.n })), ...goals.filter(g => r.skills.includes(g.id)).map(g => ({ id: "skill:" + g.id, n: `${g.ic} ${g.n}` }))]; const abouts = opts.length ? opts : list.map(d => ({ id: d.id, n: d.n }));

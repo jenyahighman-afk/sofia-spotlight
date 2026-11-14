@@ -232,7 +232,7 @@ export const agoWords = (days) => days <= 0 ? "today" : days === 1 ? "yesterday"
 // One prompt: its name opens the goal, 📷 goes straight to the camera or her photos (a skill's lineup takes the picture as
 // it is; a measured goal opens its check-in sheet, where the number goes too), Later puts it off. Pure.
 export function photoPromptHtml(p){
-  const words = p.why === "first" ? `<b>Take your starting picture</b><small>${esc(p.n)} · to see how far you come</small>` : `<b>Time for a progress picture</b><small>${esc(p.n)} · your last one was ${agoWords(p.days)}</small>`;
+  const words = p.why === "first" ? `<b>Take your starting picture</b><small>${esc(p.n)} · to see how far you've come</small>` : `<b>Time for a progress picture</b><small>${esc(p.n)} · your last one was ${agoWords(p.days)}</small>`;
   const go = p.kind === "measure" ? `<button class="btn sm coral" onclick="gpCheckIn('${p.id}')">📷 Take it</button>` : `<label class="btn sm coral">📷 Take it<input type="file" accept="image/*" hidden onchange="lineupAdd('${p.id}', this)"></label>`;
   return `<div class="pp-row"><button class="pp-txt" onclick="goalOpen('${p.id}')"><span class="pp-ic">${p.ic}</span><span class="grow">${words}</span></button><div class="pp-btns">${go}<button class="btn sm ghost" onclick="photoLater('${p.id}')">Later</button></div></div>`;
 }

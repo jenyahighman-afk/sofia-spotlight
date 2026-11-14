@@ -85,7 +85,7 @@ test("the sheet takes a teacher's note in a few taps and offers any other skill"
   assert.match(h, /📝 <span class="sl-labw">Teacher said<\/span>/); assert.match(h, /🦶 Point your foot<small>Trio<\/small>/); assert.match(h, /slSaidDel\('c1'\)/);
   assert.equal((h.match(/onclick="slAbout\('/g) || []).length, 2, "about: what she logged for that day"); assert.match(h, /sl-chip sm on" onclick="slAbout\('skill:a-aerial'\)"/); assert.match(h, /onclick="slAbout\('trio'\)" aria-pressed="false">Trio/);
   assert.equal((h.match(/class="sl-tag/g) || []).length - 1, 9, "nine emoji, one tap"); assert.match(h, /sl-tag on" onclick="slTag\('eyes'\)" aria-label="Eyes"/); assert.match(h, /onclick="slSaidAdd\(\)" aria-label="Add">＋/);
-  assert.match(h, /<details class="sl-more"><summary>＋ ⭐<\/summary><div class="sl-mlab">🤸 Acro<\/div>.*slSkill\('a-cartwheel'\)/s, "＋ any other skill");
+  assert.match(h, /<details class="sl-more"><summary>＋ ⭐<\/summary><details class="sl-grp"><summary>🤸 Acro · \d+<\/summary>.*slSkill\('a-cartwheel'\)/s, "＋ any other skill");
   const empty = L.sheetHtml({ date: D, today: D, practice: {}, list, goals }); assert.equal((empty.match(/onclick="slAbout\('/g) || []).length, 2, "nothing logged yet: every dance"); assert.match(empty, /sl-chip sm on" onclick="slAbout\('solo'\)"/);
 });
 
@@ -166,7 +166,7 @@ test("a goal's page folds, and her group dances are one tap away on Today", asyn
   const cart = W.goalRow("s-cartwheel", { ...ctx, settings: { working: ["s-cartwheel"] } }), aerial = W.goalRow("a-aerial", { ...ctx, settings: { working: ["a-aerial"] } });
   const f = GP.goalFoldLines(cart, { dates: ["2026-11-11", D], today: D, tips: [{ text: "Head up until the hands go down" }], videos: 2 });
   assert.deepEqual(f, { nextT: "How it's going", next: cart.how, workT: "🪜 How to work on it today", work: "2 stepping stones · one today ⭐ · 🎬 2 videos", photos: "1 picture", coach: "Head up until the hands go down" });
-  const a = GP.goalFoldLines(aerial, { dates: [], today: D }); assert.equal(a.nextT, "What's next"); assert.match(a.next, /^Step 1 of \d+ · Next: /); assert.equal(a.workT, "🪜 My stepping stones"); assert.equal(a.work, "No stepping stones yet"); assert.match(a.photos, /take your starting picture/); assert.match(a.coach, /One thing you did well/);
+  const a = GP.goalFoldLines(aerial, { dates: [], today: D }); assert.equal(a.nextT, "What's next"); assert.match(a.next, /^Step 1 of \d+ · Next: /); assert.equal(a.workT, "🪜 My stepping stones"); assert.equal(a.work, "Not practiced yet. Today can be the first."); assert.match(a.photos, /take your starting picture/); assert.match(a.coach, /One thing you did well/);
   const dances = json("dances"), groups = W.groupDances(dances); assert.deepEqual(groups, [{ id: "pitch-jazz", n: "Jazz" }, { id: "pitch-contemp", n: "Contemporary" }], "the competition dances that are not her solo or trio; no class dances");
   const h = W.groupButtonsHtml(groups, ["pitch-jazz"]); assert.match(h, /👯 My group dances/); assert.match(h, /btn sm ghost" onclick="openPlayer\('pitch-jazz',\{once:true\}\)">✅ Jazz/); assert.match(h, /btn sm violet" onclick="openPlayer\('pitch-contemp',\{once:true\}\)">▶ Contemporary/); assert.ok(h.includes(W.GROUP_HOME)); assert.equal(W.groupButtonsHtml([]), "");
   assert.match(W.GROUP_HOME, /your own part with the music/); assert.match(src("js/views/dances.js"), /group-home">🏠 \$\{GROUP_HOME\}/, "the same line on a group dance's page");

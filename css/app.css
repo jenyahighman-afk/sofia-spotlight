@@ -911,3 +911,7 @@ html[data-season="christmas"] .gate:after{right:auto;left:30px}
   .pg-sheet .pg-grid i,.pg-sheet .pg-bar,.pg-sheet .pg-bar i,.pg-sheet .pg-bits span{-webkit-print-color-adjust:exact;print-color-adjust:exact} .pg-sheet .pg-pics figure{flex-basis:1.25in} .pg-sheet .pg-pics{margin:3px 0 2px}
   .pg-sheet .pg-proud{display:block;margin:10px 0 4px} .pg-sheet .pg-proud span{display:inline-block;width:70%;border-bottom:1.5px solid #555;height:1.1em}
 }
+/* 1.79.0: the 🧠 Memorize it card kept a light background in dark mode, with pale words on it */
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) details.memo{background:rgba(255,255,255,.08)} }
+:root[data-theme="dark"] details.memo{background:rgba(255,255,255,.08)}
+.sl-grp{margin:6px 0} .sl-grp>summary{display:flex;align-items:center;min-height:44px;font-weight:800;cursor:pointer}

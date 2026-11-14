@@ -86,7 +86,7 @@ export function goalFoldLines(r, { dates = [], today = todayStr(), tips = [], vi
     nextT: r.kind === "aerial" ? "What's next" : "How it's going",
     next: r.kind === "aerial" ? [r.how, r.sub].filter(Boolean).join(" · ") : r.how,
     workT: r.kind === "aerial" ? "🪜 My stepping stones" : "🪜 How to work on it today",
-    work: [dates.length ? n(dates.length, "stepping stone", "stepping stones") + (done ? " · one today ⭐" : "") : "No stepping stones yet", videos ? "🎬 " + n(videos, "video", "videos") : ""].filter(Boolean).join(" · "),
+    work: [dates.length ? n(dates.length, "stepping stone", "stepping stones") + (done ? " · one today ⭐" : "") : "Not practiced yet. Today can be the first.", videos ? "🎬 " + n(videos, "video", "videos") : ""].filter(Boolean).join(" · "),
     photos: r.shots.length ? n(r.shots.length, "picture", "pictures") : "No picture yet: take your starting picture",
     coach: tips.length ? clip(tips[0].text, 46) : "One thing you did well, one thing to fix",
   };
@@ -127,6 +127,7 @@ export function renderGoalPage(){
 // Open a goal's page. `steps: true` unfolds the aerial's whole checklist (the printed Aerial Mission's path lands there).
 export function goalOpen(id, opts = {}){
   if (!goalKind(id)) return; cur = id; showPage("goal"); renderGoalPage();
+  const wf = document.querySelector("[id=gpWorkFold]"); if (wf) wf.open = true; // 1.79.0: "tap to see how" landed on four closed cards
   if (opts.steps) { const f = $("#aerialFold"); if (f && !f.hidden) { f.open = true; if (f.scrollIntoView) f.scrollIntoView({ block: "start" }); } }
 }
 async function gpWorked(id){ const on = await toggleWorked(id); if (on) try { pingLogged(); } catch (e) {} renderGoalPage(); toast(on ? "That's a stepping stone 🪜" : "Taken back"); }

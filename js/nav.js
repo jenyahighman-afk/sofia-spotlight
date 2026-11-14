@@ -27,7 +27,7 @@ export function showPage(p, fromBack = false){
 export function currentPage(){ const s = $$("section.page.on")[0]; return s ? s.id.replace(/^p-/, "") : ""; }
 export function initNav(){
   $$("nav.tabs button").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.p)));
-  if (!canPush()) return; try { history.replaceState({ p: "home" }, ""); } catch (e) {}
+  if (!canPush()) return; try { history.replaceState({ p: "home" }, ""); history.pushState({ p: "home" }, ""); } catch (e) {} // 1.79.0: one entry to spare, so Back on the first screen closes an open sheet instead of leaving the app
   window.addEventListener("popstate", (e) => {
     const over = [...document.querySelectorAll("div.modal, div.stage")].filter(m => !m.hidden).pop();
     if (over) { const x = over.querySelector('button[id$="Close"]'); if (x) { x.click(); try { history.pushState({ p: currentPage() }, ""); } catch (err) {} return; } }

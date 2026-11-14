@@ -49,7 +49,7 @@ export function finishLine(cp, today = todayStr()){
 }
 // The best time on a home day (Jenya, Oct 30: she practised right after eating and got a stomach ache, or waited until it was late):
 // a small snack after school, the dancing about 45 minutes later, dinner after it. Shown until she has danced.
-export const BEST_TIME = "🍌 Snack first, dance 45 min later, dinner after";
+export const BEST_TIME = "🍌 Snack first, then dance. Dinner after."; // 1.79.0: no minutes here, the card already says about 10
 // The big buttons (1.60.0): ▶ My solo and ▶ My trio, the same on every day. Each opens the player with the music playing
 // (player.js { once: true }); the track played to its end is one dance, logged without questions. A dance done today shows ✅
 // and can be danced again. Show day keeps its checklist. Pure: solo / trio = danced today.
@@ -115,11 +115,11 @@ function renderHome(){
     <div class="today-line small dp-line" id="dayPlan" hidden></div>
     ${danceButtons({kind,solo:pd,trio:td})}${pd?`<div class="today-line small today-done">${ran?PLAN_DONE:PLAN_DONE_QUIET}</div>`:""}${kind==="show"?"":groupButtonsHtml(groupDances(dances()),((rec&&rec.runs)||[]).map(r=>r&&r.danceId).filter(Boolean))}
     ${focus}
-    <div class="today-help"><span class="small muted">Not sure of the steps?</span><button class="btn sm violet" onclick="openVideos()">📹 Videos</button>${memoBtns||memoBtn(mp?mp.dance:null)}</div>
-    <button class="btn sm ghost today-log" onclick="openStudioLog()">🏫 ✏️ Log studio work</button>
+    ${kind==="show"?"":`<div class="today-help"><span class="small muted">Not sure of the steps?</span><button class="btn sm violet" onclick="openVideos()">📹 Videos</button>${memoBtns||memoBtn(mp?mp.dance:null)}</div>
+    <button class="btn sm ghost today-log" onclick="openStudioLog()">🏫 ✏️ Log studio work</button>`}
     ${skillPick}
     ${metaLine({days:danceDays(S.practice),dances:danceCount(S.practice)})}
-    <div class="today-tip"><span class="tt-lab">💬 Dancer's tip</span>${esc(tipFor(today))}</div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
+    <div class="today-tip"><span class="tt-lab">💬 Dancer's tip</span>${esc(tipFor(today))}</div>${todayMode().mode==="comp"&&kind!=="show"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
   // The dated line from plan10 (its headline and note) is off Today since 1.60.0: "That's all." is not followed by a to-do.
   // The line's place stays in the card, hidden; dayplan.js and its ticks are unchanged.
   { const dp=$("#dayPlan"); if(dp){ dp.hidden=true; dp.innerHTML=""; } }
