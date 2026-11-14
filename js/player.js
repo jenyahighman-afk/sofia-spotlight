@@ -17,7 +17,8 @@ export const parseTime = (t) => { const m = /^(\d+):(\d{2}(?:\.\d+)?)$/.exec(t);
 
 // Loop presets: the dance's explicit `loops` plus one section per timestamp found in its "big moments" map ("~0:50 cartwheel · ~1:08 …").
 // "cartwheel (right on the swell)" → "cartwheel": drop parentheticals, cut at a word boundary.
-export const shortLabel = (s) => { let t = String(s).replace(/\(.*$/, "").replace(/^[—–-]\s*/, "").trim(); if (t.length > 20) t = t.slice(0, 20).replace(/\s+\S*$/, ""); return t; };
+// 1.80.0: a part's name is cut on a word, never left hanging on "on the" or opening with ") →".
+export const shortLabel = (s) => { let t = String(s).replace(/\(.*$/, "").replace(/^[\s)\]→+—–-]+/, "").trim(); if (t.length > 24) t = t.slice(0, 24).replace(/\s+\S*$/, ""); let was; do { was = t; t = t.replace(/[\s→+—–,:-]+$/, "").replace(/\s+(the|a|an|to|on|of|in|and|into|with|at)$/i, ""); } while (t !== was); return t; };
 export function presetsFor(d, duration = 0){
   const out = [...(d.loops || [])].filter(l => Number.isFinite(l.a) && Number.isFinite(l.b) && l.b > l.a);
   const found = [...String(d.map || "").matchAll(/(\d+:\d{2}(?:\.\d+)?)\s*([^·,;\n]*)/g)].map(m => ({ t: parseTime(m[1]), n: shortLabel(m[2]) })).filter(x => x.t !== null);

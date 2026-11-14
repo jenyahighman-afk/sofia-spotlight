@@ -915,3 +915,11 @@ html[data-season="christmas"] .gate:after{right:auto;left:30px}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) details.memo{background:rgba(255,255,255,.08)} }
 :root[data-theme="dark"] details.memo{background:rgba(255,255,255,.08)}
 .sl-grp{margin:6px 0} .sl-grp>summary{display:flex;align-items:center;min-height:44px;font-weight:800;cursor:pointer}
+/* 1.80.0: from the browser audit: bigger things to tap, a small-phone header, the pet clear of the last row */
+.presets .chip,.memo-chips .chip,.mz-more .chip{min-height:40px;padding:8px 12px;display:inline-flex;align-items:center;gap:6px}
+details.more>summary{padding:9px 0} details.memo-how>summary{padding:8px 0;font-size:.85rem}
+.rm-tog{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 6px} .rm-tog input{width:24px;height:24px}
+.sl-left{display:block;margin-top:2px;font-size:.78rem}
+body.pg-home .wrap{padding-bottom:150px}
+.season-shower{opacity:.55}
+@media (max-height:620px){ body.pg-home header.hero{padding:10px 16px 8px} body.pg-home header.hero h1{font-size:1.45rem} body.pg-home header.hero .sub,body.pg-home header.hero:after{display:none} body.pg-home .sticker{display:none} }

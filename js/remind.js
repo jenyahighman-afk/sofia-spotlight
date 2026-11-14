@@ -83,10 +83,10 @@ const subscribedHere = () => { try { return localStorage.getItem(LS) || ""; } ca
 export function renderReminder(){
   const el = $("#meReminder"); if (!el) return; const r = reminderOf(S.settings); const here = !!subscribedHere(); const block = pushBlocker(env()); const pw = planWeekdays();
   el.innerHTML = `<div class="row"><h3 class="grow">⏰ My dance time</h3>${r.on && here ? `<span class="chip coral">on · ${esc(timeLabel(r))}</span>` : `<span class="chip">off</span>`}</div>
-    <p class="small muted">You pick the time. Every day: what to do today, with a dancer's tip. None once you've danced. In the evening: a nudge to log what you danced.</p>
+    <p class="small muted">You pick the time. Every day: what to do today, with a dancer's tip. No reminder once you've danced. In the evening: a nudge to log what you danced.</p>
     <div class="row"><input type="time" id="rmTime" value="${timeValue(r)}" step="900" style="max-width:150px" ${block ? "disabled" : ""}>
       ${block ? `<span class="small muted">${esc(block)}</span>` : here ? `<button class="btn sm ghost" onclick="rmOff()">Turn off on this phone</button><button class="btn sm ghost" onclick="rmTest()">Send a test</button>` : `<button class="btn sm coral" onclick="rmOn()">Remind me on this phone</button>`}</div>
-    <div class="row rm-log"><span class="small">📝 Log reminder</span><input type="time" data-rm="log" aria-label="Log reminder time" value="${timeValue({ h: r.lh, m: r.lm })}" step="900" style="max-width:150px" ${block ? "disabled" : ""}><label class="small"><input type="checkbox" data-rm="logon" ${r.log ? "checked" : ""} ${block ? "disabled" : ""}> on</label></div>
+    <div class="row rm-log"><span class="small">📝 Log reminder</span><input type="time" data-rm="log" aria-label="Log reminder time" value="${timeValue({ h: r.lh, m: r.lm })}" step="900" style="max-width:150px" ${block || !here ? "disabled" : ""}><label class="small rm-tog"><input type="checkbox" data-rm="logon" ${r.log && here ? "checked" : ""} ${block || !here ? "disabled" : ""}> on</label></div>
     <div class="small muted rm-days">Home days: ${esc(daysLabel(pw)) || "none right now"} · class days get an "after class" nudge</div>`;
   const again = () => { if (subscribedHere()) subscribe(reminderOf(S.settings)).catch(e => toast(e.message, 3000)); renderReminder(); };
   const lt = el.querySelector ? el.querySelector('[data-rm="log"]') : null; if (lt) lt.onchange = () => { const p = timeParts(lt.value); if (!p) return; setSettings({ reminder: { ...r, lh: p.h, lm: p.m } }).then(again); };
