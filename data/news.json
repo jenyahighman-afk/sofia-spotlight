@@ -2,7 +2,7 @@
   "id": "map-1.64",
   "title": "4 new things in your app!",
   "intro": "Your app got simpler. Four tabs at the bottom now: Today, Dances, Skills and Me. Your music is one tap away, and the games are always open.",
-  "mom": "New for Mom: four tabs (Today · Dances · Skills · Me). Practice opens from Today, Play from a tile on Me. Class days ask nothing at home; reminders are off until she turns one on. 🎀 Events on Today needs no PIN; costs and hotels stay locked.",
+  "mom": "New for Mom: four tabs (Today · Dances · Skills · Me). Practice opens from Today, Play from a tile on Me. Class days: class first, one thing at home when there is a chance; reminders are off until she turns one on. 🎀 Events on Today needs no PIN; costs and hotels stay locked.",
   "items": [
     {
       "id": "today",

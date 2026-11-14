@@ -100,6 +100,13 @@ export const REPLACED_LINES = { solo: [["Point the foot and keep the knee straig
   ["Donut roll: arms down, head ALL the way back — do not tuck the chin (Hannah)", "#other Donut roll (1:18.25): arms down, head ALL the way back. Don't tuck the chin (Hannah).", true],
   ["Donut roll (1:18.25): mat only. Roll back over ONE shoulder, head to the side, chin tucked. Never over the head.", "#other Donut roll (1:18.25): arms down, head ALL the way back. Don't tuck the chin (Hannah)."]] };
 export const retiredIds = () => new Set(Object.entries(RETIRED_LINES).flatMap(([danceId, lines]) => lines.map(t => migratedId(danceId, t))));
+// Notes from a class that ship with the app (data/dances.json `classNotes`, 1.77.0: Jenya told the two notes from the solo
+// rehearsal with Ms. Angie and asked for them to be added). Copied once into the tracker as class notes (`studio: true`, the
+// class day, the teacher as `source`), so they show under 📝 From my teachers with 💪 and ✅ like one she logged herself.
+// Not pinned: she can close them. One she took off is not copied again. Pure.
+export function classNotesFromDance(dance){
+  return (Array.isArray(dance.classNotes) ? dance.classNotes : []).filter(p => p && p.text).map(p => ({ id: migratedId(dance.id, p.text), danceId: dance.id, text: String(p.text).trim(), source: String(p.by || "class"), date: String(p.date || ""), tag: TAGS.includes(p.tag) ? p.tag : inferTag(p.text), status: "working", studio: true, ...(p.cls ? { cls: String(p.cls) } : {}) }));
+}
 export async function migrateDanceCorrections(){
   if (migrating || !settled("corrections") || !settled("dances")) return 0;
   migrating = true; let n = 0;
@@ -120,6 +127,7 @@ export async function migrateDanceCorrections(){
     for (const d of [...dances(), ...DEFAULT_DANCES]) for (const p of pinnedFromDance(d)) {
       const have = S.corrections[p.id]; if (!have) { await storeSet("corrections", p.id, p); n++; } else if (!have.pinned && !have.deleted) await storeSet("corrections", p.id, { ...have, pinned: true });
     }
+    for (const d of DEFAULT_DANCES) for (const c of classNotesFromDance(d)) { if (!S.corrections[c.id]) { await storeSet("corrections", c.id, c); n++; } }
     for (const id of retired) { const old = S.corrections[id]; if (old && !old.deleted && old.source === "notes") await storeSet("corrections", id, { ...old, deleted: true }); }
     for (let { explicit, ...rec } of sources) {
       if (retired.has(rec.id)) continue;
