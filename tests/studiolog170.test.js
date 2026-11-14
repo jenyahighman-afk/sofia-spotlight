@@ -259,3 +259,11 @@ test("1.80.0: part names cut on a word, 'you' not 'she', friendly dates, a count
   const sl = src("js/studiolog.js"); assert.match(sl, /oninput="slLeft\(this\)"/); assert.match(sl, /confirm\("Delete this note\?"\)/); assert.match(src("js/remind.js"), /No reminder once you've danced\./); assert.match(src("js/views/home.js"), /" · 5 steps"/);
   assert.match(src("css/app.css"), /@media \(max-height:620px\)\{ body\.pg-home header\.hero/);
 });
+
+// 1.81.0: the frame picker in Cue check.
+test("1.81.0: scrub, step and choose a cue's photo", async () => {
+  const K = await import("../js/cuecheck.js");
+  assert.equal(K.scrubTime(10, 0.25, 124), 10.25); assert.equal(K.scrubTime(0.1, -1, 124), 0); assert.equal(K.scrubTime(123.99, 1, 124), 123.95, "never past the end"); assert.equal(K.scrubTime(5, K.FRAME, 0), 5.03);
+  const s = src("js/cuecheck.js"); assert.match(s, /data-ck-scrub min="0"/); assert.match(s, /oninput="ckGrabTo\(this\.value\)"/); assert.match(s, /ckGrabHome\(\)">↩ Cue time/); assert.match(s, /onclick="ckGrabSave\(\)">Use this photo/);
+  assert.match(s, /if \(drawing\) \{ again = true; return; \}/, "one seek at a time"); assert.match(s, /ckGrabStep: grabStep, ckGrabTo: grabTo, ckGrabHome: grabHome/);
+});

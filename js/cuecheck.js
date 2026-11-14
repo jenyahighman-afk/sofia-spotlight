@@ -41,7 +41,7 @@ export function renderCueCheck(){
     return `<div class="ck-row ${c.trick ? "trick" : ""} ${on && on.n === c.n ? "on" : ""}" data-n="${c.n}">
       <div class="ck-thumb">${ph ? `<img src="${esc(ph)}" alt="" loading="lazy">` : `<span>${c.n}</span>`}</div>
       <div class="grow"><div><b>${c.n}. ${c.trick ? "★ " : ""}${esc(c.move)}</b>${cueClip(d, c.n) ? " 🔊" : ""}</div><div class="small ${moved ? "coral-t" : "muted"}">${cueRange(c)}${moved ? " · moved" : ""}</div></div>
-      <div class="ck-btns"><button class="btn sm ghost" onclick="ckNudge(${c.n},-1)" title="0.25 s earlier">−¼</button><button class="btn sm ghost" onclick="ckNudge(${c.n},1)" title="0.25 s later">+¼</button><button class="btn sm" onclick="ckPlay(${c.n})" title="Play from 1 s before">▶</button><button class="btn sm ghost" onclick="ckGrab(${c.n})" title="Photo from the video">📷</button></div>
+      <div class="ck-btns"><button class="btn sm ghost" onclick="ckNudge(${c.n},-1)" title="0.25 s earlier">−¼</button><button class="btn sm ghost" onclick="ckNudge(${c.n},1)" title="0.25 s later">+¼</button><button class="btn sm" onclick="ckPlay(${c.n})" title="Play from 1 s before">▶</button><button class="btn sm ghost" onclick="ckGrab(${c.n})" title="Pick a frame from the video" aria-label="Pick a frame from the video">🎞️</button></div>
     </div>${CK.grab && CK.grab.n === c.n ? `<div class="ck-grab" id="ckGrab"></div>` : ""}`; }).join("");
   $("#ckSave").disabled = !dirty(); $("#ckUndo").disabled = !dirty(); $("#ckReset").hidden = !nudged;
   $("#ckOffset").value = CK.offset; $("#ckVideoName").textContent = CK.clip ? "🎞️ " + CK.clip.name : "No video picked";
@@ -65,15 +65,36 @@ async function play(n, short){ const c = CK.cues.find(x => x.n === n); const a =
 // ---- photo from a video frame ----
 async function pickVideo(file){ if (!file) return; if (CK.clip) CK.clip.close(); CK.clip = null; toast("Opening the video…", 3000); try { const c = await openClip(file); CK.clip = { ...c, name: file.name }; toast("Video ready. Tap 📷 on a cue"); } catch (e) { console.warn(e); toast(e.message || "Couldn't open that video", 3500); } renderCueCheck(); }
 function grab(n){ if (!CK.clip) { $("#ckVideoIn").click(); return toast("Pick the run-through video first (the music should start at " + CK.offset + " s)", 3500); } const c = CK.cues.find(x => x.n === n); if (!c) return; CK.grab = { n, t: frameTime(c, CK.offset) }; renderCueCheck(); }
+// 🎞️ The frame picker (1.81.0, Jenya Nov 14: "add a frame picker so I can scrub and choose"): under a cue's row, the frame
+// itself, a slider across the whole video, and steps of one frame, a quarter second and a second. The box is built once so
+// the slider keeps her finger; each move only swaps the picture. "Use this photo" saves the frame she is looking at.
+export const FRAME = 1 / 30;
+export const scrubTime = (t, delta = 0, dur = 0) => { const max = dur > 0 ? Math.max(0, dur - 0.05) : Infinity; return Math.round(Math.min(max, Math.max(0, (+t || 0) + delta)) * 100) / 100; };
+const clipDur = () => { const v = CK.clip && CK.clip.video; return v && Number.isFinite(v.duration) ? v.duration : 0; };
+const grabShell = (g) => `<img data-ck-img alt="" hidden><div class="small muted" data-ck-lab>Frame at ${fmtCueTime(g.t)} in the video…</div>
+  <input type="range" class="ck-scrub" data-ck-scrub min="0" max="${Math.max(1, Math.floor(clipDur() * 100) / 100)}" step="0.05" value="${g.t}" aria-label="Scrub through the video" oninput="ckGrabTo(this.value)">
+  <div class="ck-steps"><button class="btn sm ghost" onclick="ckGrabStep(-1)">◀ 1 s</button><button class="btn sm ghost" onclick="ckGrabMove(-1)">◀ ¼</button><button class="btn sm ghost" onclick="ckGrabStep(-${FRAME})" aria-label="One frame back">◀ 1</button><button class="btn sm ghost" onclick="ckGrabStep(${FRAME})" aria-label="One frame on">1 ▶</button><button class="btn sm ghost" onclick="ckGrabMove(1)">¼ ▶</button><button class="btn sm ghost" onclick="ckGrabStep(1)">1 s ▶</button></div>
+  <div class="row"><button class="btn sm ghost" onclick="ckGrabHome()">↩ Cue time</button><span class="grow"></span><button class="btn sm ghost" onclick="ckGrabCancel()">Cancel</button><button class="btn sm coral" onclick="ckGrabSave()">Use this photo</button></div>`;
+let drawing = false, again = false;
 async function drawGrab(){
-  const g = CK.grab, box = $("#ckGrab"); if (!g || !box || !CK.clip) return; const v = CK.clip.video;
-  box.innerHTML = `<div class="small muted">Frame at ${fmtCueTime(g.t)} in the video…</div>`;
-  const ok = await seekTo(v, g.t); if (!ok || !v.videoWidth || CK.grab !== g) { if (CK.grab === g) box.innerHTML = `<p class="small bad">This frame didn't load. Try ±¼ s.</p>${grabBtns()}`; return; }
-  const scale = Math.min(1, PHOTO_PX / Math.max(v.videoWidth, v.videoHeight)); const cv = document.createElement("canvas"); cv.width = Math.round(v.videoWidth * scale); cv.height = Math.round(v.videoHeight * scale); cv.getContext("2d").drawImage(v, 0, 0, cv.width, cv.height); g.canvas = cv;
-  box.innerHTML = `<img src="${cv.toDataURL("image/jpeg", 0.8)}" alt=""><div class="small muted">${fmtCueTime(g.t)} in the video · cue ${g.n}</div>${grabBtns()}`;
+  const box = $("#ckGrab"); if (!CK.grab || !box || !CK.clip) return; const v = CK.clip.video;
+  if (!box.querySelector("[data-ck-img]")) box.innerHTML = grabShell(CK.grab);
+  if (drawing) { again = true; return; } drawing = true; // one seek at a time: the newest position wins
+  try {
+    do { again = false; const g = CK.grab; if (!g) break; const lab = box.querySelector("[data-ck-lab]"), img = box.querySelector("[data-ck-img]"), sl = box.querySelector("[data-ck-scrub]");
+      if (sl && document.activeElement !== sl) sl.value = g.t;
+      const ok = await seekTo(v, g.t); if (CK.grab !== g) { again = true; continue; }
+      if (!ok || !v.videoWidth) { if (lab) lab.innerHTML = `<span class="bad">This frame didn't load. Move a little.</span>`; continue; }
+      const scale = Math.min(1, PHOTO_PX / Math.max(v.videoWidth, v.videoHeight)); const cv = document.createElement("canvas"); cv.width = Math.round(v.videoWidth * scale); cv.height = Math.round(v.videoHeight * scale); cv.getContext("2d").drawImage(v, 0, 0, cv.width, cv.height); g.canvas = cv;
+      if (img) { img.src = cv.toDataURL("image/jpeg", 0.8); img.hidden = false; } if (lab) lab.textContent = `${fmtCueTime(g.t)} in the video · cue ${g.n}`;
+    } while (again);
+  } finally { drawing = false; }
 }
-const grabBtns = () => `<div class="row"><button class="btn sm ghost" onclick="ckGrabMove(-1)">◀ ¼ s</button><button class="btn sm ghost" onclick="ckGrabMove(1)">¼ s ▶</button><span class="grow"></span><button class="btn sm ghost" onclick="ckGrabCancel()">Cancel</button><button class="btn sm coral" onclick="ckGrabSave()">Use this photo</button></div>`;
-function grabMove(dir){ if (!CK.grab) return; CK.grab = { n: CK.grab.n, t: Math.max(0, CK.grab.t + dir * NUDGE) }; drawGrab(); }
+const grabAt = (t) => { if (!CK.grab) return; CK.grab = { n: CK.grab.n, t: scrubTime(t, 0, clipDur()) }; drawGrab(); };
+function grabMove(dir){ if (CK.grab) grabAt(CK.grab.t + dir * NUDGE); }
+function grabStep(d){ if (CK.grab) grabAt(CK.grab.t + (+d || 0)); }
+function grabTo(v){ const t = parseFloat(v); if (Number.isFinite(t)) grabAt(t); }
+function grabHome(){ if (!CK.grab) return; const c = CK.cues.find(x => x.n === CK.grab.n); if (c) grabAt(frameTime(c, CK.offset)); }
 function grabCancel(){ CK.grab = null; renderCueCheck(); }
 async function grabSave(){
   const g = CK.grab; if (!g || !g.canvas || CK.busy) return; CK.busy = true;
@@ -117,4 +138,4 @@ export function initCueCheck(){
   $("#ckVideoIn").addEventListener("change", e => { const f = e.target.files[0]; e.target.value = ""; pickVideo(f); });
   $("#ckOffset").addEventListener("change", e => { const v = parseFloat(e.target.value); CK.offset = Number.isFinite(v) && v >= 0 ? v : 0; if (CK.grab) { const c = CK.cues.find(x => x.n === CK.grab.n); CK.grab = { n: CK.grab.n, t: frameTime(c, CK.offset) }; drawGrab(); } });
 }
-expose({ ckNudge: nudge, ckPlay: play, ckGrab: grab, ckGrabMove: grabMove, ckGrabCancel: grabCancel, ckGrabSave: grabSave });
+expose({ ckNudge: nudge, ckPlay: play, ckGrab: grab, ckGrabMove: grabMove, ckGrabStep: grabStep, ckGrabTo: grabTo, ckGrabHome: grabHome, ckGrabCancel: grabCancel, ckGrabSave: grabSave });

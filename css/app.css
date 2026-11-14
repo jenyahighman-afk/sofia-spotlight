@@ -923,3 +923,6 @@ details.more>summary{padding:9px 0} details.memo-how>summary{padding:8px 0;font-
 body.pg-home .wrap{padding-bottom:150px}
 .season-shower{opacity:.55}
 @media (max-height:620px){ body.pg-home header.hero{padding:10px 16px 8px} body.pg-home header.hero h1{font-size:1.45rem} body.pg-home header.hero .sub,body.pg-home header.hero:after{display:none} body.pg-home .sticker{display:none} }
+/* 1.81.0: the frame picker in Cue check */
+.ck-scrub{width:100%;margin:8px 0;height:36px;accent-color:#FF5C93} .ck-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:8px} .ck-steps .btn{padding:10px 2px;min-height:44px;font-size:.82rem}
+.ck-grab .row .btn{min-height:44px}
