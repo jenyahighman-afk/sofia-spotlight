@@ -104,7 +104,7 @@ function renderHome(){
   // 1.70.0 (Jenya: "why Memorize button is only for solo"): it was the dance whose turn it is (the two take turns by day), which
   // read as solo only. Now one 🧠 Memorize for each of her solo and trio that has a memorize plan; the old single button stays
   // as the fallback when neither has one.
-  const memoBtn=(d)=>{ const memoGo=!d?"openMemorize('solo','chunks')":isCueTable(d.cues)?`openMemorize('${d.id}','chunks')`:`showPage('dances');memoFocus('${d.id}')`; return `<button class="btn sm violet" onclick="${memoGo}">🧠 Memorize<small>${d?esc(shortName(d)):""}</small></button>`; };
+  const memoBtn=(d)=>{ const memoGo=!d?"openMemorize('solo','chunks')":isCueTable(d.cues)?`openMemorize('${d.id}','chunks')`:`showPage('dances');memoFocus('${d.id}')`; return `<button class="btn sm violet" onclick="${memoGo}">🧠 Memorize<small>${d?esc(shortName(d))+(isCueTable(d.cues)?"":" · 5 steps"):""}</small></button>`; }; // 1.80.0: a dance with no cue table opens its five steps on its page, and the button says so
   const memoBtns=memoDances(dances()).filter(d=>d.id==="solo"||d.id==="trio").map(memoBtn).join("");
   // 1.68.0: the week's trick left Today (its button opened a timed Trick Quest station for a trick she had not picked);
   // Play still has it. The two helpers under the dance buttons are Hannah's videos and Memorize.

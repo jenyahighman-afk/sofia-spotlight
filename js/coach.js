@@ -46,8 +46,8 @@ function step(name, html){
   const el = $("#coachBody");
   if (name === "tip") el.innerHTML = `<h3 style="margin-top:0">🎥 Before you film</h3><ol class="coach-tip">
       <li>📱 <b>Phone sideways</b> (landscape).</li><li>🧍 Phone at <b>hip height</b>, on a stand or a shelf.</li><li>👣 <b>Whole body in the frame</b>, head to toes, the whole time.</li>
-      <li>🧱 A <b>plain wall</b> behind if you can (no mirror behind her).</li><li>🙅 <b>Nobody else in the shot.</b></li></ol>
-      <p class="small muted">The coach only looks at Sofia: the app finds her, crops each frame to her and leaves out the rest of the room.</p>
+      <li>🧱 A <b>plain wall</b> behind if you can (no mirror behind you).</li><li>🙅 <b>Nobody else in the shot.</b></li></ol>
+      <p class="small muted">The coach only looks at you: the app finds you, crops each frame to you and leaves out the rest of the room.</p>
       <button class="btn coral big-btn" style="width:100%" onclick="coachStep('pick')">Got it ▶</button>`;
   else if (name === "pick") el.innerHTML = `<p class="coach-line">Film or pick a clip (a full run is fine, up to 3 min), or use photos.</p>
     <p class="small muted">Full run? Start the music right after you tap record.</p>

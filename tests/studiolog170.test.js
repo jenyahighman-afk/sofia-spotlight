@@ -248,3 +248,14 @@ test("1.79.0: audit fixes and the progress page", async () => {
   assert.equal((h.match(/<i class="on/g) || []).length, 3); assert.match(P.progressHtml(P.progressData({}, D)), /The first one is waiting/);
   assert.match(src("js/working.js"), /onclick="openProgress\(\)">🌟 Look how far I've come · 🖨️/); assert.match(src("js/progress.js"), /onclick="pgPrint\(\)">🖨️ Print/); assert.match(src("sw.js"), /"\.\/js\/progress\.js"/); assert.match(src("css/app.css"), /body\.print-sheet>\*:not\(\.pg-sheet\)\{display:none!important\}/);
 });
+
+// 1.80.0: the rest of the browser audit.
+test("1.80.0: part names cut on a word, 'you' not 'she', friendly dates, a counter and a confirm", async () => {
+  const P = await import("../js/player.js"), R = await import("../js/ready.js");
+  assert.equal(P.shortLabel("donut roll on the "), "donut roll"); assert.equal(P.shortLabel("kneeling arch + leg + "), "kneeling arch + leg"); assert.equal(P.shortLabel(") → rolls"), "rolls"); assert.equal(P.shortLabel("final push to the end of it"), "final push to the end"); assert.equal(P.shortLabel("floor ending — hold until the music is gone"), "floor ending — hold");
+  const lines = Object.values(R.BAR_LINES({ perform: { window: 14, of: 3 } })).join(" "); assert.doesNotMatch(lines, /\bshe\b|\bher\b/); assert.match(lines, /when you get it right twice/);
+  assert.doesNotMatch(src("js/coach.js"), /behind her\)|only looks at Sofia/);
+  const g = src("js/goals.js"); assert.match(g, /Before and now: slide/); assert.match(g, /esc\(nice\(c\.date\)\)/); assert.doesNotMatch(g, /First vs latest|>Timeline</);
+  const sl = src("js/studiolog.js"); assert.match(sl, /oninput="slLeft\(this\)"/); assert.match(sl, /confirm\("Delete this note\?"\)/); assert.match(src("js/remind.js"), /No reminder once you've danced\./); assert.match(src("js/views/home.js"), /" · 5 steps"/);
+  assert.match(src("css/app.css"), /@media \(max-height:620px\)\{ body\.pg-home header\.hero/);
+});

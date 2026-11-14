@@ -71,10 +71,10 @@ export function readinessHeadline(r, week){
 }
 // One short line per bar, for the sheet.
 export const BAR_LINES = (r) => ({
-  know: "🧠 Know: a move counts once she got it right twice in a row in ⏸ Pause & Predict (a grown-up taps Got it / Missed it); tricky = missed last time.",
-  clean: "✨ Clean: her solo notes, fixed against open, Ms. Brittany's homework included; a fix closes when it shows on two videos in a row.",
-  tricks: "🤸 Tricks: the plan's eight numbered tricks, clean or ★ teacher-checked; her own taps count until a teacher checks them.",
-  perform: `🎭 Perform: full runs and runs on film in the last ${r.perform.window || PERFORM_DAYS} days, one per home day (${r.perform.of}), plus the home days her solo was danced on.`,
+  know: "🧠 Know: a move counts when you get it right twice in a row in ⏸ Pause & Predict (a grown-up taps Got it or Missed it). Tricky = missed last time.",
+  clean: "✨ Clean: your solo notes, the fixed ones out of all of them, with Ms. Brittany's homework. A fix closes when it shows on two videos in a row.",
+  tricks: "🤸 Tricks: the plan's eight numbered tricks, clean or ★ teacher-checked. Your own taps count until a teacher checks them.",
+  perform: `🎭 Perform: full runs and runs on film in the last ${r.perform.window || PERFORM_DAYS} days, one per home day (${r.perform.of}), plus the home days you danced your solo.`,
 });
 // The bars as HTML (the solo card, the sheet).
 export function readinessHtml(r, { compact = false } = {}){
@@ -95,7 +95,7 @@ export const readinessNow = (today = todayStr()) => soloReadiness({ dance: soloD
 // overall percent from Perform it on, the four bars, one line each.
 export function openReady(today = todayStr()){
   const el = $("#readyArea"); if (!el) return; const r = readinessNow(today); const h = readinessHeadline(r, weekOf(today)); const lines = BAR_LINES(r);
-  el.innerHTML = `<div class="ready-top"><div class="today-what">🌸 ${esc(h.title)}</div><div class="small muted">${h.showOverall ? `${r.overall}% ready overall · ` : ""}Four honest bars, from what the app already knows. Nothing to fill in.</div></div>${readinessHtml(r)}
+  el.innerHTML = `<div class="ready-top"><div class="today-what">🌸 ${esc(h.title)}</div><div class="small muted">${h.showOverall ? `${r.overall}% ready overall · ` : ""}Four bars from what you already did in the app. Nothing to fill in.</div></div>${readinessHtml(r)}
     <div class="ready-how small">${BARS.map(([k]) => `<p>${esc(lines[k])}</p>`).join("")}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm violet" onclick="closeStage();openMemorize('solo','predict')">⏸ Pause &amp; Predict</button><button class="btn sm violet" onclick="closeStage();openPlayer('solo')">🎵 Run it</button></div>`;
   openStage("🌸 How ready is the solo?", [el], `<button class="btn ghost" onclick="closeStage()">Done</button>`);

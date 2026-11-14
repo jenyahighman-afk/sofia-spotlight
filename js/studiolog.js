@@ -104,7 +104,7 @@ export function sheetHtml({ date, today, practice = {}, list = [], goals = [], i
   const tags = TAGS.map(t => `<button class="sl-tag${t === tag ? " on" : ""}" onclick="slTag('${t}')" aria-label="${TAG_LABEL[t]}" aria-pressed="${t === tag}">${TAG_EMOJI[t]}</button>`).join("");
   const saidHtml = said.map(c => `<div class="sl-said"><span class="grow">${TAG_EMOJI[c.tag] || "✨"} ${esc(c.text)}<small>${esc([label(c.danceId), c.source && c.source !== "class" ? "👩‍🏫 " + c.source : ""].filter(Boolean).join(" · "))}</small></span><button class="del" onclick="slSaidDel('${c.id}')" aria-label="Delete">✕</button></div>`).join("");
   const teacher = `<div class="sl-lab">📝 <span class="sl-labw">Teacher said</span></div>${saidHtml}${clsHtml}<div class="sl-chips">${aboutHtml}</div><div class="sl-tags">${tags}</div>
-    <div class="sl-add"><input type="text" class="sl-note" id="slSaid" maxlength="${SAID_MAX}" placeholder="📝 …" aria-label="What the teacher said" onkeydown="if(event.key==='Enter')slSaidAdd()"><button class="btn coral" data-about="${esc(cur)}" data-cls="${esc(curCls)}" onclick="slSaidAdd()" aria-label="Add">＋</button></div>`;
+    <div class="sl-add"><input type="text" class="sl-note" id="slSaid" maxlength="${SAID_MAX}" placeholder="📝 …" aria-label="What the teacher said" oninput="slLeft(this)" onkeydown="if(event.key==='Enter')slSaidAdd()"><button class="btn coral" data-about="${esc(cur)}" data-cls="${esc(curCls)}" onclick="slSaidAdd()" aria-label="Add">＋</button></div><small class="sl-left muted" data-sl-left hidden></small>`;
   const feel = FEELS.map(([k, e]) => `<button class="sl-feel${r.feel === k ? " on" : ""}" onclick="slFeel('${k}')" aria-label="${k}" aria-pressed="${r.feel === k}">${e}</button>`).join("");
   return `<div class="sl-strip" id="slStrip">${strip}</div>
     <div class="sl-date">🏫 ${esc(dayWords(date, today))}${hasLog(r) ? " ✅" : ""}</div>
@@ -180,7 +180,9 @@ async function slDone(){
   if (inp && String(inp.value || "").trim()) { if (btn && !btn.getAttribute("data-about") && !btn.getAttribute("data-cls")) return toast("🏫 ? Tap the class, then ✓ Done", 2600); await slSaidAdd(); }
   if (typeof window !== "undefined" && window.closeStage) window.closeStage();
 }
-async function slSaidDel(id){ const c = S.corrections[id]; if (!c || !c.studio) return; await storeSet("corrections", id, { ...c, deleted: true }); draw(); renderTeacherNotes(); }
+// 1.80.0: the box says when the note is nearly full (it was cut at 160 with no word), and ✕ asks first.
+function slLeft(inp){ const el = document.querySelector("[data-sl-left]"); if (!el || !inp) return; const n = SAID_MAX - String(inp.value || "").length; el.hidden = n > 30; el.textContent = n > 0 ? `${n} letters left` : "Full. Keep it short ✂️"; }
+async function slSaidDel(id){ const c = S.corrections[id]; if (!c || !c.studio) return; if (typeof confirm === "function" && !confirm("Delete this note?")) return; await storeSet("corrections", id, { ...c, deleted: true }); draw(); renderTeacherNotes(); }
 // 1.79.0: every open note can be reached. A note about a class or a skill is on no dance's page, so "＋ N more" opens the rest here.
 let showAllNotes = false;
 function tnAll(){ showAllNotes = !showAllNotes; renderTeacherNotes(); }
@@ -191,4 +193,4 @@ export function renderTeacherNotes(){
 }
 async function tnWorked(id){ if (!loaded()) return; const today = todayStr(), rec = S.practice[today] || { done: [], note: "", runs: [] }, have = Array.isArray(rec.notes) ? rec.notes : [], on = !have.includes(id); await storeSet("practice", today, { ...rec, notes: on ? [...have, id] : have.filter(x => x !== id) }); renderTeacherNotes(); renderStones(); if (on) try { pingLogged(); } catch (e) {} toast(on ? "💪 That's a stepping stone 🪜" : "↩"); }
 async function tnGot(id){ const c = await closeCorrection(id); renderTeacherNotes(); renderStones(); if (c) toast("Got it! ✅ Show your teacher 🌟", 2400); }
-expose({ openStudioLog, slCls, slDay, slDance, slSkill, slFeel, slNote, slSkip, slAbout, slTag, slSaidAdd, slSaidDel, slDone, tnWorked, tnGot, tnAll });
+expose({ openStudioLog, slCls, slDay, slDance, slSkill, slFeel, slNote, slSkip, slAbout, slTag, slSaidAdd, slSaidDel, slLeft, slDone, tnWorked, tnGot, tnAll });
