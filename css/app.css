@@ -926,3 +926,5 @@ body.pg-home .wrap{padding-bottom:150px}
 /* 1.81.0: the frame picker in Cue check */
 .ck-scrub{width:100%;margin:8px 0;height:36px;accent-color:#FF5C93} .ck-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:8px} .ck-steps .btn{padding:10px 2px;min-height:44px;font-size:.82rem}
 .ck-grab .row .btn{min-height:44px}
+/* 1.82.0: 📍 Where I stand on a group dance's page */
+.spots-list{list-style:none;margin:6px 0;padding:0} .spots-list li{display:flex;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:.92rem} .spots-list b{flex:none;width:44px;font-family:Fredoka} .spots-list li.star span{font-weight:800} .spots-tip{margin:8px 0 2px;font-weight:700}

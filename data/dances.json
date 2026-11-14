@@ -716,7 +716,49 @@
     "lyric": "",
     "move": "Ending"
    }
-  ]
+  ],
+  "spots": [
+   {
+    "t": "0:00",
+    "w": "Back row, a little left of center"
+   },
+   {
+    "t": "0:30",
+    "w": "Small group on the left side"
+   },
+   {
+    "t": "0:45",
+    "w": "Run across the back to the right side. Make it big!",
+    "star": true
+   },
+   {
+    "t": "0:47",
+    "w": "Wait on the right side. Stay in the dance: face on, ready"
+   },
+   {
+    "t": "1:07",
+    "w": "Run back in. Make it big!",
+    "star": true
+   },
+   {
+    "t": "1:10",
+    "w": "Back row, CENTER. The line spaces off me",
+    "star": true
+   },
+   {
+    "t": "1:40",
+    "w": "Into the cluster, then down to the floor"
+   },
+   {
+    "t": "1:50",
+    "w": "Kneel low on the left of the group"
+   },
+   {
+    "t": "1:52",
+    "w": "Ending pose: back center"
+   }
+  ],
+  "spotsFrom": "From the run-through video, Nov 2026. Times are the video's and can be a little off the music."
  },
  {
   "id": "pitch-contemp",
