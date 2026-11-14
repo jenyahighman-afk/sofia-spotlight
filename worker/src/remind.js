@@ -19,7 +19,9 @@ export async function handleRemind(path, body, env, cors){
     return json({ ok: true, h: v.sub.h, m: v.sub.m, tz: v.sub.tz, days: v.sub.days || null, second: Number.isInteger(v.sub.h2) ? { h: v.sub.h2, m: v.sub.m2 } : null, log: !!v.sub.log, msgs: v.sub.msgs ? Object.keys(v.sub.msgs).length : 0 }, 200, cors);
   }
   if (path === "/remind/unsubscribe") { const endpoint = String((body || {}).endpoint || ""); if (endpoint) await env.REMIND.delete(subKey(endpoint)); return json({ ok: true }, 200, cors); }
-  if (path === "/remind/done") {
+  // /remind/logged (1.79.0) = she logged something today; /remind/done with what: "log" is 1.78.0's way and still works.
+  if (path === "/remind/logged") body = { ...(body || {}), what: "log" };
+  if (path === "/remind/done" || path === "/remind/logged") {
     const familyId = String((body || {}).familyId || ""); if (!FAMILY_RE.test(familyId)) return json({ error: "A valid familyId is required." }, 400, cors);
     const tz = String((body || {}).tz || ""); const { date } = localClock(new Date(), tz);
     // what: "log" = she logged something today (the evening log reminder stays quiet); anything else = the plan is done.

@@ -157,7 +157,7 @@ export function stonesHtml(st){
   const path = week.n ? `<div class="st-path" aria-hidden="true">${"<i></i>".repeat(Math.min(14, week.n))}${week.n > 14 ? `<b>+${week.n - 14}</b>` : ""}</div>` : "";
   return `<div class="row"><span class="st-head grow">🪜 My stepping stones</span><span class="chip sun">${all.n} so far</span></div>
     <p class="st-week"><b>This week: ${week.n ? plural(week.n, "stone", "stones") : "your next one is waiting"}</b>${week.n ? `<br><span class="small">${stoneWords(week)}</span>` : ""}</p>${path}
-    <p class="small muted">Every little bit counts. This is how a dance gets to look easy.</p>`;
+    <p class="small muted">Every little bit counts. This is how a dance gets to look easy.</p><button class="btn sm sun st-far" onclick="openProgress()">🌟 Look how far I've come · 🖨️</button>`;
 }
 // 💃 My dances are growing (1.69.0, Jenya Nov 13: "add per-dance progress to Today"). One row for each competition dance
 // (not the class dances), from what the app already keeps: how many times she danced it to the end (the runs in her

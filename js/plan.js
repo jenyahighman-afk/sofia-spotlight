@@ -50,7 +50,7 @@ export const FIX_DRILLS = {
   energy: "Energy drill: the section twice marking, then twice FULL OUT · hit the shape, freeze for 2 counts, then go on",
 };
 // Whose words sit under the drill: the teacher's name, "Mom's note", or "The note" for her own, the card's and the coach's lines.
-export const fixWho = (source) => { const w = String(source || "").trim(); return !w || /^(me|notes|ai coach)$/i.test(w) ? "The note" : /^mom$/i.test(w) ? "Mom's note" : w; };
+export const fixWho = (source) => { const w = String(source || "").trim(); return !w || /^(me|notes|ai coach)$/i.test(w) ? "The note" : /^class$/i.test(w) ? "Your teacher" : /^mom$/i.test(w) ? "Mom's note" : w; };
 // opts: { pool, date, preferTags, weekFix: {id,text,tag,source?,pinned?}|null, tricks: [string], aerial: [{id,section,text,how?,wrong?}], aerialDone: Set|array, dances: [{id,...}],
 //   session: season15.sessionRules(date) (imagery, clips, review, run, taper), newNotes: [{id, text, source, tag}] (a teacher's notes from the last 7 days),
 //   short: true | "memory" on a studio day, a light week or the night before the show (MEMORY_RUN only; nightBefore: no full-out), "watch" on a Monday (WATCH_DAY),
@@ -78,7 +78,7 @@ export function buildPlan(opts){
   const ad = ses.audition; if (ad) { if (ad.pickup) items.push({ id: "aud-pickup", text: ad.pickup.text, how: ad.pickup.how, secs: ad.pickup.secs, kind: "mind", pose: "pose" }); if (ad.improv) items.push({ id: "aud-improv", text: ad.improv.text, how: ad.improv.how, secs: ad.improv.secs, kind: "improv", pose: "reach" }); }
   // This week's fix, as a drill (kept in the plan all week; the same id all week so a check-off sticks per day).
   // A teacher's new correction (last 7 days) is practised right away, not saved for the cleaning weeks.
-  for (const n of (opts.newNotes || []).slice(0, 2)) if (n && n.text && (!opts.weekFix || n.id !== opts.weekFix.id)) items.push({ id: "new-" + n.id, text: `New from ${n.source}: ${n.text}`, secs: 90, kind: "fix", pose: (pool.fixPoses || {})[n.tag] || "pose", tag: n.tag });
+  for (const n of (opts.newNotes || []).slice(0, 2)) if (n && n.text && (!opts.weekFix || n.id !== opts.weekFix.id)) items.push({ id: "new-" + n.id, text: `New from ${/^class$/i.test(String(n.source)) ? "your teacher" : n.source}: ${n.text}`, secs: 90, kind: "fix", pose: (pool.fixPoses || {})[n.tag] || "pose", tag: n.tag });
   if (opts.weekFix && opts.weekFix.text) { const f = opts.weekFix; const drill = FIX_DRILLS[f.tag] || ""; items.push({ id: "fix-" + f.id, text: drill ? "This week's fix · " + drill : "This week's fix: " + f.text, ...(drill ? { how: `${f.pinned ? "📌 " : ""}${fixWho(f.source)}: ${f.text}` } : {}), secs: 120, kind: "fix", pose: (pool.fixPoses || {})[f.tag] || "pose", tag: f.tag }); }
   // One trick drill from the dance cards, rotating daily: the card line's first sentence is the item, the rest its `how`.
   const tricks = (Array.isArray(opts.focus) && opts.focus.length ? opts.focus : opts.tricks || []).map(splitLine).filter(t => t.text);

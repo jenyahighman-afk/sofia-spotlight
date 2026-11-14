@@ -76,7 +76,7 @@ test("the 6:30 pm last call: the default, old default times moved by schema 53 (
   const r = RM.reminderOf({ reminder: { on: true } }); const plan = { days: [4], kinds: { 4: "home" } };
   assert.notEqual(RM.sentSig(r, plan), RM.sentSig({ ...r, h: 17 }, plan), "a changed time is a new signature"); assert.equal(RM.sentSig(r, plan), RM.sentSig({ ...r, h2: 20, m2: 0 }, plan), "1.60.0: the last call's time is never sent, so it changes nothing");
   assert.notEqual(RM.sentSig(r, plan), RM.sentSig(r, { days: [4, 5], kinds: { 4: "home", 5: "home" } }), "so are new plan days");
-  assert.match(src("js/app.js"), /if \(settled\("settings"\)\) try \{ resyncReminder\(\); \}/);
+  assert.match(src("js/app.js"), /if \(settled\("settings"\) && settled\("events"\)\) try \{ resyncReminder\(\); \}/);
   for (const [title, body] of W.SECOND_LINES) { assert.match(title, /^Last call/); assert.doesNotMatch(body, /15 minutes|memory run is enough/, "the full session stays on offer"); }
   assert.match(src("js/views/practice.js"), /planDone\(\{\.\.\.rec,done\}\)&&!planDone\(rec\)\) try\{ pingDone\(\); \}/, "ticking the solo in the list quiets tonight's nudge (the re-audit), once: on the tick that finishes the plan");
 });
