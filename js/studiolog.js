@@ -15,7 +15,7 @@ import { CLASSES } from "./data.js";
 import { studioOn } from "./studio.js";
 import { shiftDate, TAGS, TAG_EMOJI, TAG_LABEL, inferTag, isOpen, closeCorrection } from "./corrections.js";
 import { openStage } from "./stage.js";
-import { workingIds, goalRow, danceLabel, renderStones, pickGroups } from "./working.js";
+import { workingIds, goalRow, danceLabel, renderStones, pickGroups, clip, setFold } from "./working.js";
 
 export const LOG_DAYS = 14, NUDGE_DAYS = 3, NOTE_MAX = 200;
 export const FEELS = [["great", "🤩"], ["good", "🙂"], ["ok", "😐"], ["hard", "😓"]];
@@ -74,6 +74,8 @@ export function classNotes(corrections, { open = false, date = "" } = {}){
 }
 // The days she worked on a note at home, oldest first. Pure.
 export const noteDays = (practice, id) => Object.entries(practice || {}).filter(([d, r]) => DATE.test(d) && r && Array.isArray(r.notes) && r.notes.includes(id)).map(([d]) => d).sort();
+// The folded card's one line: on a class day the reminder to show them, else the newest note. Pure.
+export const notesSub = (notes, classToday = false) => !notes.length ? "" : classToday ? "🏫 Class today: show them!" : clip(notes[0].text, 44);
 // Today's card. `label(about)` names what a note is about. Pure.
 export function notesCardHtml(notes, { today, practice = {}, classToday = false, label = () => "", cap = 4 } = {}){
   if (!notes.length) return "";
@@ -169,7 +171,8 @@ async function slSaidAdd(){
 async function slSaidDel(id){ const c = S.corrections[id]; if (!c || !c.studio) return; await storeSet("corrections", id, { ...c, deleted: true }); draw(); renderTeacherNotes(); }
 export function renderTeacherNotes(){
   const el = $("#teacherNotes"); if (!el) return; const today = todayStr();
-  const h = notesCardHtml(classNotes(S.corrections, { open: true }), { today, practice: S.practice, classToday: classDay(today), label: aboutLabel }); el.hidden = !h; el.innerHTML = h;
+  const notes = classNotes(S.corrections, { open: true }), ct = classDay(today), h = notesCardHtml(notes, { today, practice: S.practice, classToday: ct, label: aboutLabel }); el.innerHTML = h;
+  setFold("teacherFold", "teacherSub", !!h, notesSub(notes, ct), "teacherCount", notes.length);
 }
 async function tnWorked(id){ const today = todayStr(), rec = S.practice[today] || { done: [], note: "", runs: [] }, have = Array.isArray(rec.notes) ? rec.notes : [], on = !have.includes(id); await storeSet("practice", today, { ...rec, notes: on ? [...have, id] : have.filter(x => x !== id) }); renderTeacherNotes(); renderStones(); toast(on ? "💪 That's a stepping stone 🪜" : "↩"); }
 async function tnGot(id){ const c = await closeCorrection(id); renderTeacherNotes(); renderStones(); if (c) toast("Got it! ✅ Show your teacher 🌟", 2400); }

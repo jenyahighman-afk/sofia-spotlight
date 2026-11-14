@@ -92,6 +92,16 @@ export function goalRow(id, ctx = {}){
   if (kind === "aerial") { const a = aerialStep(settings); return { ...base, aerial: a, how: a.next ? `Step ${a.n + 1} of ${a.total}` : `All ${a.total} steps done 🎉`, sub: a.next ? "Next: " + shortStep(a.next) : "" }; }
   return { ...base, how: state === "checked" ? "★ Teacher-checked" : state === "clean" ? "◉ Clean" : state === "learning" || on ? `${STATE_EMOJI.learning} Working on it` : "○ Not started" };
 }
+// The one line under a folded card's name (1.75.0, Jenya Nov 13: "make all cards to start off as folded with just main line
+// and maybe second subline"). Pure, one per card.
+const clip = (t, n = 44) => { const s = String(t || "").trim(); return s.length > n ? s.slice(0, n - 1).trim() + "…" : s; };
+export const photoSub = (list) => !list.length ? "" : `${list[0].why === "first" ? "Starting picture" : "New picture"}: ${clip(list[0].n, 28)}${list.length > 1 ? ` ＋${list.length - 1}` : ""}`;
+export const stonesSub = (st) => st.week.n ? `This week: ${st.week.n} ${st.week.n === 1 ? "stone" : "stones"}` : st.all.n ? "Your next one is waiting" : "Your first one is one tap away";
+export const danceSub = (rows) => rows.slice(0, 3).map(r => `${r.n.split(" · ").pop().replace(/ group$/, "")} ${r.runs + r.studio}×`).join(" · ");
+export const goalsSub = (rows) => clip(rows.map(r => r.n).join(" · "), 46);
+export const albumSub = (items) => { const n = items.filter(i => i.count).length; return items.length ? `${n} of ${items.length} with a picture` : ""; };
+const setFold = (foldId, subId, show, text, countId, count) => { const f = $("#" + foldId); if (f) f.hidden = !show; const s = $("#" + subId); if (s) s.textContent = text || ""; if (countId) { const c = $("#" + countId); if (c) c.textContent = count ? String(count) : ""; } };
+export { clip, setFold };
 // 📸 Picture time (1.67.0, Jenya Nov 13: "regular reminders to take beginning pictures for skills and regular progress
 // pictures to be able to see progress over time"). Every goal on her list asks for a starting picture until it has one, and
 // for a new one PHOTO_EVERY_DAYS after its newest (the cadence the measured goals' check-ins always had). Later puts one
@@ -267,16 +277,17 @@ export function renderWorking(){
   el.innerHTML = goalsCardHtml(working.map(id => goalRow(id, { working })).filter(Boolean), WORK_MAX, due);
   const n = $("#workingCount"); if (n) n.textContent = working.length ? String(working.length) : "";
   // The same prompts on Skills (a few) and on Today (the first one). Both go away by themselves once the picture is saved.
-  const sk = $("#photoPrompt"); if (sk) { sk.hidden = !prompts.length; sk.innerHTML = photoPromptsHtml(prompts, { cap: 3 }); }
+  const ws = $("#workingSub"); if (ws) ws.textContent = goalsSub(working.map(id => goalRow(id, { working })).filter(Boolean));
+  const sk = $("#photoPrompt"); if (sk) { sk.innerHTML = photoPromptsHtml(prompts, { cap: 3 }); setFold("photoFoldSk", "photoSubSk", prompts.length > 0, photoSub(prompts), "photoCountSk", prompts.length); }
   renderStones();
-  const td = $("#goalReminder"); if (td) { td.hidden = !prompts.length; td.innerHTML = photoPromptsHtml(prompts, { cap: 1, more: true }); }
+  const td = $("#goalReminder"); if (td) { td.innerHTML = photoPromptsHtml(prompts, { cap: 1, more: true }); setFold("photoFold", "photoSub", prompts.length > 0, photoSub(prompts), "photoCount", prompts.length); }
 }
 // ✓ I worked on it today (and back): the goal's id in today's practice record. Returns true when it is now on.
 export async function toggleWorked(id, today = todayStr()){
   if (!goalKind(id)) return false; const rec = S.practice[today] || { done: [], note: "", runs: [] }; const have = Array.isArray(rec.skills) ? rec.skills : [], on = !have.includes(id);
   await storeSet("practice", today, { ...rec, skills: on ? [...have, id] : have.filter(x => x !== id) }); return on;
 }
-export function renderStones(){ const el = $("#stonesCard"); if (el) el.innerHTML = stonesHtml(stones()); const dp = $("#danceProgress"); if (dp) { const h = danceProgressHtml(danceProgress(dances())); dp.hidden = !h; dp.innerHTML = h; } }
+export function renderStones(){ const st = stones(); const el = $("#stonesCard"); if (el) { el.innerHTML = stonesHtml(st); setFold("stonesFold", "stonesSub", true, stonesSub(st), "stonesCount", st.all.n ? st.all.n + " so far" : ""); } const dp = $("#danceProgress"); if (dp) { const rows = danceProgress(dances()), h = danceProgressHtml(rows); dp.innerHTML = h; setFold("danceFold", "danceSub", !!h, danceSub(rows)); } }
 // The ids a goal's drill videos are saved under (js/drills.js): its own, and for the aerial its steps, the next one first. Pure.
 export const drillIds = (r) => !r ? [] : r.kind === "aerial" ? [...new Set([...(r.aerial && r.aerial.next ? [r.aerial.next.id] : []), r.id, ...AERIAL.map(a => a.id)])] : [r.id];
 export const soloDanceNow = () => dances().find(d => d.id === "solo") || null;

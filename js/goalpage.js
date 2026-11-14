@@ -14,7 +14,7 @@
 import { $, esc, fmt, toast, expose } from "./util.js";
 import { S } from "./store.js";
 import { showPage, currentPage } from "./nav.js";
-import { goalRow, goalKind, goalDoc, workingIds, setOnGoals, gotIt, AERIAL_ID, goalHow, workHtml, workedDates, toggleWorked, soloDanceNow, drillIds } from "./working.js";
+import { goalRow, goalKind, goalDoc, workingIds, setOnGoals, gotIt, AERIAL_ID, goalHow, workHtml, workedDates, toggleWorked, soloDanceNow, drillIds, albumSub } from "./working.js";
 import { drillsForGoal, goalVideosHtml } from "./drills.js";
 import { renderLineup, firstVsNow, lineupCounts } from "./lineup.js";
 import { CARD_COLORS } from "./cards.js";
@@ -79,17 +79,19 @@ export function albumHtml(items, { all = false, cap = ALBUM_CAP } = {}){
 
 // ---- DOM ----
 let cur = "", showAll = false;
-export function renderAlbum(){ migrateFlipbook(); const el = $("#albumCard"); if (!el) return; const items = albumItems(); el.innerHTML = albumHtml(items, { all: showAll }); const n = $("#albumCount"); if (n) n.textContent = items.length ? String(items.length) : ""; }
+export function renderAlbum(){ migrateFlipbook(); const el = $("#albumCard"); if (!el) return; const items = albumItems(); el.innerHTML = albumHtml(items, { all: showAll }); const n = $("#albumCount"); if (n) n.textContent = items.length ? String(items.length) : ""; const sb = $("#albumSub"); if (sb) sb.textContent = albumSub(items); }
 // Cards that fold, and this phone remembers how she left each one (localStorage only; nothing in the family space).
 // Skills (1.66.1, Jenya: "make the cards in skills collapsable"): her goals and her album open to start. Me (1.66.3, Jenya:
 // "collapse all cards in me by default"): every card but her dancer, What's new and the Play tile, closed to start.
-export const SKILLS_FOLDS = ["workingFold", "albumFold"];
+export const SKILLS_FOLDS = ["workingFold", "albumFold", "photoFoldSk"];
+// Today (1.75.0): every card under the one card folds, closed to start; this phone remembers the ones she opens.
+export const TODAY_FOLDS = ["teacherFold", "photoFold", "danceFold", "stonesFold"];
 export const ME_FOLDS = ["momentsFold", "weekFold", "petFold", "passFold", "starsFold", "costumesFold", "badgesFold", "patternsFold"];
 export function initFolds(key, ids){
   let saved = {}; try { saved = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch (e) {}
   for (const id of ids) { const d = $("#" + id); if (!d) continue; if (typeof saved[id] === "boolean") d.open = saved[id]; d.addEventListener("toggle", () => { try { const s = JSON.parse(localStorage.getItem(key) || "{}") || {}; s[id] = d.open; localStorage.setItem(key, JSON.stringify(s)); } catch (e) {} }); }
 }
-export function initSkillsFolds(){ initFolds("spotlight:skillsFolds", SKILLS_FOLDS); initFolds("spotlight:meFolds", ME_FOLDS); }
+export function initSkillsFolds(){ initFolds("spotlight:skillsFolds2", SKILLS_FOLDS); initFolds("spotlight:todayFolds", TODAY_FOLDS); initFolds("spotlight:meFolds", ME_FOLDS); }
 export function renderGoalPage(){
   const title = $("#gpTitle"); if (!title || !cur) return; const r = goalRow(cur);
   if (!r) { cur = ""; if (currentPage() === "goal") showPage("skills"); return; }
