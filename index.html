@@ -86,14 +86,14 @@
 <!-- ONE GOAL (js/goalpage.js): a trick, a split or the aerial opens here from Skills; the Skills tab stays lit -->
 <section class="page" id="p-goal">
   <div class="row noprint page-back"><button class="btn sm ghost" onclick="showPage('skills')">‹ My goals</button><h2 class="grow" style="margin:0" id="gpTitle"></h2></div>
-  <div class="card sun" id="gpNext"></div>
-  <div class="card aqua" id="gpWork"></div>
+  <details class="card acc sun gfold" id="gpNextFold"><summary><span class="grow"><span class="fold-t" id="gpNextT">What's next</span><small class="fold-sub" id="gpNextSub"></small></span></summary><div id="gpNext"></div></details>
+  <details class="card acc aqua gfold" id="gpWorkFold"><summary><span class="grow"><span class="fold-t" id="gpWorkT">🪜 How to work on it today</span><small class="fold-sub" id="gpWorkSub"></small></span></summary><div id="gpWork"></div></details>
   <details class="card acc violet" id="aerialFold" hidden><summary>🤸 All the steps <span class="chip violet" id="aerialPct">0%</span></summary>
     <p class="small muted">Learned in Monday Acro with a spotter. Mat under you for every drill.</p>
     <div id="aerialList"></div>
   </details>
-  <div class="card violet" id="gpPhotos"></div>
-  <div class="card coral" id="gpCoach"></div>
+  <details class="card acc violet gfold" id="gpPhotosFold"><summary><span class="grow"><span class="fold-t" id="gpPhotosT">📷 My photos</span><small class="fold-sub" id="gpPhotosSub"></small></span></summary><div id="gpPhotos"></div></details>
+  <details class="card acc coral gfold" id="gpCoachFold"><summary><span class="grow"><span class="fold-t" id="gpCoachT">🎬 Coach</span><small class="fold-sub" id="gpCoachSub"></small></span></summary><div id="gpCoach"></div></details>
   <p class="small muted" id="gpFoot" style="text-align:center"></p>
 </section>
 

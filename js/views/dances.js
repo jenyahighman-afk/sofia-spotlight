@@ -2,6 +2,7 @@
 // music straight away, and the class dances folded into one row at the bottom. A tile opens that dance's page: what she uses
 // most on top (🎵 Play music, Hannah's videos, 🧠 Memorize, the tricks in the dance), then ＋ Note and the top three fixes as
 // chips (tap = Show me), and everything text-heavy under "More ▸" (collapsed). Edit mode lives inside More.
+import { GROUP_HOME } from "../working.js";
 import { $, esc, growAll, toast, uid, expose, roText, roList, edText, edList, todayStr } from "../util.js";
 import { S, storeSet, dances, events } from "../store.js";
 import { media, friendlyError } from "../sync.js";
@@ -79,7 +80,7 @@ function renderDances(){
   $("#danceList").innerHTML=`<div class="row noprint page-back"><button class="btn sm ghost" onclick="danceOpen(null)">‹ All dances</button></div>`+list.filter(d=>d.id===openDance).map(d=>{
     const editing=editDance===d.id; const open=moreOpen.has(d.id);
     const cover=`<div class="cover-top"><div class="cover-art ${d.color||""}">${coverArt(d)}</div><div class="grow"><h3>${esc(d.name)}</h3><div class="small muted">${esc(d.song||"song TBD")}</div>${d.story?`<div class="story">🎭 ${esc(d.story)}</div>`:""}</div></div>
-      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}',{once:true})">🎵 Play music</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>${isCueTable(d.cues)?tableTools(d):videosRow(d)}${memoFold(d)}${tricksRow(d)}
+      <div class="row cover-actions"><button class="btn coral grow" onclick="openPlayer('${d.id}',{once:true})">🎵 Play music</button><button class="btn ghost" onclick="noteOpen('${d.id}')">＋ Note</button><button class="btn ghost coach-btn" onclick="openCoach('${d.id}')" title="Coach me">🎬</button></div>${d.id!=="solo"&&d.id!=="trio"&&!isClassDance(d)?`<p class="small muted group-home">🏠 ${GROUP_HOME}</p>`:""}${isCueTable(d.cues)?tableTools(d):videosRow(d)}${memoFold(d)}${tricksRow(d)}
       ${noteFor===d.id?noteForm(d):""}${chips(d)}${patternLine(d)}`;
     const mapbar=d.id==="solo"?`<div class="mapbar" style="margin:8px 0"><div class="soft">soft 0:00–0:48</div><div class="loud">full 0:48–1:52</div><div class="fade">fade</div></div>`:"";
     const photos=`<div class="field-lab">Photos for this dance</div><div class="photos" style="margin-top:6px">${Object.entries(S.photos).filter(([,p])=>p.dance===d.id).map(([pid,p])=>`<div class="ph">${photoTile(p)}${p.cap?`<div class="cap">${esc(p.cap)}</div>`:""}<button class="del" onclick="delPhoto('${pid}')" aria-label="Delete">✕</button></div>`).join("")}</div>

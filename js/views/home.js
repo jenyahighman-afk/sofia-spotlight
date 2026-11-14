@@ -26,7 +26,7 @@ import { applyPalette } from "../palette.js";
 import { renderPet } from "../pet.js";
 import { renderNews } from "../news.js";
 import { renderSundayCard } from "../sunday.js";
-import { todayGoal, todaySkillHtml, workedDates, goalHow, soloDanceNow, drillIds } from "../working.js";
+import { todayGoal, todaySkillHtml, workedDates, goalHow, soloDanceNow, drillIds, groupDances, groupButtonsHtml } from "../working.js";
 import { drillsForGoal } from "../drills.js";
 import { topFixes } from "../corrections.js";
 
@@ -106,7 +106,7 @@ function renderHome(){
   const ff=kind==="show"?null:(currentWeekFix(today)||topFixes(S.corrections,"solo",1)[0]||null); const fd=ff?dances().find(d=>d.id===ff.danceId):null; const focus=focusLine(ff,fd?shortName(fd):"");
   $("#todayCard").innerHTML=`<div class="today-date small">${esc(fmt(today))} · ${dayKind}</div><div class="today-what">${what}</div>${sub}
     <div class="today-line small dp-line" id="dayPlan" hidden></div>
-    ${danceButtons({kind,solo:pd,trio:td})}${pd?`<div class="today-line small today-done">${ran?PLAN_DONE:PLAN_DONE_QUIET}</div>`:""}
+    ${danceButtons({kind,solo:pd,trio:td})}${pd?`<div class="today-line small today-done">${ran?PLAN_DONE:PLAN_DONE_QUIET}</div>`:""}${kind==="show"?"":groupButtonsHtml(groupDances(dances()),((rec&&rec.runs)||[]).map(r=>r&&r.danceId).filter(Boolean))}
     ${focus}
     <div class="today-help"><span class="small muted">Not sure of the steps?</span><button class="btn sm violet" onclick="openVideos()">📹 Videos</button>${memoBtns||memoBtn(mp?mp.dance:null)}</div>
     <button class="btn sm ghost today-log" onclick="openStudioLog()">🏫 ✏️ Log studio work</button>
