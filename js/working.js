@@ -176,6 +176,18 @@ export function danceProgress(list, { practice = S.practice, corrections = S.cor
     return { id: d.id, n: danceLabel(d), runs, studio, week, last, fixesDone: fixes.filter(isDone).length, fixesAll: fixes.length, known, parts: parts.length };
   });
 }
+// 👯 My group dances on Today (1.76.0, Jenya Nov 14: "What about her large group dances? How can she practice at home?").
+// The competition dances that are not her solo or trio: [{ id, n }], "Jazz" and "Contemporary" for the two PITCH groups. Pure.
+export const groupDances = (list) => (list || []).filter(d => d && !isClassDance(d) && d.id !== "solo" && d.id !== "trio").map(d => ({ id: d.id, n: danceLabel(d).split(" · ").pop().replace(/ group$/i, "") }));
+// What she can do alone for a dance made for a group: her own part with the music. One line, the same on Today and on the
+// dance's page. Pure.
+export const GROUP_HOME = "At home: dance your own part with the music. Say the counts, know where you stand and who you follow, and where you look.";
+// The row under the two big buttons: one ▶ for each group dance (the player, music playing, a play-through counts), and the
+// line above. ran = ids danced today. "" when she has no group dance. Pure.
+export function groupButtonsHtml(groups, ran = []){
+  if (!groups.length) return "";
+  return `<div class="today-group"><div class="today-pick-lab small">👯 My group dances</div><div class="tg-btns">${groups.map(g => `<button class="btn sm ${ran.includes(g.id) ? "ghost" : "violet"}" onclick="openPlayer('${g.id}',{once:true})">${ran.includes(g.id) ? "✅" : "▶"} ${esc(g.n)}</button>`).join("")}</div><div class="small muted tg-how">${GROUP_HOME}</div></div>`;
+}
 // One dance's row: its name, what she has done, and a bar for the fixes. A tap opens the dance. Pure.
 export function danceProgressHtml(rows, today = todayStr()){
   if (!rows.length) return "";

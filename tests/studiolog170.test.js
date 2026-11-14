@@ -156,3 +156,20 @@ test("Today's and Skills' cards start folded, each with a count and one line", (
   assert.equal(L.notesSub([{ text: "Push through the shoulders in the handstand, every single time" }]), "Push through the shoulders in the handstand…"); assert.equal(L.notesSub([{ text: "x" }], true), "🏫 Class today: show them!"); assert.equal(L.notesSub([]), "");
   assert.match(src("js/goalpage.js"), /TODAY_FOLDS = \["teacherFold", "photoFold", "danceFold", "stonesFold"\]/); assert.match(src("js/goalpage.js"), /initFolds\("spotlight:todayFolds", TODAY_FOLDS\)/);
 });
+
+// ---- 1.76.0 (Jenya, Nov 14: fold the goal page's cards too; the large group dances on Today, and what to do at home) ----
+test("a goal's page folds, and her group dances are one tap away on Today", async () => {
+  const html = src("index.html"), GP = await import("../js/goalpage.js");
+  for (const k of ["gpNext", "gpWork", "gpPhotos", "gpCoach"]) { const m = new RegExp(`<details class="card acc [a-z]+ gfold" id="${k}Fold"><summary>.*?id="${k}T".*?id="${k}Sub"></small></span></summary><div id="${k}"></div></details>`).exec(html); assert.ok(m, k + " is a fold"); assert.doesNotMatch(m[0], / open/); }
+  assert.deepEqual(GP.GOAL_FOLDS, ["gpNextFold", "gpWorkFold", "gpPhotosFold", "gpCoachFold"]); assert.match(src("js/goalpage.js"), /initFolds\("spotlight:goalFolds", GOAL_FOLDS\)/);
+  const ctx = { goals: {}, photos: { k1: { url: "k1.jpg", card: "s-cartwheel", taken: "2026-10-01", at: "2026-10-01T10:00:00Z" } }, skills: {}, reviews: {} };
+  const cart = W.goalRow("s-cartwheel", { ...ctx, settings: { working: ["s-cartwheel"] } }), aerial = W.goalRow("a-aerial", { ...ctx, settings: { working: ["a-aerial"] } });
+  const f = GP.goalFoldLines(cart, { dates: ["2026-11-11", D], today: D, tips: [{ text: "Head up until the hands go down" }], videos: 2 });
+  assert.deepEqual(f, { nextT: "How it's going", next: cart.how, workT: "🪜 How to work on it today", work: "2 stepping stones · one today ⭐ · 🎬 2 videos", photos: "1 picture", coach: "Head up until the hands go down" });
+  const a = GP.goalFoldLines(aerial, { dates: [], today: D }); assert.equal(a.nextT, "What's next"); assert.match(a.next, /^Step 1 of \d+ · Next: /); assert.equal(a.workT, "🪜 My stepping stones"); assert.equal(a.work, "No stepping stones yet"); assert.match(a.photos, /take your starting picture/); assert.match(a.coach, /One thing you did well/);
+  const dances = json("dances"), groups = W.groupDances(dances); assert.deepEqual(groups, [{ id: "pitch-jazz", n: "Jazz" }, { id: "pitch-contemp", n: "Contemporary" }], "the competition dances that are not her solo or trio; no class dances");
+  const h = W.groupButtonsHtml(groups, ["pitch-jazz"]); assert.match(h, /👯 My group dances/); assert.match(h, /btn sm ghost" onclick="openPlayer\('pitch-jazz',\{once:true\}\)">✅ Jazz/); assert.match(h, /btn sm violet" onclick="openPlayer\('pitch-contemp',\{once:true\}\)">▶ Contemporary/); assert.ok(h.includes(W.GROUP_HOME)); assert.equal(W.groupButtonsHtml([]), "");
+  assert.match(W.GROUP_HOME, /your own part with the music/); assert.match(src("js/views/dances.js"), /group-home">🏠 \$\{GROUP_HOME\}/, "the same line on a group dance's page");
+  assert.match(src("js/views/home.js"), /kind==="show"\?"":groupButtonsHtml\(groupDances\(dances\(\)\)/);
+  const pc = dances.find(d => d.id === "pitch-contemp"); assert.equal(pc.song, "Listening Chair"); assert.equal(pc.choreo, "Brittany Mains"); assert.doesNotMatch(pc.notes, /TBD/);
+});

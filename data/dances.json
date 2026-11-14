@@ -60,8 +60,68 @@
   ],
   "notes": "",
   "bpm": 76,
-  "lyricSnaps": [9.18, 13.72, 18.9, 23.36, 27.76, 32.82, 37.34, 41.88, 46.64, 54.82, 64.72, 70.1, 75.2, 85.02, 92.92, 98.12, 102.6],
-  "lyricKeys": { "ce7fe4a7": [9.18], "432f4c49": [13.72], "ed56634b": [18.9], "e2958e00": [23.36], "aeb9f243": [27.76], "e993948c": [32.82], "9f8fa431": [37.34], "07a90c54": [41.88], "d45efc1e": [46.64, 75.2, 102.6], "730423ae": [54.82, 85.02], "1ce81c02": [64.72, 92.92], "91416f9f": [70.1, 98.12] },
+  "lyricSnaps": [
+   9.18,
+   13.72,
+   18.9,
+   23.36,
+   27.76,
+   32.82,
+   37.34,
+   41.88,
+   46.64,
+   54.82,
+   64.72,
+   70.1,
+   75.2,
+   85.02,
+   92.92,
+   98.12,
+   102.6
+  ],
+  "lyricKeys": {
+   "ce7fe4a7": [
+    9.18
+   ],
+   "432f4c49": [
+    13.72
+   ],
+   "ed56634b": [
+    18.9
+   ],
+   "e2958e00": [
+    23.36
+   ],
+   "aeb9f243": [
+    27.76
+   ],
+   "e993948c": [
+    32.82
+   ],
+   "9f8fa431": [
+    37.34
+   ],
+   "07a90c54": [
+    41.88
+   ],
+   "d45efc1e": [
+    46.64,
+    75.2,
+    102.6
+   ],
+   "730423ae": [
+    54.82,
+    85.02
+   ],
+   "1ce81c02": [
+    64.72,
+    92.92
+   ],
+   "91416f9f": [
+    70.1,
+    98.12
+   ]
+  },
   "loops": [
    {
     "n": "Soft half",
@@ -560,7 +620,7 @@
   "song": "Groove Is in the Heart — Deee-Lite (2:31 cut)",
   "style": "Jazz",
   "choreo": "Isadora",
-  "teacher": "",
+  "teacher": "Isadora",
   "rehearsal": "Saturdays 11:00–12:15, Studio 5",
   "costume": "",
   "shoes": "",
@@ -644,10 +704,10 @@
  },
  {
   "id": "pitch-contemp",
-  "name": "PITCH · Contemporary group",
-  "song": "",
+  "name": "PITCH · Contemporary group · Listening Chair",
+  "song": "Listening Chair",
   "style": "Contemporary",
-  "choreo": "Ms. Brittany (confirm)",
+  "choreo": "Brittany Mains",
   "teacher": "Ms. Brittany",
   "rehearsal": "Saturdays 11:00–12:15, Studio 5",
   "costume": "The Line Up · Alice Metallic Mesh Unitard — sleeveless, wide flowing legs, lined front bodice, sheer scoop back, attached brief. Studio picks the colors. thelineup.com/products/alice-metallic-mesh-unitard",
@@ -658,7 +718,7 @@
   "map": "",
   "strengths": [],
   "corrections": [],
-  "notes": "Size for Ms. Brittany: CHILD SIZE 12, SHORT inseam. Costume: made to order, final sale, 3–4 weeks after the group order. Metallic mesh dulls where it rubs the floor — keep floor-work slides to rehearsal clothes and save the costume for run-throughs and shows. Song title TBD.",
+  "notes": "Size for Ms. Brittany: CHILD SIZE 12, SHORT inseam. Costume: made to order, final sale, 3–4 weeks after the group order. Metallic mesh dulls where it rubs the floor — keep floor-work slides to rehearsal clothes and save the costume for run-throughs and shows.",
   "links": [
    "https://thelineup.com/products/alice-metallic-mesh-unitard"
   ]

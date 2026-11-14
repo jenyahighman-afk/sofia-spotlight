@@ -640,6 +640,8 @@ input.sl-note{display:block;width:100%;margin-top:14px;border:2px solid var(--li
 /* 1.75.0: a folded card is its name and one line under it; the heading inside is not repeated once it is open. */
 details.acc>summary .fold-t{display:block} details.acc>summary .fold-sub{display:block;font-family:Nunito,system-ui,sans-serif;font-size:.8rem;font-weight:700;color:var(--ink-2);line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%} details.acc>summary .fold-sub:empty{display:none} details.acc>summary>.grow{min-width:0}
 .tfold .st-head,.tfold .pp-head,.tfold .st-head+.chip{display:none} .tfold>div{margin-top:6px} .tfold .photo-prompt{padding:0}
+.gfold>div{margin-top:6px} .gfold>div>h3:first-child,.gfold>div>.row:first-child>h3{display:none} .gfold>div>.row:first-child{justify-content:flex-end}
+.today-group{margin:2px 0 8px} .tg-btns{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px} .tg-btns .btn{flex:1 1 0;min-height:44px} .tg-how{line-height:1.3}
 .gw-steps{margin:6px 0 10px;padding-left:22px} .gw-steps li{margin:4px 0;line-height:1.35} .gw-count{margin:10px 0 4px} .gw-dots{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;max-width:330px} .gw-dots i{aspect-ratio:1;border-radius:50%;border:2px solid var(--line);background:none} .gw-dots i.on{background:var(--coral);border-color:var(--coral)} .gw-dots i.now{box-shadow:0 0 0 2px var(--sun)}
 .today .today-once{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 8px} .today .today-once .big-btn{width:100%;text-align:center;padding:14px 6px}
 .today .today-media.three{grid-template-columns:repeat(3,1fr)}

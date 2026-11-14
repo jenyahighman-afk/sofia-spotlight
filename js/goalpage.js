@@ -11,10 +11,10 @@
 // 📸 My album on Skills is what the trick cards fold was: the newest photo of every goal she has, and of every skill she is
 // learning or has got clean; a teacher-checked one has a gold frame. Nothing new is stored: the album reads the `photos`,
 // `goals` and `skills` documents. Pure parts up top (tested in Node).
-import { $, esc, fmt, toast, expose } from "./util.js";
+import { $, esc, fmt, toast, expose, todayStr } from "./util.js";
 import { S } from "./store.js";
 import { showPage, currentPage } from "./nav.js";
-import { goalRow, goalKind, goalDoc, workingIds, setOnGoals, gotIt, AERIAL_ID, goalHow, workHtml, workedDates, toggleWorked, soloDanceNow, drillIds, albumSub } from "./working.js";
+import { goalRow, goalKind, goalDoc, workingIds, setOnGoals, gotIt, AERIAL_ID, goalHow, workHtml, workedDates, toggleWorked, soloDanceNow, drillIds, albumSub, clip } from "./working.js";
 import { drillsForGoal, goalVideosHtml } from "./drills.js";
 import { renderLineup, firstVsNow, lineupCounts } from "./lineup.js";
 import { CARD_COLORS } from "./cards.js";
@@ -77,6 +77,19 @@ export function albumHtml(items, { all = false, cap = ALBUM_CAP } = {}){
   return `<p class="small muted">Your newest photo of everything you're working on or have got clean. Tap one to open it.</p><div class="alb">${show.map(tile).join("")}</div>${items.length > cap ? `<div class="row" style="margin-top:8px"><button class="lnk small" onclick="albumAll()">${all ? "Show fewer" : `Show all ${items.length}`}</button></div>` : ""}`;
 }
 
+// A goal's page folds too (1.76.0, Jenya Nov 14: "Fold the goal page cards too"): each card's name and the one line under
+// it. { nextT, next, workT, work, photos, coach }. Pure.
+export function goalFoldLines(r, { dates = [], today = todayStr(), tips = [], videos = 0 } = {}){
+  const n = (k, one, many) => `${k} ${k === 1 ? one : many}`, done = dates.includes(today);
+  return {
+    nextT: r.kind === "aerial" ? "What's next" : "How it's going",
+    next: r.kind === "aerial" ? [r.how, r.sub].filter(Boolean).join(" · ") : r.how,
+    workT: r.kind === "aerial" ? "🪜 My stepping stones" : "🪜 How to work on it today",
+    work: [dates.length ? n(dates.length, "stepping stone", "stepping stones") + (done ? " · one today ⭐" : "") : "No stepping stones yet", videos ? "🎬 " + n(videos, "video", "videos") : ""].filter(Boolean).join(" · "),
+    photos: r.shots.length ? n(r.shots.length, "picture", "pictures") : "No picture yet: take your starting picture",
+    coach: tips.length ? clip(tips[0].text, 46) : "One thing you did well, one thing to fix",
+  };
+}
 // ---- DOM ----
 let cur = "", showAll = false;
 export function renderAlbum(){ migrateFlipbook(); const el = $("#albumCard"); if (!el) return; const items = albumItems(); el.innerHTML = albumHtml(items, { all: showAll }); const n = $("#albumCount"); if (n) n.textContent = items.length ? String(items.length) : ""; const sb = $("#albumSub"); if (sb) sb.textContent = albumSub(items); }
@@ -86,12 +99,13 @@ export function renderAlbum(){ migrateFlipbook(); const el = $("#albumCard"); if
 export const SKILLS_FOLDS = ["workingFold", "albumFold", "photoFoldSk"];
 // Today (1.75.0): every card under the one card folds, closed to start; this phone remembers the ones she opens.
 export const TODAY_FOLDS = ["teacherFold", "photoFold", "danceFold", "stonesFold"];
+export const GOAL_FOLDS = ["gpNextFold", "gpWorkFold", "gpPhotosFold", "gpCoachFold"];
 export const ME_FOLDS = ["momentsFold", "weekFold", "petFold", "passFold", "starsFold", "costumesFold", "badgesFold", "patternsFold"];
 export function initFolds(key, ids){
   let saved = {}; try { saved = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch (e) {}
   for (const id of ids) { const d = $("#" + id); if (!d) continue; if (typeof saved[id] === "boolean") d.open = saved[id]; d.addEventListener("toggle", () => { try { const s = JSON.parse(localStorage.getItem(key) || "{}") || {}; s[id] = d.open; localStorage.setItem(key, JSON.stringify(s)); } catch (e) {} }); }
 }
-export function initSkillsFolds(){ initFolds("spotlight:skillsFolds2", SKILLS_FOLDS); initFolds("spotlight:todayFolds", TODAY_FOLDS); initFolds("spotlight:meFolds", ME_FOLDS); }
+export function initSkillsFolds(){ initFolds("spotlight:skillsFolds2", SKILLS_FOLDS); initFolds("spotlight:todayFolds", TODAY_FOLDS); initFolds("spotlight:goalFolds", GOAL_FOLDS); initFolds("spotlight:meFolds", ME_FOLDS); }
 export function renderGoalPage(){
   const title = $("#gpTitle"); if (!title || !cur) return; const r = goalRow(cur);
   if (!r) { cur = ""; if (currentPage() === "goal") showPage("skills"); return; }
@@ -105,7 +119,9 @@ export function renderGoalPage(){
     ph.innerHTML = `<div class="row"><h3 class="grow">📷 My photos</h3>${playBtn(r)}</div><div id="tcLineup"></div>`;
     renderLineup({ id: r.id, n: r.n, color: CARD_COLORS[r.style] || CARD_COLORS.solo, state: r.state === "notyet" && r.on ? "learning" : r.state });
   }
-  $("#gpCoach").innerHTML = coachHtml(r, coachTips(S.reviews, r.n)); $("#gpFoot").innerHTML = footHtml(r);
+  const tips = coachTips(S.reviews, r.n); $("#gpCoach").innerHTML = coachHtml(r, tips); $("#gpFoot").innerHTML = footHtml(r);
+  const fl = goalFoldLines(r, { dates: workedDates(S.practice, r.id), tips, videos: drillsForGoal(drillIds(r), S.drills).length });
+  for (const [id, text] of [["gpNextT", fl.nextT], ["gpNextSub", fl.next], ["gpWorkT", fl.workT], ["gpWorkSub", fl.work], ["gpPhotosSub", fl.photos], ["gpCoachSub", fl.coach]]) { const e = $("#" + id); if (e) e.textContent = text; }
 }
 // Open a goal's page. `steps: true` unfolds the aerial's whole checklist (the printed Aerial Mission's path lands there).
 export function goalOpen(id, opts = {}){
