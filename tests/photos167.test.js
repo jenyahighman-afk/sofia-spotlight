@@ -68,7 +68,7 @@ test("the audit's fixes stay fixed", () => {
   const home = src("js/views/home.js"), nav = src("js/nav.js"), css = src("css/app.css"), goals = src("js/goals.js"), html = src("index.html");
   assert.ok(home.indexOf('if(kind==="show"){') < home.indexOf('else if(cls.length){ what="🏫 Studio day"'), "a show day on a class weekday is a show day");
   assert.match(home, /\$\{ran\?PLAN_DONE:PLAN_DONE_QUIET\}/, "'you danced your solo' only when she ran it"); assert.doesNotMatch(home, /renderGoalReminder/);
-  assert.match(src("js/pmode.js"), /if \(!ITEMS\.length\) return toast\("Nothing to practise today ⭐"\)/, "an empty plan (show day) no longer crashes practice mode");
+  assert.match(src("js/pmode.js"), /if \(!ITEMS\.length\) return toast\("Nothing to practice today ⭐"\)/, "an empty plan (show day) no longer crashes practice mode");
   assert.match(src("js/app.js"), /todayStr\(\) !== day\) \{ day = todayStr\(\); renderAll\(\); \}/, "left open overnight, the app wakes on the new day");
   assert.match(src("js/player.js"), /plOnceLog\(\)">✓ I danced it without the music/); assert.match(src("js/bites.js"), /openPlayer\('solo',\{once:true\}\)/);
   assert.match(nav, /history\.pushState\(\{ p \}, ""\)/); assert.match(nav, /addEventListener\("popstate"/, "the phone's back button goes back a page");

@@ -29,6 +29,7 @@ import { renderSundayCard } from "../sunday.js";
 import { todayGoal, todaySkillHtml, workedDates, goalHow, soloDanceNow, drillIds, groupDances, groupButtonsHtml } from "../working.js";
 import { drillsForGoal } from "../drills.js";
 import { topFixes } from "../corrections.js";
+import { tipFor } from "../wisdom.js";
 
 const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
 // The one line under the big buttons (1.60.0, Jenya Nov 5): counts that only go up — the days she danced her solo or her trio
@@ -68,8 +69,11 @@ export const PLAN_DONE_QUIET = "⭐ Plan done for today";
 export const DAY_ASK = { home: "Pick one thing, about 10 minutes. That's all.", homeDone: "That's your one thing for today ⭐", studio: "Class comes first today. Got a chance at home? Dance one thing.", rest: "Nothing planned. A good day to dance one thing." };
 // The whole session's link on a home day: its length, or how far she is once she has started. Pure.
 export function sessionLink({ kind = "", mins = 0, nDone = 0, total = 0 } = {}){
-  if (kind !== "home" || !total) return "";
-  const words = nDone >= total ? `✅ The whole session is done` : nDone ? `📋 Keep going with the session · ${nDone} of ${total} ›` : `📋 The whole session · ${mins} min ›`;
+  if (!total || kind === "show" || kind === "rest") return "";
+  // 1.78.0 (Jenya, Nov 14: everything in sync, no day off by default): a class day offers its short session too (the plan's
+  // own for that day: the memory run, or Monday's videos), as the printed Pass always has.
+  const home = kind === "home";
+  const words = nDone >= total ? `✅ ${home ? "The whole session" : "The short session"} is done` : nDone ? `📋 Keep going with the session · ${nDone} of ${total} ›` : home ? `📋 The whole session · ${mins} min ›` : `📋 Today's short session · ${mins} min ›`;
   return `<button class="lnk today-fun" onclick="showPage('practice');openPracticeMode()">${words}</button>`;
 }
 // One thing to think about while she dances (1.68.0): this week's fix, or the newest open one of the solo, with its dance's
@@ -114,7 +118,8 @@ function renderHome(){
     <div class="today-help"><span class="small muted">Not sure of the steps?</span><button class="btn sm violet" onclick="openVideos()">📹 Videos</button>${memoBtns||memoBtn(mp?mp.dance:null)}</div>
     <button class="btn sm ghost today-log" onclick="openStudioLog()">🏫 ✏️ Log studio work</button>
     ${skillPick}
-    ${metaLine({days:danceDays(S.practice),dances:danceCount(S.practice)})}${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
+    ${metaLine({days:danceDays(S.practice),dances:danceCount(S.practice)})}
+    <div class="today-tip"><span class="tt-lab">💬 Dancer's tip</span>${esc(tipFor(today))}</div>${todayMode().mode==="comp"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
   // The dated line from plan10 (its headline and note) is off Today since 1.60.0: "That's all." is not followed by a to-do.
   // The line's place stays in the card, hidden; dayplan.js and its ticks are unchanged.
   { const dp=$("#dayPlan"); if(dp){ dp.hidden=true; dp.innerHTML=""; } }

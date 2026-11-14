@@ -71,7 +71,7 @@ test("the Winter Showcase from the studio's FAQ: the theater, the fee and its da
 test("the memory run has no '15-minute' anywhere (it is about 18 with the trio, Jenya chose the name); the button shows its minutes", () => {
   for (const f of ["js/daykind.js", "js/views/home.js", "js/studio.js", "js/season15.js", "data/pass.json", "data/plan10.json", "tools/print/Sofia-Backstage-Pass.html", "tools/print/Sofia-Practice-Toolkit.html", "index.html", "README.md"])
     assert.doesNotMatch(src(f), /15[- ]min(ute)? memory run/i, f);
-  assert.equal(sessionLink({ kind: "memory", mins: 18, total: 6 }), "", "1.60.0: a class day asks nothing at home, so Today has no memory-run button");
+  assert.match(sessionLink({ kind: "memory", mins: 18, total: 6 }), /Today's short session · 18 min/, "1.78.0: a class day offers the memory run again"); assert.equal(sessionLink({ kind: "show", mins: 18, total: 6 }), "");
   assert.doesNotMatch(src("tools/print/Sofia-Practice-Toolkit.html"), /(the|a|·) <b[^>]*>Memory run/, "no capital mid-sentence");
 });
 

@@ -186,3 +186,35 @@ test("Ms. Angie's two notes ship as class notes; a class day welcomes one thing 
   assert.equal(H.DAY_ASK.studio, "Class comes first today. Got a chance at home? Dance one thing."); for (const v of Object.values(H.DAY_ASK)) assert.doesNotMatch(v, /no home practice/i);
   const pass = json("pass"); assert.doesNotMatch(JSON.stringify(pass.tips), /No home practice/); assert.ok(pass.parts.find(p => p.id === "week").lines.filter(l => /No home practice/i.test(l)).every(l => /Show day/.test(l)), "only show day keeps it");
 });
+
+// ---- 1.78.0 (Jenya, Nov 14: a reminder every day to prep the solo and trio and to log; a dancer's tip for the part of
+// the season; everything in sync with "no day off by default"; American English) ----
+test("the daily reminder, the log reminder and the dancer's tip", async () => {
+  const WS = await import("../js/wisdom.js"), RM = await import("../js/remind.js"), WK = await import("../worker/src/remind-core.js"), H = await import("../js/views/home.js");
+  assert.equal(WS.tipSet("2026-11-14"), "clean", "Nov 14 is in Clean it"); assert.equal(WS.tipSet("2026-10-05"), "own"); assert.equal(WS.tipSet("2026-12-07"), "perform"); assert.equal(WS.tipSet("2027-01-05"), "rest"); assert.equal(WS.tipSet("2027-02-01"), "comp"); assert.equal(WS.tipSet("2027-05-20"), "auditions");
+  assert.ok(WS.TIPS.clean.includes(WS.tipFor("2026-11-14"))); assert.notEqual(WS.tipFor("2026-11-14"), WS.tipFor("2026-11-15"), "a new one each day");
+  for (const [set, list] of Object.entries(WS.TIPS)) for (const t of list) { assert.ok(t.length <= 80, set + ": short enough for a 9-year-old: " + t); assert.doesNotMatch(t, /practis|colour|favourite|centre|realis/i, "American English: " + t); assert.doesNotMatch(t, /—|"/, "no quote marks: these are the app's own words, not a named dancer's"); }
+  const [th, bh] = WS.reminderMsg("2026-11-15", "home"), [ts, bs] = WS.reminderMsg("2026-11-16", "studio");
+  assert.equal(th, "Dance time 🎵"); assert.match(bh, /^Solo once, trio once: about 5 minutes\. 💬 /); assert.equal(ts, "Class day 🏫"); assert.match(bs, /^After class, got a chance at home\? One run of your solo\. 💬 /); assert.ok(bh.length <= WK.MSG_BODY && bs.length <= WK.MSG_BODY);
+  assert.deepEqual(RM.dailyPlan([{ day: 1 }, { day: 6 }]), { days: [0, 1, 2, 3, 4, 5, 6], kinds: { 0: "home", 1: "studio", 2: "home", 3: "home", 4: "home", 5: "home", 6: "studio" } });
+  assert.equal(RM.dailyKind("d", () => "show"), "off"); assert.equal(RM.dailyKind("d", () => "home"), "home"); assert.equal(RM.dailyKind("d", () => "rest"), "home"); assert.equal(RM.dailyKind("d", () => "memory"), "studio"); assert.equal(RM.dailyKind("d", () => "watch"), "studio");
+  const r = RM.reminderOf({ reminder: { on: true } }); assert.deepEqual([r.log, r.lh, r.lm], [true, 19, 45], "the log reminder: on, 7:45 pm unless she sets it");
+  const base = { familyId: "ABCDEFGHJKLMNPQRSTUVWXYZ", endpoint: "https://push.example/abcdefghij", keys: { p256dh: "p".repeat(87), auth: "a".repeat(22) }, tz: "America/Los_Angeles" };
+  const body = RM.subscribeBody(r, { ...base, dates: { "2027-01-08": "off" }, msgs: { "2026-11-16": [ts, bs] } });
+  assert.equal(body.log, true); assert.equal(body.lh, 19); assert.equal("h2" in body, false, "an older worker never sends a last call"); assert.deepEqual(body.days, [0, 1, 2, 3, 4, 5, 6]);
+  assert.equal("log" in RM.subscribeBody({ ...r, log: false }, { ...base, dates: {}, msgs: {} }), false);
+  const v = WK.validateSubscribe({ ...body, h: 16, m: 30 }); assert.ok(v.ok, v.error); const sub = v.sub;
+  assert.deepEqual([sub.h2, sub.m2, sub.log], [19, 45, true]); assert.equal(sub.kinds[1], "studio"); assert.deepEqual(sub.msgs["2026-11-16"], [ts, bs]);
+  assert.deepEqual(JSON.parse(WK.payloadFor(sub, "2026-11-16", 1)), { title: ts, body: bs, url: "./", tag: "dance-bite" }, "the app's own words for that day");
+  assert.equal(JSON.parse(WK.payloadFor(sub, "2026-11-17", 1)).title, "Class day 🏫", "no words sent for a day: the worker's class-day line");
+  const p2 = JSON.parse(WK.payloadFor(sub, "2026-11-16", 2)); assert.equal(p2.tag, "dance-log"); assert.ok(WK.LOG_LINES.some(l => l[0] === p2.title));
+  assert.equal(WK.quietKey(sub, "2026-11-16", 2), "logged:" + base.familyId + ":2026-11-16"); assert.equal(WK.quietKey(sub, "2026-11-16", 1), "done:" + base.familyId + ":2026-11-16");
+  assert.equal(WK.secondSlotFor("memory", sub), true, "the log reminder goes out on class days too"); assert.equal(WK.secondSlotFor("memory", {}), false);
+  const mon = new Date("2026-11-17T03:50:00Z"); assert.deepEqual(WK.dueSlot({ ...sub, lastSent: "2026-11-16" }, mon), { slot: 2, date: "2026-11-16" }, "7:50 pm Monday in Seattle: the log reminder");
+  assert.equal(WK.validateSubscribe({ ...body, h: 16, m: 30, msgs: { "2026-11-16": ["x".repeat(200), "y".repeat(400)], bad: ["a", "b"] } }).sub.msgs["2026-11-16"][1].length, WK.MSG_BODY, "long words are cut, bad dates dropped");
+  assert.match(src("worker/src/remind.js"), /\(body \|\| \{\}\)\.what === "log" \? loggedKey\(familyId, date\) : doneKey\(familyId, date\)/); assert.match(src("worker/src/remind.js"), /quietKey\(sub, date, slot\)/);
+  for (const f of ["js/studiolog.js", "js/goalpage.js", "js/player.js"]) assert.match(src(f), /pingLogged\(\)/, f + " tells the worker she logged");
+  assert.match(src("js/views/home.js"), /💬 Dancer's tip<\/span>\$\{esc\(tipFor\(today\)\)\}/); assert.match(src("sw.js"), /"\.\/js\/wisdom\.js"/);
+  assert.match(H.sessionLink({ kind: "memory", mins: 16, total: 5 }), /📋 Today's short session · 16 min ›/, "a class day offers its short session"); assert.equal(H.sessionLink({ kind: "show", mins: 16, total: 5 }), "");
+  assert.doesNotMatch(src("tools/print/Sofia-Backstage-Pass.html"), /No dancing tonight|Hip Hop · Ballroom/); assert.doesNotMatch(src("js/pmode.js") + src("js/costume.js") + src("data/events.json"), /Nothing to practise|Skirt colour|Trim colour|pyjamas/);
+});

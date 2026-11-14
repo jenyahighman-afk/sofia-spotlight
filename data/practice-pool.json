@@ -181,7 +181,7 @@
     },
     {
      "id": "straddle-stretch",
-     "text": "Straddle: reach centre, right, left, 20s each (after warm-up only)",
+     "text": "Straddle: reach center, right, left, 20s each (after warm-up only)",
      "secs": 120,
      "pose": "straddle"
     },

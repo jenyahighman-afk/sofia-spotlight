@@ -16,6 +16,7 @@ import { S } from "./store.js";
 import { showPage, currentPage } from "./nav.js";
 import { goalRow, goalKind, goalDoc, workingIds, setOnGoals, gotIt, AERIAL_ID, goalHow, workHtml, workedDates, toggleWorked, soloDanceNow, drillIds, albumSub, clip } from "./working.js";
 import { drillsForGoal, goalVideosHtml } from "./drills.js";
+import { pingLogged } from "./remind.js";
 import { renderLineup, firstVsNow, lineupCounts } from "./lineup.js";
 import { CARD_COLORS } from "./cards.js";
 import { aerialHow } from "./views/practice.js";
@@ -128,7 +129,7 @@ export function goalOpen(id, opts = {}){
   if (!goalKind(id)) return; cur = id; showPage("goal"); renderGoalPage();
   if (opts.steps) { const f = $("#aerialFold"); if (f && !f.hidden) { f.open = true; if (f.scrollIntoView) f.scrollIntoView({ block: "start" }); } }
 }
-async function gpWorked(id){ const on = await toggleWorked(id); renderGoalPage(); toast(on ? "That's a stepping stone 🪜" : "Taken back"); }
+async function gpWorked(id){ const on = await toggleWorked(id); if (on) try { pingLogged(); } catch (e) {} renderGoalPage(); toast(on ? "That's a stepping stone 🪜" : "Taken back"); }
 async function gpGot(id){ await gotIt(id); renderGoalPage(); }
 async function gpOn(id, want){ const next = await setOnGoals(id, want); if (!next) return; toast(want ? "It's one of your goals ⭐" : "Off your goals. You can pick it again any time."); if (want) renderGoalPage(); else showPage("skills"); }
 // A measure's check-in sheet: its document when it has one, else the draft (written at her first check-in).
