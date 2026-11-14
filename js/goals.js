@@ -75,8 +75,9 @@ export async function checkIn(goalId, file, value){
     else { const { blob, w, h } = await resizeImage(file, 1200); const up = await media.upload("photos", id, blob, { contentType: "image/jpeg", name: file.name }); mediaRec = { path: up.path, url: up.url, w, h, size: blob.size }; }
     await storeSet("photos", id, { ...mediaRec, cap: g.name, dance: "", goal: goalId, at: new Date().toISOString() });
   }
+  const now = S.goals[goalId] || g; // read again after the upload: another check-in may have landed meanwhile
   const c = { id, date: todayStr(), at: new Date().toISOString(), photoId: file ? id : "", value: Number.isFinite(+value) && value !== "" && value !== null ? +value : null };
-  await storeSet("goals", goalId, { ...g, checkins: [...checkins(g), c] });
+  await storeSet("goals", goalId, { ...now, checkins: [...checkins(now), c] });
   return c;
 }
 // Measure a split/arabesque photo with the pose tool before saving the check-in.
@@ -108,7 +109,7 @@ export function openGoal(id){
     ${fp && lp && fp !== lp && fp.kind !== "video" && lp.kind !== "video" ? `<div class="field-lab">First vs latest — slide</div><div class="compare" id="goalCompare"><img src="${esc(fp.url)}" alt=""><img src="${esc(lp.url)}" alt="" id="goalCompareTop" style="clip-path:inset(0 0 0 50%)"><div class="compare-lab"><span>${esc(f.date)}</span><span>${esc(l.date)}</span></div></div><input type="range" id="goalSlider" min="0" max="100" value="50" oninput="document.getElementById('goalCompareTop').style.clipPath='inset(0 0 0 '+this.value+'%)'">` : ""}
     <div class="field-lab">Check in</div>
     <div class="row"><label class="btn coral" for="goalPhoto">📷 Photo / clip</label><input type="file" id="goalPhoto" accept="image/*,video/*" hidden>${g.unit ? `<input type="number" id="goalValue" placeholder="${esc(UNIT_LABEL[g.unit])}" style="max-width:150px" inputmode="decimal">` : ""}<button class="btn sm ghost" data-save onclick="goalCheckIn('${g.id}')">Save</button></div>
-    <div class="row" style="margin-top:8px">${lastFile && lastFileGoal === g.id ? `<button class="btn sm coral" onclick="goalCoachLast('${g.id}')">🎬 Coach this ${lastFile.type.startsWith("video/") ? "clip" : "photo"}</button><span class="small muted">The one you just saved.</span>` : `<button class="btn sm coral" onclick="closeGoal();openCoach('','${esc(g.name).replace(/'/g, "&#39;")}')">🎬 Coach me on this</button><span class="small muted">Pick the same clip.</span>`}</div>
+    <div class="row" style="margin-top:8px">${lastFile && lastFileGoal === g.id ? `<button class="btn sm coral" onclick="goalCoachLast('${g.id}')">🎬 Coach this ${lastFile.type.startsWith("video/") ? "clip" : "photo"}</button><span class="small muted">The one you just saved.</span>` : `<button class="btn sm coral" onclick="closeGoal();openCoach('','${esc(String(g.name).replace(/\\/g, "\\\\").replace(/'/g, "\\'"))}')">🎬 Coach me on this</button><span class="small muted">Pick the same clip.</span>`}</div>
     ${g.measure ? `<p class="small muted">Pick a photo and the pose tool fills in the ${g.measure === "knee" ? "knee angle" : "split angle"} for you (you can change it).</p>` : ""}
     <div class="field-lab">Timeline</div><div class="timeline-goal">${timeline}</div>
     <div class="row" style="margin-top:10px"><button class="btn ghost" onclick="closeGoal()">Close</button><span class="grow"></span>${split ? "" : `<button class="btn sm ghost" onclick="goalRemove('${g.id}')">Remove goal</button>`}</div>
@@ -118,7 +119,8 @@ export function openGoal(id){
 let pendingFile = null;
 export function closeGoal(){ $("#goal").hidden = true; document.body.classList.remove("modal"); open = null; pendingFile = null; }
 let lastFile = null, lastFileGoal = ""; // the clip just checked in, so the coach can use it without a second pick
-async function doCheckIn(id){ const v = ($("#goalValue") || {}).value; if (!pendingFile && (v === undefined || v === "")) return toast("Add a photo or a number first"); try { toast("Saving…", 4000); if (draftGoal(id)) { const key = String(id).slice(DRAFT.length), have = splitGoal(S.goals, key); id = (have || await addGoal(key)).id; open = id; } await checkIn(id, pendingFile, v); if (pendingFile) { lastFile = pendingFile; lastFileGoal = id; } pendingFile = null; toast("Checked in ✓"); openGoal(id); } catch (e) { console.warn(e); toast("Couldn't save: " + friendlyError(e), 3500); } }
+let saving = false; // a second tap on Save while the photo uploads saved the picture twice (1.79.0)
+async function doCheckIn(id){ if (saving) return; const v = ($("#goalValue") || {}).value; if (!pendingFile && (v === undefined || v === "")) return toast("Add a photo or a number first"); const file = pendingFile; saving = true; pendingFile = null; try { toast("Saving…", 4000); if (draftGoal(id)) { const key = String(id).slice(DRAFT.length), have = splitGoal(S.goals, key); id = (have || await addGoal(key)).id; open = id; } await checkIn(id, file, v); if (file) { lastFile = file; lastFileGoal = id; } saving = false; toast("Checked in ✓"); openGoal(id); } catch (e) { pendingFile = file; console.warn(e); toast("Couldn't save: " + friendlyError(e), 3500); } finally { saving = false; } }
 async function add(key){ const g = await addGoal(key); openGoal(g.id); }
 async function addCustom(){ const name = ($("#goalCustomName").value || "").trim(); if (!name) return toast("Name the goal"); const unit = $("#goalCustomUnit").value; const t = unit ? prompt(unit === "sec" ? "Target seconds" : "Target degrees", unit === "sec" ? "10" : "180") : "0"; if (t === null) return; const g = await addGoal("custom", { name, unit, target: +t || 0 }); openGoal(g.id); }
 async function target(id){ const g = S.goals[id]; const t = prompt("Target" + (g.unit === "sec" ? " (seconds)" : g.unit === "deg" ? " (degrees)" : ""), String(g.target || "")); if (t === null) return; await setTarget(id, t); openGoal(id); }

@@ -174,7 +174,7 @@ export function weekFixOrPick(today = todayStr()){
 }
 // A teacher's new notes (the last 7 days, open, not pinned, not typed by Mom / Sofia / the AI coach): practised right away
 // in the daily plan, not saved for the cleaning weeks. Newest first.
-const NOT_TEACHER = /^(me|mom|notes|ai coach)/i;
+const NOT_TEACHER = /^(me|mom|notes)$|^ai coach/i; // whole words (1.79.0): "Megan LaFleur" starts with "me" and her notes were dropped
 export function newTeacherNotes(corrections, today = todayStr(), days = 7){
   const from = shiftDate(today, -days);
   return Object.values(corrections || {}).filter(c => isOpen(c) && !c.pinned && c.source && !NOT_TEACHER.test(String(c.source).trim()) && dateOf(c) >= from && dateOf(c) <= today)

@@ -6,7 +6,7 @@
 // settings.reminder keeps its second / h2 / m2 fields; nothing reads them.
 // Pure parts up top (tested in Node).
 import { $, esc, toast, expose, todayStr } from "./util.js";
-import { S, setSettings } from "./store.js";
+import { S, setSettings, events } from "./store.js";
 import { CLASSES, HOME_DAYS } from "./data.js";
 import { dayKindNow } from "./daykind.js";
 import { shiftDate } from "./corrections.js";
@@ -48,7 +48,9 @@ export function planDates(plan = planWeekdays(), from = todayStr(), span = DATE_
 // Every day (1.78.0): a weekday with a weekly class is "studio", any other "home". { days: [0..6], kinds }. Pure.
 export function dailyPlan(classes = CLASSES){ const kinds = {}; for (let wd = 0; wd < 7; wd++) kinds[wd] = (classes || []).some(c => c && c.day === wd) ? "studio" : "home"; return { days: [0, 1, 2, 3, 4, 5, 6], kinds }; }
 // The app's own answer for a date: show day "off", a home or rest day "home", anything at the studio "studio". Pure given kindOf.
-export function dailyKind(date, kindOf = dayKindNow){ const k = kindOf(date); return k === "show" ? "off" : k === "home" || k === "rest" ? "home" : "studio"; }
+// 1.79.0: every day of a competition, convention, showcase or audition weekend is quiet too, not just the plan's one show day.
+export const awayDay = (date, list = events()) => (list || []).some(e => e && !e.kind && !/break/i.test(String(e.type || "")) && e.start && date >= e.start && date <= (e.end || e.start));
+export function dailyKind(date, kindOf = dayKindNow, away = awayDay){ const k = kindOf(date); return k === "show" || away(date) ? "off" : k === "home" || k === "rest" ? "home" : "studio"; }
 export const MSG_DAYS = 30;
 // "Thu, Fri, Sun": the home days, Monday first.
 export function daysLabel({ kinds = {} } = {}){ return Object.keys(kinds).map(Number).sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map(wd => DAY_NAMES[wd]).join(", "); }
@@ -131,5 +133,7 @@ async function test(){ try { const reg = await navigator.serviceWorker.ready; aw
 export function pingDone(){ if (!base() || !sync.familyId) return; fetch(base() + "/remind/done", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ familyId: sync.familyId, tz: tz() }), keepalive: true }).catch(() => {}); }
 // Called when she logs something (the studio log, ✓ I worked on it, 💪 on a teacher's note, a dance danced to the end): the
 // evening log reminder stays quiet today.
-export function pingLogged(){ if (!base() || !sync.familyId) return; fetch(base() + "/remind/done", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ familyId: sync.familyId, tz: tz(), what: "log" }), keepalive: true }).catch(() => {}); }
+// 1.79.0: its own route, once a day. A worker from before 1.78.0 took every /remind/done as "the plan is done" and muted
+// dance time; it answers this route with a harmless 404.
+export function pingLogged(){ if (!base() || !sync.familyId) return; const day = todayStr(); try { if (localStorage.getItem("spotlight:loggedPing") === day) return; localStorage.setItem("spotlight:loggedPing", day); } catch (e) {} fetch(base() + "/remind/logged", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ familyId: sync.familyId, tz: tz(), what: "log" }), keepalive: true }).catch(() => {}); }
 expose({ rmOn: on, rmOff: () => off(), rmTest: test });

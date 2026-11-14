@@ -157,7 +157,7 @@ export function stonesHtml(st){
   const path = week.n ? `<div class="st-path" aria-hidden="true">${"<i></i>".repeat(Math.min(14, week.n))}${week.n > 14 ? `<b>+${week.n - 14}</b>` : ""}</div>` : "";
   return `<div class="row"><span class="st-head grow">🪜 My stepping stones</span><span class="chip sun">${all.n} so far</span></div>
     <p class="st-week"><b>This week: ${week.n ? plural(week.n, "stone", "stones") : "your next one is waiting"}</b>${week.n ? `<br><span class="small">${stoneWords(week)}</span>` : ""}</p>${path}
-    <p class="small muted">Every little bit counts. This is how a dance gets to look easy.</p>`;
+    <p class="small muted">Every little bit counts. This is how a dance gets to look easy.</p><button class="btn sm sun st-far" onclick="openProgress()">🌟 Look how far I've come · 🖨️</button>`;
 }
 // 💃 My dances are growing (1.69.0, Jenya Nov 13: "add per-dance progress to Today"). One row for each competition dance
 // (not the class dances), from what the app already keeps: how many times she danced it to the end (the runs in her
@@ -232,7 +232,7 @@ export const agoWords = (days) => days <= 0 ? "today" : days === 1 ? "yesterday"
 // One prompt: its name opens the goal, 📷 goes straight to the camera or her photos (a skill's lineup takes the picture as
 // it is; a measured goal opens its check-in sheet, where the number goes too), Later puts it off. Pure.
 export function photoPromptHtml(p){
-  const words = p.why === "first" ? `<b>Take your starting picture</b><small>${esc(p.n)} · to see how far you come</small>` : `<b>Time for a progress picture</b><small>${esc(p.n)} · your last one was ${agoWords(p.days)}</small>`;
+  const words = p.why === "first" ? `<b>Take your starting picture</b><small>${esc(p.n)} · to see how far you've come</small>` : `<b>Time for a progress picture</b><small>${esc(p.n)} · your last one was ${agoWords(p.days)}</small>`;
   const go = p.kind === "measure" ? `<button class="btn sm coral" onclick="gpCheckIn('${p.id}')">📷 Take it</button>` : `<label class="btn sm coral">📷 Take it<input type="file" accept="image/*" hidden onchange="lineupAdd('${p.id}', this)"></label>`;
   return `<div class="pp-row"><button class="pp-txt" onclick="goalOpen('${p.id}')"><span class="pp-ic">${p.ic}</span><span class="grow">${words}</span></button><div class="pp-btns">${go}<button class="btn sm ghost" onclick="photoLater('${p.id}')">Later</button></div></div>`;
 }

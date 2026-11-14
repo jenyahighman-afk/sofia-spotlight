@@ -25,7 +25,7 @@ import { checkins, openGoal } from "./goals.js";
 import { openFlip, migrateFlipbook } from "./glow.js";
 
 const day = (d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d || "")) ? fmt(d) : "";
-const quote = (n) => esc(n).replace(/'/g, "&#39;");
+const quote = (n) => esc(String(n).replace(/\\/g, "\\\\").replace(/'/g, "\\'")); // an apostrophe in her own trick's name broke the button (1.79.0)
 // The coach's tips for a goal, newest first: [{ date, text }]. Reviews are kept by the skill's name. Pure.
 export function coachTips(reviews, name){
   return Object.values(reviews || {}).filter(r => r && !r.deleted && r.review && r.review.fix && r.trick === name).sort((a, b) => String(b.at || b.date || "").localeCompare(String(a.at || a.date || ""))).map(r => ({ date: r.date || "", text: String(r.review.fix) }));
@@ -86,7 +86,7 @@ export function goalFoldLines(r, { dates = [], today = todayStr(), tips = [], vi
     nextT: r.kind === "aerial" ? "What's next" : "How it's going",
     next: r.kind === "aerial" ? [r.how, r.sub].filter(Boolean).join(" · ") : r.how,
     workT: r.kind === "aerial" ? "🪜 My stepping stones" : "🪜 How to work on it today",
-    work: [dates.length ? n(dates.length, "stepping stone", "stepping stones") + (done ? " · one today ⭐" : "") : "No stepping stones yet", videos ? "🎬 " + n(videos, "video", "videos") : ""].filter(Boolean).join(" · "),
+    work: [dates.length ? n(dates.length, "stepping stone", "stepping stones") + (done ? " · one today ⭐" : "") : "Not practiced yet. Today can be the first.", videos ? "🎬 " + n(videos, "video", "videos") : ""].filter(Boolean).join(" · "),
     photos: r.shots.length ? n(r.shots.length, "picture", "pictures") : "No picture yet: take your starting picture",
     coach: tips.length ? clip(tips[0].text, 46) : "One thing you did well, one thing to fix",
   };
@@ -108,7 +108,7 @@ export function initFolds(key, ids){
 }
 export function initSkillsFolds(){ initFolds("spotlight:skillsFolds2", SKILLS_FOLDS); initFolds("spotlight:todayFolds", TODAY_FOLDS); initFolds("spotlight:goalFolds", GOAL_FOLDS); initFolds("spotlight:meFolds", ME_FOLDS); }
 export function renderGoalPage(){
-  const title = $("#gpTitle"); if (!title || !cur) return; const r = goalRow(cur);
+  const title = $("#gpTitle"); if (!title) return; if (!cur) { if (currentPage() === "goal") showPage("skills"); return; } const r = goalRow(cur);
   if (!r) { cur = ""; if (currentPage() === "goal") showPage("skills"); return; }
   title.textContent = `${r.ic} ${r.n}`; $("#gpNext").innerHTML = nextHtml(r);
   const steps = $("#aerialFold"); if (steps) steps.hidden = r.kind !== "aerial";
@@ -127,6 +127,7 @@ export function renderGoalPage(){
 // Open a goal's page. `steps: true` unfolds the aerial's whole checklist (the printed Aerial Mission's path lands there).
 export function goalOpen(id, opts = {}){
   if (!goalKind(id)) return; cur = id; showPage("goal"); renderGoalPage();
+  const wf = document.querySelector("[id=gpWorkFold]"); if (wf) wf.open = true; // 1.79.0: "tap to see how" landed on four closed cards
   if (opts.steps) { const f = $("#aerialFold"); if (f && !f.hidden) { f.open = true; if (f.scrollIntoView) f.scrollIntoView({ block: "start" }); } }
 }
 async function gpWorked(id){ const on = await toggleWorked(id); if (on) try { pingLogged(); } catch (e) {} renderGoalPage(); toast(on ? "That's a stepping stone 🪜" : "Taken back"); }

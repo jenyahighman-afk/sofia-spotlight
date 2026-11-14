@@ -10,7 +10,7 @@
 // practice (done, runs, skills). The nudge on Today asks about a class day of the last NUDGE_DAYS days that has no log yet;
 // 🚫 marks that day "nothing to log" (skip) and it is not asked about again. Pure parts up top (tested in Node).
 import { $, esc, todayStr, expose, toast } from "./util.js";
-import { S, storeSet, dances, studioDates } from "./store.js";
+import { S, storeSet, dances, studioDates, received } from "./store.js";
 import { CLASSES } from "./data.js";
 import { studioOn } from "./studio.js";
 import { shiftDate, TAGS, TAG_EMOJI, TAG_LABEL, inferTag, isOpen, closeCorrection } from "./corrections.js";
@@ -78,11 +78,11 @@ export const noteDays = (practice, id) => Object.entries(practice || {}).filter(
 // The folded card's one line: on a class day the reminder to show them, else the newest note. Pure.
 export const notesSub = (notes, classToday = false) => !notes.length ? "" : classToday ? "🏫 Class today: show them!" : clip(notes[0].text, 44);
 // Today's card. `label(about)` names what a note is about. Pure.
-export function notesCardHtml(notes, { today, practice = {}, classToday = false, label = () => "", cap = 4 } = {}){
-  if (!notes.length) return "";
+export function notesCardHtml(notes, { today, practice = {}, classToday = false, label = () => "", cap = 4, all = false } = {}){
+  if (!notes.length) return ""; if (all) cap = notes.length;
   const row = (c) => { const days = noteDays(practice, c.id), on = days.includes(today), about = label(c.danceId);
     return `<div class="tn-row"><div class="tn-text"><b>${TAG_EMOJI[c.tag] || "✨"} ${esc(c.text)}</b><small>${about ? esc(about) + " · " : ""}${c.source && c.source !== "class" ? "👩‍🏫 " + esc(c.source) + " · " : ""}🏫 ${esc(dayWords(c.date, today))}${days.length ? ` · 💪 ×${days.length}` : ""}</small></div><div class="tn-btns"><button class="tn-btn${on ? " on" : ""}" onclick="tnWorked('${c.id}')" aria-pressed="${on}" aria-label="I worked on it today">💪</button><button class="tn-btn" onclick="tnGot('${c.id}')" aria-label="Got it">✅</button></div></div>`; };
-  return `<div class="row"><span class="st-head grow">📝 From my teachers</span><span class="chip violet">${notes.length}</span></div><p class="small muted">${classToday ? "🏫 Class today: show them you worked on these!" : "💪 = I worked on it today · ✅ = got it"}</p>${notes.slice(0, cap).map(row).join("")}${notes.length > cap ? `<p class="small muted">＋ ${notes.length - cap} more on your dances</p>` : ""}`;
+  return `<div class="row"><span class="st-head grow">📝 From my teachers</span><span class="chip violet">${notes.length}</span></div><p class="small muted">${classToday ? "🏫 Class today: show them you worked on these!" : "💪 = I worked on it today · ✅ = got it"}</p>${notes.slice(0, cap).map(row).join("")}${notes.length > cap ? `<button class="lnk small" onclick="tnAll()">＋ ${notes.length - cap} more · show all</button>` : all && notes.length > 4 ? `<button class="lnk small" onclick="tnAll()">Show fewer</button>` : ""}`;
 }
 // The sheet. `list` = her competition dances [{ id, n }], `goals` = her goals [{ id, n, ic }]. Pure.
 export function sheetHtml({ date, today, practice = {}, list = [], goals = [], isClassDay = () => false, more = [], said = [], about = "", tag = "", label = () => "", classes = [], cls = "" } = {}){
@@ -92,7 +92,7 @@ export function sheetHtml({ date, today, practice = {}, list = [], goals = [], i
   const dn = list.length ? list.map(d => chip("slDance", d.id, esc(d.n), r.dances.includes(d.id))).join("") : `<span class="small muted">—</span>`;
   const sk = goals.length ? goals.map(g => chip("slSkill", g.id, `${g.ic} ${esc(g.n)}`, r.skills.includes(g.id))).join("") : `<button class="lnk" onclick="closeStage();showPage('skills');wkPick()">＋ ⭐</button>`;
   // ＋ any other skill (1.71.0): the picker's own groups, folded; a tap logs it for this day like one of her goals.
-  const moreHtml = more.length ? `<details class="sl-more"><summary>＋ ⭐</summary>${more.map(g => `<div class="sl-mlab">${esc(g.label)}</div><div class="sl-chips">${g.items.map(i => chip("slSkill", i.id, esc(i.n), r.skills.includes(i.id))).join("")}</div>`).join("")}</details>` : "";
+  const moreHtml = more.length ? `<details class="sl-more"><summary>＋ ⭐</summary>${more.map(g => `<details class="sl-grp"><summary>${esc(g.label)} · ${g.items.length}</summary><div class="sl-chips">${g.items.map(i => chip("slSkill", i.id, esc(i.n), r.skills.includes(i.id))).join("")}</div></details>`).join("")}</details>` : "";
   // 📝 Teacher said: what it is about (what she logged for this day; every dance when nothing is logged yet), the body part
   // or idea as one emoji, the words, ＋.
   const opts = [...list.filter(d => r.dances.includes(d.id)).map(d => ({ id: d.id, n: d.n })), ...goals.filter(g => r.skills.includes(g.id)).map(g => ({ id: "skill:" + g.id, n: `${g.ic} ${g.n}` }))]; const abouts = opts.length ? opts : list.map(d => ({ id: d.id, n: d.n }));
@@ -141,17 +141,20 @@ export function classesOn(date, { weekly = CLASSES, oneOffs = studioDates() } = 
 let clsSel = "";
 let about = "", tag = "", keepMore = true; // the ＋ ⭐ list folds again once she has picked from it, so 📝 Teacher said is back in reach
 function draw(){
-  if (!box) return; const keep = (document.querySelector(".sl-add input") || {}).value || "", open = keepMore && !!(box.querySelector && box.querySelector(".sl-more[open]"));
+  if (!box) return; const was = document.querySelector(".sl-add input"), typing = !!was && document.activeElement === was; const keep = (was || {}).value || "", open = keepMore && !!(box.querySelector && box.querySelector(".sl-more[open]"));
   box.innerHTML = sheetHtml({ date: cur, today: todayStr(), practice: S.practice, list: compDances(), goals: dayGoals(), isClassDay: classDay, more: moreGroups(), said: classNotes(S.corrections, { date: cur }), about, tag, label: aboutLabel, classes: classesOn(cur), cls: clsSel });
-  const inp = document.querySelector(".sl-add input"); if (inp && keep) inp.value = keep; const m = box.querySelector && box.querySelector(".sl-more"); if (m && open) m.open = true;
+  const inp = document.querySelector(".sl-add input"); if (inp && keep) inp.value = keep; if (inp && typing && inp.focus) try { inp.focus(); } catch (e) {} const m = box.querySelector && box.querySelector(".sl-more"); if (m && open) m.open = true;
   const on = box.querySelector && box.querySelector(".sl-day.on"); if (on && on.scrollIntoView) on.scrollIntoView({ inline: "center", block: "nearest" });
 }
-export function renderStudioNudge(){ renderTeacherNotes(); const el = $("#studioNudge"); if (!el) return; const h = nudgeHtml(nudgeDays(S.practice, todayStr(), classDay), todayStr()); el.hidden = !h; el.innerHTML = h; }
+export function renderStudioNudge(){ renderTeacherNotes(); const el = $("#studioNudge"); if (!el) return; const h = loaded() ? nudgeHtml(nudgeDays(S.practice, todayStr(), classDay), todayStr()) : ""; el.hidden = !h; el.innerHTML = h; }
 export function openStudioLog(date){
-  const today = todayStr(); cur = DATE.test(String(date)) && logDays(today).includes(date) ? date : today;
-  box = document.createElement("div"); box.className = "sl"; openStage("🏫 ✏️ Studio log", [box], `<button class="btn coral" onclick="closeStage()">✓ Done</button>`); draw();
+  const today = todayStr(); cur = DATE.test(String(date)) && logDays(today).includes(date) ? date : today; clsSel = ""; about = ""; tag = "";
+  box = document.createElement("div"); box.className = "sl"; openStage("🏫 ✏️ Studio log", [box], `<button class="btn coral" onclick="slDone()">✓ Done</button>`); draw();
 }
-async function save(date, patch){ await storeSet("practice", date, withStudio(S.practice[date], patch)); if (date === todayStr()) try { pingLogged(); } catch (e) {} draw(); renderStudioNudge(); renderStones(); }
+// 1.79.0: nothing is written before the day's own record has arrived (a tap on a cold start would replace the day's runs and
+// ticks with a bare log), and the worker hears "logged" only when the day really has a log.
+const loaded = () => received.any.has("practice");
+async function save(date, patch, quiet = false){ if (!loaded()) return toast("One moment… ⏳"); await storeSet("practice", date, withStudio(S.practice[date], patch)); if (date === todayStr() && hasLog(studioRec(S.practice, date))) try { pingLogged(); } catch (e) {} if (!quiet) draw(); renderStudioNudge(); renderStones(); }
 const now = () => studioRec(S.practice, cur);
 function slDay(d){ if (!logDays(todayStr()).includes(d)) return; cur = d; clsSel = ""; about = ""; draw(); }
 // A class chip: she was there (the day's log) and the next note is from it; a second tap takes both back.
@@ -159,8 +162,9 @@ async function slCls(i){ const c = classesOn(cur)[i]; if (!c) return; const have
 async function slDance(id){ await save(cur, { dances: toggleIn(now().dances, id) }); }
 async function slSkill(id){ keepMore = false; try { await save(cur, { skills: toggleIn(now().skills, id) }); } finally { keepMore = true; } }
 async function slFeel(k){ await save(cur, { feel: now().feel === k ? "" : k }); }
-async function slNote(v){ await save(cur, { note: String(v || "").trim() }); toast("✓"); }
-async function slSkip(d){ if (!DATE.test(String(d))) return; await storeSet("practice", d, withStudio(S.practice[d], { skip: true })); renderStudioNudge(); toast("👌"); }
+// Her own note saves without redrawing the sheet: a redraw between her finger going down and coming up ate the next tap.
+async function slNote(v){ await save(cur, { note: String(v || "").trim() }, true); toast("✓"); }
+async function slSkip(d){ if (!DATE.test(String(d)) || !loaded()) return; await storeSet("practice", d, withStudio(S.practice[d], { skip: true })); renderStudioNudge(); toast("👌"); }
 function slAbout(id){ about = about === id ? "" : id; draw(); }
 function slTag(t){ tag = tag === t ? "" : t; draw(); }
 async function slSaidAdd(){
@@ -169,12 +173,22 @@ async function slSaidAdd(){
   const rec = noteRec({ about: to, cls: k, teacher: kc ? kc.teacher : "", text: (inp || {}).value, tag, date: cur, id: "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) }); if (!rec) return toast("📝 ?");
   if (inp) inp.value = ""; tag = ""; await storeSet("corrections", rec.id, rec); draw(); renderTeacherNotes(); renderStones(); toast("📝 ✓");
 }
+// ✓ Done with words still in 📝 Teacher said (1.79.0): they are saved like ＋ would, so a note is never lost. With no class or
+// dance picked yet the sheet stays open and asks for it.
+async function slDone(){
+  const inp = document.querySelector(".sl-add input"), btn = document.querySelector(".sl-add .btn");
+  if (inp && String(inp.value || "").trim()) { if (btn && !btn.getAttribute("data-about") && !btn.getAttribute("data-cls")) return toast("🏫 ? Tap the class, then ✓ Done", 2600); await slSaidAdd(); }
+  if (typeof window !== "undefined" && window.closeStage) window.closeStage();
+}
 async function slSaidDel(id){ const c = S.corrections[id]; if (!c || !c.studio) return; await storeSet("corrections", id, { ...c, deleted: true }); draw(); renderTeacherNotes(); }
+// 1.79.0: every open note can be reached. A note about a class or a skill is on no dance's page, so "＋ N more" opens the rest here.
+let showAllNotes = false;
+function tnAll(){ showAllNotes = !showAllNotes; renderTeacherNotes(); }
 export function renderTeacherNotes(){
   const el = $("#teacherNotes"); if (!el) return; const today = todayStr();
-  const notes = classNotes(S.corrections, { open: true }), ct = classDay(today), h = notesCardHtml(notes, { today, practice: S.practice, classToday: ct, label: aboutLabel }); el.innerHTML = h;
+  const notes = classNotes(S.corrections, { open: true }), ct = classDay(today), h = notesCardHtml(notes, { today, practice: S.practice, classToday: ct, label: aboutLabel, all: showAllNotes }); el.innerHTML = h;
   setFold("teacherFold", "teacherSub", !!h, notesSub(notes, ct), "teacherCount", notes.length);
 }
-async function tnWorked(id){ const today = todayStr(), rec = S.practice[today] || { done: [], note: "", runs: [] }, have = Array.isArray(rec.notes) ? rec.notes : [], on = !have.includes(id); await storeSet("practice", today, { ...rec, notes: on ? [...have, id] : have.filter(x => x !== id) }); renderTeacherNotes(); renderStones(); if (on) try { pingLogged(); } catch (e) {} toast(on ? "💪 That's a stepping stone 🪜" : "↩"); }
+async function tnWorked(id){ if (!loaded()) return; const today = todayStr(), rec = S.practice[today] || { done: [], note: "", runs: [] }, have = Array.isArray(rec.notes) ? rec.notes : [], on = !have.includes(id); await storeSet("practice", today, { ...rec, notes: on ? [...have, id] : have.filter(x => x !== id) }); renderTeacherNotes(); renderStones(); if (on) try { pingLogged(); } catch (e) {} toast(on ? "💪 That's a stepping stone 🪜" : "↩"); }
 async function tnGot(id){ const c = await closeCorrection(id); renderTeacherNotes(); renderStones(); if (c) toast("Got it! ✅ Show your teacher 🌟", 2400); }
-expose({ openStudioLog, slCls, slDay, slDance, slSkill, slFeel, slNote, slSkip, slAbout, slTag, slSaidAdd, slSaidDel, tnWorked, tnGot });
+expose({ openStudioLog, slCls, slDay, slDance, slSkill, slFeel, slNote, slSkip, slAbout, slTag, slSaidAdd, slSaidDel, slDone, tnWorked, tnGot, tnAll });

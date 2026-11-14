@@ -201,7 +201,7 @@ export async function openPlayer(danceId, opts = {}){
   $("#plTitle").textContent = d.name; $("#plSong").textContent = d.song || ""; $("#plTime").textContent = "0:00"; $("#plBar").style.width = "0"; $("#plPlay").textContent = "▶"; $("#plCount").textContent = "…"; runClose();
   speedUI(); loopUI(); countsUI(); renderPresets(); cueSheetUI(); timingUI(); $("#plCue").hidden = true; renderKara(0); renderKCount(null); renderCue(0);
   const src = srcFor(d);
-  if (!src) { setStatus(`<span class="bad">No music file yet.<br>Ask a grown-up: More ▸ Add music file.</span>${PL.once ? `<br><button class="btn sm coral" style="margin-top:8px" onclick="plOnceLog()">✓ I danced it without the music</button>` : ""}`); return; } // no file is not a dead end: a dance without the music still counts
+  if (!src) { setStatus(`<span class="bad">No music file yet.<br>Ask a grown-up: More ▸ Add music file.</span>${PL.once ? `<br><button class="btn sm coral" style="margin-top:8px" onclick="plOnceQuiet()">✓ I danced it without the music</button>` : ""}`); return; } // no file is not a dead end: a dance without the music still counts
   setStatus(`Loading music…`);
   const audio = new Audio(); audio.preload = "auto"; audio.preservesPitch = true; audio.mozPreservesPitch = true; audio.webkitPreservesPitch = true; PL.audio = audio;
   audio.addEventListener("ended", () => { $("#plPlay").textContent = "▶"; if (PL.run) runEnded(); else if (PL.once && PL.a === null) onceEnded(); });
@@ -225,4 +225,5 @@ export function initPlayer(){
   $("#plAddCue").onclick = addCue; { const fh = $("#plFixHere"); if (fh) fh.onclick = fixHere; } $("#plLines").onclick = async () => { await setSettings({ prompter: !S.settings.prompter }); cueSheetUI(); }; $("#plTestMe").onclick = toggleTestMe; $("#plTimeWords").onclick = timeWords; $("#plCueList").onclick = () => { PL.showList = !PL.showList; cueSheetUI(); };
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#player").hidden) { if (PL.run) runStop(); else closePlayer(); } });
 }
-expose({ openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose, plRunStop: runStop, plOnceAgain: onceAgain, plOnceLog: onceEnded, plReveal: reveal, plSeek, plCueEdit: cueEdit, plCueDel: cueDel, plTimeTap: timeTap, plTimeBack: timeBack, plTimeDone: timeDone });
+async function onceQuiet(){ await onceEnded(); closePlayer(); toast("✅ Danced today! That counts ⭐", 2600); }
+expose({ plOnceQuiet: onceQuiet, openPlayer, closePlayer, plPreset, plRunIt: runIt, plRunClose: runClose, plRunStop: runStop, plOnceAgain: onceAgain, plOnceLog: onceEnded, plReveal: reveal, plSeek, plCueEdit: cueEdit, plCueDel: cueDel, plTimeTap: timeTap, plTimeBack: timeBack, plTimeDone: timeDone });

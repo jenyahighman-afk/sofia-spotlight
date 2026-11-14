@@ -44,7 +44,7 @@ function renderPractice(){
   const apct=Math.round(100*[...ad].filter(id=>AERIAL.some(a=>a.id===id)).length/AERIAL.length); $("#aerialPct").textContent=apct+"%";
   renderDrillBox();
   $("#phases").innerHTML=PHASES.map(p=>`<div class="check"><span class="chip violet">${esc(p.d)}</span><span><b>${esc(p.n)}</b><br><span class="small">${esc(p.g)}</span></span></div>`).join("");
-  const hist=Object.entries(S.practice).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30);
+  const hist=Object.entries(S.practice).filter(([,r])=>r&&((r.done||[]).length||(r.runs||[]).length||r.note)).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30);
   $("#practiceHistory").innerHTML=hist.length?hist.map(([d,r])=>`<div class="check"><span class="chip mint">${fmt(d)}</span><span>${(r.done||[]).length}/${r.total||PRACTICE_ITEMS.length}${(r.runs||[]).length?` · ▶ ${r.runs.length}`:""}${r.note?" · "+esc(r.note):""}</span></div>`).join(""):`<p class="muted small">Nothing yet. Today is a good day.</p>`;
   lastPct=pct;
 }

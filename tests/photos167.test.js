@@ -70,7 +70,7 @@ test("the audit's fixes stay fixed", () => {
   assert.match(home, /\$\{ran\?PLAN_DONE:PLAN_DONE_QUIET\}/, "'you danced your solo' only when she ran it"); assert.doesNotMatch(home, /renderGoalReminder/);
   assert.match(src("js/pmode.js"), /if \(!ITEMS\.length\) return toast\("Nothing to practice today ⭐"\)/, "an empty plan (show day) no longer crashes practice mode");
   assert.match(src("js/app.js"), /todayStr\(\) !== day\) \{ day = todayStr\(\); renderAll\(\); \}/, "left open overnight, the app wakes on the new day");
-  assert.match(src("js/player.js"), /plOnceLog\(\)">✓ I danced it without the music/); assert.match(src("js/bites.js"), /openPlayer\('solo',\{once:true\}\)/);
+  assert.match(src("js/player.js"), /plOnceQuiet\(\)">✓ I danced it without the music/); assert.match(src("js/bites.js"), /openPlayer\('solo',\{once:true\}\)/);
   assert.match(nav, /history\.pushState\(\{ p \}, ""\)/); assert.match(nav, /addEventListener\("popstate"/, "the phone's back button goes back a page");
   assert.match(css, /\.toast\{[^}]*z-index:80/, "a toast shows above sheets and stages"); assert.match(css, /--link:#7E4FD1/); assert.match(css, /\.btn\.sm\{[^}]*min-height:40px/); assert.match(css, /details\.acc>summary\{[^}]*min-height:46px/);
   assert.doesNotMatch(goals, /capture="environment"/, "a check-in can come from her photos, not only the camera"); assert.match(goals, /const pics = cs\.filter/, "the slider compares the first and newest picture");

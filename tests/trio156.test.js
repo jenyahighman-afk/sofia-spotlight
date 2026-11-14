@@ -58,7 +58,7 @@ test("Memorize takes turns: the solo one day, the trio the next, until every chu
 });
 
 test("the best time: a snack, then about 45 minutes later, dinner after; on Today on a home day until the plan is done, and in the Pass", () => {
-  assert.equal(BEST_TIME, "🍌 Snack first, dance 45 min later, dinner after");
+  assert.equal(BEST_TIME, "🍌 Snack first, then dance. Dinner after."); // 1.79.0
   assert.match(src("js/views/home.js"), /\$\{pd\|\|td\?"":`<div class="today-sub today-when">\$\{BEST_TIME\}<\/div>`\}/);
   const pass = json("pass"); assert.ok(JSON.stringify(pass).includes("Best time on a home day: a small snack after school, dance about 45 minutes later, dinner after."));
   assert.ok(pass.tips.some(t => t.when.includes("home") && /45 min later/.test(t.t)), "a home-day tip");
@@ -76,7 +76,7 @@ test("the 6:30 pm last call: the default, old default times moved by schema 53 (
   const r = RM.reminderOf({ reminder: { on: true } }); const plan = { days: [4], kinds: { 4: "home" } };
   assert.notEqual(RM.sentSig(r, plan), RM.sentSig({ ...r, h: 17 }, plan), "a changed time is a new signature"); assert.equal(RM.sentSig(r, plan), RM.sentSig({ ...r, h2: 20, m2: 0 }, plan), "1.60.0: the last call's time is never sent, so it changes nothing");
   assert.notEqual(RM.sentSig(r, plan), RM.sentSig(r, { days: [4, 5], kinds: { 4: "home", 5: "home" } }), "so are new plan days");
-  assert.match(src("js/app.js"), /if \(settled\("settings"\)\) try \{ resyncReminder\(\); \}/);
+  assert.match(src("js/app.js"), /if \(settled\("settings"\) && settled\("events"\)\) try \{ resyncReminder\(\); \}/);
   for (const [title, body] of W.SECOND_LINES) { assert.match(title, /^Last call/); assert.doesNotMatch(body, /15 minutes|memory run is enough/, "the full session stays on offer"); }
   assert.match(src("js/views/practice.js"), /planDone\(\{\.\.\.rec,done\}\)&&!planDone\(rec\)\) try\{ pingDone\(\); \}/, "ticking the solo in the list quiets tonight's nudge (the re-audit), once: on the tick that finishes the plan");
 });
