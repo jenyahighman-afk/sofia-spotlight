@@ -7,7 +7,7 @@ import { addCorrection } from "./corrections.js";
 import { normalizeCues, cueAt, fmtTime, fmtCueTime, isCueTable, trickAhead, lyricLines, lyricAt, normalizeLyricTimes, lyricTimesFor, countAt, snapTime } from "./cues.js";
 import { srcFor, trackUrl } from "./track.js";
 import { cuePhoto } from "./cuecards.js";
-import { pingDone } from "./remind.js";
+import { pingDone, pingLogged } from "./remind.js";
 import { planDone, danced, danceCount } from "./streak.js";
 import { prompterHtml, karaokeHtml, wordWipes } from "./prompter.js";
 export { srcFor };
@@ -183,6 +183,7 @@ async function onceEnded(){
   const d = PL.dance; if (!d) return; const date = todayStr(); const rec = S.practice[date] || { done: [], note: "", runs: [] };
   const next = { ...rec, runs: [...(rec.runs || []), { at: new Date().toISOString(), danceId: d.id, speed: PL.speed, full: true, once: true }] }; await storeSet("practice", date, next);
   if (danced(next)) try { pingDone(); } catch (e) {} // she danced: no reminder tonight
+  try { pingLogged(); } catch (e) {} // and a dance danced to the end is logged: no log reminder tonight
   const box = $("#plRun"); box.hidden = false;
   box.innerHTML = `<div class="run-q">${onceLine(danceCount(S.practice))}</div><div class="row run-yn"><button class="btn coral" onclick="closePlayer()">Done</button><button class="btn ghost" onclick="plOnceAgain()">Again</button></div>`;
   checkBadges();

@@ -15,6 +15,7 @@ import { CLASSES } from "./data.js";
 import { studioOn } from "./studio.js";
 import { shiftDate, TAGS, TAG_EMOJI, TAG_LABEL, inferTag, isOpen, closeCorrection } from "./corrections.js";
 import { openStage } from "./stage.js";
+import { pingLogged } from "./remind.js";
 import { workingIds, goalRow, danceLabel, renderStones, pickGroups, clip, setFold } from "./working.js";
 
 export const LOG_DAYS = 14, NUDGE_DAYS = 3, NOTE_MAX = 200;
@@ -150,7 +151,7 @@ export function openStudioLog(date){
   const today = todayStr(); cur = DATE.test(String(date)) && logDays(today).includes(date) ? date : today;
   box = document.createElement("div"); box.className = "sl"; openStage("🏫 ✏️ Studio log", [box], `<button class="btn coral" onclick="closeStage()">✓ Done</button>`); draw();
 }
-async function save(date, patch){ await storeSet("practice", date, withStudio(S.practice[date], patch)); draw(); renderStudioNudge(); renderStones(); }
+async function save(date, patch){ await storeSet("practice", date, withStudio(S.practice[date], patch)); if (date === todayStr()) try { pingLogged(); } catch (e) {} draw(); renderStudioNudge(); renderStones(); }
 const now = () => studioRec(S.practice, cur);
 function slDay(d){ if (!logDays(todayStr()).includes(d)) return; cur = d; clsSel = ""; about = ""; draw(); }
 // A class chip: she was there (the day's log) and the next note is from it; a second tap takes both back.
@@ -174,6 +175,6 @@ export function renderTeacherNotes(){
   const notes = classNotes(S.corrections, { open: true }), ct = classDay(today), h = notesCardHtml(notes, { today, practice: S.practice, classToday: ct, label: aboutLabel }); el.innerHTML = h;
   setFold("teacherFold", "teacherSub", !!h, notesSub(notes, ct), "teacherCount", notes.length);
 }
-async function tnWorked(id){ const today = todayStr(), rec = S.practice[today] || { done: [], note: "", runs: [] }, have = Array.isArray(rec.notes) ? rec.notes : [], on = !have.includes(id); await storeSet("practice", today, { ...rec, notes: on ? [...have, id] : have.filter(x => x !== id) }); renderTeacherNotes(); renderStones(); toast(on ? "💪 That's a stepping stone 🪜" : "↩"); }
+async function tnWorked(id){ const today = todayStr(), rec = S.practice[today] || { done: [], note: "", runs: [] }, have = Array.isArray(rec.notes) ? rec.notes : [], on = !have.includes(id); await storeSet("practice", today, { ...rec, notes: on ? [...have, id] : have.filter(x => x !== id) }); renderTeacherNotes(); renderStones(); if (on) try { pingLogged(); } catch (e) {} toast(on ? "💪 That's a stepping stone 🪜" : "↩"); }
 async function tnGot(id){ const c = await closeCorrection(id); renderTeacherNotes(); renderStones(); if (c) toast("Got it! ✅ Show your teacher 🌟", 2400); }
 expose({ openStudioLog, slCls, slDay, slDance, slSkill, slFeel, slNote, slSkip, slAbout, slTag, slSaidAdd, slSaidDel, tnWorked, tnGot });

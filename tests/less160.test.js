@@ -50,7 +50,7 @@ test("Today asks less: a class day nothing, a home day one thing, the whole sess
 test("reminders: the home days only, never a second time, off until she turns one on", () => {
   assert.deepEqual(RM.planWeekdays().days, [0, 4, 5]);
   const body = RM.subscribeBody({ on: true, h: 17, m: 0, second: true, h2: 18, m2: 30 }, { familyId: "F", endpoint: "e", keys: {}, tz: "America/Los_Angeles", dates: {} });
-  assert.equal("h2" in body, false); assert.equal("m2" in body, false); assert.deepEqual(body.kinds, { 0: "home", 4: "home", 5: "home" });
+  assert.equal("h2" in body, false); assert.equal("m2" in body, false); assert.deepEqual(body.kinds, { 0: "home", 1: "studio", 2: "studio", 3: "studio", 4: "home", 5: "home", 6: "studio" }, "1.78.0: every day; a class day is studio");
   const r = src("js/remind.js"); assert.match(r, /if \(!seen && subscribedHere\(\)\) \{ off\(true\)/, "a phone subscribed before 1.60.0 is switched off once"); assert.doesNotMatch(r, /rmSecond|rmTime2/);
   assert.deepEqual(W.KIND_LINES.home, ["Dance time 🎵", "Your music is ready. One dance, about 2 minutes ⭐"]);
   for (const [t, b] of [...W.LINES, ...Object.values(W.KIND_LINES)]) assert.doesNotMatch(t + b, /streak|first/i, t);

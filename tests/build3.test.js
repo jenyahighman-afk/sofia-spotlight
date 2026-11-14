@@ -130,9 +130,9 @@ test("the reminder follows the plan's days — Monday the watch day, the other s
   const pw = RM.planWeekdays(); assert.deepEqual(pw.kinds, { 0: "home", 4: "home", 5: "home" }); assert.deepEqual(pw.days, [0, 4, 5]);
   assert.deepEqual(RM.planWeekdays([{ day: 1 }], { 4: "Strength" }), { days: [4], kinds: { 4: "home" } }); assert.deepEqual(RM.planWeekdays([{ day: 1 }], { 1: "x" }).kinds, {}, "a class day is a studio day even if it's also a home day: no nudge");
   assert.equal(RM.daysLabel(pw), "Thu, Fri, Sun"); assert.equal(RM.daysLabel({ kinds: {} }), "");
-  assert.deepEqual(RM.reminderOf({ reminder: { on: true, h: 16, m: 30, second: false, h2: 20, m2: 0 } }), { on: true, h: 16, m: 30, second: false, h2: 20, m2: 0 }); assert.equal(RM.reminderOf({ reminder: { on: true, h: 16, m: 30 } }).second, true, "on unless turned off");
+  assert.deepEqual(RM.reminderOf({ reminder: { on: true, h: 16, m: 30, second: false, h2: 20, m2: 0 } }), { on: true, h: 16, m: 30, second: false, h2: 20, m2: 0, log: true, lh: 19, lm: 45 }); assert.equal(RM.reminderOf({ reminder: { on: true, h: 16, m: 30 } }).second, true, "on unless turned off");
   const r = RM.reminderOf({ reminder: { on: true, h: 16, m: 30 } }); const base = { familyId: "F", endpoint: "https://e", keys: { p256dh: "p", auth: "a" }, tz: "America/Los_Angeles" };
-  const body = RM.subscribeBody(r, { ...base, dates: {} }); assert.deepEqual(body, { ...base, h: 16, m: 30, days: pw.days, kinds: pw.kinds }, "1.60.0: the worker is never told a second time");
+  const body = RM.subscribeBody(r, { ...base, dates: {}, msgs: {} }); assert.deepEqual(body, { ...base, h: 16, m: 30, days: [0, 1, 2, 3, 4, 5, 6], kinds: RM.dailyPlan().kinds, log: true, lh: 19, lm: 45 }, "1.78.0: every day, and the evening log reminder as lh / lm (never h2 / m2)");
   assert.equal("h2" in RM.subscribeBody({ ...r, second: false }, base), false, "second off: the worker is told nothing about it");
   // the worker: the request, the two slots, the plan days, the lines
   const good = { familyId: "ABCDEFGHJKLMNPQRSTUVWXYZ", endpoint: "https://web.push.apple.com/QAbcdefghijklmnop", keys: { p256dh: "B".repeat(87), auth: "a".repeat(22) }, h: 16, m: 30, tz: "America/Los_Angeles" };

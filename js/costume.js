@@ -36,7 +36,7 @@ export function costumeSVG(design, { cls = "", xmlns = false, w, h } = {}){
 
 // ---------- the designer sheet ----------
 const D = { draft: null };
-const OPT_ROWS = [["leo", "Leotard", "colors"], ["skirt", "Skirt", "skirts"], ["skirtC", "Skirt colour", "colors"], ["sleeves", "Sleeves", "sleeves"], ["sparkle", "Sparkle", "sparkles"], ["accent", "Extra", "accents"], ["trim", "Trim colour", "trims"], ["head", "Headpiece", "heads"]];
+const OPT_ROWS = [["leo", "Leotard", "colors"], ["skirt", "Skirt", "skirts"], ["skirtC", "Skirt color", "colors"], ["sleeves", "Sleeves", "sleeves"], ["sparkle", "Sparkle", "sparkles"], ["accent", "Extra", "accents"], ["trim", "Trim color", "trims"], ["head", "Headpiece", "heads"]];
 function chips(k, list){
   const d = D.draft; const isCol = list === "colors" || list === "trims"; let items = COSTUMES[list] || [];
   if (k === "skirtC") items = [{ id: "match", n: "Same as leotard" }, ...items];

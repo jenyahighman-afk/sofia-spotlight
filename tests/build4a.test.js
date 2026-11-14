@@ -54,7 +54,7 @@ test("Play decides the kind of day the way Today does: a Thursday with a make-up
   assert.equal(PL.gamesFor("2026-10-29", { home: home("2026-10-29", [ACRO]), knees: true, done: false }).gate, false, "the studio day opens every game");
   assert.equal(PL.gamesFor("2026-10-29", { home: home("2026-10-29"), knees: true, done: false }).gate, false, "1.60.0: a home day locks nothing either");
   assert.deepEqual(PL.playSections("2026-10-29", { home: home("2026-10-29", [ACRO]), knees: true, done: false, doors: true }).sections.map(s => s.id), ["solo", "weekend", "extras"]);
-  assert.equal(HM.funLink, undefined, "1.60.0: the games are open, so Today has no plan-done link to Play"); assert.match(HM.sessionLink({ kind: "home", mins: 40, total: 15 }), /The whole session · 40 min/); assert.equal(HM.sessionLink({ kind: "memory", mins: 18, total: 6 }), "");
+  assert.equal(HM.funLink, undefined, "1.60.0: the games are open, so Today has no plan-done link to Play"); assert.match(HM.sessionLink({ kind: "home", mins: 40, total: 15 }), /The whole session · 40 min/); assert.match(HM.sessionLink({ kind: "memory", mins: 18, total: 6 }), /Today's short session · 18 min/); // 1.78.0: a class day offers its short session
   const h = src("js/views/home.js"), p = src("js/views/play.js"), sch = src("js/views/schedule.js");
   assert.doesNotMatch(h, /gateExtras|extrasGate/, "1.52.0: Today has no extras to gate");
   assert.match(p, /home: dayKindNow\(today\) === "home"/); assert.match(h, /const kind=dayKindNow\(today\)/);
@@ -65,7 +65,7 @@ test("Play decides the kind of day the way Today does: a Thursday with a make-up
   // the pages in the fake DOM: a booking today makes Today a studio day and Play ungated, whatever weekday it is
   resetDom(); clearS(); const today = todayStr(); const b = bookingRecord(today, "5:30 PM", "", "GHD", "r-today", "other"); S.events = { [b.id]: b };
   HM.renderHome(); const tc = el("#todayCard").innerHTML; assert.ok(/📹 Watch day|🏫 Studio day/.test(tc), "the one card says studio"); assert.doesNotMatch(tc, /🏠 Home day/);
-  assert.doesNotMatch(tc, /today-fun(?! today-morning)/, "nothing done yet: no link to Play (the weekday-morning line shares the class, 5 am to noon, and goes to the player)");
+  assert.doesNotMatch(tc, /today-fun[^>]*showPage\('play'\)/, "nothing done yet: no link to Play (the weekday-morning line shares the class, 5 am to noon, and goes to the player)");
   assert.doesNotMatch(el("#habitCard").innerHTML, /Your solo first/, "the extras card doesn't call a studio day a home day either");
   PL.renderPlay(); const grid = el("#gameGrid").innerHTML; assert.doesNotMatch(grid, /game-gate/, "no 'Home day: the solo first' on a studio day"); assert.match(grid, /✨ Extras/); assert.match(grid, /🎉 Weekend games/);
   // the week strip: today's cell carries the memory run when today is a home weekday with the booking, never the full practice

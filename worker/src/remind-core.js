@@ -20,7 +20,12 @@ export const LINES = [
   ["Dance o'clock 🕺", "One little thing. Then free time."],
 ];
 // The line for a kind of plan day (the app's planWeekdays kinds), and the second nudge's lines.
-export const KINDS = ["watch", "memory", "home"];
+// 1.78.0 (Jenya, Nov 14: "pushed reminders for her to log her practice every day and prep for solo and trio", with a
+// dancer's tip for the part of the season she is in): the app now sends every day ("studio" = a class day: class first, one
+// dance welcome), the words for the coming days (`msgs`: { date: [title, body] }, the app's own line and tip; the KIND_LINES
+// below when a date has none), and an evening log reminder (`log: true` with `lh` / `lm`, kept as the second slot h2 / m2):
+// "what did you dance today?", sent every day unless the family already logged something that day (the `logged` key).
+export const KINDS = ["watch", "memory", "home", "studio"];
 export const DATE_KINDS = [...KINDS, "off"];
 // The kind of `date` for this subscription: its own entry in `dates` first, then the weekday's kind.
 const dateKind = (sub, date) => { const d = sub && sub.dates; return d && Object.prototype.hasOwnProperty.call(d, date) ? d[date] : ""; };
@@ -29,7 +34,16 @@ export const KIND_LINES = {
   watch: ["Watch day 📹", "Hannah's two videos, then the solo in your head."],
   memory: ["Memory run 🧠", "The solo from the top, Lines off, then a little trio."],
   home: ["Dance time 🎵", "Your music is ready. One dance, about 2 minutes ⭐"], // 1.60.0: the button is ▶ My solo, nothing is "first"
+  studio: ["Class day 🏫", "After class, got a chance at home? One dance counts ⭐"],
 };
+// The evening log reminder (slot 2 of a subscription with `log`).
+export const LOG_LINES = [
+  ["What did you dance today? 📝", "Tap to log it: class, a dance, a skill. Every bit is a stepping stone 🪜"],
+  ["Log time 📝", "What did your teacher say today? Put it in your app before you forget."],
+  ["Before bed 🌙", "Log today's dancing. Two taps, then sleep."],
+];
+export const MSG_MAX = 45, MSG_TITLE = 48, MSG_BODY = 170;
+const clean = (v, n) => String(v == null ? "" : v).replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
 // The last call (6:30 pm since 1.56.0, Jenya Oct 30): start now, so practice is done long before bed.
 export const SECOND_LINES = [
   ["Last call ⏰", "Start by 7:00 and you're done long before bed ⭐"],
@@ -52,12 +66,12 @@ export function localClock(now, tz){
 // Build 4: the second nudge goes out on home kinds only — a watch day (Monday: no dancing at home) or a memory-run day (classes
 // end at 7:30, the run is about 18 minutes) never gets it, so it doesn't land in the car after three classes. A day without a kind
 // (an older subscription) keeps it.
-export const secondSlotFor = (kind) => kind !== "watch" && kind !== "memory";
+export const secondSlotFor = (kind, sub) => (sub && sub.log) ? true : kind !== "watch" && kind !== "memory";
 export function dueSlot(sub, now = new Date(), window = WINDOW_MIN){
   const { date, minutes } = localClock(now, sub.tz); const dk = dateKind(sub, date); if (dk === "off") return null; if (!dk && Array.isArray(sub.days) && sub.days.length && !sub.days.includes(weekdayOf(date))) return null;
   const inWin = (h, m) => { const t = (+h || 0) * 60 + (+m || 0); return minutes >= t && minutes < t + window; };
   if (sub.lastSent !== date && inWin(sub.h, sub.m)) return { slot: 1, date };
-  if (Number.isInteger(sub.h2) && Number.isInteger(sub.m2) && sub.lastSent2 !== date && secondSlotFor(kindOn(sub, date)) && inWin(sub.h2, sub.m2)) return { slot: 2, date };
+  if (Number.isInteger(sub.h2) && Number.isInteger(sub.m2) && sub.lastSent2 !== date && secondSlotFor(kindOn(sub, date), sub) && inWin(sub.h2, sub.m2)) return { slot: 2, date };
   return null;
 }
 // The local date to stamp when the dance-time nudge should fire now, else null (the first slot of dueSlot).
@@ -75,9 +89,15 @@ export function validateSubscribe(body){
   const kinds = {}; if (b.kinds && typeof b.kinds === "object" && !Array.isArray(b.kinds)) for (const [k, v] of Object.entries(b.kinds)) { const wd = parseInt(k, 10); if (wd >= 0 && wd <= 6 && KINDS.includes(v)) kinds[wd] = v; } if (Object.keys(kinds).length) sub.kinds = kinds;
   const dates = {}; if (b.dates && typeof b.dates === "object" && !Array.isArray(b.dates)) for (const [d, v] of Object.entries(b.dates).slice(0, 200)) if (/^\d{4}-\d{2}-\d{2}$/.test(d) && DATE_KINDS.includes(v)) dates[d] = v; if (Object.keys(dates).length) sub.dates = dates;
   const h2 = parseInt(b.h2, 10), m2 = parseInt(b.m2, 10); if (h2 >= 0 && h2 <= 23 && m2 >= 0 && m2 <= 59) { sub.h2 = h2; sub.m2 = m2; }
+  // The evening log reminder takes the second slot (and its own words); a subscription has one or the other.
+  const lh = parseInt(b.lh, 10), lm = parseInt(b.lm, 10); if (b.log === true && lh >= 0 && lh <= 23 && lm >= 0 && lm <= 59) { sub.h2 = lh; sub.m2 = lm; sub.log = true; }
+  const msgs = {}; if (b.msgs && typeof b.msgs === "object" && !Array.isArray(b.msgs)) for (const [d, v] of Object.entries(b.msgs).slice(0, MSG_MAX)) { if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !Array.isArray(v)) continue; const t = clean(v[0], MSG_TITLE), body = clean(v[1], MSG_BODY); if (t && body) msgs[d] = [t, body]; } if (Object.keys(msgs).length) sub.msgs = msgs;
   return { ok: true, sub };
 }
 export const subKey = (endpoint) => "sub:" + endpoint;
 export const doneKey = (familyId, date) => `done:${familyId}:${date}`;
+export const loggedKey = (familyId, date) => `logged:${familyId}:${date}`;
+// The key that silences a slot: the plan done for the dance time and the old last call; something logged for the log reminder.
+export const quietKey = (sub, date, slot) => slot === 2 && sub && sub.log ? loggedKey(sub.familyId, date) : doneKey(sub.familyId, date);
 // Slot 1 says what kind of day it is when the subscription knows (kinds), else the rotating line; slot 2 is the evening nudge (its own tag, so it never replaces the first).
-export const payloadFor = (sub, date, slot = 1) => { const kind = kindOn(sub, date); const [title, body] = slot === 2 ? nth(SECOND_LINES, date) : (KIND_LINES[kind] || lineFor(date)); return JSON.stringify({ title, body, url: "./", tag: slot === 2 ? "dance-bite-2" : "dance-bite" }); };
+export const payloadFor = (sub, date, slot = 1) => { const kind = kindOn(sub, date); const own = sub && sub.msgs && Array.isArray(sub.msgs[date]) ? sub.msgs[date] : null; const [title, body] = slot === 2 ? nth(sub && sub.log ? LOG_LINES : SECOND_LINES, date) : (own || KIND_LINES[kind] || lineFor(date)); return JSON.stringify({ title, body, url: "./", tag: slot === 2 ? (sub && sub.log ? "dance-log" : "dance-bite-2") : "dance-bite" }); };

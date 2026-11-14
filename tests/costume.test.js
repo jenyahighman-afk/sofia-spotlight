@@ -88,7 +88,7 @@ test("Me card and designer sheet render; Keep saves, Wear it sets costumeOn; ids
   const writes = []; setBackend({ set: async (col, id, rec) => { writes.push({ col, id, rec }); }, del: async () => {} });
   try {
     window.openCostumes(); const area = el("#costumeArea").innerHTML;
-    assert.ok(area.includes("cos-preview") && area.includes("<svg") && area.includes("Costume 1")); for (const lab of ["Leotard", "Skirt", "Sleeves", "Sparkle", "Extra", "Trim colour", "Headpiece"]) assert.ok(area.includes(lab), lab);
+    assert.ok(area.includes("cos-preview") && area.includes("<svg") && area.includes("Costume 1")); for (const lab of ["Leotard", "Skirt", "Sleeves", "Sparkle", "Extra", "Trim color", "Headpiece"]) assert.ok(area.includes(lab), lab);
     assert.ok(el("#stageActions").innerHTML.includes("💾 Save picture") && el("#stageActions").innerHTML.includes("👗 Wear it"));
     window.cosPick("skirt", "fringe"); window.cosPick("sparkle", "2"); window.cosName("  Gala night  ");
     await window.cosKeep(); assert.equal(S.settings.costumes.length, 1); assert.equal(S.settings.costumes[0].skirt, "fringe"); assert.equal(S.settings.costumes[0].sparkle, 2); assert.equal(S.settings.costumes[0].name, "Gala night");
