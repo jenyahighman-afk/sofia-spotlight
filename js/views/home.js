@@ -60,9 +60,12 @@ export function danceButtons({ kind = "", solo = false, trio = false } = {}){
 // The Pass and Toolkit p.2 say "When the app says ⭐ Plan done, put a sticker on": the app says it once her solo is danced today.
 export const PLAN_DONE = "⭐ Plan done: you danced your solo today";
 export const PLAN_DONE_QUIET = "⭐ Plan done for today";
-// What a day asks at home (1.60.0, Jenya Nov 5: class days are free; on a home day one thing she picks, about 10 minutes, with
+// 1.77.0 (Jenya, Nov 14: "don't say on any day nothing at home. she should be practicing when she gets a chance and not use the
+// app as excuse not to practice"): a class day no longer says "No home practice"; class comes first and one thing at home is
+// welcome. The words below replace 1.60.0's.
+// What a day asks at home (1.60.0, Jenya Nov 5: class days were free; on a home day one thing she picks, about 10 minutes, with
 // the whole session offered and not expected). Pure: the words under the day's name.
-export const DAY_ASK = { home: "Pick one thing, about 10 minutes. That's all.", homeDone: "That's your one thing for today ⭐", studio: "No home practice on class days.", rest: "Nothing planned. Dance if you feel like it." };
+export const DAY_ASK = { home: "Pick one thing, about 10 minutes. That's all.", homeDone: "That's your one thing for today ⭐", studio: "Class comes first today. Got a chance at home? Dance one thing.", rest: "Nothing planned. A good day to dance one thing." };
 // The whole session's link on a home day: its length, or how far she is once she has started. Pure.
 export function sessionLink({ kind = "", mins = 0, nDone = 0, total = 0 } = {}){
   if (kind !== "home" || !total) return "";

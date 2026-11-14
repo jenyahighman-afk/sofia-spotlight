@@ -38,7 +38,7 @@ test("Dance it once: the buttons open the player playing, the track's end is one
 });
 
 test("Today asks less: a class day nothing, a home day one thing, the whole session one link away", () => {
-  assert.equal(HM.DAY_ASK.studio, "No home practice on class days."); assert.equal(HM.DAY_ASK.home, "Pick one thing, about 10 minutes. That's all.");
+  assert.equal(HM.DAY_ASK.studio, "Class comes first today. Got a chance at home? Dance one thing."); // 1.77.0 assert.equal(HM.DAY_ASK.home, "Pick one thing, about 10 minutes. That's all.");
   resetDom(); clearS(); HM.renderHome(); const tc = el("#todayCard").innerHTML;
   assert.match(tc, /▶ My solo/); assert.match(tc, /▶ My trio/); assert.match(tc, /📹 Videos/); assert.match(tc, /🧠 Memorize/);
   assert.doesNotMatch(tc, /streak|off left|without your solo|did you make it|Start practice|Memory run|After breakfast/i);

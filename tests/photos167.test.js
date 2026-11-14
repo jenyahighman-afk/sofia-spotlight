@@ -61,7 +61,7 @@ test("Today's second choice: one of her own goals a day, taking turns", () => {
   const h = W.todaySkillHtml(W.todayGoal({ working: ["a-aerial"] }, D, ctx({ settings: { working: ["a-aerial"] } }))); assert.match(h, /⭐ Or work on a skill/); assert.match(h, /onclick="goalOpen\('a-aerial'\)"/); assert.match(h, /Aerial/); assert.match(h, /all my goals ›/);
   assert.match(W.todaySkillHtml(null), /showPage\('skills'\);wkPick\(\)/, "an empty list offers to pick one");
   const home = src("js/views/home.js"); assert.match(home, /const tg=kind==="show"\?null:todayGoal\(S\.settings,today\); const skillPick=kind==="show"\?"":todaySkillHtml\(/, "not on a show day");
-  assert.match(H.danceButtons({ kind: "home" }), /💃 Practice a dance/); assert.equal(H.DAY_ASK.studio, "No home practice on class days.", "the printed Pass quotes these words");
+  assert.match(H.danceButtons({ kind: "home" }), /💃 Practice a dance/); assert.equal(H.DAY_ASK.studio, "Class comes first today. Got a chance at home? Dance one thing.", "1.77.0: no day says no home practice");
 });
 
 test("the audit's fixes stay fixed", () => {

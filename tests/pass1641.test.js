@@ -10,11 +10,11 @@ const kid = [...pass.parts.flatMap(p => [p.n, ...p.lines, p.check.q, ...p.check.
 
 test("the week: class days ask nothing at home, a home day asks one thing she picks, the whole session is offered", () => {
   const week = part("week").lines, day = (d) => week.find(l => l.startsWith(d + " · "));
-  for (const d of ["Mon", "Tue", "Wed", "Sat"]) assert.match(day(d), /No home practice/, d);
+  for (const d of ["Mon", "Tue", "Wed", "Sat"]) { assert.match(day(d), /Got a chance at home/, d); assert.doesNotMatch(day(d), /No home practice/, d + ": 1.77.0, no day says no practice"); }
   for (const d of ["Thu", "Fri", "Sun"]) assert.match(day(d), /Home day: pick one thing/, d);
   assert.ok(week.some(l => /📋 The whole session\. It's there when you want it\./.test(l)));
   assert.equal(part("week").check.a[part("week").check.ok], "Thu, Fri, Sun"); assert.match(part("week").check.hint, /Mon, Tue, Wed and Sat are class days/);
-  assert.match(src("js/views/home.js"), /studio: "No home practice on class days\."/, "the app's own words on a class day"); assert.match(src("js/views/home.js"), /home: "Pick one thing, about 10 minutes\. That's all\."/);
+  assert.match(src("js/views/home.js"), /studio: "Class comes first today\. Got a chance at home\? Dance one thing\."/, "the app's own words on a class day"); assert.match(src("js/views/home.js"), /home: "Pick one thing, about 10 minutes\. That's all\."/);
 });
 
 test("nothing in it asks for more than the app does", () => {
@@ -37,7 +37,7 @@ test("it names things where they live now: four tabs, the two big buttons, the w
 
 test("the tips: a class-day line and a one-dance line, every tip still names its part", () => {
   const tip = (re) => pass.tips.find(t => re.test(t.t));
-  assert.deepEqual(tip(/^Class day: class is your dancing today/).when, ["studio"]); assert.deepEqual(tip(/^Tap ▶ My solo on Today/).when, ["home"]);
+  assert.deepEqual(tip(/^Class day: class comes first\. Got a chance at home/).when, ["studio"]); assert.deepEqual(tip(/^Tap ▶ My solo on Today/).when, ["home"]);
   assert.match(tip(/Coach corner/).t, /Today, then 📋 The whole session/);
   assert.ok(pass.tips.every(t => pass.parts.some(p => p.id === t.part)));
 });
