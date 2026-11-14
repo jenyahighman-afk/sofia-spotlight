@@ -173,3 +173,16 @@ test("a goal's page folds, and her group dances are one tap away on Today", asyn
   assert.match(src("js/views/home.js"), /kind==="show"\?"":groupButtonsHtml\(groupDances\(dances\(\)\)/);
   const pc = dances.find(d => d.id === "pitch-contemp"); assert.equal(pc.song, "Listening Chair"); assert.equal(pc.choreo, "Brittany Mains"); assert.doesNotMatch(pc.notes, /TBD/);
 });
+
+// ---- 1.77.0 (Jenya, Nov 14: add Ms. Angie's two notes; no day says "no home practice") ----
+test("Ms. Angie's two notes ship as class notes; a class day welcomes one thing at home", async () => {
+  const C = await import("../js/corrections.js"), H = await import("../js/views/home.js");
+  const solo = json("dances").find(d => d.id === "solo"), notes = C.classNotesFromDance(solo);
+  assert.equal(notes.length, 2); assert.deepEqual(notes.map(n => n.tag), ["timing", "other"]);
+  for (const n of notes) { assert.equal(n.studio, true); assert.equal(n.source, "Ms. Angie"); assert.equal(n.date, "2026-11-08"); assert.equal(n.danceId, "solo"); assert.equal(n.status, "working"); assert.equal(n.pinned, undefined, "she can close it herself"); assert.match(n.id, /^c-solo-/); }
+  assert.match(notes[0].text, /^Timing: finish every shape on the beat/); assert.match(notes[1].text, /^Add texture/);
+  assert.deepEqual(L.classNotes(Object.fromEntries(notes.map(n => [n.id, n])), { open: true }).length, 2, "they show under From my teachers");
+  assert.deepEqual(C.classNotesFromDance({ id: "x" }), []); assert.match(src("js/corrections.js"), /for \(const c of classNotesFromDance\(d\)\) \{ if \(!S\.corrections\[c\.id\]\)/, "copied once: one she took off stays off");
+  assert.equal(H.DAY_ASK.studio, "Class comes first today. Got a chance at home? Dance one thing."); for (const v of Object.values(H.DAY_ASK)) assert.doesNotMatch(v, /no home practice/i);
+  const pass = json("pass"); assert.doesNotMatch(JSON.stringify(pass.tips), /No home practice/); assert.ok(pass.parts.find(p => p.id === "week").lines.filter(l => /No home practice/i.test(l)).every(l => /Show day/.test(l)), "only show day keeps it");
+});
