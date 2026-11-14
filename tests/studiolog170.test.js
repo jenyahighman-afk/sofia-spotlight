@@ -267,3 +267,12 @@ test("1.81.0: scrub, step and choose a cue's photo", async () => {
   const s = src("js/cuecheck.js"); assert.match(s, /data-ck-scrub min="0"/); assert.match(s, /oninput="ckGrabTo\(this\.value\)"/); assert.match(s, /ckGrabHome\(\)">↩ Cue time/); assert.match(s, /onclick="ckGrabSave\(\)">Use this photo/);
   assert.match(s, /if \(drawing\) \{ again = true; return; \}/, "one seek at a time"); assert.match(s, /ckGrabStep: grabStep, ckGrabTo: grabTo, ckGrabHome: grabHome/);
 });
+
+// 1.82.0: 📍 Where I stand on a group dance's page.
+test("1.82.0: the jazz group's spots show on its page", async () => {
+  const W = await import("../js/working.js"), jz = json("dances").find(d => d.id === "pitch-jazz");
+  assert.equal(jz.spots.length, 9); assert.equal(jz.spots[0].t, "0:00"); assert.ok(jz.spots.filter(s => s.star).length === 3);
+  const h = W.spotsHtml(jz); assert.match(h, /<summary>📍 Where I stand<\/summary>/); assert.match(h, /<li class="star"><b>1:10<\/b><span>⭐ Back row, CENTER/); assert.match(h, /Dance bigger/); assert.match(h, /From the run-through video/);
+  assert.equal(W.spotsHtml({ id: "x" }), ""); assert.match(W.spotsHtml({ spots: [{ t: "0:01", w: "<b>x</b>" }] }), /&lt;b&gt;x/);
+  assert.match(src("js/views/dances.js"), /\$\{spotsHtml\(d\)\}/);
+});

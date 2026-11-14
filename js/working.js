@@ -188,6 +188,14 @@ export function groupButtonsHtml(groups, ran = []){
   if (!groups.length) return "";
   return `<div class="today-group"><div class="today-pick-lab small">👯 My group dances</div><div class="tg-btns">${groups.map(g => `<button class="btn sm ${ran.includes(g.id) ? "ghost" : "violet"}" onclick="openPlayer('${g.id}',{once:true})">${ran.includes(g.id) ? "✅" : "▶"} ${esc(g.n)}</button>`).join("")}</div><div class="small muted tg-how">${GROUP_HOME}</div></div>`;
 }
+// 📍 Where I stand (1.82.0, Jenya Nov 14, after a last-minute change to the jazz group put Sofia in the back row): a group
+// dance's own list of her spots, [{ t, w, star? }] in data/dances.json `spots`, read off a run-through video. A fold on the
+// dance's page: each time, where she is, a ⭐ on the moments that are hers to make big, and one line for the back row. Pure.
+export const BACK_ROW = "At the back? Dance bigger. Sharp arms, face on the whole time: be the one they notice back there.";
+export function spotsHtml(d){
+  const list = Array.isArray(d && d.spots) ? d.spots.filter(s => s && s.w) : []; if (!list.length) return "";
+  return `<details class="more spots"><summary>📍 Where I stand</summary><ol class="spots-list">${list.map(s => `<li${s.star ? ' class="star"' : ""}><b>${esc(s.t || "")}</b><span>${s.star ? "⭐ " : ""}${esc(s.w)}</span></li>`).join("")}</ol><p class="small spots-tip">💪 ${BACK_ROW}</p>${d.spotsFrom ? `<p class="small muted">${esc(d.spotsFrom)}</p>` : ""}</details>`;
+}
 // One dance's row: its name, what she has done, and a bar for the fixes. A tap opens the dance. Pure.
 export function danceProgressHtml(rows, today = todayStr()){
   if (!rows.length) return "";
