@@ -633,7 +633,7 @@
  {
   "id": "pitch-jazz",
   "name": "PITCH · Jazz group · Groove Is in the Heart",
-  "song": "Groove Is in the Heart — Deee-Lite (2:31 cut)",
+  "song": "Groove Is in the Heart — Deee-Lite (about 1:53 cut)",
   "style": "Jazz",
   "choreo": "Isadora",
   "teacher": "Isadora",
@@ -642,8 +642,8 @@
   "shoes": "",
   "hair": "",
   "color": "sun",
-  "music": "2:31 cut at about 123 BPM, so one 8-count is about 3.9 seconds (roughly 38 eights total). Quiet intro 0:00–0:08 · builds 0:08–0:24 · full groove 0:24–1:12 · breakdown/dip 1:12–1:20 · full groove 1:20–1:48 · BIG DROP-OUT 1:52–1:56 (almost silent — a hit or freeze lives here) · final push 1:56–2:26 · tail to 2:31.",
-  "map": "0:08 first energy jump · 0:24 groove locks in · 1:12 breakdown · 1:52 the silence (hold it!) · 1:56 last section starts · 2:26 ending",
+  "music": "About 1:53 of music at about 121.5 BPM, so one 8-count is about 4 seconds (roughly 27 eights after the intro). Quiet intro 0:00–0:07 · the beat drops in at 0:07 · full groove 0:07–0:50 · the beat thins to single hits 0:51–0:55 · full groove 0:55–1:52 (it thins for a moment around 1:12) · the music stops at 1:53. Measured from the sound of the Nov 2026 run-through video; times can be a second off the music file.",
+  "map": "0:07 the beat drops in · 0:30 new group shape · 0:51 single hits · 0:55 groove is back · 1:10 lines · 1:40 cluster and floor · 1:52 ending pose",
   "strengths": [],
   "corrections": [
    "Jazz is about sharp accents: hit and stop on the beat, no melting between shapes",
@@ -652,27 +652,27 @@
   ],
   "notes": "",
   "links": [],
-  "bpm": 123,
+  "bpm": 121.5,
   "loops": [
    {
-    "n": "Intro + build",
+    "n": "Intro + beat in",
     "a": 0,
     "b": 24
    },
    {
-    "n": "Breakdown",
-    "a": 70,
-    "b": 82
+    "n": "Single hits",
+    "a": 47,
+    "b": 59
    },
    {
-    "n": "The silence",
-    "a": 106,
-    "b": 120
+    "n": "Lines",
+    "a": 68,
+    "b": 98
    },
    {
-    "n": "Final push",
-    "a": 116,
-    "b": 151
+    "n": "Cluster + ending",
+    "a": 98,
+    "b": 114
    }
   ],
   "cues": [
@@ -682,39 +682,49 @@
     "move": "Quiet intro"
    },
    {
-    "t": 8,
+    "t": 7.4,
     "lyric": "",
-    "move": "First energy jump"
+    "move": "The beat drops in — hit and stop"
    },
    {
-    "t": 24,
+    "t": 30,
     "lyric": "",
-    "move": "Groove locks in — hit and stop"
+    "move": "New group shape"
    },
    {
-    "t": 72,
+    "t": 45,
     "lyric": "",
-    "move": "Breakdown / dip"
+    "move": "Travel across"
    },
    {
-    "t": 80,
+    "t": 51,
     "lyric": "",
-    "move": "Full groove"
+    "move": "Single hits — the music thins"
+   },
+   {
+    "t": 55,
+    "lyric": "",
+    "move": "Groove is back"
+   },
+   {
+    "t": 67,
+    "lyric": "",
+    "move": "Travel back in"
+   },
+   {
+    "t": 70,
+    "lyric": "",
+    "move": "Lines — full groove"
+   },
+   {
+    "t": 100,
+    "lyric": "",
+    "move": "Cluster, then down to the floor"
    },
    {
     "t": 112,
     "lyric": "",
-    "move": "THE SILENCE — freeze"
-   },
-   {
-    "t": 116,
-    "lyric": "",
-    "move": "Final push"
-   },
-   {
-    "t": 146,
-    "lyric": "",
-    "move": "Ending"
+    "move": "Ending pose — hold after the music stops"
    }
   ],
   "spots": [
@@ -758,7 +768,7 @@
     "w": "Ending pose: back center"
    }
   ],
-  "spotsFrom": "From the run-through video, Nov 2026. Times are the video's and can be a little off the music."
+  "spotsFrom": "From the run-through video, Nov 2026. Times are the video's; the music map uses the same clock."
  },
  {
   "id": "pitch-contemp",

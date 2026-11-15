@@ -71,7 +71,7 @@ test("Set the beat: 16 taps from a 1 → the measured BPM and count 1 near the f
 test("only real beats: the BPMs come from the dance cards (solo 76, trio 86, PITCH jazz 123); a dance without one has no grid until it's set", () => {
   const byId = Object.fromEntries(dances().map(d => [d.id, d]));
   assert.deepEqual(C.gridFor(byId.solo, {}), { bpm: 76, offset: null, source: "dance" });
-  assert.equal(C.gridFor(byId.trio, {}).bpm, 86); assert.equal(C.gridFor(byId["pitch-jazz"], {}).bpm, 123);
+  assert.equal(C.gridFor(byId.trio, {}).bpm, 86); assert.equal(C.gridFor(byId["pitch-jazz"], {}).bpm, 121.5);
   for (const d of dances().filter(x => !x.bpm)) assert.equal(C.gridFor(d, {}), null, d.id + " has no BPM in data/dances.json");
   assert.deepEqual(C.gridFor(byId["pitch-contemp"], { beats: { "pitch-contemp": { bpm: 92.5, offset: 1.25 } } }), { bpm: 92.5, offset: 1.25, source: "set" });
   assert.equal(C.gridFor({ ...byId.solo, countOffset: 0.8 }, { beats: { solo: { bpm: 100, offset: 0 } } }).bpm, 76, "the dance card wins over a tapped beat");
