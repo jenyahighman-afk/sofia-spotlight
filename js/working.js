@@ -120,7 +120,9 @@ export function photoPrompts(settings, today = todayStr(), ctx = {}){
     const last = String(r.shots[r.shots.length - 1].date || ""); if (!/^\d{4}-\d{2}-\d{2}$/.test(last)) continue;
     const days = daysBetween(last, today); if (days >= PHOTO_EVERY_DAYS) again.push({ ...base, why: "again", last, days });
   }
-  return [...first, ...again.sort((a, b) => b.days - a.days)];
+  // 1.85.0: a progress picture that has come due goes first (the longest wait on top): with several starting pictures
+  // waiting it sat at the bottom of the list, out of sight.
+  return [...again.sort((a, b) => b.days - a.days), ...first];
 }
 // ⭐ Work on a skill, on Today (1.67.0, Jenya Nov 13: Today should say what to do next "to either practice one of the
 // competitive dances or to work on a specific dance skill"). One goal from her own list a day, taking turns in her order;
@@ -184,9 +186,9 @@ export const groupDances = (list) => (list || []).filter(d => d && !isClassDance
 export const GROUP_HOME = "At home: dance your own part with the music. Say the counts, know where you stand and who you follow, and where you look.";
 // The row under the two big buttons: one ▶ for each group dance (the player, music playing, a play-through counts), and the
 // line above. ran = ids danced today. "" when she has no group dance. Pure.
-export function groupButtonsHtml(groups, ran = []){
+export function groupButtonsHtml(groups, ran = [], { how = true } = {}){
   if (!groups.length) return "";
-  return `<div class="today-group"><div class="today-pick-lab small">👯 My group dances</div><div class="tg-btns">${groups.map(g => `<button class="btn sm ${ran.includes(g.id) ? "ghost" : "violet"}" onclick="openPlayer('${g.id}',{once:true})">${ran.includes(g.id) ? "✅" : "▶"} ${esc(g.n)}</button>`).join("")}</div><div class="small muted tg-how">${GROUP_HOME}</div></div>`;
+  return `<div class="today-group"><div class="today-pick-lab small">👯 My group dances</div><div class="tg-btns">${groups.map(g => `<button class="btn sm ${ran.includes(g.id) ? "ghost" : "violet"}" onclick="openPlayer('${g.id}',{once:true})">${ran.includes(g.id) ? "✅" : "▶"} ${esc(g.n)}</button>`).join("")}</div>${how ? `<div class="small muted tg-how">${GROUP_HOME}</div>` : ""}</div>`;
 }
 // 📍 Where I stand (1.82.0, Jenya Nov 14, after a last-minute change to the jazz group put Sofia in the back row): a group
 // dance's own list of her spots, [{ t, w, star? }] in data/dances.json `spots`, read off a run-through video. A fold on the
@@ -229,11 +231,11 @@ export function workHtml(r, { dates = [], today = todayStr(), steps = [], notes 
 }
 // Today's second choice: the goal's own button (it opens the goal's page: what's next, her photos, the coach) and the way
 // to the whole list; with an empty list, the way to pick one. Pure.
-export function todaySkillHtml(r, { dates = [], today = todayStr(), how = "", videos = 0 } = {}){
+export function todaySkillHtml(r, { dates = [], today = todayStr(), how = "", videos = 0, next = false } = {}){
   if (!r) return `<div class="today-pick-lab small">⭐ Or work on a skill</div><button class="today-skill" onclick="showPage('skills');wkPick()"><span class="ts-ic">⭐</span><span class="grow"><b>Pick a skill to work on</b><small>a trick, a split, your aerial</small></span><span class="g-go">›</span></button>`;
   const done = dates.includes(today), sub = r.sub || how || (r.fix ? "🎬 Coach: " + r.fix.text : r.how);
   const track = `🪜 ${dates.length ? plural(dates.length, "time", "times") + " so far" : "your first time"}${r.shots.length ? ` · 📸 ${plural(r.shots.length, "picture", "pictures")}` : ""}${videos ? ` · 🎬 ${plural(videos, "video", "videos")}` : ""}`;
-  return `<div class="today-pick-lab small">⭐ Or work on a skill <button class="lnk" onclick="showPage('skills')">all my goals ›</button></div><button class="today-skill${done ? " done" : ""}" onclick="goalOpen('${r.id}')"><span class="ts-ic">${done ? "✅" : r.ic}</span><span class="grow"><b>${esc(r.n)}</b><small>${esc(sub)}</small><small class="ts-track">${track} · tap to see how ›</small></span><span class="g-go">›</span></button>`;
+  return `<div class="today-pick-lab small">⭐ Or work on a skill <button class="lnk" onclick="showPage('skills')">all my goals ›</button></div><button class="today-skill${done ? " done" : ""}" onclick="goalOpen('${r.id}')"><span class="ts-ic">${done ? "✅" : r.ic}</span><span class="grow"><b>${esc(r.n)}${next && !done ? ` <small class="nx-tag">👉 next up</small>` : ""}</b><small>${esc(sub)}</small><small class="ts-track">${track} · tap to see how ›</small></span><span class="g-go">›</span></button>`;
 }
 // "2 weeks ago", "20 days ago". Pure.
 export const agoWords = (days) => days <= 0 ? "today" : days === 1 ? "yesterday" : days >= 28 ? `${Math.round(days / 7)} weeks ago` : days === 14 ? "2 weeks ago" : `${days} days ago`;
@@ -241,13 +243,20 @@ export const agoWords = (days) => days <= 0 ? "today" : days === 1 ? "yesterday"
 // it is; a measured goal opens its check-in sheet, where the number goes too), Later puts it off. Pure.
 export function photoPromptHtml(p){
   const words = p.why === "first" ? `<b>Take your starting picture</b><small>${esc(p.n)} · to see how far you've come</small>` : `<b>Time for a progress picture</b><small>${esc(p.n)} · your last one was ${agoWords(p.days)}</small>`;
-  const go = p.kind === "measure" ? `<button class="btn sm coral" onclick="gpCheckIn('${p.id}')">📷 Take it</button>` : `<label class="btn sm coral">📷 Take it<input type="file" accept="image/*" hidden onchange="lineupAdd('${p.id}', this)"></label>`;
+  const go = `<label class="btn sm coral">📷 Take it<input type="file" accept="image/*" hidden onchange="${p.kind === "measure" ? "goalQuickPhoto" : "lineupAdd"}('${p.id.replace(/^goal:/, "")}', this)"></label>`; // 1.85.0: one tap to the camera for every kind of goal
   return `<div class="pp-row"><button class="pp-txt" onclick="goalOpen('${p.id}')"><span class="pp-ic">${p.ic}</span><span class="grow">${words}</span></button><div class="pp-btns">${go}<button class="btn sm ghost" onclick="photoLater('${p.id}')">Later</button></div></div>`;
 }
 // The card: Today shows one (cap 1) and says how many more wait on Skills; Skills shows a few. "" when nothing is due. Pure.
 export function photoPromptsHtml(list, { cap = 3, more = false } = {}){
   if (!list.length) return ""; const rest = list.length - Math.min(cap, list.length);
   return `<div class="pp-head">📸 Picture time</div>${list.slice(0, cap).map(photoPromptHtml).join("")}${rest ? (more ? `<button class="lnk small pp-more" onclick="showPage('skills')">＋ ${rest} more on Skills ›</button>` : `<p class="small muted pp-more">＋ ${rest} more: look for 📸 in your goals.</p>`) : ""}`;
+}
+// Today's own picture prompt: the first one due and how many more wait on Skills. "" when nothing is due.
+export const todayPicHtml = () => photoPromptsHtml(photoPrompts(S.settings), { cap: 1, more: true });
+// From a 📸 Picture day reminder: Today, with the picture prompt in view (Skills when Today has none to show).
+export function openPictures(){
+  const go = typeof window !== "undefined" && window.showPage; if (!go) return; go("home"); const el = $("#goalReminder");
+  if (el && el.innerHTML && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 250);
 }
 export function goalRowHtml(r, due = ""){
   const ph = r.thumb ? `<span class="g-ph"><img src="${esc(r.thumb)}" alt="" loading="lazy"></span>` : `<span class="g-ph none">${r.ic}</span>`;
@@ -298,9 +307,10 @@ export function renderWorking(){
   const n = $("#workingCount"); if (n) n.textContent = working.length ? String(working.length) : "";
   // The same prompts on Skills (a few) and on Today (the first one). Both go away by themselves once the picture is saved.
   const ws = $("#workingSub"); if (ws) ws.textContent = goalsSub(working.map(id => goalRow(id, { working })).filter(Boolean));
-  const sk = $("#photoPrompt"); if (sk) { sk.innerHTML = photoPromptsHtml(prompts, { cap: 3 }); setFold("photoFoldSk", "photoSubSk", prompts.length > 0, photoSub(prompts), "photoCountSk", prompts.length); }
+  const sk = $("#photoPrompt"); if (sk) { sk.innerHTML = photoPromptsHtml(prompts, { cap: WORK_MAX }); setFold("photoFoldSk", "photoSubSk", prompts.length > 0, photoSub(prompts), "photoCountSk", prompts.length); }
   renderStones();
-  const td = $("#goalReminder"); if (td) { td.innerHTML = photoPromptsHtml(prompts, { cap: 1, more: true }); setFold("photoFold", "photoSub", prompts.length > 0, photoSub(prompts), "photoCount", prompts.length); }
+  const td = $("#goalReminder"); if (td) td.innerHTML = photoPromptsHtml(prompts, { cap: 1, more: true }); // on Today the prompt sits in the one card, under the skill (1.85.0)
+  const tab = typeof document.querySelector === "function" ? document.querySelector('nav.tabs button[data-p="skills"]') : null; if (tab && tab.classList) tab.classList.toggle("has-news", prompts.length > 0); // a dot on Skills while a picture is due
 }
 // ✓ I worked on it today (and back): the goal's id in today's practice record. Returns true when it is now on.
 export async function toggleWorked(id, today = todayStr()){

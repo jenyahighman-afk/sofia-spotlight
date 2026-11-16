@@ -63,7 +63,7 @@ function renderMe(){
   $("#skillList").innerHTML = splitRowsHtml(S.goals) + (!st ? "" : groups ? leveled() : `<div class="small muted" style="margin:6px 0">Tap a skill: learning → clean. A grown-up marks ★ teacher-checked.</div>` + st.skills.map(row).join(""));
   // patterns
   const ps = patterns(S.corrections);
-  $("#mePatterns").innerHTML = ps.length ? ps.map(p => { const open = Object.values(S.corrections).filter(c => isOpen(c) && c.tag === p.tag).sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0]; return `<div class="row pattern"><span class="grow">${TAG_EMOJI[p.tag]} You've had this note ${p.n} times: <b>${TAG_LABEL[p.tag]}</b></span>${open ? `<button class="btn sm sun" onclick="meGotIt('${open.id}')">Got it!</button>` : `<span class="chip mint">all closed</span>`}</div>`; }).join("") : `<span class="small muted">No repeats. Nice.</span>`;
+  $("#mePatterns").innerHTML = ps.length ? ps.map(p => { const open = Object.values(S.corrections).filter(c => isOpen(c) && c.tag === p.tag && !c.pinned).sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0]; return `<div class="row pattern"><span class="grow">${TAG_EMOJI[p.tag]} You've had this note ${p.n} times: <b>${TAG_LABEL[p.tag]}</b></span>${open ? `<button class="btn sm sun" onclick="showMe('${open.id}')">Show me</button>` : `<span class="chip mint">all closed</span>`}</div>`; }).join("") : `<span class="small muted">No repeats. Nice.</span>`;
 }
 // What's showing (1.63.0): her dancer on Me and her pet (the card on Me and the helper in the corner) can each be put away and
 // brought back, by her. settings.hide = { avatar, pet }; nothing is deleted, and both show until she says otherwise. Pure.

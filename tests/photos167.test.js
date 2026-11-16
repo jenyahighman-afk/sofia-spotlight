@@ -25,8 +25,8 @@ test("picture time: a starting picture until a goal has one, then a new one ever
   assert.equal(W.PHOTO_EVERY_DAYS, 14); assert.equal(W.PHOTO_LATER_DAYS, 3);
   const s = { working: ["s-cartwheel", "split-r", "split-l", "a-aerial", "hollow"] };
   // cartwheel: last photo Oct 20 (24 days) · right split: Oct 30 (14 days) · left split and the aerial: none · hollow: a clip only
-  assert.deepEqual(ids(W.photoPrompts(s, D, ctx())), ["split-l:first", "a-aerial:first", "hollow:first", "s-cartwheel:again", "split-r:again"], "starting pictures first, in her order; then the longest wait first");
-  assert.deepEqual(ids(W.photoPrompts(s, "2026-11-12", ctx())), ["split-l:first", "a-aerial:first", "hollow:first", "s-cartwheel:again"], "13 days is not yet two weeks");
+  assert.deepEqual(ids(W.photoPrompts(s, D, ctx())), ["s-cartwheel:again", "split-r:again", "split-l:first", "a-aerial:first", "hollow:first"], "1.85.0: a progress picture come due goes first, the longest wait on top; then the starting pictures in her order");
+  assert.deepEqual(ids(W.photoPrompts(s, "2026-11-12", ctx())), ["s-cartwheel:again", "split-l:first", "a-aerial:first", "hollow:first"], "13 days is not yet two weeks");
   const p = W.photoPrompts(s, D, ctx()).find(x => x.id === "s-cartwheel"); assert.equal(p.days, 24); assert.equal(p.last, "2026-10-20"); assert.equal(p.n, "Cartwheel");
   assert.deepEqual(ids(W.photoPrompts({ working: ["split-r"] }, D, ctx())), ["split-r:again"], "a goal that is off her list never asks (the old reminder asked for Bridge for ever)");
   assert.deepEqual(W.photoPrompts({ working: [] }, D, ctx()), []);
@@ -35,14 +35,14 @@ test("picture time: a starting picture until a goal has one, then a new one ever
 
 test("Later puts one goal off for three days, and only that one", () => {
   const s = { working: ["split-l", "s-cartwheel"], photoSnooze: { "split-l": "2026-11-16" } };
-  assert.deepEqual(ids(W.photoPrompts(s, D, ctx())), ["s-cartwheel:again"]); assert.deepEqual(ids(W.photoPrompts(s, "2026-11-16", ctx())), ["split-l:first", "s-cartwheel:again"], "it asks again on the day");
+  assert.deepEqual(ids(W.photoPrompts(s, D, ctx())), ["s-cartwheel:again"]); assert.deepEqual(ids(W.photoPrompts(s, "2026-11-16", ctx())), ["s-cartwheel:again", "split-l:first"], "it asks again on the day");
   assert.deepEqual(ids(W.photoPrompts({ working: ["split-l"], photoSnooze: "junk" }, D, ctx())), ["split-l:first"], "a broken stored value is no snooze");
   assert.match(src("js/working.js"), /setSettings\(\{ photoSnooze: \{ \.\.\.cur, \[id\]: shiftDate\(todayStr\(\), PHOTO_LATER_DAYS\) \} \}\)/);
 });
 
 test("the prompt's words and its one tap to the camera", () => {
-  const list = W.photoPrompts({ working: ["split-l", "s-cartwheel"] }, D, ctx()); const [first, again] = list.map(W.photoPromptHtml);
-  assert.match(first, /Take your starting picture/); assert.match(first, /Left split/); assert.match(first, /onclick="gpCheckIn\('split-l'\)">📷 Take it/, "a measured goal opens its check-in sheet");
+  const list = W.photoPrompts({ working: ["split-l", "s-cartwheel"] }, D, ctx()); const [again, first] = list.map(W.photoPromptHtml);
+  assert.match(first, /Take your starting picture/); assert.match(first, /Left split/); assert.match(first, /<input type="file" accept="image\/\*" hidden onchange="goalQuickPhoto\('split-l', this\)">/, "1.85.0: a measured goal goes straight to the camera too");
   assert.match(again, /Time for a progress picture/); assert.match(again, /your last one was 24 days ago/); assert.match(again, /<input type="file" accept="image\/\*" hidden onchange="lineupAdd\('s-cartwheel', this\)">/, "a skill goes straight to the camera or her photos");
   for (const h of [first, again]) { assert.match(h, /onclick="photoLater\('/); assert.match(h, /onclick="goalOpen\('/); }
   assert.equal(W.agoWords(14), "2 weeks ago"); assert.equal(W.agoWords(20), "20 days ago"); assert.equal(W.agoWords(35), "5 weeks ago");
@@ -60,7 +60,7 @@ test("Today's second choice: one of her own goals a day, taking turns", () => {
   assert.equal(W.todayGoal({ working: ["s-cartwheel"] }, D, ctx({ skills: { "s-cartwheel": { id: "s-cartwheel", state: "checked" } } })), null, "a finished one sits out");
   const h = W.todaySkillHtml(W.todayGoal({ working: ["a-aerial"] }, D, ctx({ settings: { working: ["a-aerial"] } }))); assert.match(h, /⭐ Or work on a skill/); assert.match(h, /onclick="goalOpen\('a-aerial'\)"/); assert.match(h, /Aerial/); assert.match(h, /all my goals ›/);
   assert.match(W.todaySkillHtml(null), /showPage\('skills'\);wkPick\(\)/, "an empty list offers to pick one");
-  const home = src("js/views/home.js"); assert.match(home, /const tg=kind==="show"\?null:todayGoal\(S\.settings,today\); const skillPick=kind==="show"\?"":todaySkillHtml\(/, "not on a show day");
+  const home = src("js/views/home.js"); assert.match(home, /const tg=kind==="show"\?null:todayGoal\(S\.settings,today\);[\s\S]{0,400}?const skillPick=kind==="show"\?"":todaySkillHtml\(/, "not on a show day");
   assert.match(H.danceButtons({ kind: "home" }), /💃 Practice a dance/); assert.equal(H.DAY_ASK.studio, "Class comes first today. Got a chance at home? Dance one thing.", "1.77.0: no day says no home practice");
 });
 
@@ -75,7 +75,7 @@ test("the audit's fixes stay fixed", () => {
   assert.match(css, /\.toast\{[^}]*z-index:80/, "a toast shows above sheets and stages"); assert.match(css, /--link:#7E4FD1/); assert.match(css, /\.btn\.sm\{[^}]*min-height:40px/); assert.match(css, /details\.acc>summary\{[^}]*min-height:46px/);
   assert.doesNotMatch(goals, /capture="environment"/, "a check-in can come from her photos, not only the camera"); assert.match(goals, /const pics = cs\.filter/, "the slider compares the first and newest picture");
   assert.doesNotMatch(html + src("js/views/dances.js") + src("js/stage.js"), /<button(?:(?!aria-label)[^>])*>✕<\/button>/, "every ✕ has a name");
-  for (const id of ["photoPrompt", "goalReminder"]) assert.ok(html.includes(`id="${id}"`), id);
+  assert.ok(html.includes('id="photoPrompt"')); assert.match(src("js/views/home.js"), /\$\{skillPick\}\s*<div class="today-pic" id="goalReminder">/, "1.85.0: Today's picture prompt sits in the one card, right under the skill");
   assert.ok(html.indexOf('id="photoPrompt"') < html.indexOf('id="workingFold"'), "Picture time sits above My goals");
 });
 

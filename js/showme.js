@@ -33,7 +33,9 @@ export function showMe(corrId, tag){
   const [wrong, right] = pairFor(tag);
   $("#showmeTag").textContent = TAG_LABEL[tag] || "Fix";
   $("#showmeText").textContent = c ? c.text : "";
-  $("#showmeStage").innerHTML = `<div>${stage(wrong, false)}</div><div>${stage(right, true)}</div>`;
+  // 1.85.0: the knees picture is "bent ❌ / straight ✅"; a note that asks for a bend (a plié, knees over toes) shows its words only.
+  const clash = !!c && tag === "knees" && /pli[ée]|over (the |your )?toes|bend/i.test(String(c.text || ""));
+  $("#showmeStage").innerHTML = clash ? "" : `<div>${stage(wrong, false)}</div><div>${stage(right, true)}</div>`;
   $("#showmeGot").hidden = !(c && c.status !== "done");
   $("#showme").hidden = false; document.body.classList.add("modal");
 }

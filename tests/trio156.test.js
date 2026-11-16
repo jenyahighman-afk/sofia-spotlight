@@ -59,7 +59,7 @@ test("Memorize takes turns: the solo one day, the trio the next, until every chu
 
 test("the best time: a snack, then about 45 minutes later, dinner after; on Today on a home day until the plan is done, and in the Pass", () => {
   assert.equal(BEST_TIME, "🍌 Snack first, then dance. Dinner after."); // 1.79.0
-  assert.match(src("js/views/home.js"), /\$\{pd\|\|td\?"":`<div class="today-sub today-when">\$\{BEST_TIME\}<\/div>`\}/);
+  assert.match(src("js/views/home.js"), /\$\{didOne\?"":`<div class="today-sub today-when">\$\{BEST_TIME\}<\/div>`\}/);
   const pass = json("pass"); assert.ok(JSON.stringify(pass).includes("Best time on a home day: a small snack after school, dance about 45 minutes later, dinner after."));
   assert.ok(pass.tips.some(t => t.when.includes("home") && /45 min later/.test(t.t)), "a home-day tip");
   assert.match(src("tools/print/Sofia-Backstage-Pass.html"), /<b>Best time on a home day:<\/b>/, "the paper Pass says it too (next print)");

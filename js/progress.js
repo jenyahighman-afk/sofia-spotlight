@@ -12,7 +12,7 @@ import { tipFor } from "./wisdom.js";
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/, WEEKS = 4;
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-const short = (d) => { const t = new Date(d + "T00:00:00"); return isNaN(t) ? "" : t.toLocaleDateString("en-US", { month: "short", day: "numeric" }); };
+const short = (d, now = todayStr()) => { const t = new Date(d + "T00:00:00"); return isNaN(t) ? "" : t.toLocaleDateString("en-US", String(d).slice(0, 4) === String(now).slice(0, 4) ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" }); };
 // Did she dance or work on something that day, at home or at the studio? Pure.
 export function activeDay(r){
   if (!r) return false; const s = r.studio || {}, n = (a) => Array.isArray(a) ? a.length : 0;

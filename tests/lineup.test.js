@@ -142,7 +142,7 @@ test("the lineup under a big card: add from learning on, every photo framed and 
     S.photos = { a: ph("s-calypso", "2026-09-01", { stage: "learning" }), b: ph("s-calypso", "2026-10-20", { frame: "film", stage: "clean" }) };
     initCards(); await window.openCards("s-calypso"); let h = el("#tcLineup").innerHTML;
     assert.ok(h.includes("lineupAdd('s-calypso', this)") && h.includes("Add a photo"), "the add button");
-    assert.equal((h.match(/class="lf lf-/g) || []).length, 2, "both photos framed"); assert.ok(h.indexOf("lf-polaroid") < h.indexOf("lf-film"), "oldest first, each in its own frame");
+    assert.ok(h.includes("lf-vs"), "1.85.0: two photos open side by side, first vs now"); window.lineupVs(); h = el("#tcLineup").innerHTML; assert.equal((h.match(/class="lf lf-/g) || []).length, 2, "both photos framed"); assert.match(h, /lf-item\s+start/, "the first one is marked Start"); assert.ok(h.indexOf("lf-polaroid") < h.indexOf("lf-film"), "oldest first, each in its own frame");
     assert.ok(h.includes("Calypso") && h.includes(fmt("2026-09-01")) && h.includes("Learning") && h.includes(fmt("2026-10-20")) && h.includes("Clean"), "stamps: name, day, what it was then");
     assert.ok(h.includes("lineupVs()") && h.includes("lineupSave('all')"), "first vs now and save the lineup");
     assert.ok(el("#cardsArea").innerHTML.includes("https://x/s-calypso-2026-10-20"), "the newest photo is the card's art");

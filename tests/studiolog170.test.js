@@ -34,7 +34,7 @@ test("the last two weeks can be changed at any time; the nudge asks about the la
   assert.deepEqual(L.nudgeDays({ "2026-11-11": { studio: { dances: ["solo"] } } }, D, cls), [], "logged: not asked");
   assert.deepEqual(L.nudgeDays({ "2026-11-11": { studio: { skip: true } } }, D, cls), [], "🚫 nothing to log: not asked again");
   assert.equal(L.nudgeHtml([], D), ""); const n = L.nudgeHtml(["2026-11-12", "2026-11-11"], D);
-  assert.match(n, /🏫 Yesterday/); assert.match(n, /openStudioLog\('2026-11-12'\)">✏️ Log/); assert.match(n, /slSkip\('2026-11-12'\)" aria-label="Nothing to log">🚫/); assert.match(n, /＋1/);
+  assert.match(n, /🏫 Yesterday/); assert.match(n, /openStudioLog\('2026-11-12'\)">✏️ Log/); assert.match(n, /slSkip\('2026-11-12'\)" aria-label="Nothing to log">No class/); assert.match(n, /and 1 more day/);
   assert.equal(L.dayWords(D, D), "Today");
 });
 
@@ -61,7 +61,7 @@ test("studio work counts: stepping stones, a skill's days, a dance's row", () =>
 
 test("the ways in, the wiring, and 🧠 Memorize for each dance", () => {
   const home = src("js/views/home.js"), html = src("index.html");
-  assert.match(home, /onclick="openStudioLog\(\)">🏫 ✏️ Log studio work<\/button>/); assert.ok(html.includes('id="studioNudge"')); assert.ok(html.indexOf('id="studioNudge"') < html.indexOf('id="goalReminder"'));
+  assert.match(home, /onclick="openStudioLog\(\)">🏫 ✏️ Log studio work<\/button>/); assert.ok(html.includes('id="studioNudge"')); assert.ok(html.indexOf('id="todayCard"') < html.indexOf('id="studioNudge"'));
   assert.match(src("sw.js"), /"\.\/js\/studiolog\.js"/); assert.match(src("js/app.js"), /guard\("home", renderStudioNudge, "studiolog"\)/);
   assert.match(home, /memoDances\(dances\(\)\)\.filter\(d=>d\.id==="solo"\|\|d\.id==="trio"\)\.map\(memoBtn\)/, "one Memorize for the solo and one for the trio, not the day's turn only");
   assert.match(src("js/version.js"), /APP_VERSION = "1\.(7\d|[89]\d)/); assert.match(src("README.md"), /\*\*1\.70\.0: 🏫 Studio log/);
@@ -85,7 +85,7 @@ test("the sheet takes a teacher's note in a few taps and offers any other skill"
   assert.match(h, /📝 <span class="sl-labw">Teacher said<\/span>/); assert.match(h, /🦶 Point your foot<small>Trio<\/small>/); assert.match(h, /slSaidDel\('c1'\)/);
   assert.equal((h.match(/onclick="slAbout\('/g) || []).length, 2, "about: what she logged for that day"); assert.match(h, /sl-chip sm on" onclick="slAbout\('skill:a-aerial'\)"/); assert.match(h, /onclick="slAbout\('trio'\)" aria-pressed="false">Trio/);
   assert.equal((h.match(/class="sl-tag/g) || []).length - 1, 9, "nine emoji, one tap"); assert.match(h, /sl-tag on" onclick="slTag\('eyes'\)" aria-label="Eyes"/); assert.match(h, /onclick="slSaidAdd\(\)" aria-label="Add">＋/);
-  assert.match(h, /<details class="sl-more"><summary>＋ ⭐<\/summary><details class="sl-grp"><summary>🤸 Acro · \d+<\/summary>.*slSkill\('a-cartwheel'\)/s, "＋ any other skill");
+  assert.match(h, /<details class="sl-more"><summary>＋ ⭐ another skill<\/summary><details class="sl-grp"><summary>🤸 Acro · \d+<\/summary>.*slSkill\('a-cartwheel'\)/s, "＋ any other skill");
   const empty = L.sheetHtml({ date: D, today: D, practice: {}, list, goals }); assert.equal((empty.match(/onclick="slAbout\('/g) || []).length, 2, "nothing logged yet: every dance"); assert.match(empty, /sl-chip sm on" onclick="slAbout\('solo'\)"/);
 });
 
@@ -100,7 +100,7 @@ test("📝 From my teachers on Today: 💪 worked on it today, ✅ got it, and a
   const st = W.stones({ practice, photos: {}, corrections: {} }, D); assert.equal(st.week.notes, 2, "a note worked on is one stone a day"); assert.match(W.stoneWords(st.week), /💪 2 teacher notes worked on/);
   const cart = W.goalRow("s-cartwheel", { goals: {}, photos: {}, skills: {}, reviews: {}, settings: { working: ["s-cartwheel"] } });
   assert.match(W.workHtml(cart, { dates: [], today: D, notes: [{ text: "Head up" }] }), /📝 My teacher said<\/b><p>Head up<\/p>/);
-  const html = src("index.html"); assert.ok(html.indexOf('id="studioNudge"') < html.indexOf('id="teacherNotes"') && html.indexOf('id="teacherNotes"') < html.indexOf('id="goalReminder"'));
+  const html = src("index.html"); assert.ok(html.indexOf('id="studioNudge"') < html.indexOf('id="teacherNotes"'));
   assert.match(src("js/studiolog.js"), /storeSet\("practice", today, \{ \.\.\.rec, notes: on \? \[\.\.\.have, id\] : have\.filter\(x => x !== id\) \}\)/);
 });
 
@@ -143,10 +143,10 @@ test("a note starts from the class: one tap gives the class and its teacher; the
 // ---- 1.75.0 (Jenya, Nov 13: every card starts folded, with its name and maybe one line under it) ----
 test("Today's and Skills' cards start folded, each with a count and one line", () => {
   const html = src("index.html");
-  for (const [fold, inner] of [["teacherFold", "teacherNotes"], ["photoFold", "goalReminder"], ["danceFold", "danceProgress"], ["stonesFold", "stonesCard"], ["photoFoldSk", "photoPrompt"]]) {
+  for (const [fold, inner] of [["teacherFold", "teacherNotes"], ["danceFold", "danceProgress"], ["stonesFold", "stonesCard"], ["photoFoldSk", "photoPrompt"]]) {
     const m = new RegExp(`<details class="card acc [a-z]+ tfold" id="${fold}"( hidden)?><summary>.*?</summary><div class="[a-z-]+" id="${inner}"></div></details>`).exec(html); assert.ok(m, fold + " wraps " + inner); assert.doesNotMatch(m[0], / open/, fold + " is closed to start");
   }
-  assert.doesNotMatch(html, /id="(workingFold|albumFold)" open/, "My goals and My album start closed too"); for (const id of ["teacherSub", "photoSub", "danceSub", "stonesSub", "workingSub", "albumSub", "photoSubSk"]) assert.ok(html.includes(`id="${id}"`), id);
+  assert.doesNotMatch(html, /id="(workingFold|albumFold)" open/, "My goals and My album start closed too"); for (const id of ["teacherSub", "danceSub", "stonesSub", "workingSub", "albumSub", "photoSubSk"]) assert.ok(html.includes(`id="${id}"`), id);
   assert.ok(html.indexOf('id="todayCard"') < html.indexOf('id="teacherFold"') && !/<details[^>]*id="todayCard"/.test(html), "the one card on top stays open");
   assert.equal(W.photoSub([{ why: "first", n: "Aerial" }, { why: "again", n: "Right split" }]), "Starting picture: Aerial ＋1"); assert.equal(W.photoSub([{ why: "again", n: "Right split" }]), "New picture: Right split"); assert.equal(W.photoSub([]), "");
   assert.equal(W.stonesSub({ week: { n: 8 }, all: { n: 13 } }), "This week: 8 stones"); assert.equal(W.stonesSub({ week: { n: 1 }, all: { n: 1 } }), "This week: 1 stone"); assert.equal(W.stonesSub({ week: { n: 0 }, all: { n: 5 } }), "Your next one is waiting"); assert.equal(W.stonesSub({ week: { n: 0 }, all: { n: 0 } }), "Your first one is one tap away");
@@ -154,7 +154,7 @@ test("Today's and Skills' cards start folded, each with a count and one line", (
   assert.equal(W.goalsSub([{ n: "Cartwheel" }, { n: "Aerial" }, { n: "Right split" }]), "Cartwheel · Aerial · Right split"); assert.ok(W.goalsSub(Array.from({ length: 8 }, () => ({ n: "Handstand hold" }))).length <= 46);
   assert.equal(W.albumSub([{ count: 2 }, { count: 0 }, { count: 1 }]), "2 of 3 with a picture"); assert.equal(W.albumSub([]), "");
   assert.equal(L.notesSub([{ text: "Push through the shoulders in the handstand, every single time" }]), "Push through the shoulders in the handstand…"); assert.equal(L.notesSub([{ text: "x" }], true), "🏫 Class today: show them!"); assert.equal(L.notesSub([]), "");
-  assert.match(src("js/goalpage.js"), /TODAY_FOLDS = \["teacherFold", "photoFold", "danceFold", "stonesFold"\]/); assert.match(src("js/goalpage.js"), /initFolds\("spotlight:todayFolds", TODAY_FOLDS\)/);
+  assert.match(src("js/goalpage.js"), /TODAY_FOLDS = \["teacherFold", "danceFold", "stonesFold"\]/); assert.match(src("js/goalpage.js"), /initFolds\("spotlight:todayFolds", TODAY_FOLDS\)/);
 });
 
 // ---- 1.76.0 (Jenya, Nov 14: fold the goal page's cards too; the large group dances on Today, and what to do at home) ----

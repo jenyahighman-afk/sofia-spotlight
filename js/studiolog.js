@@ -92,33 +92,33 @@ export function sheetHtml({ date, today, practice = {}, list = [], goals = [], i
   const dn = list.length ? list.map(d => chip("slDance", d.id, esc(d.n), r.dances.includes(d.id))).join("") : `<span class="small muted">—</span>`;
   const sk = goals.length ? goals.map(g => chip("slSkill", g.id, `${g.ic} ${esc(g.n)}`, r.skills.includes(g.id))).join("") : `<button class="lnk" onclick="closeStage();showPage('skills');wkPick()">＋ ⭐</button>`;
   // ＋ any other skill (1.71.0): the picker's own groups, folded; a tap logs it for this day like one of her goals.
-  const moreHtml = more.length ? `<details class="sl-more"><summary>＋ ⭐</summary>${more.map(g => `<details class="sl-grp"><summary>${esc(g.label)} · ${g.items.length}</summary><div class="sl-chips">${g.items.map(i => chip("slSkill", i.id, esc(i.n), r.skills.includes(i.id))).join("")}</div></details>`).join("")}</details>` : "";
+  const moreHtml = more.length ? `<details class="sl-more"><summary>＋ ⭐ another skill</summary>${more.map(g => `<details class="sl-grp"><summary>${esc(g.label)} · ${g.items.length}</summary><div class="sl-chips">${g.items.map(i => chip("slSkill", i.id, esc(i.n), r.skills.includes(i.id))).join("")}</div></details>`).join("")}</details>` : "";
   // 📝 Teacher said: what it is about (what she logged for this day; every dance when nothing is logged yet), the body part
   // or idea as one emoji, the words, ＋.
   const opts = [...list.filter(d => r.dances.includes(d.id)).map(d => ({ id: d.id, n: d.n })), ...goals.filter(g => r.skills.includes(g.id)).map(g => ({ id: "skill:" + g.id, n: `${g.ic} ${g.n}` }))]; const abouts = opts.length ? opts : list.map(d => ({ id: d.id, n: d.n }));
   // With classes to pick from, the class is what a note needs; the dance or skill is an optional second tap.
   const curCls = classes.some(c => c.name === cls) ? cls : "", klass = classes.find(c => c.name === curCls) || null;
   const cur = abouts.some(a => a.id === about) ? about : classes.length ? "" : (abouts[0] || {}).id || "";
-  const clsHtml = classes.length ? `<div class="sl-chips sl-cls">${classes.map((c, i) => { const was = r.classes.includes(c.name), on = c.name === curCls; return `<button class="sl-chip${on ? " on" : ""}" onclick="slCls(${i})" aria-pressed="${on}">${was ? "✅ " : ""}🏫 ${esc(c.label || c.name)}${c.t ? `<small>${esc(c.t)}</small>` : ""}</button>`; }).join("")}</div>${klass && klass.teacher ? `<div class="sl-teacher">👩‍🏫 ${esc(klass.teacher)}</div>` : ""}<div class="sl-mlab">💃 ⭐ ?</div>` : "";
+  const clsHtml = classes.length ? `<div class="sl-chips sl-cls">${classes.map((c, i) => { const was = r.classes.includes(c.name), on = c.name === curCls; return `<button class="sl-chip${on ? " on" : ""}" onclick="slCls(${i})" aria-pressed="${on}">${was ? "✅ " : ""}🏫 ${esc(c.label || c.name)}${c.t ? `<small>${esc(c.t)}</small>` : ""}</button>`; }).join("")}</div>${klass && klass.teacher ? `<div class="sl-teacher">👩‍🏫 ${esc(klass.teacher)}</div>` : ""}<div class="sl-mlab">💃 ⭐ About which dance or skill?</div>` : "";
   const aboutHtml = abouts.map(a => `<button class="sl-chip sm${a.id === cur ? " on" : ""}" onclick="slAbout('${a.id}')" aria-pressed="${a.id === cur}">${esc(a.n)}</button>`).join("");
   const tags = TAGS.map(t => `<button class="sl-tag${t === tag ? " on" : ""}" onclick="slTag('${t}')" aria-label="${TAG_LABEL[t]}" aria-pressed="${t === tag}">${TAG_EMOJI[t]}</button>`).join("");
   const saidHtml = said.map(c => `<div class="sl-said"><span class="grow">${TAG_EMOJI[c.tag] || "✨"} ${esc(c.text)}<small>${esc([label(c.danceId), c.source && c.source !== "class" ? "👩‍🏫 " + c.source : ""].filter(Boolean).join(" · "))}</small></span><button class="del" onclick="slSaidDel('${c.id}')" aria-label="Delete">✕</button></div>`).join("");
   const teacher = `<div class="sl-lab">📝 <span class="sl-labw">Teacher said</span></div>${saidHtml}${clsHtml}<div class="sl-chips">${aboutHtml}</div><div class="sl-tags">${tags}</div>
-    <div class="sl-add"><input type="text" class="sl-note" id="slSaid" maxlength="${SAID_MAX}" placeholder="📝 …" aria-label="What the teacher said" oninput="slLeft(this)" onkeydown="if(event.key==='Enter')slSaidAdd()"><button class="btn coral" data-about="${esc(cur)}" data-cls="${esc(curCls)}" onclick="slSaidAdd()" aria-label="Add">＋</button></div><small class="sl-left muted" data-sl-left hidden></small>`;
+    <div class="sl-add"><input type="text" class="sl-note" id="slSaid" maxlength="${SAID_MAX}" placeholder="📝 what my teacher said…" aria-label="What the teacher said" oninput="slLeft(this)" onkeydown="if(event.key==='Enter')slSaidAdd()"><button class="btn coral" data-about="${esc(cur)}" data-cls="${esc(curCls)}" onclick="slSaidAdd()" aria-label="Add">＋</button></div><small class="sl-left muted" data-sl-left hidden></small>`;
   const feel = FEELS.map(([k, e]) => `<button class="sl-feel${r.feel === k ? " on" : ""}" onclick="slFeel('${k}')" aria-label="${k}" aria-pressed="${r.feel === k}">${e}</button>`).join("");
   return `<div class="sl-strip" id="slStrip">${strip}</div>
     <div class="sl-date">🏫 ${esc(dayWords(date, today))}${hasLog(r) ? " ✅" : ""}</div>
-    <div class="sl-lab">💃</div><div class="sl-chips">${dn}</div>
-    <div class="sl-lab">⭐</div><div class="sl-chips">${sk}</div>${moreHtml}
+    <div class="sl-lab">💃 <span class="sl-labw">Dances I did</span></div><div class="sl-chips">${dn}</div>
+    <div class="sl-lab">⭐ <span class="sl-labw">Skills I did</span></div><div class="sl-chips">${sk}</div>${moreHtml}
     ${teacher}
-    <div class="sl-lab">💬</div><div class="sl-feels">${feel}</div>
+    <div class="sl-lab">💬 <span class="sl-labw">How did it feel?</span></div><div class="sl-feels">${feel}</div>
     <input type="text" class="sl-note" id="slNote" maxlength="${NOTE_MAX}" placeholder="✏️ my own note…" value="${esc(r.note)}" onchange="slNote(this.value)" aria-label="Note">
     <p class="small muted sl-hint">Tap = saved ✓ · tap again = off</p>`;
 }
 // Today's nudge: the newest class day with no log. Pure.
 export function nudgeHtml(days, today){
   if (!days.length) return "";
-  return `<div class="row"><span class="grow"><b>🏫 ${esc(dayWords(days[0], today))}</b><small class="sl-nsub">What did you work on at the studio? 💃 ⭐${days.length > 1 ? ` · ＋${days.length - 1}` : ""}</small></span><button class="btn sm coral" onclick="openStudioLog('${days[0]}')">✏️ Log</button><button class="btn sm ghost" onclick="slSkip('${days[0]}')" aria-label="Nothing to log">🚫</button></div>`;
+  return `<div class="row"><span class="grow"><b>🏫 ${esc(dayWords(days[0], today))}</b><small class="sl-nsub">What did you work on at the studio? 💃 ⭐${days.length > 1 ? ` · and ${days.length - 1} more day${days.length > 2 ? "s" : ""}` : ""}</small></span><button class="btn sm coral" onclick="openStudioLog('${days[0]}')">✏️ Log</button><button class="btn sm ghost" onclick="slSkip('${days[0]}')" aria-label="Nothing to log">No class</button></div>`;
 }
 
 // ---- DOM ----
@@ -148,7 +148,11 @@ function draw(){
 }
 export function renderStudioNudge(){ renderTeacherNotes(); const el = $("#studioNudge"); if (!el) return; const h = loaded() ? nudgeHtml(nudgeDays(S.practice, todayStr(), classDay), todayStr()) : ""; el.hidden = !h; el.innerHTML = h; }
 export function openStudioLog(date){
-  const today = todayStr(); cur = DATE.test(String(date)) && logDays(today).includes(date) ? date : today; clsSel = ""; about = ""; tag = "";
+  const today = todayStr();
+  // 1.85.0: with no day asked for, a day with no class of its own opens on the class day that still waits for its log (Today's
+  // button opened "Today" with every class of the week on a home day).
+  if (!date && !classDay(today) && !hasLog(studioRec(S.practice, today))) date = nudgeDays(S.practice, today, classDay)[0];
+  cur = DATE.test(String(date)) && logDays(today).includes(date) ? date : today; clsSel = ""; about = ""; tag = "";
   box = document.createElement("div"); box.className = "sl"; openStage("🏫 ✏️ Studio log", [box], `<button class="btn coral" onclick="slDone()">✓ Done</button>`); draw();
 }
 // 1.79.0: nothing is written before the day's own record has arrived (a tap on a cold start would replace the day's runs and

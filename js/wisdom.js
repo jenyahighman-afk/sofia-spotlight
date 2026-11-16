@@ -75,5 +75,20 @@ export function reminderMsg(date, kind = "home", plan = activePlan(date)){
   const tip = tipFor(date, plan);
   return kind === "studio" ? ["Class day 🏫", `After class, got a chance at home? One run of your solo. 💬 ${tip}`] : ["Dance time 🎵", `Solo once, trio once: about 5 minutes. 💬 ${tip}`];
 }
+// 📸 Picture day (1.85.0, Jenya Nov 16: "regular reminders to take beginning pictures for skills and regular progress
+// pictures"): on a home day with a picture due, the day's reminder leads with it. p = the first prompt of that day
+// ({ n, why: "first" | "again" }), more = how many others wait. The tip stays when the whole line fits the worker's 170
+// characters. Pure.
+export const PIC_TITLE = "Picture day 📸";
+export function pictureMsg(msg, p, more = 0){
+  if (!p || !p.n) return msg; const rest = more > 0 ? ` (＋${more} more)` : "";
+  const ask = p.why === "again" ? `Time for a new picture of your ${p.n}${rest}: see how far you've come.` : `Take your starting picture of your ${p.n}${rest}.`;
+  const tip = String((msg && msg[1]) || "").split("💬 ")[1] || "", body = `${ask} Then dance one thing.`, full = tip ? `${body} 💬 ${tip}` : body;
+  return [PIC_TITLE, full.length <= 170 ? full : body.slice(0, 170)];
+}
+// The days' messages with the picture days marked: promptsOn(date) = the prompts due that day, on home days only. Pure.
+export function withPictures(msgs, kindOf, promptsOn){
+  const out = { ...msgs }; for (const d of Object.keys(out)) { if (kindOf(d) !== "home") continue; const list = promptsOn(d) || []; if (list.length) out[d] = pictureMsg(out[d], list[0], list.length - 1); } return out;
+}
 // The next `span` days' messages, for the worker: { "YYYY-MM-DD": [title, body] }. kindOf(date) = "home" | "studio" | "off". Pure.
 export function reminderMsgs(from, span, kindOf, shift){ const out = {}; for (let i = 0; i < span; i++) { const d = shift(from, i), k = kindOf(d); if (k === "off") continue; out[d] = reminderMsg(d, k); } return out; }

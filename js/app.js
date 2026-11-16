@@ -51,9 +51,10 @@ import { initFilm } from "./film.js";
 import { initReady } from "./ready.js";
 import { initPass } from "./pass.js";
 import { initSeason } from "./season15.js";
-import { resyncReminder } from "./remind.js";
+import { resyncReminder, setPicturePrompts } from "./remind.js";
 import { renderKidEvents, initKidEvents } from "./kidevents.js";
-import { renderWorking } from "./working.js";
+import { renderWorking, openPictures, photoPrompts } from "./working.js";
+import { S as STORE } from "./store.js";
 import { renderAlbum, renderGoalPage, initSkillsFolds } from "./goalpage.js";
 import { initSunday } from "./sunday.js";
 import { renderStudioNudge } from "./studiolog.js";
@@ -95,7 +96,7 @@ function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.class
 (async () => {
   installErrorCapture();
   try {
-    registerSW();
+    registerSW(); setPicturePrompts((d) => photoPrompts(STORE.settings, d));
     await loadData();
     initViews();
     // Locked Grown-ups pages bounce to the PIN pad (which remembers where to go next).
@@ -104,6 +105,8 @@ function fatal(msg){ const g = $("#gate"); g.hidden = false; document.body.class
     onChange(() => { renderAll(); if (settled("settings") && settled("events")) try { resyncReminder(); } catch (e) { console.warn(e); } buddyAuto(settled("practice") && settled("settings")); if (!restored && settled("practice")) { restored = true; try { restoreTodayChecks(); } catch (e) { console.warn(e); } } migrateDanceCorrections().then(n => { if (n) toast("Your notes moved into the tracker ✓"); }).catch(console.warn); saveSoloFix().catch(console.warn); saveDrillsMove().then(n => { if (n) toast("Your drill box moved to its own shelf ✓"); }).catch(console.warn); saveWorkoutsMove().then(n => { if (n) toast("Your workouts moved to their own shelf ✓"); }).catch(console.warn); refreshSeedFiles().then(names => { if (names.length) toast("New version in My files: " + names.join(", "), 3500); }).catch(console.warn); checkBadges().catch(console.warn); });
     renderAll();
     // The app left open overnight: redraw when it comes back on a new day (Today kept yesterday's date and ticks until a sync).
+    // A 📸 Picture day reminder was tapped (sw.js notificationclick): show the prompt.
+    try { if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", (e) => { if (e.data && e.data.type === "OPEN_PICTURES") openPictures(); }); if (location.hash === "#pictures") { history.replaceState(null, "", location.pathname + location.search); let went = false; onChange(() => { if (!went && settled("settings")) { went = true; openPictures(); } }); } } catch (e) { console.warn(e); }
     let day = todayStr(); document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && todayStr() !== day) { day = todayStr(); renderAll(); } });
   } catch (e) { console.error(e); return fatal("The app couldn't load its content: " + (e.message || e)); }
 

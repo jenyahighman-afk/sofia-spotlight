@@ -43,7 +43,7 @@ test("a tile opens that dance's page: music, videos, Memorize and the tricks on 
   assert.equal(el("#addDanceRow").hidden, true);
   // the trio has no trick list; the Dances tab comes back to the tiles
   D.danceOpen("trio"); assert.doesNotMatch(el("#danceList").innerHTML, /Tricks in this dance/); assert.match(el("#danceList").innerHTML, /data-memo="trio"/);
-  assert.ok(src("js/views/dances.js").includes('document.addEventListener("page",(e)=>{ if(e&&e.detail==="dances"&&openDance&&!editDance){ openDance=null;'), "tapping the Dances tab comes back to the tiles");
+  assert.ok(src("js/views/dances.js").includes('document.addEventListener("page",(e)=>{ if(e&&e.detail==="dances"&&openDance&&!editDance&&!cameBack()){ openDance=null;'), "tapping the Dances tab comes back to the tiles");
   D.danceOpen(null); assert.equal(D.openDanceId(), null); assert.match(el("#danceList").innerHTML, /class="dance-tile/); assert.equal(el("#addDanceRow").hidden, false);
   // the old ways in still land on the right page: the Memorize fold (Today, the plan), a note from class, the judges' clips
   window.memoFocus("trio"); assert.equal(D.openDanceId(), "trio"); window.noteOpen("solo"); assert.equal(D.openDanceId(), "solo"); assert.match(el("#danceList").innerHTML, /id="noteText-solo"/);

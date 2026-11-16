@@ -2,6 +2,7 @@
 // music straight away, and the class dances folded into one row at the bottom. A tile opens that dance's page: what she uses
 // most on top (🎵 Play music, Hannah's videos, 🧠 Memorize, the tricks in the dance), then ＋ Note and the top three fixes as
 // chips (tap = Show me), and everything text-heavy under "More ▸" (collapsed). Edit mode lives inside More.
+import { onBack, cameBack, currentPage as navPage } from "../nav.js";
 import { GROUP_HOME, spotsHtml } from "../working.js";
 import { $, esc, growAll, toast, uid, expose, roText, roList, edText, edList, todayStr } from "../util.js";
 import { S, storeSet, dances, events } from "../store.js";
@@ -35,8 +36,9 @@ let openDance=null;
 export function danceOpen(id){ const was=openDance; openDance=id||null; if(was!==openDance){ noteFor=null; editDance=null; } renderDances(); if(was!==openDance){ const w=document.querySelector(".wrap"); if(w) w.scrollTop=0; try{ window.scrollTo({top:0}); }catch(e){} } }
 export const openDanceId = () => openDance;
 export function initDances(){
+  onBack(()=>{ if(navPage()==="dances"&&openDance&&!editDance){ danceOpen(null); return true; } return false; }); // 1.85.0: Back from a dance's page shows the tiles, not Today
   document.addEventListener("memochanged",()=>renderDances());
-  document.addEventListener("page",(e)=>{ if(e&&e.detail==="dances"&&openDance&&!editDance){ openDance=null; noteFor=null; renderDances(); } });
+  document.addEventListener("page",(e)=>{ if(e&&e.detail==="dances"&&openDance&&!editDance&&!cameBack()){ openDance=null; noteFor=null; renderDances(); } });
   $("#addDance").onclick=async()=>{ const n=$("#newDanceName").value.trim(); if(!n) return; const id="d"+uid(); await storeSet("dances",id,{id,name:n,song:"",style:"",choreo:"",costume:"",shoes:"",hair:"",color:"coral",music:"",map:"",strengths:[],corrections:[],notes:"",links:[],teacher:"",rehearsal:"",musicUrl:"",bpm:""}); $("#newDanceName").value=""; editDance=id; moreOpen.add(id); openDance=id; };
 }
 let editDance=null, noteFor=null, noteTag="other"; const moreOpen=new Set();
@@ -48,7 +50,7 @@ function chips(d){
 }
 function patternLine(d){
   const ps=patterns(S.corrections,{danceId:d.id}); if(!ps.length) return "";
-  return ps.map(p=>{ const open=forDance(S.corrections,d.id).find(c=>c.tag===p.tag&&c.status!=="done"); return `<div class="row pattern"><span class="grow">${TAG_EMOJI[p.tag]} You've had this note ${p.n} times: <b>${TAG_LABEL[p.tag]}</b></span>${open?`<button class="btn sm sun" onclick="gotIt('${open.id}')">Got it!</button>`:""}</div>`; }).join("");
+  return ps.map(p=>{ const open=forDance(S.corrections,d.id).find(c=>c.tag===p.tag&&c.status!=="done"&&!c.pinned); /* 1.85.0: never the pinned homework note (a grown-up checks that one), and the button shows the note before it closes it */ return `<div class="row pattern"><span class="grow">${TAG_EMOJI[p.tag]} You've had this note ${p.n} times: <b>${TAG_LABEL[p.tag]}</b></span>${open?`<button class="btn sm sun" onclick="showMe('${open.id}')">Show me</button>`:""}</div>`; }).join("");
 }
 function noteForm(d){
   const sources=[...new Set([d.teacher,d.choreo].map(s=>String(s||"").split(/[(,;·]/)[0].trim()).filter(Boolean)),"Mom","me"];
@@ -88,11 +90,11 @@ function renderDances(){
     let more;
     if(!editing){
       const links=(d.links||[]).filter(Boolean);
-      more=`${mapbar}<div class="row" style="margin-top:6px">${d.musicUrl?`<a class="btn sm aqua" href="${esc(d.musicUrl)}" target="_blank" rel="noopener">▶ Music link</a>`:""}${links.map((u,i)=>{ const m=String(u).match(/^(.*?)\s*\|\s*(https?:\S+)$/); const url=m?m[2]:u, label=m?m[1].trim():"Link "+(i+1); return `<a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">🔗 ${esc(label)}</a>`; }).join("")}${musicButton(d)}<span class="grow"></span><button class="btn sm coral" onclick="danceEdit('${d.id}')">✏️ Edit</button></div>${musicPlayer(d)}
+      more=`<div class="field-lab">📝 All my fixes</div>${fullList(d)}${mapbar}<div class="row" style="margin-top:6px">${d.musicUrl?`<a class="btn sm aqua" href="${esc(d.musicUrl)}" target="_blank" rel="noopener">▶ Music link</a>`:""}${links.map((u,i)=>{ const m=String(u).match(/^(.*?)\s*\|\s*(https?:\S+)$/); const url=m?m[2]:u, label=m?m[1].trim():"Link "+(i+1); return `<a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">🔗 ${esc(label)}</a>`; }).join("")}${musicButton(d)}<span class="grow"></span><button class="btn sm coral" onclick="danceEdit('${d.id}')">✏️ Edit</button></div>${musicPlayer(d)}
         ${roText("Song",d.song)}${roText("Style",d.style)}${roText("BPM",d.bpm)}${roText("Choreographer",d.choreo)}${roText("Teacher / class",d.teacher)}${roText("Rehearsal & class schedule",d.rehearsal)}
         ${roText("Costume",d.costume)}${roText("Shoes",d.shoes)}${roText("Hair",d.hair)}
         ${roText("Music map",d.music)}${roText("Where the big moments land",d.map)}<div class="field-lab">Cue sheet (shown in the player)</div>${cueSheetRo(d)}
-        ${roText("The story (for Sofia)",d.story)}${roList("Step order (from the walkthrough)",d.steps)}${roList("Performance notes",d.performance)}${roList("What's already strong",d.strengths)}<div class="field-lab">All corrections</div>${fullList(d)}${roList("Trick drills",d.tricks)}${roList("Where do I look?",d.eyes)}
+        ${roText("The story (for Sofia)",d.story)}${roList("Step order (from the walkthrough)",d.steps)}${roList("Performance notes",d.performance)}${roList("What's already strong",d.strengths)}${roList("Trick drills",d.tricks)}${roList("Where do I look?",d.eyes)}
         ${roText("Notes",d.notes)}${wordsLine(d)}${d.id==="solo"||d.id==="trio"?judgesHtml(d):""}${d.id==="solo"||d.id==="trio"?videosEdit(d):""}${d.id==="solo"?`<div class="row" style="margin-top:8px"><button class="btn sm ghost" onclick="openRehearsal('solo')">📅 Book a solo private</button><span class="small muted">Booked with Ms. Brittany? That day's home plan becomes the memory run.</span></div>`:""}${photos}`;
     } else {
       more=`<p class="small muted">Editing. Nothing is saved until you tap Save.</p>

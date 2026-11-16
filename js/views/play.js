@@ -1,5 +1,6 @@
 // Play tab: a grid of game tiles; tap one to open that game (one at a time), "All games" to come back.
 // Each game module wires its own globals; this renders the tiles and the idle state of the open game.
+import { onBack, currentPage as navPage } from "../nav.js";
 import { $, $$, esc, expose, todayStr } from "../util.js";
 import { S } from "../store.js";
 import { dayKindNow } from "../daykind.js";
@@ -60,7 +61,7 @@ export function playSections(date, { home = false, knees = false, done = false, 
 }
 let openGame = "";
 export function playOpen(id){ openGame = id; renderPlay(); if (id) { const c = document.querySelector(`.game-card[data-game="${id}"]`); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: "smooth", block: "start" }); } else { const w = document.querySelector(".wrap"); if (w) w.scrollTop = 0; } }
-export function initPlay(){ initChoreo(); initTeach(); initCount(); }
+export function initPlay(){ onBack(() => { if (navPage() === "play" && openGame) { playOpen(""); return true; } return false; }); initChoreo(); initTeach(); initCount(); }
 export function renderPlay(){
   const s = S.settings; renderWho(); const today = todayStr();
   const ev = showEvent(); const doors = doorsFor(); const doorsOn = !!ev && doors.length > 0 && today >= doors[0].date && today <= (ev.end || ev.start);
