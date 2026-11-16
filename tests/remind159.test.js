@@ -88,7 +88,7 @@ test("1.60.0: the morning line is gone from Today (one less thing asked on a sch
 
 test("the studio's Nov 1 schedule: PITCH's extra Sunday is a studio date and the memory run; the showings carry their times", () => {
   S.events = {}; const ev = json("events"); const by = (id) => ev.find(e => e.id === id);
-  assert.equal(by("pitch-jazz-1108").time, "10:00–12:00"); assert.equal(by("sdt-showing-1206").time, "10:15–12:15"); assert.equal(by("sdt-showing-1212").time, "3:30–6:30"); assert.equal(by("grp-showing-1205").time, "3:30–7:00");
+  assert.equal(by("pitch-jazz-1108").time, "10:00–12:00"); assert.equal(by("sdt-showing-1206").time, "10:15–12:15"); assert.equal(by("sdt-showing-1212").time, "4:30–5:30"); // 1.84.0: her own block assert.equal(by("grp-showing-1205").time, "3:30–7:00");
   assert.equal(dayKind("2026-11-08", dayOpts()), "memory", "Sunday Nov 8 is a studio day"); assert.equal(dates()["2026-11-08"], "off", "a studio day: no nudge (1.60.0)");
   assert.ok(!ST.events().some(e => e.id === "pitch-jazz-1108"), "never a show or a countdown");
 });

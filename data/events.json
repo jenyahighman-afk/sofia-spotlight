@@ -145,21 +145,23 @@
   "time": "10:15–12:15",
   "room": "Studio 6",
   "dances": "Solo, trio",
-  "notes": "Required for every dancer with a solo, duo or trio: pick Sun Dec 6 OR Sat Dec 12, one date and one hour block per routine, in FULL COSTUME. This is the solo's and the trio's dress rehearsal: they do not go on stage at the January showcase (La, Nov 12). To sign up, email La (info@glasshousedance.com) with the date and hour block; no changes once signed up."
+  "notes": "Not Sofia's date: she is signed up for Sat Dec 12 (La confirmed Nov 15). This is the studio's other showing date for solos, duos and trios.",
+  "chosen": false
  },
  {
   "id": "sdt-showing-1212",
   "kind": "class",
   "showing": true,
   "pick": "sdt-showing",
-  "short": "Solo/trio showing",
-  "name": "Solo/duo/trio showing at the studio",
+  "short": "Solo + trio dress rehearsal",
+  "name": "Solo + trio DRESS REHEARSAL (showing at the studio)",
   "start": "2026-12-12",
   "end": "2026-12-12",
-  "time": "3:30–6:30",
+  "time": "4:30–5:30",
   "room": "Studio 6",
   "dances": "Solo, trio",
-  "notes": "Required for every dancer with a solo, duo or trio: pick Sun Dec 6 OR Sat Dec 12, one date and one hour block per routine, in FULL COSTUME. This is the solo's and the trio's dress rehearsal: they do not go on stage at the January showcase (La, Nov 12). To sign up, email La (info@glasshousedance.com) with the date and hour block; no changes once signed up."
+  "notes": "Confirmed by La on Nov 15: Block Two, 4:30–5:30 PM, Studio 6, in FULL COSTUME. Trio \"Enjoy the Silence\" is spot 7, the solo \"Stay a Little Longer\" is spot 19 (the sheet gives spots, not exact times). Arrive in costume and ready by 4:15, trio costume first. The whole showing runs 3:30–6:30; stay for at least the full hour block. This is the solo's and the trio's dress rehearsal: they do not go on stage at the January showcase (La, Nov 12).",
+  "chosen": true
  },
  {
   "id": "hold-1212",
