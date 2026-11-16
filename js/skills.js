@@ -43,7 +43,12 @@ export function allSkills(ladder = SKILLS){ return Object.entries(ladder.styles 
 export const OWN_DANCES = { solo: "Solo", trio: "Trio", "pitch-jazz": "Jazz", "pitch-contemp": "Contemporary" };
 export const OWN_RE = /^own-[a-z0-9]{4,12}$/;
 export function ownSkills(settings = S.settings){ const l = (settings || {}).ownSkills; return (Array.isArray(l) ? l : []).filter(o => o && OWN_RE.test(String(o.id)) && String(o.n || "").trim()).map(o => ({ id: String(o.id), n: String(o.n).replace(/\s+/g, " ").trim().slice(0, 40), style: "own", dance: Object.hasOwn(OWN_DANCES, o.dance) ? o.dance : "" })); }
-export function findSkill(id, ladder = SKILLS){ return allSkills(ladder).find(s => s.id === id) || (ladder === SKILLS ? ownSkills().find(s => s.id === id) : undefined); }
+// A competition dance's own skills (1.85.0, data/skills.json `dances`: { <dance id>: { from, skills: [{ id, n, t, tip,
+// drill, top? }] } }): read off a run of the routine, each with the time in the music, one cue and one drill. They are
+// skills like her own (style "own", dance = the dance's id), so they sit in no ring and no trick-card binder. Pure.
+export function danceSkills(ladder = SKILLS){ return Object.entries((ladder && ladder.dances) || {}).flatMap(([dance, d]) => ((d && d.skills) || []).filter(s => s && s.id && s.n).map(s => ({ ...s, style: "own", dance }))); }
+export const danceSkillsFrom = (dance, ladder = SKILLS) => String((((ladder && ladder.dances) || {})[dance] || {}).from || "");
+export function findSkill(id, ladder = SKILLS){ return allSkills(ladder).find(s => s.id === id) || danceSkills(ladder).find(s => s.id === id) || (ladder === SKILLS ? ownSkills().find(s => s.id === id) : undefined); }
 
 // Listeners for a skill's state changing (js/cards.js pops "New card!"). Called with (id, prev, next) after the save.
 const stateListeners = new Set();

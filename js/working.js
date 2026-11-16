@@ -15,7 +15,7 @@
 import { $, esc, todayStr, expose, toast, uid } from "./util.js";
 import { S, setSettings, storeSet, dances } from "./store.js";
 import { SKILLS, AERIAL } from "./data.js";
-import { findSkill, ownSkills, skillState, kidCycle, levelGroups, STATE_EMOJI, OWN_RE, OWN_DANCES } from "./skills.js";
+import { findSkill, ownSkills, danceSkills, skillState, kidCycle, levelGroups, STATE_EMOJI, OWN_RE, OWN_DANCES } from "./skills.js";
 import { SPLIT_KEYS, PRESETS, splitGoal, checkins, CADENCE_DAYS } from "./goals.js";
 import { monthSkill } from "./monthskill.js";
 import { lineup } from "./lineup.js";
@@ -90,7 +90,7 @@ export function goalRow(id, ctx = {}){
   const s = findSkill(id, ladder), state = skillState(skills, id), st = (ladder.styles || {})[s.style];
   const group = s.style === "solo" || s.style === "own" ? "dances" : CLASS_STYLES.includes(s.style) ? "classes" : "acro";
   const dance = s.style === "solo" ? "solo" : Object.hasOwn(OWN_DANCES, s.dance || "") ? s.dance : "";
-  const base = { id, kind, on, group, n: s.n, ic: kind === "aerial" ? "🦋" : s.style === "own" ? "💃" : (st && st.ic) || "✨", where: dance ? OWN_DANCES[dance] : group === "classes" ? st.n : "", tip: s.tip || "", fix: fixOf(s.n), thumb, shots, state, dance, style: s.style, sub: "" };
+  const base = { id, kind, on, group, n: s.n, ic: kind === "aerial" ? "🦋" : s.style === "own" ? "💃" : (st && st.ic) || "✨", where: dance ? OWN_DANCES[dance] + (s.t ? " · " + s.t : "") : group === "classes" ? st.n : "", tip: s.tip || "", fix: fixOf(s.n), thumb, shots, state, dance, style: s.style, sub: "" };
   if (kind === "aerial") { const a = aerialStep(settings); return { ...base, aerial: a, how: a.next ? `Step ${a.n + 1} of ${a.total}` : `All ${a.total} steps done 🎉`, sub: a.next ? "Next: " + shortStep(a.next) : "" }; }
   return { ...base, how: state === "checked" ? "★ Teacher-checked" : state === "clean" ? "◉ Clean" : state === "learning" || on ? `${STATE_EMOJI.learning} Working on it` : "○ Not started" };
 }
@@ -221,7 +221,7 @@ export function goalHow(r, { soloDance = null, ladder = SKILLS } = {}){
   if (!r || r.kind === "aerial") return [];
   if (r.kind === "measure") return r.measure || /split/i.test(r.n) ? ["Warm up first: never stretch cold.", "Go only as far as feels okay. Breathe, and stay there a little.", "Every two weeks take a picture, so you can see it change."] : ["Warm up first.", "Hold it only while it still looks good. Count your seconds.", "Write your seconds in a check-in, so you can watch them grow."];
   const s = findSkill(r.id, ladder), drill = s && soloDance && r.style === "solo" ? drillFor(s, soloDance) : "";
-  return [r.tip || "Warm up, then picture it once in your head before you start.", drill || "Slow five: do it 5 times slowly. Slow is how it gets clean.", r.dance ? "Then once with the music, in its place in the dance." : "Film one and tap 🎬 Coach me: one thing you did well, one thing to fix."];
+  return [r.tip || "Warm up, then picture it once in your head before you start.", drill || (s && s.drill) || "Slow five: do it 5 times slowly. Slow is how it gets clean.", r.dance ? "Then once with the music, in its place in the dance." : "Film one and tap 🎬 Coach me: one thing you did well, one thing to fix."];
 }
 // The work card on a goal's page: how to work on it, ✓ I worked on it today, and its stepping stones (how many days, the
 // last one, the last two weeks as dots, her pictures). Pure.
@@ -282,7 +282,7 @@ export function pickGroups({ skills = S.skills, working = [], goals = S.goals, s
   const on = new Set(working), styles = ladder.styles || {};
   const item = (s) => ({ id: s.id, n: s.n, on: on.has(s.id), state: skillState(skills, s.id) });
   const out = [], own = ladder === SKILLS ? ownSkills(settings) : [];
-  out.push({ key: "dances", label: GROUPS[0][1], open: true, own: true, parts: [...(styles.solo ? [{ label: `${styles.solo.ic} ${styles.solo.n}`, items: styles.solo.skills.map(item) }] : []), ...Object.entries(OWN_DANCES).map(([d, n]) => ({ d, label: d === "solo" ? "🌸 Solo: my own" : `💃 ${n}`, items: own.filter(o => o.dance === d).map(item) })).filter(p => p.items.length || p.d !== "solo").map(p => p.items.length ? p : { ...p, empty: `No ${OWN_DANCES[p.d]} skills yet. Add them below.` }), ...(own.some(o => !o.dance) ? [{ label: "💃 Other", items: own.filter(o => !o.dance).map(item) }] : [])] });
+  out.push({ key: "dances", label: GROUPS[0][1], open: true, own: true, parts: [...(styles.solo ? [{ label: `${styles.solo.ic} ${styles.solo.n}`, items: styles.solo.skills.map(item) }] : []), ...Object.entries(OWN_DANCES).map(([d, n]) => ({ d, label: d === "solo" ? "🌸 Solo: my own" : `💃 ${n}`, items: [...(d === "solo" ? [] : danceSkills(ladder).filter(o => o.dance === d).map(o => ({ ...item(o), n: (o.top ? "⭐ " : "") + o.n }))), ...own.filter(o => o.dance === d).map(item)] })).filter(p => p.items.length || p.d !== "solo").map(p => p.items.length ? p : { ...p, empty: `No ${OWN_DANCES[p.d]} skills yet. Add them below.` }), ...(own.some(o => !o.dance) ? [{ label: "💃 Other", items: own.filter(o => !o.dance).map(item) }] : [])] });
   for (const [k, st] of Object.entries(styles)) {
     if (k === "solo" || CLASS_STYLES.includes(k)) continue; const groups = levelGroups(st), rest = (list) => list.filter(x => x.id !== AERIAL_ID).map(item);
     const top = st.skills.some(x => x.id === AERIAL_ID) ? [{ label: "", items: [{ ...item({ id: AERIAL_ID, n: "Aerial" }), n: "🦋 Aerial, step by step" }] }] : [];

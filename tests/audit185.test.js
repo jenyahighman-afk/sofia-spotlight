@@ -91,6 +91,15 @@ test("skills in her solo, trio, jazz and contemporary: her own skills belong to 
   const row = (dance, n) => ({ id: "x" + n, n, ic: "💃", group: "dances", dance, how: "Working on it", shots: [] });
   const card = W.goalsCardHtml([row("pitch-contemp", "Floor roll"), row("solo", "Cartwheel"), row("pitch-jazz", "Turn"), row("trio", "Lift"), row("", "Toe touch")]);
   const at = (s) => card.indexOf(s); for (const [a, b] of [['g-dance">Solo', 'g-dance">Trio'], ['g-dance">Trio', 'g-dance">Jazz'], ['g-dance">Jazz', 'g-dance">Contemporary'], ['g-dance">Contemporary', 'g-dance">Other']]) assert.ok(at(a) >= 0 && at(a) < at(b), a + " before " + b);
-  const g = W.pickGroups({ working: [], settings: {}, goals: {}, skills: {} })[0]; assert.deepEqual(g.parts.map(p => p.label), ["🌸 Solo tricks", "💃 Trio", "💃 Jazz", "💃 Contemporary"]); assert.match(g.parts[2].empty, /No Jazz skills yet/);
+  const g = W.pickGroups({ working: [], settings: {}, goals: {}, skills: {} })[0]; assert.deepEqual(g.parts.map(p => p.label), ["🌸 Solo tricks", "💃 Trio", "💃 Jazz", "💃 Contemporary"]); assert.match(g.parts[3].empty, /No Contemporary skills yet/); assert.match(g.parts[1].empty, /No Trio skills yet/);
+  // The jazz group's skills ship with the app (data/skills.json dances["pitch-jazz"], from the Nov 16 review of one run).
+  const jz = json("skills").dances["pitch-jazz"]; assert.equal(jz.skills.length, 13); assert.equal(jz.skills.filter(x => x.top).length, 5); assert.match(jz.from, /Your teacher's notes come first/);
+  for (const x of jz.skills) { assert.match(x.id, /^pj-[a-z-]+$/); assert.ok(x.n && x.t && x.tip && x.drill, x.id); assert.ok(x.tip.length <= 90, x.id + ": one short cue"); }
+  assert.equal(new Set([...jz.skills.map(x => x.id), ...Object.values(json("skills").styles).flatMap(st => st.skills.map(x => x.id))]).size, 13 + Object.values(json("skills").styles).reduce((a, st) => a + st.skills.length, 0), "ids are unique across every list");
+  assert.equal(g.parts[2].items.length, 13); assert.equal(g.parts[2].items[0].n, "⭐ Seated scissor kicks");
+  const f = SK.findSkill("pj-left-turn"); assert.deepEqual([f.style, f.dance, f.t], ["own", "pitch-jazz", "1:13"]);
+  const r = W.goalRow("pj-scissor-kicks", { goals: {}, skills: {}, photos: {}, reviews: {}, settings: { working: ["pj-scissor-kicks"] } }); assert.deepEqual([r.group, r.dance, r.where], ["dances", "pitch-jazz", "Jazz · 1:48"]);
+  const how = W.goalHow(r); assert.match(how[0], /Straight knees first/); assert.match(how[1], /2 counts each leg/); assert.match(how[2], /once with the music/);
+  assert.equal(SK.allSkills().some(x => x.id.startsWith("pj-")), false, "not in a ring or the trick-card binder");
   const d = src("js/views/dances.js"); assert.match(d, /wkPick\('\$\{d\.id\}'\)">＋ Add a skill</); assert.match(d, /ownSkills\(\)\.filter\(o=>o\.dance===d\.id\)/);
 });
