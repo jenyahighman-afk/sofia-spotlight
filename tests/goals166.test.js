@@ -41,14 +41,14 @@ test("her own tricks: the trio has no list, so she names them; each is a skill l
 });
 
 test("her list: what she picked, in her order; until she picks it starts with what she is working on already", () => {
-  assert.equal(W.WORK_MAX, 8);
+  assert.equal(W.WORK_MAX, 60, "1.85.0: every skill in progress fits; 60 is only a guard");
   assert.deepEqual(W.workingIds({}, D, { goals: {} }), ["a-aerial", "split-r", "split-l", "split-m"], "the aerial and the three splits");
   assert.deepEqual(W.workingIds({ monthSkills: { "2026-11": "s-cartwheel" } }, D, { goals: {} }), ["s-cartwheel", "a-aerial", "split-r", "split-l", "split-m"], "this month's ⭐ skill is not lost");
   const have = { ...split, gb: { id: "gb", name: "Bridge", preset: "bridge", createdAt: "2026-09-05", checkins: [] }, gx: { id: "gx", name: "Needle hold", preset: "custom", createdAt: "2026-09-09", checkins: [] }, ga: { id: "ga", name: "Aerial progression", preset: "aerial", createdAt: "2026-09-02", checkins: [] }, gd: { id: "gd", preset: "hollow", deleted: true } };
   assert.deepEqual(W.workingIds({}, D, { goals: have }), ["a-aerial", "split-r", "split-l", "split-m", "bridge", "goal:gx"], "and every goal she already has: a preset by its key, her own by its document");
   assert.deepEqual(W.workingIds({ working: [] }, D, { goals: have }), [], "once she has a list, an empty one stays empty");
   assert.deepEqual(W.workingIds({ working: ["s-leap", "split-m", "nope", "s-leap", "a-aerial", "goal:gx", "goal:gd"] }, D, { goals: have }), ["s-leap", "split-m", "a-aerial", "goal:gx"], "her order; what answers to nothing drops out; each once");
-  assert.equal(W.workingIds({ working: ["s-side-sit", "s-leap", "s-cartwheel", "s-donut", "s-calypso", "split-r", "split-l", "split-m", "bridge", "a-aerial"] }, D, { goals: {} }).length, 8);
+  assert.equal(W.workingIds({ working: ["s-side-sit", "s-leap", "s-cartwheel", "s-donut", "s-calypso", "split-r", "split-l", "split-m", "bridge", "a-aerial"] }, D, { goals: {} }).length, 10, "1.85.0: more than eight stay on her list");
   assert.deepEqual(W.workingIds({ working: "s-leap" }, D, { goals: {} }), ["a-aerial", "split-r", "split-l", "split-m"], "a broken value is no list yet");
 });
 
@@ -69,7 +69,7 @@ test("a row says how it's going in the goal's own terms, with her newest photo; 
   assert.match(W.goalRowHtml(W.goalRow("split-l", ctx)), /<span class="g-ph none">🦵<\/span>/); assert.match(W.goalRowHtml(aer), /<small class="g-sub">Next: One-hand cartwheel on the FAR hand<\/small>/);
   const card = W.goalsCardHtml(ctx.working.map(id => W.goalRow(id, ctx)));
   assert.doesNotMatch(card, /<h3>/, "the title is on the fold (1.66.1)"); assert.ok(card.indexOf("💃 In my dances") < card.indexOf("🤸 Acro") && card.indexOf("🤸 Acro") < card.indexOf("🦵 Bendy and strong") && card.indexOf("🦵 Bendy and strong") < card.indexOf("🩰 My classes")); assert.equal((card.match(/class="g-row"/g) || []).length, 5); assert.match(card, /wkPick\(\)">＋ Pick a goal/);
-  const empty = W.goalsCardHtml([]); assert.match(empty, /a trick, a split, your aerial\. You choose, and you can change it any time\./); assert.match(W.goalsCardHtml(Array(8).fill(cart)), /That's a full list\. Take one off to pick another\./);
+  const empty = W.goalsCardHtml([]); assert.match(empty, /a trick, a split, your aerial\. You choose, and you can change it any time\./); assert.match(W.goalsCardHtml(Array(60).fill(cart)), /That's a full list\. Take one off to pick another\./);
   assert.doesNotMatch(card + empty, /due|days left|streak|missed|180|%/i);
 });
 
@@ -89,9 +89,9 @@ test("the picker follows the list's groups: her dances with her own tricks, acro
   assert.equal(g[1].parts.reduce((a, p) => a + p.items.length, 0), json("skills").styles.acro.skills.length, "every acro skill once: the aerial is not in its level too");
   assert.deepEqual(g[2].parts[0].items.map(i => i.n), ["Right split", "Left split", "Middle split", "Bridge", "Arabesque height", "Side extension height", "Handstand hold", "Hollow hold", "Passé balance on relevé", "Needle hold"]); assert.equal(g[2].parts[0].items.at(-1).id, "goal:gx");
   assert.deepEqual(g[3].parts.map(p => p.label), ["🩰 Ballet", "⚡ Jazz", "🌊 Contemporary", "🎧 Hip hop"]);
-  const html = W.pickerHtml(g, { count: 3 }); assert.match(html, /id="wkHint">Tap the ones you want\. ⭐ means it's one of your goals\. A few at a time is plenty\./); assert.match(html, /<button class="chip sun" onclick="wkToggle\('a-aerial', this\)">⭐ 🦋 Aerial, step by step<\/button>/);
+  const html = W.pickerHtml(g, { count: 3 }); assert.match(html, /id="wkHint">Tap the ones you want\. ⭐ means it's one of your goals\. Pick everything you are working on\./); assert.match(html, /<button class="chip sun" onclick="wkToggle\('a-aerial', this\)">⭐ 🦋 Aerial, step by step<\/button>/);
   assert.match(html, /A trick that isn't here\? Add your own\.<\/p><div class="row wk-own"><input type="text" id="wkOwnName"[^>]*><select id="wkOwnDance"[^>]*><option value="trio">Trio<\/option><option value="solo">Solo<\/option><option value="">Other<\/option><\/select><button class="btn sm coral" onclick="wkOwnAdd\(\)">Add<\/button>/);
-  assert.equal((html.match(/wkOwnAdd/g) || []).length, 1, "the form sits with her dances only"); assert.match(W.pickHint(8), /Your list is full/);
+  assert.equal((html.match(/wkOwnAdd/g) || []).length, 1, "the form sits with her dances only"); assert.match(W.pickHint(60), /Your list is full/);
 });
 
 test("one page for every goal: what's next, her photos, the coach, done", () => {
@@ -140,8 +140,8 @@ test("in the page: picking, the aerial's step, got it, her own trick, off her go
     globalThis.confirm = () => true; await window.gpOn("split-m", false); assert.deepEqual(S.settings.working, ["a-aerial", own.id]); assert.match(el("#toast").textContent, /Off your goals/);
     await window.gpOn("s-leap", true); assert.equal(S.settings.working.at(-1), "s-leap"); assert.equal(S.skills["s-leap"].state, "learning");
     for (const id of ["s-side-sit", "s-calypso", "split-r", "split-l", "bridge"]) await window.wkToggle(id, null);
-    assert.equal(S.settings.working.length, 8); await window.wkToggle("s-floor-kick", null); assert.equal(S.settings.working.length, 8, "eight is the most"); assert.match(el("#toast").textContent, /Your list is full/);
-    GP.renderAlbum(); assert.match(el("#albumCard").innerHTML, /goalOpen\('a-aerial'\)/); assert.equal(el("#albumCount").textContent, "9", "her eight goals and the teacher-checked donut roll"); assert.equal(el("#workingCount").textContent, "8");
+    assert.equal(S.settings.working.length, 8); await window.wkToggle("s-floor-kick", null); assert.equal(S.settings.working.length, 9, "1.85.0: a ninth goes on"); assert.doesNotMatch(el("#toast").textContent, /Your list is full/);
+    GP.renderAlbum(); assert.match(el("#albumCard").innerHTML, /goalOpen\('a-aerial'\)/); assert.equal(el("#albumCount").textContent, "10", "her nine goals and the teacher-checked donut roll"); assert.equal(el("#workingCount").textContent, "9");
     assert.ok(writes.every(w => w.col === "settings" || w.col === "skills"), "nothing else is written");
   } finally { setBackend(null); resetDom(); clearS(); }
 });

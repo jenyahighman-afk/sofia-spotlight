@@ -27,7 +27,9 @@ import { openStage } from "./stage.js";
 import { CLASS_STYLES } from "./views/me.js";
 import { lastTrickReview } from "./coachhub.js";
 
-export const WORK_MAX = 8;
+// 1.85.0 (Jenya, Nov 16: "We cannot add all skills that are in progress"): the list was capped at eight to keep it short.
+// It now takes every skill she is working on; 60 is only a guard against a runaway list. Picture time shows PHOTO_SHOW at a time.
+export const WORK_MAX = 60, PHOTO_SHOW = 8;
 export const AERIAL_ID = "a-aerial";
 // The measured goals she can pick: every preset but "Aerial progression", which is the aerial's own page.
 export const MEASURE_KEYS = PRESETS.map(p => p.key).filter(k => k !== "aerial");
@@ -287,7 +289,7 @@ export function pickGroups({ skills = S.skills, working = [], goals = S.goals, s
   return out;
 }
 export const chipText = (i) => (i.on ? "⭐ " : i.state === "clean" || i.state === "checked" ? STATE_EMOJI[i.state] + " " : "") + i.n;
-export const pickHint = (count, max = WORK_MAX) => "Tap the ones you want. ⭐ means it's one of your goals. " + (count >= max ? "Your list is full: take one off to pick another." : "A few at a time is plenty.");
+export const pickHint = (count, max = WORK_MAX) => "Tap the ones you want. ⭐ means it's one of your goals. " + (count >= max ? "Your list is full: take one off to pick another." : "Pick everything you are working on.");
 export function pickerHtml(groups, { count = 0, max = WORK_MAX } = {}){
   const chip = (i) => `<button class="chip${i.on ? " sun" : ""}" onclick="wkToggle('${i.id}', this)">${esc(chipText(i))}</button>`;
   const part = (p) => { const chips = `<div class="ms-pick">${p.items.map(chip).join("")}</div>`; return p.fold ? `<details class="more"><summary>${esc(p.label)}</summary>${chips}</details>` : (p.label ? `<div class="lvl-sec">${esc(p.label)}</div>` : "") + chips; };
@@ -307,7 +309,7 @@ export function renderWorking(){
   const n = $("#workingCount"); if (n) n.textContent = working.length ? String(working.length) : "";
   // The same prompts on Skills (a few) and on Today (the first one). Both go away by themselves once the picture is saved.
   const ws = $("#workingSub"); if (ws) ws.textContent = goalsSub(working.map(id => goalRow(id, { working })).filter(Boolean));
-  const sk = $("#photoPrompt"); if (sk) { sk.innerHTML = photoPromptsHtml(prompts, { cap: WORK_MAX }); setFold("photoFoldSk", "photoSubSk", prompts.length > 0, photoSub(prompts), "photoCountSk", prompts.length); }
+  const sk = $("#photoPrompt"); if (sk) { sk.innerHTML = photoPromptsHtml(prompts, { cap: PHOTO_SHOW }); setFold("photoFoldSk", "photoSubSk", prompts.length > 0, photoSub(prompts), "photoCountSk", prompts.length); }
   renderStones();
   const td = $("#goalReminder"); if (td) td.innerHTML = photoPromptsHtml(prompts, { cap: 1, more: true }); // on Today the prompt sits in the one card, under the skill (1.85.0)
   const tab = typeof document.querySelector === "function" ? document.querySelector('nav.tabs button[data-p="skills"]') : null; if (tab && tab.classList) tab.classList.toggle("has-news", prompts.length > 0); // a dot on Skills while a picture is due
