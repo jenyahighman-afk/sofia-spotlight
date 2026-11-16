@@ -53,9 +53,10 @@ test("the prompt's words and its one tap to the camera", () => {
 });
 
 test("Today's second choice: one of her own goals a day, taking turns", () => {
-  const s = { working: ["s-cartwheel", "split-r", "a-aerial"] };
+  const s = { working: ["split-r", "a-aerial", "hollow"] };
   const three = ["2026-11-13", "2026-11-14", "2026-11-15"].map(d => W.todayGoal(s, d, ctx()).id);
-  assert.deepEqual([...three].sort(), ["a-aerial", "s-cartwheel", "split-r"], "three days, three goals"); assert.equal(W.todayGoal(s, "2026-11-16", ctx()).id, three[0], "then round again");
+  assert.deepEqual([...three].sort(), ["a-aerial", "hollow", "split-r"], "three days, three goals");
+  { const f = { working: ["s-cartwheel", "split-r", "a-aerial", "s-leap"] }; const days = ["2026-11-13", "2026-11-14", "2026-11-15", "2026-11-16"].map(d => W.todayGoal(f, d, ctx()).id); assert.deepEqual([...new Set(days)].sort(), ["s-cartwheel", "s-leap"], "1.85.0: with a skill of her dances on the list, Today's skill is one of those"); } assert.equal(W.todayGoal(s, "2026-11-16", ctx()).id, three[0], "then round again");
   assert.equal(W.todayGoal({ working: [] }, D, ctx()), null);
   assert.equal(W.todayGoal({ working: ["s-cartwheel"] }, D, ctx({ skills: { "s-cartwheel": { id: "s-cartwheel", state: "checked" } } })), null, "a finished one sits out");
   const h = W.todaySkillHtml(W.todayGoal({ working: ["a-aerial"] }, D, ctx({ settings: { working: ["a-aerial"] } }))); assert.match(h, /⭐ Or work on a skill/); assert.match(h, /onclick="goalOpen\('a-aerial'\)"/); assert.match(h, /Aerial/); assert.match(h, /all my goals ›/);

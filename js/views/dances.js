@@ -16,7 +16,7 @@ import { memoDances, memoCard, bindMemo } from "../memo.js";
 import { readyFold } from "../ready.js";
 import { PIN_MSG } from "../sunday.js";
 import { SKILLS } from "../data.js";
-import { skillState, STATE_EMOJI } from "../skills.js";
+import { skillState, STATE_EMOJI, OWN_DANCES, ownSkills } from "../skills.js";
 import { openGrownups } from "../grownups.js";
 
 const STYLE_EMOJI = { lyrical:"🌸", jazz:"⚡", contemporary:"🌊", "hip hop":"🎧", hiphop:"🎧", ballet:"🩰", acro:"🤸", ballroom:"💃", tap:"👟" };
@@ -125,7 +125,10 @@ function tilesHtml(list){
     + (cls.length?`<details class="card acc class-fold"><summary>🎓 Class dances <span class="chip">${cls.length}</span></summary>${cls.map(d=>danceTile(d,{music:false,fixes:openFixes(d)})).join("")}</details>`:"");
 }
 // ⭐ The tricks in this dance: each opens its trick card (the binder's page for it, with her progress photos).
-function tricksRow(d){ const ts=danceTricks(d); if(!ts.length) return ""; return `<div class="dance-tricks"><div class="small muted">⭐ Tricks in this dance</div><div class="fixchips">${ts.map(t=>`<button class="fixchip" onclick="goalOpen('${t.id}')">${STATE_EMOJI[skillState(S.skills,t.id)]||"○"} ${esc(t.n)}</button>`).join("")}</div></div>`; }
+function tricksRow(d){ const comp=Object.hasOwn(OWN_DANCES,d.id); const ts=[...danceTricks(d),...(comp?ownSkills().filter(o=>o.dance===d.id):[])];
+  // 1.85.0: each competition dance shows its own skills (the solo's list, and the ones she added for this dance) and a way to add one.
+  const add=comp?`<button class="fixchip" onclick="showPage('skills');wkPick('${d.id}')">＋ Add a skill</button>`:"";
+  if(!ts.length) return comp?`<div class="dance-tricks"><div class="small muted">⭐ Skills in this dance</div><div class="fixchips">${add}</div></div>`:""; return `<div class="dance-tricks"><div class="small muted">⭐ Tricks in this dance</div><div class="fixchips">${ts.map(t=>`<button class="fixchip" onclick="goalOpen('${t.id}')">${STATE_EMOJI[skillState(S.skills,t.id)]||"○"} ${esc(t.n)}</button>`).join("")}${add}</div></div>`; }
 function collectDance(id){ const card=document.querySelector(`.card[data-id="${id}"]`); const d={...dances().find(x=>x.id===id)}; card.querySelectorAll(".dfield").forEach(el=>{ d[el.dataset.k]=el.dataset.cues?parseCueText(el.value):el.dataset.list?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value; }); if(d.bpm!==""&&d.bpm!==undefined){ const n=parseFloat(d.bpm); d.bpm=Number.isFinite(n)&&n>0?n:""; }
   // Data-owned fields stay out of the stored copy, so later data updates (Hannah's words, a new pin) still show through:
   // the pinned teacher notes, and a cue table the family hasn't overridden (nudges live in cueTimes).

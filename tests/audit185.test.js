@@ -81,3 +81,16 @@ test("Back inside a page closes what is open there; the repeat-note row shows th
   assert.match(sl, /if \(!date && !classDay\(today\) && !hasLog\(studioRec\(S\.practice, today\)\)\) date = nudgeDays\(S\.practice, today, classDay\)\[0\];/);
   assert.doesNotMatch(src("css/app.css"), /font-family:Fredoka[;}]/, "every heading has a fallback font");
 });
+
+test("skills in her solo, trio, jazz and contemporary: her own skills belong to a dance, grouped by it, with a way in from the dance", async () => {
+  const SK = await import("../js/skills.js");
+  assert.deepEqual(SK.OWN_DANCES, { solo: "Solo", trio: "Trio", "pitch-jazz": "Jazz", "pitch-contemp": "Contemporary" });
+  const settings = { ownSkills: [{ id: "own-jazz0001", n: "Double pirouette", dance: "pitch-jazz" }, { id: "own-cont0001", n: "Floor roll", dance: "pitch-contemp" }, { id: "own-trio0001", n: "Lift", dance: "trio" }, { id: "own-none0001", n: "Toe touch", dance: "nope" }] };
+  assert.deepEqual(SK.ownSkills(settings).map(o => o.dance), ["pitch-jazz", "pitch-contemp", "trio", ""]);
+  assert.equal(W.ownSkillDoc("Turn", "pitch-jazz", "own-abcd1234").dance, "pitch-jazz"); assert.equal(W.ownSkillDoc("Turn", "ballet", "own-abcd1234").dance, "");
+  const row = (dance, n) => ({ id: "x" + n, n, ic: "💃", group: "dances", dance, how: "Working on it", shots: [] });
+  const card = W.goalsCardHtml([row("pitch-contemp", "Floor roll"), row("solo", "Cartwheel"), row("pitch-jazz", "Turn"), row("trio", "Lift"), row("", "Toe touch")]);
+  const at = (s) => card.indexOf(s); for (const [a, b] of [['g-dance">Solo', 'g-dance">Trio'], ['g-dance">Trio', 'g-dance">Jazz'], ['g-dance">Jazz', 'g-dance">Contemporary'], ['g-dance">Contemporary', 'g-dance">Other']]) assert.ok(at(a) >= 0 && at(a) < at(b), a + " before " + b);
+  const g = W.pickGroups({ working: [], settings: {}, goals: {}, skills: {} })[0]; assert.deepEqual(g.parts.map(p => p.label), ["🌸 Solo tricks", "💃 Trio", "💃 Jazz", "💃 Contemporary"]); assert.match(g.parts[2].empty, /No Jazz skills yet/);
+  const d = src("js/views/dances.js"); assert.match(d, /wkPick\('\$\{d\.id\}'\)">＋ Add a skill</); assert.match(d, /ownSkills\(\)\.filter\(o=>o\.dance===d\.id\)/);
+});

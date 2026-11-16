@@ -38,8 +38,11 @@ export function allSkills(ladder = SKILLS){ return Object.entries(ladder.styles 
 // Her own tricks (1.66.0): a trick that is on no list, named by her, for the solo or the trio (the trio has no list of its
 // own). settings.ownSkills = [{ id: "own-…", n, dance: "solo" | "trio" | "" }]. Each is a skill like any other: its state is
 // a `skills` document, its photos a lineup. They are found by id here, but are on no ladder, so no ring or level counts them.
+// The dances a skill of her own can belong to (1.85.0, Jenya Nov 16: "She needs to focus on skills in her solo, trio, jazz,
+// and contemporary"): her four competition dances, by the dance's id. The two PITCH groups joined the solo and the trio.
+export const OWN_DANCES = { solo: "Solo", trio: "Trio", "pitch-jazz": "Jazz", "pitch-contemp": "Contemporary" };
 export const OWN_RE = /^own-[a-z0-9]{4,12}$/;
-export function ownSkills(settings = S.settings){ const l = (settings || {}).ownSkills; return (Array.isArray(l) ? l : []).filter(o => o && OWN_RE.test(String(o.id)) && String(o.n || "").trim()).map(o => ({ id: String(o.id), n: String(o.n).replace(/\s+/g, " ").trim().slice(0, 40), style: "own", dance: ["solo", "trio"].includes(o.dance) ? o.dance : "" })); }
+export function ownSkills(settings = S.settings){ const l = (settings || {}).ownSkills; return (Array.isArray(l) ? l : []).filter(o => o && OWN_RE.test(String(o.id)) && String(o.n || "").trim()).map(o => ({ id: String(o.id), n: String(o.n).replace(/\s+/g, " ").trim().slice(0, 40), style: "own", dance: Object.hasOwn(OWN_DANCES, o.dance) ? o.dance : "" })); }
 export function findSkill(id, ladder = SKILLS){ return allSkills(ladder).find(s => s.id === id) || (ladder === SKILLS ? ownSkills().find(s => s.id === id) : undefined); }
 
 // Listeners for a skill's state changing (js/cards.js pops "New card!"). Called with (id, prev, next) after the save.

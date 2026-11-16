@@ -15,7 +15,7 @@
 import { $, esc, todayStr, expose, toast, uid } from "./util.js";
 import { S, setSettings, storeSet, dances } from "./store.js";
 import { SKILLS, AERIAL } from "./data.js";
-import { findSkill, ownSkills, skillState, kidCycle, levelGroups, STATE_EMOJI, OWN_RE } from "./skills.js";
+import { findSkill, ownSkills, skillState, kidCycle, levelGroups, STATE_EMOJI, OWN_RE, OWN_DANCES } from "./skills.js";
 import { SPLIT_KEYS, PRESETS, splitGoal, checkins, CADENCE_DAYS } from "./goals.js";
 import { monthSkill } from "./monthskill.js";
 import { lineup } from "./lineup.js";
@@ -89,8 +89,8 @@ export function goalRow(id, ctx = {}){
   }
   const s = findSkill(id, ladder), state = skillState(skills, id), st = (ladder.styles || {})[s.style];
   const group = s.style === "solo" || s.style === "own" ? "dances" : CLASS_STYLES.includes(s.style) ? "classes" : "acro";
-  const dance = s.style === "solo" || s.dance === "solo" ? "solo" : s.dance === "trio" ? "trio" : "";
-  const base = { id, kind, on, group, n: s.n, ic: kind === "aerial" ? "🦋" : s.style === "own" ? "💃" : (st && st.ic) || "✨", where: dance === "solo" ? "Solo" : dance === "trio" ? "Trio" : group === "classes" ? st.n : "", tip: s.tip || "", fix: fixOf(s.n), thumb, shots, state, dance, style: s.style, sub: "" };
+  const dance = s.style === "solo" ? "solo" : Object.hasOwn(OWN_DANCES, s.dance || "") ? s.dance : "";
+  const base = { id, kind, on, group, n: s.n, ic: kind === "aerial" ? "🦋" : s.style === "own" ? "💃" : (st && st.ic) || "✨", where: dance ? OWN_DANCES[dance] : group === "classes" ? st.n : "", tip: s.tip || "", fix: fixOf(s.n), thumb, shots, state, dance, style: s.style, sub: "" };
   if (kind === "aerial") { const a = aerialStep(settings); return { ...base, aerial: a, how: a.next ? `Step ${a.n + 1} of ${a.total}` : `All ${a.total} steps done 🎉`, sub: a.next ? "Next: " + shortStep(a.next) : "" }; }
   return { ...base, how: state === "checked" ? "★ Teacher-checked" : state === "clean" ? "◉ Clean" : state === "learning" || on ? `${STATE_EMOJI.learning} Working on it` : "○ Not started" };
 }
@@ -133,7 +133,10 @@ const dayNo = (date) => Math.round(new Date(date + "T00:00:00").getTime() / 8640
 export function todayGoal(settings, today = todayStr(), ctx = {}){
   const goals = ctx.goals ?? S.goals, ladder = ctx.ladder ?? SKILLS, working = workingIds(settings, today, { goals, ladder });
   const rows = working.map(id => goalRow(id, { ...ctx, goals, ladder, settings, working, date: today })).filter(r => r && r.state !== "checked");
-  return rows.length ? rows[((dayNo(today) % rows.length) + rows.length) % rows.length] : null;
+  // 1.85.0 (Jenya, Nov 16: "She needs to focus on skills in her solo, trio, jazz, and contemporary"): while she has a skill
+  // of one of her dances on her list, Today's skill is one of those, taking turns; the others stay on Skills.
+  const inDance = rows.filter(r => r.dance), pick = inDance.length ? inDance : rows;
+  return pick.length ? pick[((dayNo(today) % pick.length) + pick.length) % pick.length] : null;
 }
 // 🪜 Stepping stones (1.68.0, Jenya Nov 13: she should see "how she can work on it and how she can track improvements …
 // that every little effort is a stepping stone towards her goals and towards making each dance look effortless while it
@@ -267,7 +270,10 @@ export function goalRowHtml(r, due = ""){
 }
 export function goalsCardHtml(rows, max = WORK_MAX, due = {}){
   if (!rows.length) return `<p class="small muted">Pick what you want to get better at: a trick, a split, your aerial. You choose, and you can change it any time.</p><div class="row"><button class="btn coral" onclick="wkPick()">＋ Pick a goal</button></div>`;
-  const groups = GROUPS.map(([k, label]) => { const part = rows.filter(r => r.group === k); return part.length ? `<div class="g-lab">${label}</div>${part.map(r => goalRowHtml(r, due[r.id] || "")).join("")}` : ""; }).join("");
+  const list = (part) => part.map(r => goalRowHtml(r, due[r.id] || "")).join("");
+  // Her dances' skills, dance by dance (1.85.0): Solo, Trio, Jazz, Contemporary, then a trick with no dance.
+  const byDance = (part) => [...Object.keys(OWN_DANCES), ""].map(d => { const p = part.filter(r => (r.dance || "") === d); return p.length ? `<div class="g-dance">${d ? esc(OWN_DANCES[d]) : "Other"}</div>${list(p)}` : ""; }).join("");
+  const groups = GROUPS.map(([k, label]) => { const part = rows.filter(r => r.group === k); return part.length ? `<div class="g-lab">${label}</div>${k === "dances" ? byDance(part) : list(part)}` : ""; }).join("");
   return `${groups}<div class="row wk-more">${rows.length >= max ? `<span class="small muted">That's a full list. Take one off to pick another.</span>` : `<button class="btn sm coral" onclick="wkPick()">＋ Pick a goal</button>`}</div>`;
 }
 // What she can pick from, in the list's own groups: the tricks in her dances (the solo's, and her own), the acro chart by
@@ -276,7 +282,7 @@ export function pickGroups({ skills = S.skills, working = [], goals = S.goals, s
   const on = new Set(working), styles = ladder.styles || {};
   const item = (s) => ({ id: s.id, n: s.n, on: on.has(s.id), state: skillState(skills, s.id) });
   const out = [], own = ladder === SKILLS ? ownSkills(settings) : [];
-  out.push({ key: "dances", label: GROUPS[0][1], open: true, own: true, parts: [...(styles.solo ? [{ label: `${styles.solo.ic} ${styles.solo.n}`, items: styles.solo.skills.map(item) }] : []), ...(own.length ? [{ label: "💃 My own", items: own.map(item) }] : [])] });
+  out.push({ key: "dances", label: GROUPS[0][1], open: true, own: true, parts: [...(styles.solo ? [{ label: `${styles.solo.ic} ${styles.solo.n}`, items: styles.solo.skills.map(item) }] : []), ...Object.entries(OWN_DANCES).map(([d, n]) => ({ d, label: d === "solo" ? "🌸 Solo: my own" : `💃 ${n}`, items: own.filter(o => o.dance === d).map(item) })).filter(p => p.items.length || p.d !== "solo").map(p => p.items.length ? p : { ...p, empty: `No ${OWN_DANCES[p.d]} skills yet. Add them below.` }), ...(own.some(o => !o.dance) ? [{ label: "💃 Other", items: own.filter(o => !o.dance).map(item) }] : [])] });
   for (const [k, st] of Object.entries(styles)) {
     if (k === "solo" || CLASS_STYLES.includes(k)) continue; const groups = levelGroups(st), rest = (list) => list.filter(x => x.id !== AERIAL_ID).map(item);
     const top = st.skills.some(x => x.id === AERIAL_ID) ? [{ label: "", items: [{ ...item({ id: AERIAL_ID, n: "Aerial" }), n: "🦋 Aerial, step by step" }] }] : [];
@@ -289,16 +295,16 @@ export function pickGroups({ skills = S.skills, working = [], goals = S.goals, s
   return out;
 }
 export const chipText = (i) => (i.on ? "⭐ " : i.state === "clean" || i.state === "checked" ? STATE_EMOJI[i.state] + " " : "") + i.n;
-export const pickHint = (count, max = WORK_MAX) => "Tap the ones you want. ⭐ means it's one of your goals. " + (count >= max ? "Your list is full: take one off to pick another." : "Pick everything you are working on.");
+export const pickHint = (count, max = WORK_MAX) => "Tap the ones you want. ⭐ means it's one of your goals. " + (count >= max ? "Your list is full: take one off to pick another." : "Start with the skills in your solo, trio, jazz and contemporary.");
 export function pickerHtml(groups, { count = 0, max = WORK_MAX } = {}){
   const chip = (i) => `<button class="chip${i.on ? " sun" : ""}" onclick="wkToggle('${i.id}', this)">${esc(chipText(i))}</button>`;
-  const part = (p) => { const chips = `<div class="ms-pick">${p.items.map(chip).join("")}</div>`; return p.fold ? `<details class="more"><summary>${esc(p.label)}</summary>${chips}</details>` : (p.label ? `<div class="lvl-sec">${esc(p.label)}</div>` : "") + chips; };
-  const ownForm = `<p class="small muted wk-own-lab">A trick that isn't here? Add your own.</p><div class="row wk-own"><input type="text" id="wkOwnName" placeholder="Its name" maxlength="40"><select id="wkOwnDance" aria-label="Which dance"><option value="trio">Trio</option><option value="solo">Solo</option><option value="">Other</option></select><button class="btn sm coral" onclick="wkOwnAdd()">Add</button></div>`;
+  const part = (p) => { const chips = p.empty ? `<p class="small muted">${esc(p.empty)}</p>` : `<div class="ms-pick">${p.items.map(chip).join("")}</div>`; return p.fold ? `<details class="more"><summary>${esc(p.label)}</summary>${chips}</details>` : (p.label ? `<div class="lvl-sec">${esc(p.label)}</div>` : "") + chips; };
+  const ownForm = `<p class="small muted wk-own-lab">A skill from one of your dances that isn't here? Add it, and say which dance.</p><div class="row wk-own"><input type="text" id="wkOwnName" placeholder="Its name" maxlength="40"><select id="wkOwnDance" aria-label="Which dance">${["trio", "pitch-jazz", "pitch-contemp", "solo"].map(d => `<option value="${d}">${OWN_DANCES[d]}</option>`).join("")}<option value="">Other</option></select><button class="btn sm coral" onclick="wkOwnAdd()">Add</button></div>`;
   return `<p class="small muted" id="wkHint">${pickHint(count, max)}</p>` + groups.map(g => `<details class="card acc"${g.open ? " open" : ""}><summary>${esc(g.label)}</summary>${g.parts.map(part).join("")}${g.own ? ownForm : ""}</details>`).join("");
 }
 // A new trick of her own: its name, and the dance it is in. Pure.
 export function ownSkillDoc(name, dance, id = "own-" + uid().replace(/[^a-z0-9]/g, "").slice(-8)){
-  const n = String(name || "").replace(/\s+/g, " ").trim().slice(0, 40); return n && OWN_RE.test(id) ? { id, n, dance: ["solo", "trio"].includes(dance) ? dance : "" } : null;
+  const n = String(name || "").replace(/\s+/g, " ").trim().slice(0, 40); return n && OWN_RE.test(id) ? { id, n, dance: Object.hasOwn(OWN_DANCES, dance) ? dance : "" } : null;
 }
 
 // ---- DOM ----
@@ -343,16 +349,18 @@ async function wkToggle(id, btn){
 }
 // "I've got it clean" and back. Teacher-checked stays.
 export async function gotIt(id){ const cur = skillState(S.skills, id); if (cur === "checked" || goalKind(id) === "measure" || !goalKind(id)) return; if (cur === "notyet") await kidCycle(id); await kidCycle(id); renderWorking(); }
-function wkPick(){
+function wkPick(dance){
   const el = document.createElement("div"); el.className = "stage-list"; const working = workingIds(S.settings);
   el.innerHTML = pickerHtml(pickGroups({ working }), { count: working.length });
   openStage("＋ Pick a goal", [el], `<button class="btn coral" onclick="closeStage()">Done</button>`);
+  lastDance = Object.hasOwn(OWN_DANCES, dance || "") ? dance : lastDance; const sel = $("#wkOwnDance"); if (sel && lastDance) sel.value = lastDance; // the dance she came from, or the one she last added to
 }
+let lastDance = "";
 // Her own trick from the picker's small form: saved in settings.ownSkills and put on her goals.
 async function wkOwnAdd(){
   const doc = ownSkillDoc(($("#wkOwnName") || {}).value, ($("#wkOwnDance") || {}).value); if (!doc) return toast("Give it a name first");
   const have = Array.isArray(S.settings.ownSkills) ? S.settings.ownSkills : [];
   if (have.some(o => o && String(o.n).toLowerCase() === doc.n.toLowerCase())) return toast("That one is already there");
-  await setSettings({ ownSkills: [...have, doc] }); await setOnGoals(doc.id, true); wkPick(); toast(`${doc.n} is one of your goals ⭐`);
+  lastDance = doc.dance; await setSettings({ ownSkills: [...have, doc] }); await setOnGoals(doc.id, true); wkPick(); toast(`${doc.n} is one of your goals ⭐`);
 }
 expose({ wkToggle, wkPick, wkOwnAdd, photoLater });

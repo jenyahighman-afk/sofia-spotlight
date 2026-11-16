@@ -945,3 +945,4 @@ button.chip,.fixchip,.sl-chip.sm{min-height:40px;display:inline-flex;align-items
 details.more[data-more]>summary{list-style:none} details.more[data-more]>summary::-webkit-details-marker{display:none}
 @media (max-width:360px){ body:not(.pg-home) .sticker{margin-right:44px} body:not(.pg-home) header.hero h1{overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto} }
 .today-pic .pp-txt{flex:1 1 100%}
+.g-dance{font-weight:800;font-size:.9rem;color:var(--coral-ink);margin:8px 0 0}
