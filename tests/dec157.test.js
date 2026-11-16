@@ -24,10 +24,12 @@ const ev = json("events");
 test("the December dates: the group showing is a studio day; the solo-trio pair, the hold weekend and the deadline stay on the calendar only until picked", () => {
   const by = Object.fromEntries(ev.map(e => [e.id, e]));
   assert.equal(by["grp-showing-1205"].start, "2026-12-05"); assert.equal(by["grp-showing-1205"].kind, "class"); assert.ok(by["grp-showing-1205"].showing);
-  for (const id of ["sdt-showing-1206", "sdt-showing-1212"]) { assert.equal(by[id].pick, "sdt-showing"); assert.equal(by[id].kind, "class"); assert.match(by[id].notes, /Sun Dec 6 OR Sat Dec 12/); }
+  for (const id of ["sdt-showing-1206", "sdt-showing-1212"]) { assert.equal(by[id].pick, "sdt-showing"); assert.equal(by[id].kind, "class"); assert.match(by[id].notes, /Sat Dec 12|4:30–5:30 PM/); } // 1.84.0: La confirmed Dec 12, Block Two
   assert.deepEqual([by["hold-1212"].start, by["hold-1212"].end, by["hold-1212"].kind], ["2026-12-12", "2026-12-13", "hold"]);
   assert.deepEqual([by["deadline-1107"].start, by["deadline-1107"].kind], ["2026-11-07", "deadline"]);
-  S.events = {};
+  // 1.84.0: La confirmed Sat Dec 12, so the shipped data has it picked; the "until picked" checks below un-pick both first.
+  S.events = {}; assert.deepEqual(ST.studioDates().map(e => e.id).filter(id => /showing/.test(id)), ["grp-showing-1205", "sdt-showing-1212"], "shipped: Dec 12 is her date"); assert.ok(!ST.calendarOnly().some(e => /sdt-showing/.test(e.id)), "and Dec 6 is off the calendar");
+  S.events = { "sdt-showing-1206": { chosen: null }, "sdt-showing-1212": { chosen: null } };
   assert.deepEqual(ST.studioDates().map(e => e.id).filter(id => /showing/.test(id)), ["grp-showing-1205"], "only the group showing until a date is picked");
   assert.deepEqual(ST.calendarOnly().map(e => e.id), ["deadline-1107", "closed-thanksgiving", "sdt-showing-1206", "sdt-showing-1212", "hold-1212", "closed-winter", "closed-midwinter", "closed-spring", "closed-july", "closed-labor"], "with the studio closures since 1.58.0, the later ones since 1.59.0");
   assert.ok(!ST.events().some(e => /showing|hold|deadline/.test(e.id)), "none is a show: no countdown, no comp mode");
@@ -37,7 +39,7 @@ test("the December dates: the group showing is a studio day; the solo-trio pair,
   assert.notEqual(dayKind("2026-12-06", { ...dayOpts(), oneOffs: ST.studioDates() }), "home", "picked: Dec 6 is a studio day (the memory run at home)");
   assert.equal(routineOf(ST.studioDates().find(e => e.id === "sdt-showing-1206")), "other", "a showing is not a trio private");
   assert.deepEqual(privatesStatus(ST.studioDates(), "2026-12").map(s => s.have), [0, 0]);
-  S.events = {};
+  S.events = { "sdt-showing-1206": { chosen: null }, "sdt-showing-1212": { chosen: null } };
   const cal = calendarHtml("2026-11-01"); assert.match(cal, /studioPick\('sdt-showing-1206'\)">✓ This one/); assert.match(cal, /sign up for one/); assert.match(cal, /Hold weekend/); assert.doesNotMatch(cal, /deadline-1107'\)/, "a deadline has no button");
   assert.match(src("js/studio.js"), /expose\(\{ openRehearsal, studioDel, studioPick, studioUnpick \}\)/); assert.match(src("js/views/schedule.js"), /upcomingHtml\(\)\+calendarHtml\(\)/);
   S.events = { "sdt-showing-1212": { chosen: true } }; assert.match(upcomingHtml("2026-11-01"), /studioUnpick\('sdt-showing-1212'\)/, "a picked one can be un-picked, not cancelled"); S.events = {};
