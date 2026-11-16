@@ -15,7 +15,7 @@
 import { $, esc, todayStr, expose, toast, uid } from "./util.js";
 import { S, setSettings, storeSet, dances } from "./store.js";
 import { SKILLS, AERIAL } from "./data.js";
-import { findSkill, ownSkills, skillState, kidCycle, levelGroups, STATE_EMOJI, OWN_RE } from "./skills.js";
+import { findSkill, ownSkills, danceSkills, skillState, kidCycle, levelGroups, STATE_EMOJI, OWN_RE, OWN_DANCES } from "./skills.js";
 import { SPLIT_KEYS, PRESETS, splitGoal, checkins, CADENCE_DAYS } from "./goals.js";
 import { monthSkill } from "./monthskill.js";
 import { lineup } from "./lineup.js";
@@ -27,7 +27,9 @@ import { openStage } from "./stage.js";
 import { CLASS_STYLES } from "./views/me.js";
 import { lastTrickReview } from "./coachhub.js";
 
-export const WORK_MAX = 8;
+// 1.85.0 (Jenya, Nov 16: "We cannot add all skills that are in progress"): the list was capped at eight to keep it short.
+// It now takes every skill she is working on; 60 is only a guard against a runaway list. Picture time shows PHOTO_SHOW at a time.
+export const WORK_MAX = 60, PHOTO_SHOW = 8;
 export const AERIAL_ID = "a-aerial";
 // The measured goals she can pick: every preset but "Aerial progression", which is the aerial's own page.
 export const MEASURE_KEYS = PRESETS.map(p => p.key).filter(k => k !== "aerial");
@@ -87,8 +89,8 @@ export function goalRow(id, ctx = {}){
   }
   const s = findSkill(id, ladder), state = skillState(skills, id), st = (ladder.styles || {})[s.style];
   const group = s.style === "solo" || s.style === "own" ? "dances" : CLASS_STYLES.includes(s.style) ? "classes" : "acro";
-  const dance = s.style === "solo" || s.dance === "solo" ? "solo" : s.dance === "trio" ? "trio" : "";
-  const base = { id, kind, on, group, n: s.n, ic: kind === "aerial" ? "🦋" : s.style === "own" ? "💃" : (st && st.ic) || "✨", where: dance === "solo" ? "Solo" : dance === "trio" ? "Trio" : group === "classes" ? st.n : "", tip: s.tip || "", fix: fixOf(s.n), thumb, shots, state, dance, style: s.style, sub: "" };
+  const dance = s.style === "solo" ? "solo" : Object.hasOwn(OWN_DANCES, s.dance || "") ? s.dance : "";
+  const base = { id, kind, on, group, n: s.n, ic: kind === "aerial" ? "🦋" : s.style === "own" ? "💃" : (st && st.ic) || "✨", where: dance ? OWN_DANCES[dance] + (s.t ? " · " + s.t : "") : group === "classes" ? st.n : "", tip: s.tip || "", fix: fixOf(s.n), thumb, shots, state, dance, style: s.style, sub: "" };
   if (kind === "aerial") { const a = aerialStep(settings); return { ...base, aerial: a, how: a.next ? `Step ${a.n + 1} of ${a.total}` : `All ${a.total} steps done 🎉`, sub: a.next ? "Next: " + shortStep(a.next) : "" }; }
   return { ...base, how: state === "checked" ? "★ Teacher-checked" : state === "clean" ? "◉ Clean" : state === "learning" || on ? `${STATE_EMOJI.learning} Working on it` : "○ Not started" };
 }
@@ -120,7 +122,9 @@ export function photoPrompts(settings, today = todayStr(), ctx = {}){
     const last = String(r.shots[r.shots.length - 1].date || ""); if (!/^\d{4}-\d{2}-\d{2}$/.test(last)) continue;
     const days = daysBetween(last, today); if (days >= PHOTO_EVERY_DAYS) again.push({ ...base, why: "again", last, days });
   }
-  return [...first, ...again.sort((a, b) => b.days - a.days)];
+  // 1.85.0: a progress picture that has come due goes first (the longest wait on top): with several starting pictures
+  // waiting it sat at the bottom of the list, out of sight.
+  return [...again.sort((a, b) => b.days - a.days), ...first];
 }
 // ⭐ Work on a skill, on Today (1.67.0, Jenya Nov 13: Today should say what to do next "to either practice one of the
 // competitive dances or to work on a specific dance skill"). One goal from her own list a day, taking turns in her order;
@@ -129,7 +133,10 @@ const dayNo = (date) => Math.round(new Date(date + "T00:00:00").getTime() / 8640
 export function todayGoal(settings, today = todayStr(), ctx = {}){
   const goals = ctx.goals ?? S.goals, ladder = ctx.ladder ?? SKILLS, working = workingIds(settings, today, { goals, ladder });
   const rows = working.map(id => goalRow(id, { ...ctx, goals, ladder, settings, working, date: today })).filter(r => r && r.state !== "checked");
-  return rows.length ? rows[((dayNo(today) % rows.length) + rows.length) % rows.length] : null;
+  // 1.85.0 (Jenya, Nov 16: "She needs to focus on skills in her solo, trio, jazz, and contemporary"): while she has a skill
+  // of one of her dances on her list, Today's skill is one of those, taking turns; the others stay on Skills.
+  const inDance = rows.filter(r => r.dance), pick = inDance.length ? inDance : rows;
+  return pick.length ? pick[((dayNo(today) % pick.length) + pick.length) % pick.length] : null;
 }
 // 🪜 Stepping stones (1.68.0, Jenya Nov 13: she should see "how she can work on it and how she can track improvements …
 // that every little effort is a stepping stone towards her goals and towards making each dance look effortless while it
@@ -184,9 +191,9 @@ export const groupDances = (list) => (list || []).filter(d => d && !isClassDance
 export const GROUP_HOME = "At home: dance your own part with the music. Say the counts, know where you stand and who you follow, and where you look.";
 // The row under the two big buttons: one ▶ for each group dance (the player, music playing, a play-through counts), and the
 // line above. ran = ids danced today. "" when she has no group dance. Pure.
-export function groupButtonsHtml(groups, ran = []){
+export function groupButtonsHtml(groups, ran = [], { how = true } = {}){
   if (!groups.length) return "";
-  return `<div class="today-group"><div class="today-pick-lab small">👯 My group dances</div><div class="tg-btns">${groups.map(g => `<button class="btn sm ${ran.includes(g.id) ? "ghost" : "violet"}" onclick="openPlayer('${g.id}',{once:true})">${ran.includes(g.id) ? "✅" : "▶"} ${esc(g.n)}</button>`).join("")}</div><div class="small muted tg-how">${GROUP_HOME}</div></div>`;
+  return `<div class="today-group"><div class="today-pick-lab small">👯 My group dances</div><div class="tg-btns">${groups.map(g => `<button class="btn sm ${ran.includes(g.id) ? "ghost" : "violet"}" onclick="openPlayer('${g.id}',{once:true})">${ran.includes(g.id) ? "✅" : "▶"} ${esc(g.n)}</button>`).join("")}</div>${how ? `<div class="small muted tg-how">${GROUP_HOME}</div>` : ""}</div>`;
 }
 // 📍 Where I stand (1.82.0, Jenya Nov 14, after a last-minute change to the jazz group put Sofia in the back row): a group
 // dance's own list of her spots, [{ t, w, star? }] in data/dances.json `spots`, read off a run-through video. A fold on the
@@ -214,7 +221,7 @@ export function goalHow(r, { soloDance = null, ladder = SKILLS } = {}){
   if (!r || r.kind === "aerial") return [];
   if (r.kind === "measure") return r.measure || /split/i.test(r.n) ? ["Warm up first: never stretch cold.", "Go only as far as feels okay. Breathe, and stay there a little.", "Every two weeks take a picture, so you can see it change."] : ["Warm up first.", "Hold it only while it still looks good. Count your seconds.", "Write your seconds in a check-in, so you can watch them grow."];
   const s = findSkill(r.id, ladder), drill = s && soloDance && r.style === "solo" ? drillFor(s, soloDance) : "";
-  return [r.tip || "Warm up, then picture it once in your head before you start.", drill || "Slow five: do it 5 times slowly. Slow is how it gets clean.", r.dance ? "Then once with the music, in its place in the dance." : "Film one and tap 🎬 Coach me: one thing you did well, one thing to fix."];
+  return [r.tip || "Warm up, then picture it once in your head before you start.", drill || (s && s.drill) || "Slow five: do it 5 times slowly. Slow is how it gets clean.", r.dance ? "Then once with the music, in its place in the dance." : "Film one and tap 🎬 Coach me: one thing you did well, one thing to fix."];
 }
 // The work card on a goal's page: how to work on it, ✓ I worked on it today, and its stepping stones (how many days, the
 // last one, the last two weeks as dots, her pictures). Pure.
@@ -229,11 +236,11 @@ export function workHtml(r, { dates = [], today = todayStr(), steps = [], notes 
 }
 // Today's second choice: the goal's own button (it opens the goal's page: what's next, her photos, the coach) and the way
 // to the whole list; with an empty list, the way to pick one. Pure.
-export function todaySkillHtml(r, { dates = [], today = todayStr(), how = "", videos = 0 } = {}){
+export function todaySkillHtml(r, { dates = [], today = todayStr(), how = "", videos = 0, next = false } = {}){
   if (!r) return `<div class="today-pick-lab small">⭐ Or work on a skill</div><button class="today-skill" onclick="showPage('skills');wkPick()"><span class="ts-ic">⭐</span><span class="grow"><b>Pick a skill to work on</b><small>a trick, a split, your aerial</small></span><span class="g-go">›</span></button>`;
   const done = dates.includes(today), sub = r.sub || how || (r.fix ? "🎬 Coach: " + r.fix.text : r.how);
   const track = `🪜 ${dates.length ? plural(dates.length, "time", "times") + " so far" : "your first time"}${r.shots.length ? ` · 📸 ${plural(r.shots.length, "picture", "pictures")}` : ""}${videos ? ` · 🎬 ${plural(videos, "video", "videos")}` : ""}`;
-  return `<div class="today-pick-lab small">⭐ Or work on a skill <button class="lnk" onclick="showPage('skills')">all my goals ›</button></div><button class="today-skill${done ? " done" : ""}" onclick="goalOpen('${r.id}')"><span class="ts-ic">${done ? "✅" : r.ic}</span><span class="grow"><b>${esc(r.n)}</b><small>${esc(sub)}</small><small class="ts-track">${track} · tap to see how ›</small></span><span class="g-go">›</span></button>`;
+  return `<div class="today-pick-lab small">⭐ Or work on a skill <button class="lnk" onclick="showPage('skills')">all my goals ›</button></div><button class="today-skill${done ? " done" : ""}" onclick="goalOpen('${r.id}')"><span class="ts-ic">${done ? "✅" : r.ic}</span><span class="grow"><b>${esc(r.n)}${next && !done ? ` <small class="nx-tag">👉 next up</small>` : ""}</b><small>${esc(sub)}</small><small class="ts-track">${track} · tap to see how ›</small></span><span class="g-go">›</span></button>`;
 }
 // "2 weeks ago", "20 days ago". Pure.
 export const agoWords = (days) => days <= 0 ? "today" : days === 1 ? "yesterday" : days >= 28 ? `${Math.round(days / 7)} weeks ago` : days === 14 ? "2 weeks ago" : `${days} days ago`;
@@ -241,13 +248,20 @@ export const agoWords = (days) => days <= 0 ? "today" : days === 1 ? "yesterday"
 // it is; a measured goal opens its check-in sheet, where the number goes too), Later puts it off. Pure.
 export function photoPromptHtml(p){
   const words = p.why === "first" ? `<b>Take your starting picture</b><small>${esc(p.n)} · to see how far you've come</small>` : `<b>Time for a progress picture</b><small>${esc(p.n)} · your last one was ${agoWords(p.days)}</small>`;
-  const go = p.kind === "measure" ? `<button class="btn sm coral" onclick="gpCheckIn('${p.id}')">📷 Take it</button>` : `<label class="btn sm coral">📷 Take it<input type="file" accept="image/*" hidden onchange="lineupAdd('${p.id}', this)"></label>`;
+  const go = `<label class="btn sm coral">📷 Take it<input type="file" accept="image/*" hidden onchange="${p.kind === "measure" ? "goalQuickPhoto" : "lineupAdd"}('${p.id.replace(/^goal:/, "")}', this)"></label>`; // 1.85.0: one tap to the camera for every kind of goal
   return `<div class="pp-row"><button class="pp-txt" onclick="goalOpen('${p.id}')"><span class="pp-ic">${p.ic}</span><span class="grow">${words}</span></button><div class="pp-btns">${go}<button class="btn sm ghost" onclick="photoLater('${p.id}')">Later</button></div></div>`;
 }
 // The card: Today shows one (cap 1) and says how many more wait on Skills; Skills shows a few. "" when nothing is due. Pure.
 export function photoPromptsHtml(list, { cap = 3, more = false } = {}){
   if (!list.length) return ""; const rest = list.length - Math.min(cap, list.length);
   return `<div class="pp-head">📸 Picture time</div>${list.slice(0, cap).map(photoPromptHtml).join("")}${rest ? (more ? `<button class="lnk small pp-more" onclick="showPage('skills')">＋ ${rest} more on Skills ›</button>` : `<p class="small muted pp-more">＋ ${rest} more: look for 📸 in your goals.</p>`) : ""}`;
+}
+// Today's own picture prompt: the first one due and how many more wait on Skills. "" when nothing is due.
+export const todayPicHtml = () => photoPromptsHtml(photoPrompts(S.settings), { cap: 1, more: true });
+// From a 📸 Picture day reminder: Today, with the picture prompt in view (Skills when Today has none to show).
+export function openPictures(){
+  const go = typeof window !== "undefined" && window.showPage; if (!go) return; go("home"); const el = $("#goalReminder");
+  if (el && el.innerHTML && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 250);
 }
 export function goalRowHtml(r, due = ""){
   const ph = r.thumb ? `<span class="g-ph"><img src="${esc(r.thumb)}" alt="" loading="lazy"></span>` : `<span class="g-ph none">${r.ic}</span>`;
@@ -256,7 +270,10 @@ export function goalRowHtml(r, due = ""){
 }
 export function goalsCardHtml(rows, max = WORK_MAX, due = {}){
   if (!rows.length) return `<p class="small muted">Pick what you want to get better at: a trick, a split, your aerial. You choose, and you can change it any time.</p><div class="row"><button class="btn coral" onclick="wkPick()">＋ Pick a goal</button></div>`;
-  const groups = GROUPS.map(([k, label]) => { const part = rows.filter(r => r.group === k); return part.length ? `<div class="g-lab">${label}</div>${part.map(r => goalRowHtml(r, due[r.id] || "")).join("")}` : ""; }).join("");
+  const list = (part) => part.map(r => goalRowHtml(r, due[r.id] || "")).join("");
+  // Her dances' skills, dance by dance (1.85.0): Solo, Trio, Jazz, Contemporary, then a trick with no dance.
+  const byDance = (part) => [...Object.keys(OWN_DANCES), ""].map(d => { const p = part.filter(r => (r.dance || "") === d); return p.length ? `<div class="g-dance">${d ? esc(OWN_DANCES[d]) : "Other"}</div>${list(p)}` : ""; }).join("");
+  const groups = GROUPS.map(([k, label]) => { const part = rows.filter(r => r.group === k); return part.length ? `<div class="g-lab">${label}</div>${k === "dances" ? byDance(part) : list(part)}` : ""; }).join("");
   return `${groups}<div class="row wk-more">${rows.length >= max ? `<span class="small muted">That's a full list. Take one off to pick another.</span>` : `<button class="btn sm coral" onclick="wkPick()">＋ Pick a goal</button>`}</div>`;
 }
 // What she can pick from, in the list's own groups: the tricks in her dances (the solo's, and her own), the acro chart by
@@ -265,7 +282,7 @@ export function pickGroups({ skills = S.skills, working = [], goals = S.goals, s
   const on = new Set(working), styles = ladder.styles || {};
   const item = (s) => ({ id: s.id, n: s.n, on: on.has(s.id), state: skillState(skills, s.id) });
   const out = [], own = ladder === SKILLS ? ownSkills(settings) : [];
-  out.push({ key: "dances", label: GROUPS[0][1], open: true, own: true, parts: [...(styles.solo ? [{ label: `${styles.solo.ic} ${styles.solo.n}`, items: styles.solo.skills.map(item) }] : []), ...(own.length ? [{ label: "💃 My own", items: own.map(item) }] : [])] });
+  out.push({ key: "dances", label: GROUPS[0][1], open: true, own: true, parts: [...(styles.solo ? [{ label: `${styles.solo.ic} ${styles.solo.n}`, items: styles.solo.skills.map(item) }] : []), ...Object.entries(OWN_DANCES).map(([d, n]) => ({ d, label: d === "solo" ? "🌸 Solo: my own" : `💃 ${n}`, items: [...(d === "solo" ? [] : danceSkills(ladder).filter(o => o.dance === d).map(o => ({ ...item(o), n: (o.top ? "⭐ " : "") + o.n }))), ...own.filter(o => o.dance === d).map(item)] })).filter(p => p.items.length || p.d !== "solo").map(p => p.items.length ? p : { ...p, empty: `No ${OWN_DANCES[p.d]} skills yet. Add them below.` }), ...(own.some(o => !o.dance) ? [{ label: "💃 Other", items: own.filter(o => !o.dance).map(item) }] : [])] });
   for (const [k, st] of Object.entries(styles)) {
     if (k === "solo" || CLASS_STYLES.includes(k)) continue; const groups = levelGroups(st), rest = (list) => list.filter(x => x.id !== AERIAL_ID).map(item);
     const top = st.skills.some(x => x.id === AERIAL_ID) ? [{ label: "", items: [{ ...item({ id: AERIAL_ID, n: "Aerial" }), n: "🦋 Aerial, step by step" }] }] : [];
@@ -278,16 +295,16 @@ export function pickGroups({ skills = S.skills, working = [], goals = S.goals, s
   return out;
 }
 export const chipText = (i) => (i.on ? "⭐ " : i.state === "clean" || i.state === "checked" ? STATE_EMOJI[i.state] + " " : "") + i.n;
-export const pickHint = (count, max = WORK_MAX) => "Tap the ones you want. ⭐ means it's one of your goals. " + (count >= max ? "Your list is full: take one off to pick another." : "A few at a time is plenty.");
+export const pickHint = (count, max = WORK_MAX) => "Tap the ones you want. ⭐ means it's one of your goals. " + (count >= max ? "Your list is full: take one off to pick another." : "Start with the skills in your solo, trio, jazz and contemporary.");
 export function pickerHtml(groups, { count = 0, max = WORK_MAX } = {}){
   const chip = (i) => `<button class="chip${i.on ? " sun" : ""}" onclick="wkToggle('${i.id}', this)">${esc(chipText(i))}</button>`;
-  const part = (p) => { const chips = `<div class="ms-pick">${p.items.map(chip).join("")}</div>`; return p.fold ? `<details class="more"><summary>${esc(p.label)}</summary>${chips}</details>` : (p.label ? `<div class="lvl-sec">${esc(p.label)}</div>` : "") + chips; };
-  const ownForm = `<p class="small muted wk-own-lab">A trick that isn't here? Add your own.</p><div class="row wk-own"><input type="text" id="wkOwnName" placeholder="Its name" maxlength="40"><select id="wkOwnDance" aria-label="Which dance"><option value="trio">Trio</option><option value="solo">Solo</option><option value="">Other</option></select><button class="btn sm coral" onclick="wkOwnAdd()">Add</button></div>`;
+  const part = (p) => { const chips = p.empty ? `<p class="small muted">${esc(p.empty)}</p>` : `<div class="ms-pick">${p.items.map(chip).join("")}</div>`; return p.fold ? `<details class="more"><summary>${esc(p.label)}</summary>${chips}</details>` : (p.label ? `<div class="lvl-sec">${esc(p.label)}</div>` : "") + chips; };
+  const ownForm = `<p class="small muted wk-own-lab">A skill from one of your dances that isn't here? Add it, and say which dance.</p><div class="row wk-own"><input type="text" id="wkOwnName" placeholder="Its name" maxlength="40"><select id="wkOwnDance" aria-label="Which dance">${["trio", "pitch-jazz", "pitch-contemp", "solo"].map(d => `<option value="${d}">${OWN_DANCES[d]}</option>`).join("")}<option value="">Other</option></select><button class="btn sm coral" onclick="wkOwnAdd()">Add</button></div>`;
   return `<p class="small muted" id="wkHint">${pickHint(count, max)}</p>` + groups.map(g => `<details class="card acc"${g.open ? " open" : ""}><summary>${esc(g.label)}</summary>${g.parts.map(part).join("")}${g.own ? ownForm : ""}</details>`).join("");
 }
 // A new trick of her own: its name, and the dance it is in. Pure.
 export function ownSkillDoc(name, dance, id = "own-" + uid().replace(/[^a-z0-9]/g, "").slice(-8)){
-  const n = String(name || "").replace(/\s+/g, " ").trim().slice(0, 40); return n && OWN_RE.test(id) ? { id, n, dance: ["solo", "trio"].includes(dance) ? dance : "" } : null;
+  const n = String(name || "").replace(/\s+/g, " ").trim().slice(0, 40); return n && OWN_RE.test(id) ? { id, n, dance: Object.hasOwn(OWN_DANCES, dance) ? dance : "" } : null;
 }
 
 // ---- DOM ----
@@ -298,9 +315,10 @@ export function renderWorking(){
   const n = $("#workingCount"); if (n) n.textContent = working.length ? String(working.length) : "";
   // The same prompts on Skills (a few) and on Today (the first one). Both go away by themselves once the picture is saved.
   const ws = $("#workingSub"); if (ws) ws.textContent = goalsSub(working.map(id => goalRow(id, { working })).filter(Boolean));
-  const sk = $("#photoPrompt"); if (sk) { sk.innerHTML = photoPromptsHtml(prompts, { cap: 3 }); setFold("photoFoldSk", "photoSubSk", prompts.length > 0, photoSub(prompts), "photoCountSk", prompts.length); }
+  const sk = $("#photoPrompt"); if (sk) { sk.innerHTML = photoPromptsHtml(prompts, { cap: PHOTO_SHOW }); setFold("photoFoldSk", "photoSubSk", prompts.length > 0, photoSub(prompts), "photoCountSk", prompts.length); }
   renderStones();
-  const td = $("#goalReminder"); if (td) { td.innerHTML = photoPromptsHtml(prompts, { cap: 1, more: true }); setFold("photoFold", "photoSub", prompts.length > 0, photoSub(prompts), "photoCount", prompts.length); }
+  const td = $("#goalReminder"); if (td) td.innerHTML = photoPromptsHtml(prompts, { cap: 1, more: true }); // on Today the prompt sits in the one card, under the skill (1.85.0)
+  const tab = typeof document.querySelector === "function" ? document.querySelector('nav.tabs button[data-p="skills"]') : null; if (tab && tab.classList) tab.classList.toggle("has-news", prompts.length > 0); // a dot on Skills while a picture is due
 }
 // ✓ I worked on it today (and back): the goal's id in today's practice record. Returns true when it is now on.
 export async function toggleWorked(id, today = todayStr()){
@@ -331,16 +349,18 @@ async function wkToggle(id, btn){
 }
 // "I've got it clean" and back. Teacher-checked stays.
 export async function gotIt(id){ const cur = skillState(S.skills, id); if (cur === "checked" || goalKind(id) === "measure" || !goalKind(id)) return; if (cur === "notyet") await kidCycle(id); await kidCycle(id); renderWorking(); }
-function wkPick(){
+function wkPick(dance){
   const el = document.createElement("div"); el.className = "stage-list"; const working = workingIds(S.settings);
   el.innerHTML = pickerHtml(pickGroups({ working }), { count: working.length });
   openStage("＋ Pick a goal", [el], `<button class="btn coral" onclick="closeStage()">Done</button>`);
+  lastDance = Object.hasOwn(OWN_DANCES, dance || "") ? dance : lastDance; const sel = $("#wkOwnDance"); if (sel && lastDance) sel.value = lastDance; // the dance she came from, or the one she last added to
 }
+let lastDance = "";
 // Her own trick from the picker's small form: saved in settings.ownSkills and put on her goals.
 async function wkOwnAdd(){
   const doc = ownSkillDoc(($("#wkOwnName") || {}).value, ($("#wkOwnDance") || {}).value); if (!doc) return toast("Give it a name first");
   const have = Array.isArray(S.settings.ownSkills) ? S.settings.ownSkills : [];
   if (have.some(o => o && String(o.n).toLowerCase() === doc.n.toLowerCase())) return toast("That one is already there");
-  await setSettings({ ownSkills: [...have, doc] }); await setOnGoals(doc.id, true); wkPick(); toast(`${doc.n} is one of your goals ⭐`);
+  lastDance = doc.dance; await setSettings({ ownSkills: [...have, doc] }); await setOnGoals(doc.id, true); wkPick(); toast(`${doc.n} is one of your goals ⭐`);
 }
 expose({ wkToggle, wkPick, wkOwnAdd, photoLater });

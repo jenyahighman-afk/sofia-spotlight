@@ -38,7 +38,7 @@ const playToday = () => { const today = M.util.todayStr(); const ev = M.advent.s
 test("every element id looked up in the code exists in index.html", () => {
   const ids = new Set(); const walk = (dir) => { for (const f of readdirSync(new URL("../" + dir, import.meta.url))) { if (f.endsWith(".js")) { const src = read(dir + "/" + f); for (const m of src.matchAll(/\$\("#([A-Za-z0-9_-]+)"\)/g)) ids.add(m[1]); for (const m of src.matchAll(/getElementById\(["']([A-Za-z0-9_-]+)["']\)/g)) ids.add(m[1]); } } };
   walk("js"); walk("js/views"); walk("js/games");
-  const DYNAMIC = new Set(["wkHint", "wkOwnName", "wkOwnDance", "filmVideo", "dayPlan", "seasonDeco", "tcLineup", "lfStatus", "rmTime", "mmPair", "mmStatus", "mmCanvas", "mmPhoto", "mmThen", "mmNow", "rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "ckGrab", "coachTapSkip", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount", "drillUrl", "drillSkill", "drillNote", "rmTime2", "sdWent", "sdNote"]); // created inside a render, not in the markup
+  const DYNAMIC = new Set(["goalReminder", "wkHint", "wkOwnName", "wkOwnDance", "filmVideo", "dayPlan", "seasonDeco", "tcLineup", "lfStatus", "rmTime", "mmPair", "mmStatus", "mmCanvas", "mmPhoto", "mmThen", "mmNow", "rcStart", "rcLines", "mindClock", "qsClock", "qsNote", "qsCamBox", "qsCam", "qsShot", "qsBig", "plYes", "plNo", "ckGrab", "coachTapSkip", "todayCount", "cdNote", "plRunCue", "coachVideo", "coachPickClip", "coachPhotos", "coachSkill", "coachBusyText", "goalPhoto", "goalValue", "goalCustomName", "goalCustomUnit", "goalCompareTop", "mgCount", "goalSlider", "swapTitle", "swapList", "demoFile", "demoUrl", "mgCount", "drillUrl", "drillSkill", "drillNote", "rmTime2", "sdWent", "sdNote"]); // created inside a render, not in the markup
   const missing = [...ids].filter(id => !DYNAMIC.has(id) && !html.includes(`id="${id}"`));
   assert.deepEqual(missing, [], "ids referenced in js/ but absent from index.html");
   assert.ok(ids.size > 60, "expected a healthy number of ids, got " + ids.size);
@@ -46,7 +46,7 @@ test("every element id looked up in the code exists in index.html", () => {
 
 test("the five kid tabs and every Grown-ups page exist; nothing text-heavy was deleted, only moved", () => {
   for (const p of ["home","dances","skills","practice","play","me","pin","grownups","events","schedule","notes","lists","skillcheck","reviews","reports","settings"]) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
-  for (const id of ["coach","goal","mirror","workingFold","workingCard","albumFold","albumCard","p-goal","goalReminder","reviewList"]) assert.ok(html.includes(`id="${id}"`), id);
+  for (const id of ["coach","goal","mirror","workingFold","workingCard","albumFold","albumCard","p-goal","reviewList"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const p of []) assert.ok(html.includes(`id="p-${p}"`), "section p-" + p);
   const tabs = [...html.matchAll(/<button data-p="([a-z]+)"/g)].map(m => m[1]);
   assert.deepEqual(tabs, ["home","dances","skills","me"], "1.61.0: Today · Dances · Skills · Me");
@@ -119,7 +119,7 @@ test("with records: fixes become chips, patterns show up, this week's fix appear
     assert.ok(sl.includes('<div class="lvl-sec">Partner moves</div>') && sl.indexOf("Acro basics") < sl.indexOf("Power tumbling"), "sections in chart order inside a level"); window.meStyle("acro");
     const sc = el("#skillCheckList").innerHTML; assert.ok(sc.includes("Glass House Dance") && (sc.match(/<details class="lvl"/g) || []).length === 5, "Skill check folds acro by level too"); }
   assert.ok(el("#mePatterns").innerHTML.includes("You've had this note 5 times"), "Me shows the repeated tag across dances");
-  assert.ok(dl.includes("You've had this note 3 times") && dl.includes("gotIt('d')") === false && dl.includes("Got it!"), "jazz card shows its own 3-times line with a Got it! on an open note");
+  assert.ok(dl.includes("You've had this note 3 times") && dl.includes("gotIt('d')") === false && dl.includes("Show me"), "jazz card shows its own 3-times line with Show me on an open note (1.85.0: the note is shown before it is closed)");
   assert.ok(el("#weekFix").innerHTML.includes("Point your foot") && el("#weekFix").innerHTML.includes("This week's fix"), "Today shows this week's fix");
   assert.ok(el("#badgeCase").innerHTML.includes("badge on"), "earned badge lit");
   assert.ok(el("#practiceHead").innerHTML.includes("1 run"), "run shown on Practice");

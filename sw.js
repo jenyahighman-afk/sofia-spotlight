@@ -52,8 +52,9 @@ self.addEventListener("push", (e) => {
   e.waitUntil(self.registration.showNotification(d.title || "Sofia's Spotlight", { body: d.body || "Dance bite time ✨", icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: d.tag || "dance-bite", data: { url: d.url || "./" } }));
 });
 self.addEventListener("notificationclick", (e) => {
-  e.notification.close(); const target = new URL((e.notification.data && e.notification.data.url) || "./", self.registration.scope).href;
-  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(cs => { const c = cs.find(x => x.url.startsWith(self.registration.scope)); return c ? c.focus() : self.clients.openWindow(target); }));
+  // 1.85.0: a 📸 Picture day reminder lands on Today's picture prompt (an open app is told; a closed one opens at #pictures).
+  const pic = /📸/.test(String(e.notification.title || "")); e.notification.close(); const target = new URL(pic ? "./#pictures" : (e.notification.data && e.notification.data.url) || "./", self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(cs => { const c = cs.find(x => x.url.startsWith(self.registration.scope)); if (!c) return self.clients.openWindow(target); if (pic) c.postMessage({ type: "OPEN_PICTURES" }); return c.focus(); }));
 });
 
 self.addEventListener("fetch", (e) => {

@@ -13,7 +13,7 @@ export const roText=(lab,v)=>`<div class="field-lab">${lab}</div><div class="ro"
 export const roList=(lab,arr)=>{ const a=(arr||[]).filter(x=>String(x).trim()); return `<div class="field-lab">${lab}</div><div class="ro">${a.length?`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>`; };
 export const edText=(k,lab,v,ph)=>`<label class="f">${lab}</label><textarea data-k="${k}" class="dfield" placeholder="${ph||""}">${esc(v||"")}</textarea>`;
 export const edList=(k,lab,arr)=>`<label class="f">${lab} <span class="muted">(one per line)</span></label><textarea data-k="${k}" data-list="1" class="dfield">${esc((arr||[]).join("\n"))}</textarea>`;
-export function toast(m,ms=1600){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("on"),ms); }
+export function toast(m,ms=Math.max(1600,Math.min(4000,55*String(m).length))){ /* 1.85.0: a longer line stays long enough to read */ const t=$("#toast"); t.textContent=m; t.classList.add("on"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("on"),ms); }
 export function lerp(a,b,t){return a+(b-a)*t;} export function lp(a,b,t){return [lerp(a[0],b[0],t),lerp(a[1],b[1],t)];}
 // Inline onclick="" handlers in the markup call these by global name.
 export const expose=(o)=>Object.assign(window,o);

@@ -11,6 +11,7 @@ import { S, storeSet, docTime, FRAME_IDS } from "./store.js";
 import { findSkill, skillState } from "./skills.js";
 import { media, friendlyError } from "./sync.js";
 import { resizeImage } from "./media.js";
+const pingLogged = () => { try { if (typeof window !== "undefined" && typeof window.pingLogged === "function") window.pingLogged(); } catch (e) {} }; // remind.js exposes it; importing it here would loop the modules
 import { coverRect, daysBetween, wrapLines } from "./moments.js";
 
 // The frames she can pick. The ids are frozen in store.js (FRAME_IDS) for the migration; a test checks the lists match.
@@ -157,13 +158,13 @@ const vsHTML = (fn, c) => `<div class="lf-vs"><div class="lf-vs-col"><span class
   <div class="row" style="justify-content:center"><button class="btn sm coral" onclick="lineupSave('vs')">💾 Save this picture</button><button class="btn sm ghost" onclick="lineupVs()">Back to the lineup</button></div>`;
 // c: the card from cardList() ({ id, n, color, state, … }). Adding works from learning on; the newest photo is the card's art.
 export function renderLineup(c){
-  const el = $("#tcLineup"); if (!el || !c) return; if (!L.card || L.card.id !== c.id) { L.sel = ""; L.vs = false; } L.card = c;
-  const list = lineup(c.id); const fn = firstVsNow(list); const started = c.state !== "notyet"; if (L.sel && !list.some(p => p.id === L.sel)) L.sel = "";
+  const el = $("#tcLineup"); if (!el || !c) return; const fresh = !L.card || L.card.id !== c.id; if (fresh) { L.sel = ""; L.vs = false; } L.card = c;
+  const list = lineup(c.id); const fn = firstVsNow(list); if (fresh && fn) L.vs = true; /* 1.85.0: two pictures open side by side, first vs now, without a tap */ const started = c.state !== "notyet"; if (L.sel && !list.some(p => p.id === L.sel)) L.sel = "";
   const add = started ? `<label class="btn sm aqua">📷 Add a photo<input type="file" accept="image/*" hidden onchange="lineupAdd('${c.id}', this)"></label>` : "";
   if (!list.length) { el.innerHTML = `<div class="row lf-btns">${add}</div><p class="small muted" style="text-align:center">${started ? "Snap one now and one every few weeks. Your lineup shows how far you've come." : "Put it on your goals first. Then your progress photos line up here."}</p>`; return; }
   const sel = list.find(p => p.id === L.sel);
-  el.innerHTML = `<h4 class="lf-head">📷 Progress lineup <span class="small muted">${list.length} photo${list.length === 1 ? "" : "s"} · oldest → newest</span></h4>
-    <div class="lf-strip">${list.map(p => `<button class="lf-item ${sel && sel.id === p.id ? "on" : ""}" onclick="lineupPick(${esc(JSON.stringify(p.id))})" aria-label="${esc(p.date ? fmt(p.date) : "Photo")}, ${esc(frameOf(p.frame).n)} frame">${framedHTML(p, c.n, c.color)}</button>`).join("")}</div>
+  el.innerHTML = `<h4 class="lf-head">📷 My pictures in a row <span class="small muted">${list.length} photo${list.length === 1 ? "" : "s"} · oldest → newest</span></h4>
+    <div class="lf-strip">${list.map((p, i) => `<button class="lf-item ${sel && sel.id === p.id ? "on" : ""}${i === 0 ? " start" : ""}" onclick="lineupPick(${esc(JSON.stringify(p.id))})" aria-label="${esc(p.date ? fmt(p.date) : "Photo")}, ${esc(frameOf(p.frame).n)} frame">${framedHTML(p, c.n, c.color)}</button>`).join("")}</div>
     <div class="row lf-btns">${add}${fn ? `<button class="btn sm ${L.vs ? "coral" : "ghost"}" onclick="lineupVs()">🪞 First vs now</button>` : ""}<button class="btn sm ghost" onclick="lineupSave('all')">🖼️ Save the lineup</button></div>
     <p class="small muted lf-status" id="lfStatus">${sel || L.vs ? "" : "Tap a photo to pick its frame, change the day, or take it off."}</p>
     ${L.vs && fn ? vsHTML(fn, c) : sel ? editHTML(sel, c) : ""}`;
@@ -179,7 +180,7 @@ async function addPhoto(id, input){
     const { path, url } = await media.upload("photos", pid, blob, { contentType: "image/jpeg", name: f.name });
     const doc = { path, url, cap: "🃏 " + sk.n, dance: "", w, h, size: blob.size, card: id, frame: L.lastFrame, taken: todayStr(), at: new Date().toISOString() };
     const st = skillState(S.skills, id); if (STAGES.includes(st)) doc.stage = st;
-    await storeSet("photos", pid, doc); L.sel = pid; L.vs = false; toast("In your lineup! 📷"); renderLineup(L.card);
+    await storeSet("photos", pid, doc); L.sel = pid; L.vs = false; toast("Saved ✓ 📷"); try { pingLogged(); } catch (e) {} renderLineup(L.card);
   } catch (e) { console.warn(e); toast("Couldn't add it: " + friendlyError(e), 3500); }
 }
 async function setFrame(pid, frame){ const p = S.photos[pid]; if (!p || !isFrame(frame)) return; L.lastFrame = frame; try { await storeSet("photos", pid, { ...p, frame }); } catch (e) { console.warn(e); toast("Couldn't save: " + friendlyError(e), 3000); } renderLineup(L.card); }

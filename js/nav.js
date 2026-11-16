@@ -22,8 +22,13 @@ export function showPage(p, fromBack = false){
   document.body.classList.toggle("pg-home",p==="home");
   $$("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.p===tabFor(p)));
   const w = document.querySelector(".wrap"); if (w) w.scrollTop = 0; window.scrollTo({top:0});
-  document.dispatchEvent(new CustomEvent("page", { detail: p }));
+  navBack = fromBack === true; try { document.dispatchEvent(new CustomEvent("page", { detail: p })); } finally { navBack = false; }
 }
+// 1.85.0: a page with something open inside it (a dance's page over the tiles, a game's card, a running game) closes that
+// first when the phone's Back is pressed, and stays on the page. fn() → true when it closed something.
+let navBack = false; export const cameBack = () => navBack; // true while a "page" event from the phone's Back is being handled
+const backs = [];
+export function onBack(fn){ backs.push(fn); }
 export function currentPage(){ const s = $$("section.page.on")[0]; return s ? s.id.replace(/^p-/, "") : ""; }
 export function initNav(){
   $$("nav.tabs button").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.p)));
@@ -31,6 +36,8 @@ export function initNav(){
   window.addEventListener("popstate", (e) => {
     const over = [...document.querySelectorAll("div.modal, div.stage")].filter(m => !m.hidden).pop();
     if (over) { const x = over.querySelector('button[id$="Close"]'); if (x) { x.click(); try { history.pushState({ p: currentPage() }, ""); } catch (err) {} return; } }
+    const game = document.querySelector("#gameWrap.on"); if (game && typeof window.stopGame === "function") { window.stopGame(); try { history.pushState({ p: currentPage() }, ""); } catch (err) {} return; }
+    for (const fn of backs) { let did = false; try { did = fn(); } catch (err) { console.warn(err); } if (did) { try { history.pushState({ p: currentPage() }, ""); } catch (err) {} return; } }
     showPage((e.state && e.state.p) || "home", true);
   });
 }

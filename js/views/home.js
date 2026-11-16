@@ -26,7 +26,7 @@ import { applyPalette } from "../palette.js";
 import { renderPet } from "../pet.js";
 import { renderNews } from "../news.js";
 import { renderSundayCard } from "../sunday.js";
-import { todayGoal, todaySkillHtml, workedDates, goalHow, soloDanceNow, drillIds, groupDances, groupButtonsHtml } from "../working.js";
+import { todayPicHtml, todayGoal, todaySkillHtml, workedDates, goalHow, soloDanceNow, drillIds, groupDances, groupButtonsHtml } from "../working.js";
 import { drillsForGoal } from "../drills.js";
 import { topFixes } from "../corrections.js";
 import { tipFor } from "../wisdom.js";
@@ -35,7 +35,8 @@ const short = (n) => n.replace(/^Mini\/Jr |^Mini |^Jr /, "");
 // The one line under the big buttons (1.60.0, Jenya Nov 5): counts that only go up — the days she danced her solo or her trio
 // and the dances she ran from the player — then How ready?. Nothing here counts days without dancing. Pure.
 export function metaLine({ days = 0, dances = 0 } = {}){
-  const count = days ? `<span class="today-streak">⭐ ${days} dance day${days === 1 ? "" : "s"}</span>${dances ? ` · 🎵 ${dances} dance${dances === 1 ? "" : "s"}` : ""}` : `⭐ Your first dance day starts with one tap`;
+  const nd = dances ? `🎵 ${dances} dance${dances === 1 ? "" : "s"}` : ""; // 1.85.0: a group dance counts in words too, before her first solo or trio day
+  const count = days ? `<span class="today-streak">⭐ ${days} dance day${days === 1 ? "" : "s"}</span>${nd ? ` · ${nd}` : ""}` : nd ? `<span class="today-streak">${nd}</span>` : `⭐ Your first dance day starts with one tap`;
   return `<div class="today-line small today-meta">${count} · <button class="lnk" onclick="openReady()">How ready?</button></div>`;
 }
 // The folded finish line's one line (season15 nextCheckpoint): book it, today, or how many days. A passed one shows its date
@@ -53,12 +54,25 @@ export const BEST_TIME = "🍌 Snack first, then dance. Dinner after."; // 1.79.
 // The big buttons (1.60.0): ▶ My solo and ▶ My trio, the same on every day. Each opens the player with the music playing
 // (player.js { once: true }); the track played to its end is one dance, logged without questions. A dance done today shows ✅
 // and can be danced again. Show day keeps its checklist. Pure: solo / trio = danced today.
-export function danceButtons({ kind = "", solo = false, trio = false } = {}){
+export function danceButtons({ kind = "", solo = false, trio = false, next = "" } = {}){
   if (kind === "show") return `<button class="btn coral big-btn today-start" onclick="buddyScroll('#compCard')">🎒 Show day checklist</button>`;
-  const b = (id, name, done) => `<button class="btn ${done ? "ghost" : "coral"} big-btn" onclick="openPlayer('${id}',{once:true})">${done ? "✅" : "▶"} ${name}</button>`;
+  const b = (id, name, done) => `<button class="btn ${done ? "ghost" : "coral"} big-btn" onclick="openPlayer('${id}',{once:true})">${done ? "✅" : "▶"} ${name}${next === id && !done ? NEXT_TAG : ""}</button>`;
   return `<div class="today-once-lab small">💃 Practice a dance <span class="today-once-how">Dance it once ✨ about 2 minutes</span></div><div class="today-once">${b("solo", "My solo", solo)}${b("trio", "My trio", trio)}</div>`;
 }
 // The Pass and Toolkit p.2 say "When the app says ⭐ Plan done, put a sticker on": the app says it once her solo is danced today.
+// 👉 Next up (1.85.0, Jenya Nov 16: it should be easy to follow what to do next, "either practice one of the competitive
+// dances or to work on a specific dance skill"). One thing on Today wears the tag: the solo or the trio she has not danced
+// today (the one she danced longest ago first, the solo on a tie), then today's skill, then nothing. Pure: lastSolo /
+// lastTrio = the date of its last run ("" = never), skill = a skill is offered, skillDone = she worked on it today.
+export const NEXT_TAG = `<small class="nx-tag">👉 next up</small>`;
+export function nextUp({ solo = false, trio = false, lastSolo = "", lastTrio = "", skill = false, skillDone = false, kind = "" } = {}){
+  if (kind === "show") return "";
+  if (!solo && !trio) return lastTrio < lastSolo ? "trio" : "solo";
+  if (!solo || !trio) { if (skill && !skillDone) return "skill"; return solo ? "trio" : "solo"; }
+  return skill && !skillDone ? "skill" : "";
+}
+// The date of a dance's newest run from the player ("" = never). Pure.
+export const lastRun = (practice, id) => Object.keys(practice || {}).filter(d => ((practice[d] || {}).runs || []).some(r => r && (r.danceId || "solo") === id)).sort().pop() || "";
 export const PLAN_DONE = "⭐ Plan done: you danced your solo today";
 export const PLAN_DONE_QUIET = "⭐ Plan done for today";
 // 1.77.0 (Jenya, Nov 14: "don't say on any day nothing at home. she should be practicing when she gets a chance and not use the
@@ -74,7 +88,7 @@ export function sessionLink({ kind = "", mins = 0, nDone = 0, total = 0 } = {}){
   // own for that day: the memory run, or Monday's videos), as the printed Pass always has.
   const home = kind === "home";
   const words = nDone >= total ? `✅ ${home ? "The whole session" : "The short session"} is done` : nDone ? `📋 Keep going with the session · ${nDone} of ${total} ›` : home ? `📋 The whole session · ${mins} min ›` : `📋 Today's short session · ${mins} min ›`;
-  return `<button class="lnk today-fun" onclick="showPage('practice');openPracticeMode()">${words}</button>`;
+  return `<button class="lnk today-fun" onclick="openPracticeMode()">${words}</button>`; // 1.85.0: it opens over Today, so ✕ comes back to Today
 }
 // One thing to think about while she dances (1.68.0): this week's fix, or the newest open one of the solo, with its dance's
 // name and Show me. "" when there is none. Pure.
@@ -88,6 +102,8 @@ function renderHome(){
   // daykind.js (the same answer Play, the week strip and the Schedule use), from the date string, never the clock (Build 4).
   const dow=weekdayOf(today); const cls=studioOn(today,CLASSES,studioDates()); const kind=dayKindNow(today); const home=kind==="home";
   const rec=S.practice[today]; const pd=planDone(rec); const td=trioDone(rec);
+  // 1.85.0: any dance she ran today or any skill she worked on is her one thing, not only the solo and the trio.
+  const didOne=pd||td||((rec&&rec.runs)||[]).length>0||((rec&&rec.skills)||[]).length>0;
   // Today's session (planToday): its length and how far she is, for the whole session's link on a home day.
   const plan=planFor(today); const mins=Math.round(plan.reduce((a,i)=>a+(+i.secs||0),0)/60); const nDone=((rec&&rec.done)||[]).filter(id=>plan.some(i=>i.id===id)).length; const total=kind==="rest"||kind==="show"?0:plan.length;
   // 1.60.0 (Jenya, Nov 5): a class day asks nothing at home; a home day asks one thing she picks, with the whole session
@@ -95,7 +111,7 @@ function renderHome(){
   let what, sub;
   if(kind==="show"){ const ev=nextEvent(); what="🌟 Show day"; sub=`<div class="today-sub">${esc(ev?shortEventName(ev.name):"The show")} ★ No practice today: dance your best on stage!</div>`; }
   else if(cls.length){ what="🏫 Studio day"; sub=`<div class="today-sub">${cls.map(c=>`<b>${esc(c.t)}</b> ${esc(short(c.name))}${c.oneOff?" ✨":""}`).join("<br>")}</div><div class="today-sub">${DAY_ASK.studio}</div>`; }
-  else if(home){ what="🏠 Home day"; sub=`<div class="today-sub">${pd||td?DAY_ASK.homeDone:DAY_ASK.home}</div>${pd||td?"":`<div class="today-sub today-when">${BEST_TIME}</div>`}`; }
+  else if(home){ what="🏠 Home day"; sub=`<div class="today-sub">${didOne?DAY_ASK.homeDone:DAY_ASK.home}</div>${didOne?"":`<div class="today-sub today-when">${BEST_TIME}</div>`}`; }
   else { what="🌙 Rest day"; sub=`<div class="today-sub">${DAY_ASK.rest}</div>`; }
   const dayKind=kind==="show"?"🌟 Show day":cls.length?"🏫 Studio day":home?"🏠 Home day":"🌙 Rest day";
   // 🧠 Memorize opens the dance whose turn it is today (memo.todayPick: the solo and the trio take turns): the Memorize sheet for a
@@ -109,17 +125,19 @@ function renderHome(){
   // 1.68.0: the week's trick left Today (its button opened a timed Trick Quest station for a trick she had not picked);
   // Play still has it. The two helpers under the dance buttons are Hannah's videos and Memorize.
   // "You danced your solo" only when she ran it; a watched video or a memory step finishes the plan in its own words.
-  const ran=((rec&&rec.runs)||[]).some(r=>r&&(!r.danceId||r.danceId==="solo")); const tg=kind==="show"?null:todayGoal(S.settings,today); const skillPick=kind==="show"?"":todaySkillHtml(tg,tg?{dates:workedDates(S.practice,tg.id),today,how:goalHow(tg,{soloDance:soloDanceNow()})[0]||"",videos:drillsForGoal(drillIds(tg),S.drills).length}:{});
+  const ran=((rec&&rec.runs)||[]).some(r=>r&&(!r.danceId||r.danceId==="solo")); const tg=kind==="show"?null:todayGoal(S.settings,today); const skillDone=!!tg&&workedDates(S.practice,tg.id).includes(today); const next=nextUp({kind,solo:pd,trio:td,lastSolo:lastRun(S.practice,"solo"),lastTrio:lastRun(S.practice,"trio"),skill:!!tg,skillDone});
+  const skillPick=kind==="show"?"":todaySkillHtml(tg,tg?{next:next==="skill",dates:workedDates(S.practice,tg.id),today,how:goalHow(tg,{soloDance:soloDanceNow()})[0]||"",videos:drillsForGoal(drillIds(tg),S.drills).length}:{});
   const ff=kind==="show"?null:(currentWeekFix(today)||topFixes(S.corrections,"solo",1)[0]||null); const fd=ff?dances().find(d=>d.id===ff.danceId):null; const focus=focusLine(ff,fd?shortName(fd):"");
-  $("#todayCard").innerHTML=`<div class="today-date small">${esc(fmt(today))} · ${dayKind}</div><div class="today-what">${what}</div>${sub}
+  $("#todayCard").innerHTML=`<div class="today-date small">${esc(fmt(today))}</div><div class="today-what">${what}</div>${sub}
     <div class="today-line small dp-line" id="dayPlan" hidden></div>
-    ${danceButtons({kind,solo:pd,trio:td})}${pd?`<div class="today-line small today-done">${ran?PLAN_DONE:PLAN_DONE_QUIET}</div>`:""}${kind==="show"?"":groupButtonsHtml(groupDances(dances()),((rec&&rec.runs)||[]).map(r=>r&&r.danceId).filter(Boolean))}
-    ${focus}
-    ${kind==="show"?"":`<div class="today-help"><span class="small muted">Not sure of the steps?</span><button class="btn sm violet" onclick="openVideos()">📹 Videos</button>${memoBtns||memoBtn(mp?mp.dance:null)}</div>
-    <button class="btn sm ghost today-log" onclick="openStudioLog()">🏫 ✏️ Log studio work</button>`}
+    ${danceButtons({kind,solo:pd,trio:td,next})}${pd?`<div class="today-line small today-done">${ran?PLAN_DONE:PLAN_DONE_QUIET}</div>`:""}${kind==="show"?"":groupButtonsHtml(groupDances(dances()),((rec&&rec.runs)||[]).map(r=>r&&r.danceId).filter(Boolean),{how:false})}
     ${skillPick}
+    <div class="today-pic" id="goalReminder">${kind==="show"?"":todayPicHtml()}</div>
+    ${focus}
+    ${kind==="show"?"":`<div class="today-help"><span class="small muted">Not sure of the steps?</span><button class="btn sm violet" onclick="openVideos()">📹 Videos</button>${memoBtns||memoBtn(mp?mp.dance:null)}</div>`}
     ${metaLine({days:danceDays(S.practice),dances:danceCount(S.practice)})}
-    <div class="today-tip"><span class="tt-lab">💬 Dancer's tip</span>${esc(tipFor(today))}</div>${todayMode().mode==="comp"&&kind!=="show"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}`;
+    <div class="today-tip"><span class="tt-lab">💬 Dancer's tip</span>${esc(tipFor(today))}</div>${todayMode().mode==="comp"&&kind!=="show"?`<div class="small" style="margin-top:6px">🏆 Comp mode: no new tricks. Clean runs. Sleep.</div>`:""}${sessionLink({kind,mins,nDone,total})}
+    ${kind==="show"?"":`<button class="btn sm ghost today-log" onclick="openStudioLog()">🏫 ✏️ Log studio work</button>`}`;
   // The dated line from plan10 (its headline and note) is off Today since 1.60.0: "That's all." is not followed by a to-do.
   // The line's place stays in the card, hidden; dayplan.js and its ticks are unchanged.
   { const dp=$("#dayPlan"); if(dp){ dp.hidden=true; dp.innerHTML=""; } }

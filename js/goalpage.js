@@ -24,7 +24,8 @@ import { skillState } from "./skills.js";
 import { checkins, openGoal } from "./goals.js";
 import { openFlip, migrateFlipbook } from "./glow.js";
 
-const day = (d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d || "")) ? fmt(d) : "";
+// A picture's day; with its year once that is not this year (1.85.0: after a year, "Nov 19" twice said nothing).
+export const day = (d, now = todayStr()) => !/^\d{4}-\d{2}-\d{2}$/.test(String(d || "")) ? "" : String(d).slice(0, 4) === String(now).slice(0, 4) ? fmt(d) : new Date(d + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 const quote = (n) => esc(String(n).replace(/\\/g, "\\\\").replace(/'/g, "\\'")); // an apostrophe in her own trick's name broke the button (1.79.0)
 // The coach's tips for a goal, newest first: [{ date, text }]. Reviews are kept by the skill's name. Pure.
 export function coachTips(reviews, name){
@@ -34,7 +35,7 @@ export function nextHtml(r){
   if (r.kind === "aerial") {
     const a = r.aerial, head = `<div class="row"><h3 class="grow">What's next</h3><span class="chip sun">${esc(r.how)}</span></div><div class="gp-bar"><i style="width:${Math.round(100 * a.n / (a.total || 1))}%"></i></div>`;
     if (!a.next) return `${head}<p class="gp-how">Every step is ticked. Show it in class!</p>`;
-    return `${head}<div class="gp-next"><b>${esc(a.next.text)}</b><div class="small muted">${esc(a.next.section)}</div></div>${aerialHow(a.next)}<div class="row" style="margin-top:8px"><button class="btn sm coral" onclick="toggleAerial('${a.next.id}')">✓ Did it</button></div><p class="small muted">Learned in Monday Acro with a spotter. Mat under you for every drill.</p>`;
+    return `${head}<div class="gp-next"><b>${esc(a.next.text)}</b><div class="small muted">${esc(a.next.section)}</div></div>${aerialHow(a.next)}<div class="row" style="margin-top:8px"><button class="btn sm coral" onclick="toggleAerial('${a.next.id}')">✓ I can do this step</button></div><p class="small muted">Learned in Monday Acro with a spotter. Mat under you for every drill.</p>`;
   }
   if (r.kind === "measure") return `<h3>How it's going</h3><p class="gp-how">${esc(r.how)}</p><p class="small muted">After a warm-up, only as far as feels okay. Take a photo whenever you like and watch it change.</p>`;
   const got = r.state === "checked" ? "" : r.state === "clean" ? `<button class="btn sm ghost" onclick="gpGot('${r.id}')">↩ Undo</button>` : `<button class="btn sm coral" onclick="gpGot('${r.id}')">✓ Got it</button>`;
@@ -99,7 +100,7 @@ export function renderAlbum(){ migrateFlipbook(); const el = $("#albumCard"); if
 // "collapse all cards in me by default"): every card but her dancer, What's new and the Play tile, closed to start.
 export const SKILLS_FOLDS = ["workingFold", "albumFold", "photoFoldSk"];
 // Today (1.75.0): every card under the one card folds, closed to start; this phone remembers the ones she opens.
-export const TODAY_FOLDS = ["teacherFold", "photoFold", "danceFold", "stonesFold"];
+export const TODAY_FOLDS = ["teacherFold", "danceFold", "stonesFold"];
 export const GOAL_FOLDS = ["gpNextFold", "gpWorkFold", "gpPhotosFold", "gpCoachFold"];
 export const ME_FOLDS = ["momentsFold", "weekFold", "petFold", "passFold", "starsFold", "costumesFold", "badgesFold", "patternsFold"];
 export function initFolds(key, ids){
@@ -126,13 +127,16 @@ export function renderGoalPage(){
 }
 // Open a goal's page. `steps: true` unfolds the aerial's whole checklist (the printed Aerial Mission's path lands there).
 export function goalOpen(id, opts = {}){
-  if (!goalKind(id)) return; cur = id; showPage("goal"); renderGoalPage();
+  if (!goalKind(id)) return; cur = id; const from = currentPage(); showPage("goal"); renderGoalPage();
+  // 1.85.0: opened from Today, the way back says Today and goes there; the aerial's next step is open, not behind a fold.
+  const back = $("#gpBack"); if (back && from !== "goal") { const home = from === "home"; const other = !home && from !== "skills"; back.textContent = home ? "‹ Today" : other ? "‹ Back" : "‹ My goals"; back.onclick = () => other && typeof history !== "undefined" && history.back ? history.back() : showPage(home ? "home" : "skills"); }
+  const nf = document.querySelector("[id=gpNextFold]"), r0 = goalRow(id); if (nf && r0 && r0.kind === "aerial") nf.open = true;
   const wf = document.querySelector("[id=gpWorkFold]"); if (wf) wf.open = true; // 1.79.0: "tap to see how" landed on four closed cards
   if (opts.steps) { const f = $("#aerialFold"); if (f && !f.hidden) { f.open = true; if (f.scrollIntoView) f.scrollIntoView({ block: "start" }); } }
 }
 async function gpWorked(id){ const on = await toggleWorked(id); if (on) try { pingLogged(); } catch (e) {} renderGoalPage(); toast(on ? "That's a stepping stone 🪜" : "Taken back"); }
 async function gpGot(id){ await gotIt(id); renderGoalPage(); }
-async function gpOn(id, want){ const next = await setOnGoals(id, want); if (!next) return; toast(want ? "It's one of your goals ⭐" : "Off your goals. You can pick it again any time."); if (want) renderGoalPage(); else showPage("skills"); }
+async function gpOn(id, want){ if (!want && typeof confirm === "function" && !confirm("Take it off your goals? Your pictures stay, and you can pick it again any time.")) return; const next = await setOnGoals(id, want); if (!next) return; toast(want ? "It's one of your goals ⭐" : "Off your goals. You can pick it again any time."); if (want) renderGoalPage(); else showPage("skills"); }
 // A measure's check-in sheet: its document when it has one, else the draft (written at her first check-in).
 function gpCheckIn(id){ const g = goalDoc(S.goals, id); openGoal(g ? g.id : "new:" + id); }
 // Flip through a goal's photos, oldest first, each labelled with its day.

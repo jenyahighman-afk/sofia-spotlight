@@ -60,7 +60,7 @@ function tick(){
 }
 function play(){ if (!PL.audio) return; ensureCtx(); PL.audio.play().then(() => { $("#plPlay").textContent = "❚❚"; }).catch(e => { console.warn(e); setStatus(`<span class="bad">Couldn't play. Tap ▶ again, or check the file under More ▸.</span>`); }); }
 function pause(){ if (!PL.audio) return; PL.audio.pause(); $("#plPlay").textContent = "▶"; }
-function toggle(){ if (!PL.audio) return; PL.audio.paused ? play() : pause(); }
+function toggle(){ if (!PL.audio) return toast("No music here yet. Ask a grown-up to add it 🎵"); PL.audio.paused ? play() : pause(); }
 function seek(ev){ if (!PL.audio || !Number.isFinite(PL.audio.duration)) return; const r = ev.currentTarget.getBoundingClientRect(); PL.audio.currentTime = PL.audio.duration * Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)); }
 
 // ---- cue sheet ----

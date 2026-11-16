@@ -1371,5 +1371,25 @@
     }
    ]
   }
- }
+ },
+  "dances": {
+    "pitch-jazz": {
+      "from": "From a judge's-view review of one run filmed from three angles (an AI review, Nov 16). ⭐ = the changes that help most. Your teacher's notes come first where they differ.",
+      "skills": [
+        {"id": "pj-scissor-kicks", "n": "Seated scissor kicks", "t": "1:48", "tip": "Straight knees first, then height. Point your toes on every switch.", "drill": "Sit tall, fingertips behind your hips. Switch slowly, 2 counts each leg, knees straight and toes pointed.", "top": true},
+        {"id": "pj-chasses", "n": "Chassés to the line", "t": "0:29", "tip": "Point both feet so they kiss in the air. Arms hold a beach ball overhead.", "drill": "Chassés across the floor: both feet pointed and together in the air every time.", "top": true},
+        {"id": "pj-left-turn", "n": "Left turn into high fifth", "t": "1:13", "tip": "Bend deeper before you turn. Snap your eyes to one spot. Point the lifted foot.", "drill": "Quarter turns, then half turns to the left: a real plié first, eyes snap to a spot on the wall. Ask your teacher which leg shape the team uses.", "top": true},
+        {"id": "pj-get-up", "n": "Floor get-up", "t": "1:50", "tip": "Eyes up the whole way. Lead with your chest.", "drill": "Do the get-up 5 times in a row with your chin and eyes on the mirror all the way up.", "top": true},
+        {"id": "pj-runs", "n": "Jazz runs across the stage", "t": "0:45 · 1:07", "tip": "Run on the balls of your feet, ribs lifted. Quiet landings, arms alive.", "drill": "Silent runs across the floor on high balls of the feet. Count your steps from the wing to your centre spot, so you land in your wide stance with no extra step.", "top": true},
+        {"id": "pj-hinge", "n": "Opening hinge drop", "t": "0:04", "tip": "A long, flat back as you hinge. Don't round your shoulders.", "drill": "Stand wide, hands behind your head, elbows wide. Hinge forward with a flat back, then snap back up on the count."},
+        {"id": "pj-plie", "n": "Deep second plié", "t": "0:16", "tip": "Tailbone straight down, ribs over your hips.", "drill": "Slow pliés in second, 4 counts down: imagine your back sliding flat down a wall."},
+        {"id": "pj-walks", "n": "Jazz walks", "t": "0:20", "tip": "Roll through your foot: toe, ball, heel.", "drill": "Jazz walks forward and backward across the floor, knees a little bent, rolling through every step."},
+        {"id": "pj-arm-lines", "n": "Arm lines and hits", "t": "0:08 · 1:17 · 1:30", "tip": "Send energy out through your middle fingertips. Wrists never droop.", "drill": "Hold jazz arms in second for 16 counts, shoulders down, reaching out through your fingertips."},
+        {"id": "pj-lunges", "n": "Side lunges", "t": "0:40", "tip": "Press the back leg all the way straight.", "drill": "Hold a jazz lunge for 8 counts, pushing the back leg straight from hip to heel."},
+        {"id": "pj-wing-lunge", "n": "Wing lunge and reach", "t": "0:56", "tip": "Proud chest: lift up out of your waist. Stay on until two steps past the wing.", "drill": "Step over a tape line into the side lunge with your chest lifted. Keep your arms alive until you are two steps past the line."},
+        {"id": "pj-groove", "n": "Centre groove and wide stance", "t": "1:16 – 1:30", "tip": "Step a little wider on the wide hits. Finish every arm to the fingertips.", "drill": "Groove in the mirror: step 2 or 3 inches wider on each wide hit, laser arms on every sharp accent."},
+        {"id": "pj-torso-roll", "n": "Torso roll", "t": "1:36", "tip": "Stay low in your legs until count 4.", "drill": "4-count torso rolls, staying deep in the plié through count 4 before you rise."}
+      ]
+    }
+  }
 }

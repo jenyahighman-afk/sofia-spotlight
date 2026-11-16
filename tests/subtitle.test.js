@@ -33,7 +33,7 @@ test("short plans and odd lists read sensibly", () => {
 
 test("1.60.0: Today's home day says the one ask, not the session's contents; the plan's summary stays on Mom's card", () => {
   const home = src("js/views/home.js"); assert.doesNotMatch(home, /planSummary/);
-  assert.match(home, /else if\(home\)\{ what="🏠 Home day"; sub=`<div class="today-sub">\$\{pd\|\|td\?DAY_ASK\.homeDone:DAY_ASK\.home\}<\/div>/);
+  assert.match(home, /else if\(home\)\{ what="🏠 Home day"; sub=`<div class="today-sub">\$\{didOne\?DAY_ASK\.homeDone:DAY_ASK\.home\}<\/div>/);
   assert.match(src("js/momweek.js"), /planSummary\(items\)/);
   assert.match(src("js/version.js"), /APP_VERSION = "1\.(54\.[2-9]|5[5-9]|[6-9]\d)/);
 });

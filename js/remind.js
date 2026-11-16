@@ -13,7 +13,7 @@ import { shiftDate } from "./corrections.js";
 import { sync } from "./sync.js";
 import { coachConfig } from "./firebase-config.js";
 import { pushConfig } from "./push-config.js";
-import { reminderMsgs } from "./wisdom.js";
+import { reminderMsgs, withPictures } from "./wisdom.js";
 
 // 1.78.0 (Jenya, Nov 14: "pushed reminders for her to log her practice every day and prep for solo and trio"): the reminder
 // is every day now. At her dance time: what to do (a home day: solo once, trio once; a class day: class first, one run if
@@ -52,10 +52,18 @@ export function dailyPlan(classes = CLASSES){ const kinds = {}; for (let wd = 0;
 export const awayDay = (date, list = events()) => (list || []).some(e => e && !e.kind && !/break/i.test(String(e.type || "")) && e.start && date >= e.start && date <= (e.end || e.start));
 export function dailyKind(date, kindOf = dayKindNow, away = awayDay){ const k = kindOf(date); return k === "show" || away(date) ? "off" : k === "home" || k === "rest" ? "home" : "studio"; }
 export const MSG_DAYS = 30;
+// The next weeks' words, with 📸 Picture day on the home days a picture is due (1.85.0). The goals' pictures as they are
+// today: a picture she takes tomorrow is sent with the next day's refresh, or at once (picsChanged below).
+// app.js hands over working.js's photoPrompts (setPicturePrompts): importing it here would loop the modules.
+let promptsFn = null; export function setPicturePrompts(fn){ promptsFn = typeof fn === "function" ? fn : null; }
+const promptsOn = (d) => { try { return promptsFn ? promptsFn(d) || [] : []; } catch (e) { return []; } };
+export const picturedMsgs = (from = todayStr()) => withPictures(reminderMsgs(from, MSG_DAYS, dailyKind, shiftDate), dailyKind, promptsOn);
+// What is due today, as one string: part of what this phone last sent, so a picture taken (or one come due) sends the words again.
+export const picSig = () => promptsOn(todayStr()).map(p => p.id + ":" + p.why).join(",");
 // "Thu, Fri, Sun": the home days, Monday first.
 export function daysLabel({ kinds = {} } = {}){ return Object.keys(kinds).map(Number).sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map(wd => DAY_NAMES[wd]).join(", "); }
 // What the worker is told: the time, the home days, the dates that differ. Never a second time (h2 / m2): no last call since 1.60.0.
-export function subscribeBody(r, { familyId, endpoint, keys, tz, plan = dailyPlan(), dates = planDates(plan, todayStr(), DATE_SPAN, dailyKind), msgs = reminderMsgs(todayStr(), MSG_DAYS, dailyKind, shiftDate) }){
+export function subscribeBody(r, { familyId, endpoint, keys, tz, plan = dailyPlan(), dates = planDates(plan, todayStr(), DATE_SPAN, dailyKind), msgs = picturedMsgs() }){
   const b = { familyId, endpoint, keys, h: r.h, m: r.m, tz, days: plan.days, kinds: plan.kinds }; if (Object.keys(dates).length) b.dates = dates;
   if (r.log !== false && Number.isInteger(r.lh) && Number.isInteger(r.lm)) { b.log = true; b.lh = r.lh; b.lm = r.lm; } // the evening log reminder; never h2 / m2, so a worker older than 1.78.0 sends no "last call"
   if (msgs && Object.keys(msgs).length) b.msgs = msgs; return b;
@@ -83,7 +91,7 @@ const subscribedHere = () => { try { return localStorage.getItem(LS) || ""; } ca
 export function renderReminder(){
   const el = $("#meReminder"); if (!el) return; const r = reminderOf(S.settings); const here = !!subscribedHere(); const block = pushBlocker(env()); const pw = planWeekdays();
   el.innerHTML = `<div class="row"><h3 class="grow">⏰ My dance time</h3>${r.on && here ? `<span class="chip coral">on · ${esc(timeLabel(r))}</span>` : `<span class="chip">off</span>`}</div>
-    <p class="small muted">You pick the time. Every day: what to do today, with a dancer's tip. No reminder once you've danced. In the evening: a nudge to log what you danced.</p>
+    <p class="small muted">You pick the time. Every day: what to do today, with a dancer's tip. 📸 On a home day with a picture to take, it says so. No reminder once you've danced. In the evening: a nudge to log what you danced.</p>
     <div class="row"><input type="time" id="rmTime" value="${timeValue(r)}" step="900" style="max-width:150px" ${block ? "disabled" : ""}>
       ${block ? `<span class="small muted">${esc(block)}</span>` : here ? `<button class="btn sm ghost" onclick="rmOff()">Turn off on this phone</button><button class="btn sm ghost" onclick="rmTest()">Send a test</button>` : `<button class="btn sm coral" onclick="rmOn()">Remind me on this phone</button>`}</div>
     <div class="row rm-log"><span class="small">📝 Log reminder</span><input type="time" data-rm="log" aria-label="Log reminder time" value="${timeValue({ h: r.lh, m: r.lm })}" step="900" style="max-width:150px" ${block || !here ? "disabled" : ""}><label class="small rm-tog"><input type="checkbox" data-rm="logon" ${r.log && here ? "checked" : ""} ${block || !here ? "disabled" : ""}> on</label></div>
@@ -102,12 +110,14 @@ async function subscribe(r){
 // What this phone last sent the worker: the times, the plan days and the dates that differ. On open, a subscribed phone whose
 // times or days changed since (a new default, a migrated time, a new class, a date booked or passed) subscribes again, once per run, quietly.
 const SENT = "spotlight:pushsent";
-export const sentSig = (r, plan = dailyPlan(), dates = planDates(plan, todayStr(), DATE_SPAN, dailyKind)) => JSON.stringify([r.h, r.m, plan.days, plan.kinds, dates, r.log !== false ? [r.lh, r.lm] : 0, todayStr()]); // today's date is in it: the tips' window moves on, so a subscribed phone sends the next weeks' words once a day
+export const sentSig = (r, plan = dailyPlan(), dates = planDates(plan, todayStr(), DATE_SPAN, dailyKind), pics = picSig()) => JSON.stringify([r.h, r.m, plan.days, plan.kinds, dates, r.log !== false ? [r.lh, r.lm] : 0, todayStr(), pics]); // today's date is in it: the tips' window moves on, so a subscribed phone sends the next weeks' words once a day
 // 1.60.0: a phone subscribed before this version is switched off once, quietly; from then on a reminder exists only if she turns it on.
 const OFF160 = "spotlight:remind160";
-let resynced = false;
+let resynced = false, triedSig = "", lastPics = null;
 export function resyncReminder(){
-  if (resynced) return; resynced = true;
+  // Once per run, and again in the same run only when the pictures due have changed (1.85.0: no "Picture day" for a picture she just took).
+  if (resynced) { const ps = picSig(); if (ps === lastPics) return; lastPics = ps; const r0 = reminderOf(S.settings); if (!r0.on || !subscribedHere() || !sync.familyId || pushBlocker(env())) return; const sig = sentSig(r0); let sent = ""; try { sent = localStorage.getItem(SENT) || ""; } catch (e) {} if (sig === sent || sig === triedSig) return; triedSig = sig; try { if (typeof Notification !== "undefined" && Notification.permission !== "granted") return; } catch (e) { return; } subscribe(r0).catch(e => console.warn("reminder resync", e)); return; }
+  resynced = true; lastPics = picSig();
   let seen = "1"; try { seen = localStorage.getItem(OFF160) || ""; localStorage.setItem(OFF160, "1"); } catch (e) {}
   if (!seen && subscribedHere()) { off(true).catch(e => console.warn("reminder off", e)); return; }
   if (!subscribedHere() || !sync.familyId || pushBlocker(env())) return;
@@ -136,4 +146,4 @@ export function pingDone(){ if (!base() || !sync.familyId) return; fetch(base() 
 // 1.79.0: its own route, once a day. A worker from before 1.78.0 took every /remind/done as "the plan is done" and muted
 // dance time; it answers this route with a harmless 404.
 export function pingLogged(){ if (!base() || !sync.familyId) return; const day = todayStr(); try { if (localStorage.getItem("spotlight:loggedPing") === day) return; localStorage.setItem("spotlight:loggedPing", day); } catch (e) {} fetch(base() + "/remind/logged", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ familyId: sync.familyId, tz: tz(), what: "log" }), keepalive: true }).catch(() => {}); }
-expose({ rmOn: on, rmOff: () => off(), rmTest: test });
+expose({ pingLogged, rmOn: on, rmOff: () => off(), rmTest: test });
