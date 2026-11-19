@@ -56,7 +56,7 @@ test("show day (Fri Jan 8): no home practice, no Play lock, the checklist; the n
   assert.equal(homeLine("2027-01-08", dayOpts()), "Show day ★"); assert.match(momTodayLine("2027-01-08", { kind: "show" }).text, /show day ★ no home practice/);
   assert.notEqual(dayKind("2027-01-07", dayOpts()), "show"); assert.ok(planFor("2027-01-07").length > 0, "the night before keeps its run");
   const wf = json("events").find(e => e.id === "wf"); assert.equal(wf.paused, true); assert.ok(isPaused("2027-01-08", [], [wf]), "the streak pauses on the Showcase weekend");
-  assert.match(wf.type, /Competitive Showcase Jan 7–8/); assert.match(wf.type, /Informal Performance Showcase Jan 9–10/);
+  assert.match(wf.type, /Competitive Showcase \(PITCH groups on stage\)/); assert.match(wf.type, /Informal Performance Showcase \(her classes\) · Jan 8–10/); // 1.86.0: the sheet gives Jan 8–10 with no split
 });
 
 test("the studio's closures (its important dates): no classes, her class days are full home days; calendar-only, never a show", () => {
