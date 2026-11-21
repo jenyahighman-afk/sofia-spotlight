@@ -98,6 +98,8 @@ export function buildPlan(opts){
   // week's trio goal from the 15-week plan (season15.sessionRules trio, since 1.56.0), then once with the music.
   const have = new Set((opts.dances || []).map(d => d.id));
   for (const r of pool.runs || []) if (!r.dance || have.has(r.dance)) items.push({ ...r, ...(r.id === "solo-run" && ses.run ? { text: ses.run.text, secs: ses.run.secs } : {}), ...(r.id === "trio-mark" && ses.trio ? { text: ses.trio.text, secs: ses.trio.secs } : {}), kind: "run" });
+  // The group dances in the days before a group showing (season15.sessionRules group, 1.87.0), each once, after the solo and trio.
+  for (const g of ses.group || []) if (have.has(g.dance)) items.push({ id: "group-" + g.dance, text: g.text, secs: g.secs, pose: "reach", dance: g.dance, kind: "run" });
   // The research rules (season15.sessionRules): film one chunk (weeks 1–9), the Sunday review, the show in her head (from Nov 9).
   if (ses.clips) items.push({ id: "film-chunk", text: ses.clips.text, secs: ses.clips.secs, kind: "run", pose: "pose" });
   if (ses.review) items.push({ id: "film-review", text: ses.review.text, secs: ses.review.secs, kind: "run", pose: "pose" });
@@ -117,7 +119,7 @@ export function planSummary(items){
   const parts = [];
   for (const it of Array.isArray(items) ? items : []) {
     if (!it || it.kind === "warm" || /^mem-warm$/.test(it.id)) continue;
-    const p = PART_ID[it.id] || (it.kind === "trick" ? "trick" : it.kind === "mind" ? "picture it" : PART[it.kind]) || ""; if (p && !parts.includes(p)) parts.push(p);
+    const p = PART_ID[it.id] || (/^group-/.test(it.id) ? "group dances" : it.kind === "trick" ? "trick" : it.kind === "mind" ? "picture it" : PART[it.kind]) || ""; if (p && !parts.includes(p)) parts.push(p);
   }
   const out = []; const base = BASE.filter(b => parts.includes(b));
   for (const p of parts) {

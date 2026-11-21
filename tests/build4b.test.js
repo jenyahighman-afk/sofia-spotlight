@@ -104,7 +104,7 @@ test("3. a checkpoint is ticked only once its day is here or gone, and the tick 
   assert.doesNotMatch(SE.cpRow({ id: "x:1", d: "2026-12-20", t: "Costume run #1", state: "next" }, "2026-11-03"), /cpTick|Made it/, "a checkpoint still to come has no ✓");
   assert.match(SE.cpRow({ id: "x:1", d: "2026-11-03", t: "Whole solo", state: "today" }, "2026-11-03"), /cpTick\('x:1',true\)[^<]*>✓ Made it/); assert.match(SE.cpRow({ id: "x:1", d: "2026-11-01", t: "Whole solo", state: "passed" }, "2026-11-03"), /cpTick\('x:1',true\)[^<]*>✓ Made it/);
   resetDom(); clearS(); const stage = await import("../js/stage.js"); stage.initStage(); SE.initSeason(); const today = todayStr();
-  window.openByWhen(); const bw = el("#byWhenArea").innerHTML; const due = SE.plansFrom(today).flatMap(p => SE.allCheckpoints(p, [], today)).filter(c => c.d && c.d <= today).length;
+  window.openByWhen(); const bw = el("#byWhenArea").innerHTML; const due = SE.plansFrom(today).flatMap(p => SE.allCheckpoints(p, ST.studioDates(), today)).filter(c => c.d && c.d <= today).length;
   assert.equal((bw.match(/cpTick\('[^']+',true\)/g) || []).length, due, "a ✓ on the rows whose day is here or gone, none on the rest"); assert.ok((bw.match(/class="bw-row next"/g) || []).length >= 2);
   const id = SE.cpId(plan15, { t: "Whole trio, no video" }); window.confirm = () => false; await window.cpTick(id, true); assert.equal(S.settings.checkpoints, undefined, "no answer, no tick");
   window.confirm = () => true; await window.cpTick(id, true); assert.equal(S.settings.checkpoints[id].done, today); await window.cpTick(id, false); assert.equal(id in S.settings.checkpoints, false, "undo never asks");
