@@ -54,6 +54,7 @@ export function toolsFor(it, vids = {}){
   else if (id === "film-review") { push({ label: "🎬 Sunday sheet", go: "openSunday()" }); push({ label: "🎵 Solo music", go: "openPlayer('solo')" }); }
   else if (id === "trio-mark" || dance === "trio") { push({ label: "🎵 Trio music", go: "openPlayer('trio')" }); push(vid("trio", /run/i, 0)); }
   else if (dance === "solo" || /^(solo-run|mem-top|imagery|tired-picture|watch-picture|knees-memo)$/.test(id)) push({ label: "🎵 Solo music", go: "openPlayer('solo')" });
+  else if (/^pitch-[a-z-]+$/.test(dance)) push({ label: "🎵 Music", go: `openPlayer('${dance}')` }); // a group dance's run (1.87.0)
   return t;
 }
 const videoNames = () => { const out = {}; for (const d of dances()) if (Array.isArray(d.hannahVideos) && d.hannahVideos.length) out[d.id] = d.hannahVideos.map(v => v.name || ""); return out; };
