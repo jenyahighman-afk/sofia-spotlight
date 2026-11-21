@@ -1,5 +1,5 @@
 {
- "_note": "The 15-week plan to the Winter Showcase (js/season15.js; the printed Sofia-Practice-Toolkit.pdf page 1–2). Weeks run Monday to Sunday from `start`. fri = the Friday focus line; tricks = trick numbers from `ladder` (data/skills.json solo skills carry the same `ladder` numbers); weakest = the weakest trick that week. Until `memoryKneesUntil` the trick card says Memory + knees: no new tricks. A checkpoint with `rehearsal` is dated by the next booked solo rehearsal after `after`. rules = the session rules from the research Jenya approved Oct 26 (imagery from Nov 9, short self-chosen clips weeks 1–9, Sunday review, one full-out a session from Nov 9 and back-to-back on Sundays from Nov 30, taper from Dec 28, memory run only the night before the show, light weeks = memory run, never more than 2 days without dancing). extra = this week's mini audience / stage tape / sleep line.",
+ "_note": "The 15-week plan to the Winter Showcase (js/season15.js; the printed Sofia-Practice-Toolkit.pdf page 1–2). Weeks run Monday to Sunday from `start`. fri = the Friday focus line; tricks = trick numbers from `ladder` (data/skills.json solo skills carry the same `ladder` numbers); weakest = the weakest trick that week. Until `memoryKneesUntil` the trick card says Memory + knees: no new tricks. A checkpoint with `rehearsal` is dated by the next booked solo rehearsal after `after`. rules = the session rules from the research Jenya approved Oct 26 (imagery from Nov 9, short self-chosen clips weeks 1–9, Sunday review, one full-out a session from Nov 9 and back-to-back on Sundays from Nov 30, taper from Dec 28, memory run only the night before the show, light weeks = memory run, never more than 2 days without dancing). extra = this week's mini audience / stage tape / sleep line. group = { to, why, runs: [{ dance, t }] }: a group dance run on every full home day of that week up to `to` (the days before a group showing); short days stay the memory run.",
  "start": "2026-09-28",
  "memoryKneesUntil": "2026-11-09",
  "showDay": "2027-01-08",
@@ -120,7 +120,21 @@
    "tricks": [
     8
    ],
-   "extra": "🎤 Mini audience #1: dance it for grandparents on a video call"
+   "extra": "🎤 Mini audience #1: dance it for grandparents on a video call",
+   "group": {
+    "to": "2026-12-04",
+    "why": "Sat Dec 5: the group showing at the studio",
+    "runs": [
+     {
+      "dance": "pitch-jazz",
+      "t": "🎷 PITCH jazz · Groove: once with the music, sharp hits and stops, from your spot (📍 Where I stand)"
+     },
+     {
+      "dance": "pitch-contemp",
+      "t": "🪑 PITCH contemporary · Listening Chair: once from the top, as far as you know (count it out loud if there's no music)"
+     }
+    ]
+   }
   },
   {
    "w": 11,
