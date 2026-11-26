@@ -14,16 +14,18 @@ const dataFiles = ["dances","events","classes","home-days","practice-items","pha
 let M = {};
 before(async () => {
   const data = await import("../js/data.js"); const got = {}; for (const f of dataFiles) got[f] = JSON.parse(read("data/" + f + ".json")); data.applyData(got);
-  M.store = await import("../js/store.js"); M.studio = await import("../js/studio.js"); M.util = await import("../js/util.js"); M.season15 = await import("../js/season15.js"); M.daykind = await import("../js/daykind.js"); M.advent = await import("../js/advent.js");
+  M.store = await import("../js/store.js"); M.planToday = await import("../js/planToday.js"); M.studio = await import("../js/studio.js"); M.util = await import("../js/util.js"); M.season15 = await import("../js/season15.js"); M.daykind = await import("../js/daykind.js"); M.advent = await import("../js/advent.js");
   M.data = await import("../js/data.js"); M.home = await import("../js/views/home.js"); M.dances = await import("../js/views/dances.js"); M.practice = await import("../js/views/practice.js"); M.play = await import("../js/views/play.js"); M.me = await import("../js/views/me.js");
   M.events = await import("../js/views/events.js"); M.schedule = await import("../js/views/schedule.js"); M.notes = await import("../js/views/notes.js"); M.lists = await import("../js/views/lists.js"); M.settings = await import("../js/views/settings.js"); M.skillcheck = await import("../js/views/skillcheck.js");
   M.grownups = await import("../js/grownups.js"); M.showme = await import("../js/showme.js"); M.player = await import("../js/player.js"); M.reports = await import("../js/reports.js"); M.badges = await import("../js/badges.js"); M.corrections = await import("../js/corrections.js"); M.nav = await import("../js/nav.js"); M.stage = await import("../js/stage.js"); M.pmode = await import("../js/pmode.js"); M.coach = await import("../js/coach.js"); M.goals = await import("../js/goals.js"); M.working = await import("../js/working.js"); M.mirror = await import("../js/games/mirror.js"); M.demos = await import("../js/demos.js"); M.stars = await import("../js/stars.js"); M.along = await import("../js/games/along.js"); M.hub = await import("../js/coachhub.js");
 });
 
-// A studio day (any weekly class or a one-off date) has the short memory run instead of the full plan.
-const shortDay = () => M.studio.isShortDay(M.util.todayStr(), JSON.parse(read("data/classes.json")), M.store.studioDates());
+// A short day has the memory run (or Monday's watch list) instead of the full plan: a studio day (any weekly class or a
+// one-off date), a light week (Thanksgiving week), the night before the show or a memory-only date. The app's own rule
+// (planToday.shortKind), so the test holds on every date: it read only the studio days and failed on Thanksgiving Day.
+const shortDay = () => M.planToday.shortKind(M.util.todayStr()) !== "";
 // Monday is the watch day: Hannah's videos and the solo in her head, a short list and no memory run. This test reads the clock, so it has to hold on a Monday too (the UTC runner's Monday starts Sunday 4 pm in Seattle).
-const watchDay = () => shortDay() && new Date(M.util.todayStr() + "T00:00:00").getDay() === 1;
+const watchDay = () => M.planToday.shortKind(M.util.todayStr()) === "watch";
 const SCREENS = () => ({
   home: M.home.renderHome, dances: M.dances.renderDances, practice: M.practice.renderPractice, play: M.play.renderPlay, me: M.me.renderMe,
   events: M.events.renderEvents, schedule: () => { M.schedule.renderClasses(); M.schedule.renderCalendar(); }, notes: () => { M.notes.renderNotes(); M.notes.renderPhotos(); M.notes.renderFiles(); },
