@@ -178,10 +178,11 @@ test("a goal's page folds, and her group dances are one tap away on Today", asyn
 test("Ms. Angie's two notes ship as class notes; a class day welcomes one thing at home", async () => {
   const C = await import("../js/corrections.js"), H = await import("../js/views/home.js");
   const solo = json("dances").find(d => d.id === "solo"), notes = C.classNotesFromDance(solo);
-  assert.equal(notes.length, 2); assert.deepEqual(notes.map(n => n.tag), ["timing", "other"]);
-  for (const n of notes) { assert.equal(n.studio, true); assert.equal(n.source, "Ms. Angie"); assert.equal(n.date, "2026-11-08"); assert.equal(n.danceId, "solo"); assert.equal(n.status, "working"); assert.equal(n.pinned, undefined, "she can close it herself"); assert.match(n.id, /^c-solo-/); }
+  assert.equal(notes.length, 4); assert.deepEqual(notes.map(n => n.tag), ["timing", "other", "timing", "energy"]); // 1.89.0: the Nov 18/21 privates' two notes
+  assert.equal(notes[2].source, "Ms. Brittany & Ms. Angie"); assert.equal(notes[2].date, "2026-11-21"); assert.match(notes[2].text, /^Slow down: hold each pose/); assert.match(notes[3].text, /claim the space on stage/);
+  for (const n of notes.slice(0, 2)) { assert.equal(n.studio, true); assert.equal(n.source, "Ms. Angie"); assert.equal(n.date, "2026-11-08"); assert.equal(n.danceId, "solo"); assert.equal(n.status, "working"); assert.equal(n.pinned, undefined, "she can close it herself"); assert.match(n.id, /^c-solo-/); }
   assert.match(notes[0].text, /^Timing: finish every shape on the beat/); assert.match(notes[1].text, /^Add texture/);
-  assert.deepEqual(L.classNotes(Object.fromEntries(notes.map(n => [n.id, n])), { open: true }).length, 2, "they show under From my teachers");
+  assert.deepEqual(L.classNotes(Object.fromEntries(notes.map(n => [n.id, n])), { open: true }).length, 4, "they show under From my teachers");
   assert.deepEqual(C.classNotesFromDance({ id: "x" }), []); assert.match(src("js/corrections.js"), /for \(const c of classNotesFromDance\(d\)\) \{ if \(!S\.corrections\[c\.id\]\)/, "copied once: one she took off stays off");
   assert.equal(H.DAY_ASK.studio, "Class comes first today. Got a chance at home? Dance one thing."); for (const v of Object.values(H.DAY_ASK)) assert.doesNotMatch(v, /no home practice/i);
   const pass = json("pass"); assert.doesNotMatch(JSON.stringify(pass.tips), /No home practice/); assert.ok(pass.parts.find(p => p.id === "week").lines.filter(l => /No home practice/i.test(l)).every(l => /Show day/.test(l)), "only show day keeps it");
