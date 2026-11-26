@@ -21,7 +21,9 @@ before(async () => {
 });
 
 // A studio day (any weekly class or a one-off date) has the short memory run instead of the full plan.
-const shortDay = () => M.studio.isShortDay(M.util.todayStr(), JSON.parse(read("data/classes.json")), M.store.studioDates());
+// 1.88.0: a light week (Thanksgiving), the night before the show and the plan's memory-only dates are short too; this test reads
+// the clock, and the Nov 26 deploy failed on the light week.
+const shortDay = () => M.studio.isShortDay(M.util.todayStr(), JSON.parse(read("data/classes.json")), M.store.studioDates()) || !!M.season15.sessionRules(M.util.todayStr()).short;
 // Monday is the watch day: Hannah's videos and the solo in her head, a short list and no memory run. This test reads the clock, so it has to hold on a Monday too (the UTC runner's Monday starts Sunday 4 pm in Seattle).
 const watchDay = () => shortDay() && new Date(M.util.todayStr() + "T00:00:00").getDay() === 1;
 const SCREENS = () => ({
